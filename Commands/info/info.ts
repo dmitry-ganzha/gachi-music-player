@@ -6,12 +6,6 @@ import {ParserTimeSong} from "../../Modules/Music/src/Manager/Functions/ParserTi
 import {W_Message} from "../../Core/Utils/W_Message";
 
 const core = os.cpus()[0];
-const Buttons = {
-    MyUrl: new MessageButton().setURL('https://discord.com/oauth2/authorize?client_id=777195112576450580&permissions=8&scope=bot+applications.commands').setEmoji('🔗').setStyle('LINK').setLabel('Invite'),
-    ServerUrl: new MessageButton().setURL('https://discord.gg/qMf2Sv3').setEmoji('🛡').setStyle('LINK').setLabel('My server')
-}
-const RunButt = new MessageActionRow().addComponents(Buttons.MyUrl, Buttons.ServerUrl);
-
 export default class CommandInfo extends Command {
     constructor() {
         super({
@@ -21,7 +15,15 @@ export default class CommandInfo extends Command {
             enable: true
         })
     };
-    public run = async (message: W_Message): Promise<unknown> => message.channel.send({embeds: [new InfoEmbed(message)], components: [RunButt]}).then(async (msg: W_Message | any) => (this.DeleteMessage(msg, 35e3), this.DeleteMessage(message, 5e3)) ).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
+    public run = async (message: W_Message): Promise<unknown> => {
+        const Buttons = {
+            MyUrl: new MessageButton().setURL(`https://discord.com/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji('🔗').setStyle('LINK').setLabel('Invite'),
+            ServerUrl: new MessageButton().setURL('https://discord.gg/qMf2Sv3').setEmoji('🛡').setStyle('LINK').setLabel('My server')
+        }
+        const RunButt = new MessageActionRow().addComponents(Buttons.MyUrl, Buttons.ServerUrl);
+
+        return message.channel.send({embeds: [new InfoEmbed(message)], components: [RunButt]}).then(async (msg: W_Message | any) => (this.DeleteMessage(msg, 35e3), this.DeleteMessage(message, 5e3)) ).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
+    }
 }
 
 function FormatBytes(heapUsed: number): string {

@@ -1,12 +1,5 @@
 import {MessageButton, MessageActionRow, Guild, MessageEmbed, Message, DiscordAPIError} from "discord.js";
-import {W_Message} from "../../Core/Utils/W_Message";
-
-const Buttons = {
-    MyUrl: new MessageButton().setURL('https://discord.com/oauth2/authorize?client_id=777195112576450580&permissions=8&scope=bot+applications.commands').setEmoji('🔗').setStyle('LINK').setLabel('Invite'),
-    ServerUrl: new MessageButton().setURL('https://discord.gg/qMf2Sv3').setEmoji('🛡').setStyle('LINK').setLabel('Help server'),
-    MyWebSite: new MessageButton().setURL('https://watklok.herokuapp.com').setEmoji('🌐').setStyle('LINK').setLabel('Web site')
-};
-const RunButt = new MessageActionRow().addComponents(Buttons.MyUrl, Buttons.ServerUrl, Buttons.MyWebSite);
+import {W_Client, W_Message} from "../../Core/Utils/W_Message";
 
 export default class guildCreate {
     public readonly name: string;
@@ -16,7 +9,16 @@ export default class guildCreate {
         this.name = 'guildCreate';
         this.enable = true;
     }
-    public run = async (guild: Guild): Promise<any> => guild.systemChannel ? guild.systemChannel.send({ embeds: [new ConstructEmbed(guild)], components: [RunButt]}).then(async (msg: W_Message | Message) => setTimeout(async () => msg.delete().catch(async (err: DiscordAPIError) => console.log(`[Discord Message]: [guildCreate]: [Delete]: ${err}`)), 60e3)).catch(async (e: DiscordAPIError) => console.log(`[Discord event]: [guildCreate]: ${e}`)) : null;
+    public run = async (guild: Guild, f2, client: W_Client): Promise<any> => {
+        const Buttons = {
+            MyUrl: new MessageButton().setURL(`https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji('🔗').setStyle('LINK').setLabel('Invite'),
+            ServerUrl: new MessageButton().setURL('https://discord.gg/qMf2Sv3').setEmoji('🛡').setStyle('LINK').setLabel('Help server')
+        };
+        const RunButt = new MessageActionRow().addComponents(Buttons.MyUrl, Buttons.ServerUrl);
+
+
+        return guild.systemChannel ? guild.systemChannel.send({ embeds: [new ConstructEmbed(guild)], components: [RunButt]}).then(async (msg: W_Message | Message) => setTimeout(async () => msg.delete().catch(async (err: DiscordAPIError) => console.log(`[Discord Message]: [guildCreate]: [Delete]: ${err}`)), 60e3)).catch(async (e: DiscordAPIError) => console.log(`[Discord event]: [guildCreate]: ${e}`)) : null;
+    }
 }
 
 class ConstructEmbed extends MessageEmbed {
