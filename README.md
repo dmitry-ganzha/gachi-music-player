@@ -16,5 +16,5 @@
 1. Установить [Node.js](https://nodejs.org/en/)
 2. npm i (Если возникнут ошибки из-за sodium, [установить](https://drive.google.com/file/d/1LPb-0tJZ7Pf3MS3rjub1skKa80qbYJrZ/view?usp=sharing))
 3. npm i typescript или (Не хочешь конвертировать тебе [сюда](https://github.com/SNIPPIK/WatKLOK-BOT/tree/JavaScript), после переходишь к 5 шагу)
-4. Запускаешь _tsBuild.bat
+4. Запускаешь _tsBuild.bat. Переходишь в _JavaScript
 5. Настроить не забудь. Открываешь консоль и пишешь -> node . 
