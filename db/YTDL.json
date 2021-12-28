@@ -1,0 +1,14 @@
+{
+  "colors": {
+    "YOUTUBE": "#fc0303",
+    "SPOTIFY": "#15ac00",
+    "SOUNDCLOUD": "#ffad00",
+    "VK": "#0077ff",
+    "YANDEX": "#fed600"
+  },
+  "Icons": {
+    "SOUNDCLOUD": "https://cdn.discordapp.com/attachments/860113484493881365/917002243306315827/SoundCloud.png",
+    "VK": "https://cdn.discordapp.com/attachments/860113484493881365/917002243683811359/VK.png",
+    "YANDEX": "https://cdn.discordapp.com/attachments/860113484493881365/917002243117576192/YandexMusic.png"
+  }
+}
