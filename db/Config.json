@@ -1,0 +1,26 @@
+{
+  "Player": {
+    "MaxSkipFragment": 0,
+    "https": false,
+
+    "Other": {
+      "FFMPEG": "Путь (Пример C://FFmpeg/FFmpeg.exe)",
+      "YouTubeDL": true
+    }
+  },
+  "Channels": {
+    "Start": "ID канала на который я буду отправлять сообщения о том что я запустился"
+  },
+  "Bot": {
+    "ignoreError": true,
+    "token": "Токен бота",
+    "prefix": "!"
+  },
+  "spotify": {
+    "clientID": "ID клиента",
+    "clientSecret": "Secret клиента"
+  },
+  "youtube": {
+    "cookie": "Куки для включения 18+ видео"
+  }
+}
