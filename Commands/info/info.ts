@@ -8,10 +8,9 @@ import {W_Message} from "../../Core/Utils/W_Message";
 const core = os.cpus()[0];
 const Buttons = {
     MyUrl: new MessageButton().setURL('https://discord.com/oauth2/authorize?client_id=777195112576450580&permissions=8&scope=bot+applications.commands').setEmoji('🔗').setStyle('LINK').setLabel('Invite'),
-    ServerUrl: new MessageButton().setURL('https://discord.gg/qMf2Sv3').setEmoji('🛡').setStyle('LINK').setLabel('My server'),
-    MyWebSite: new MessageButton().setURL('https://watklok.herokuapp.com').setEmoji('🌐').setStyle('LINK').setLabel('Web site')
+    ServerUrl: new MessageButton().setURL('https://discord.gg/qMf2Sv3').setEmoji('🛡').setStyle('LINK').setLabel('My server')
 }
-const RunButt = new MessageActionRow().addComponents(Buttons.MyUrl, Buttons.ServerUrl, Buttons.MyWebSite);
+const RunButt = new MessageActionRow().addComponents(Buttons.MyUrl, Buttons.ServerUrl);
 
 export default class CommandInfo extends Command {
     constructor() {
