@@ -13,15 +13,15 @@ export default class Ready {
     public run = async (f1: Event, f2: Event, client: W_Message["client"]): Promise<any> => {
         let channel = client.channels.cache.get(cfg.Channels.Start) as TextChannel;
 
-       if (channel) return channel.send({embeds: [new Embed(client)]});
-       return null;
+        if (channel) return channel.send({embeds: [new Embed(client)]});
+        return null;
     };
 }
 class Embed extends MessageEmbed {
     constructor(client) {
         super({
             color: "WHITE",
-            description: `**Heroku**: Restarting...`,
+            description: `**${client.user}**: Restarting...`,
             timestamp: new Date(),
             footer: {
                 text: `${client.user.username}`,
