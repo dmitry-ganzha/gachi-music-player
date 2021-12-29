@@ -1,6 +1,6 @@
-import * as https from "node:https";
+import https from "node:https";
 import {IncomingMessage} from "node:http";
-import * as Buffer from "buffer";
+
 const YouTubeParameters = {
     timeout: 10000,
     headers: {

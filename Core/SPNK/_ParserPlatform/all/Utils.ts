@@ -1,5 +1,5 @@
 export class Utils {
-    _FindFormat = async (formats: any[]) => {
+    public _FindFormat = async (formats: any[]) => {
         let format = await this._Opus(formats);
         return format ? format : formats?.length >= 1 ? formats[0] : null;
     };

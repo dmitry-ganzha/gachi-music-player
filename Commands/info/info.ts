@@ -1,7 +1,8 @@
 import {Command} from "../Constructor";
-import * as os from 'node:os';
+import os from 'node:os';
 import {MessageActionRow, MessageButton, MessageEmbed} from "discord.js";
-import * as pak from "../../package.json";
+import pak from "../../package.json";
+import cfg from "../../db/Config.json";
 import {ParserTimeSong} from "../../Modules/Music/src/Manager/Functions/ParserTimeSong";
 import {W_Message} from "../../Core/Utils/W_Message";
 
@@ -18,7 +19,7 @@ export default class CommandInfo extends Command {
     public run = async (message: W_Message): Promise<unknown> => {
         const Buttons = {
             MyUrl: new MessageButton().setURL(`https://discord.com/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji('🔗').setStyle('LINK').setLabel('Invite'),
-            ServerUrl: new MessageButton().setURL('https://discord.gg/qMf2Sv3').setEmoji('🛡').setStyle('LINK').setLabel('My server')
+            ServerUrl: new MessageButton().setURL(cfg.Bot.DiscordServer).setEmoji('🛡').setStyle('LINK').setLabel('My server')
         }
         const RunButt = new MessageActionRow().addComponents(Buttons.MyUrl, Buttons.ServerUrl);
 

@@ -1,9 +1,8 @@
-import {ColorResolvable, HexColorString, Message, MessageEmbed} from "discord.js";
+import {ColorResolvable, HexColorString, MessageEmbed} from "discord.js";
 import {Song} from "./Constructors/Song";
 import {FullTimeSongs} from "../Functions/FullTimeSongs";
 import {VoiceConnection} from "@discordjs/voice";
 import {W_Message, playlist} from "../../../../../Core/Utils/W_Message";
-import {Queue} from "./Constructors/Queue";
 
 export class PlayList {
     /**

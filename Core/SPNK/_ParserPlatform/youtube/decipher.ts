@@ -1,6 +1,6 @@
-import * as querystring from "node:querystring";
+import querystring from "node:querystring";
 import {Utils} from "./Utils";
-import * as vm from "node:vm";
+import vm from "node:vm";
 import {httpsClient} from "./https";
 
 interface formatOptions {

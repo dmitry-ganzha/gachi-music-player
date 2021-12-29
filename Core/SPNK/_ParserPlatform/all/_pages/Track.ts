@@ -1,6 +1,6 @@
 import {YouTubeDL} from "../../../../../youtube-dl/youtube-dl";
 import {Utils} from '../Utils';
-import * as IconPlatform from '../../../../../db/YTDL.json';
+import IconPlatform from '../../../../../db/YTDL.json';
 
 export class _parseAllTrack {
     public run = async (url: string) => new YouTubeDL().getMetadata([url]).then(async (video: any) => {

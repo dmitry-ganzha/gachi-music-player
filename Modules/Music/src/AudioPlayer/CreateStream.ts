@@ -4,7 +4,7 @@ import {YouTube} from "../../../../Core/SPNK";
 import {YouTubeDL} from "../../../../youtube-dl/youtube-dl";
 import {Song} from "../Manager/Queue/Constructors/Song";
 import {Queue} from "../Manager/Queue/Constructors/Queue";
-import * as packageNpm from '../../../../package.json';
+import packageNpm from '../../../../package.json';
 import {FFmpegFormat, FFmpegOptions, InputTrack} from "../../../../Core/Utils/W_Message";
 
 const FFmpegPath: string = process.env.FFmpeg ? `${process.env.FFmpeg}` : packageNpm.dependencies["ffmpeg-static"] ? require('ffmpeg-static') : 'ffmpeg';

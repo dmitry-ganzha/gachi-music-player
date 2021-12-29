@@ -10,7 +10,7 @@ import {CreateStream} from "./CreateStream";
 import {W_Message} from "../../../../Core/Utils/W_Message";
 import {VoiceManager} from "../Manager/Voice/Voice";
 import {Queue} from "../Manager/Queue/Constructors/Queue";
-import * as cfg from "../../../../db/Config.json";
+import cfg from "../../../../db/Config.json";
 import {Song} from "../Manager/Queue/Constructors/Song";
 
 // @ts-ignore

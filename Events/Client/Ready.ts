@@ -1,4 +1,4 @@
-import * as cfg from "../../db/Config.json";
+import cfg from "../../db/Config.json";
 import {MessageEmbed, TextChannel} from "discord.js";
 import {W_Message} from "../../Core/Utils/W_Message";
 
@@ -21,7 +21,7 @@ class Embed extends MessageEmbed {
     constructor(client) {
         super({
             color: "WHITE",
-            description: `**${client.user}**: Restarting...`,
+            description: `**${client.user}**: Starting...`,
             timestamp: new Date(),
             footer: {
                 text: `${client.user.username}`,

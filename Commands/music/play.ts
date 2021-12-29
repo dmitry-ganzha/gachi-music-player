@@ -3,7 +3,7 @@ import {YouTube, Spotify, all} from "../../Core/SPNK";
 import {MessageCollector, ReactionCollector, StageChannel, VoiceChannel} from "discord.js";
 import {InputTrack, W_Message} from "../../Core/Utils/W_Message";
 import {Queue} from "../../Modules/Music/src/Manager/Queue/Constructors/Queue";
-import * as cfg from "../../db/Config.json";
+import cfg from "../../db/Config.json";
 
 const youtubeStr = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi;
 const spotifySrt = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;

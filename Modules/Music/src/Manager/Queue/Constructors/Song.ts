@@ -1,5 +1,5 @@
 import {ParserTimeSong} from "../../Functions/ParserTimeSong";
-import * as Colors from "../../../../../../db/YTDL.json";
+import Colors from "../../../../../../db/YTDL.json";
 import {ColorResolvable, HexColorString, User} from "discord.js";
 import {InputTrack, W_Message} from "../../../../../../Core/Utils/W_Message";
 

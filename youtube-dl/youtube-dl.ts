@@ -1,11 +1,10 @@
 "use strict";
 import {existsSync, mkdirSync, createWriteStream} from "node:fs";
-import * as cfg from "../db/Config.json";
 import {spawn, execFile, ChildProcessWithoutNullStreams} from 'node:child_process';
 import {Readable} from "node:stream";
 import {platform} from 'node:os';
-import * as https from "node:https";
-import * as http from "node:http";
+import https from "node:https";
+import http from "node:http";
 
 const File = platform() === "win32" ? "youtube-dl.exe" : "youtube-dl";
 const fullPath = __dirname + '/';

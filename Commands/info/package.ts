@@ -1,7 +1,7 @@
 import {Command} from "../Constructor";
 import {MessageEmbed} from "discord.js";
 import {W_Message} from "../../Core/Utils/W_Message";
-import * as packageJson from "../../package.json"
+import packageJson from "../../package.json"
 
 export default class CommandPackage extends Command {
     constructor() {
