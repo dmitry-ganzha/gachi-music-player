@@ -45,7 +45,7 @@ export class CreateStream {
     private FilterSearch = (f): string | null => f?.length ? f[0].url : null;
 }
 /**
- * @description Создает для FFmpeg арументы
+ * @description Создает для FFmpeg аргументы
  */
 class FFmpegStream extends PassThrough {
     private url: string;
