@@ -14,7 +14,8 @@
   "Bot": {
     "ignoreError": true,
     "token": "Токен бота",
-    "prefix": "!"
+    "prefix": "!",
+    "DiscordServer": "https://discord.gg/qMf2Sv3"
   },
   "spotify": {
     "clientID": "ID клиента",
