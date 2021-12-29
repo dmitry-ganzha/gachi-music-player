@@ -2,7 +2,7 @@ import {Collection, Client, Intents, ClientPresence, TextChannel, Message} from 
 import {YouTubeDL} from "../../youtube-dl/youtube-dl";
 import {Command} from "../../Commands/Constructor";
 import {Queue} from "../../Modules/Music/src/Manager/Queue/Constructors/Queue";
-import * as cfg from "../../db/Config.json";
+import cfg from "../../db/Config.json";
 import {YouTube, setFFmpeg, Spotify} from "../SPNK";
 import {Load} from "./FileSystem";
 import {ClientDevice} from "../Utils/W_Message";
@@ -53,7 +53,7 @@ class WatKLOK_BOT extends Client {
             console.error(err);
             if (err.toString() === 'Error: connect ECONNREFUSED 127.0.0.1:443') return null;
             try {
-                return (this.channels.cache.get('906625710062444594') as TextChannel).send(`${err.toString()}`);
+                return (this.channels.cache.get(cfg.Channels.SendErrors) as TextChannel).send(`${err.toString()}`);
             } catch (e) {
                 return null;
             }
