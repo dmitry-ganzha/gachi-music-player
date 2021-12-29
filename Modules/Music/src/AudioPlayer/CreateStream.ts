@@ -45,7 +45,7 @@ export class CreateStream {
     private FilterSearch = (f): string | null => f?.length ? f[0].url : null;
 }
 /**
- * @description Создаем FFmpeg, получаем ресурс
+ * @description Создает для FFmpeg арументы
  */
 class FFmpegStream extends PassThrough {
     private url: string;
@@ -145,7 +145,7 @@ class FFmpeg extends Transform {
 }
 
 
-/*
+/*     Эт проверка работает ли ресурс с которого мы хотим скачать музыку (была раньше нужна для youtube)
         if (song.format?.url && !song.format?.work && cfg.Player.https) {
             https.get(song.format?.url, async (resource: IncomingMessage) => {
                 console.log(`[${(new Date).toLocaleString("ru")}] [HTTPS]: [CODE: ${resource.statusCode}]: [Message: ${resource.statusMessage}]`);
