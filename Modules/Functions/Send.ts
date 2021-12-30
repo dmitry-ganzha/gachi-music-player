@@ -1,12 +1,12 @@
-import {Message, MessageEmbed} from "discord.js";
-import {SendOptions, W_Message} from "../../Core/Utils/W_Message";
+import {ColorResolvable, HexColorString, Message, MessageEmbed} from "discord.js";
+import {SendOptions, W_Client, W_Message} from "../../Core/Utils/W_Message";
 
 export default class Send {
     public readonly enable: boolean;
     constructor() {
         this.enable = true;
     };
-    public run = (client: W_Message["client"]): (options: SendOptions) => Promise<void> => client.Send = (options:  SendOptions): Promise<void> => typeof options.type === 'string' ? this.SendCode(options) : this.SendNotCode(options);
+    public run = (client: W_Client): (options: SendOptions) => Promise<void> => client.Send = (options:  SendOptions): Promise<void> => typeof options.type === 'string' ? this.SendCode(options) : this.SendNotCode(options);
     private SendCode = async (options: SendOptions): Promise<void> => this.Catch(options.message.channel.send({
         embeds: [new Embed(options.color, `\`\`\`${options.type}\n${options.text}\n\`\`\``)],
     }));
@@ -20,7 +20,7 @@ export default class Send {
 }
 
 class Embed extends MessageEmbed {
-    constructor(color: any = '#03f0fc', text: string) {
+    constructor(color: HexColorString | ColorResolvable = '#03f0fc', text: string) {
         super({
             color: color,
             description: text

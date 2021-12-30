@@ -15,7 +15,6 @@ const OGGs_HEADER: Buffer = Buffer.from([...'OggS'].map(charCode));
 const OPUS_HEAD: Buffer = Buffer.from([...'OpusHead'].map(charCode));
 const OPUS_TAGS: Buffer = Buffer.from([...'OpusTags'].map(charCode));
 
-
 type encoderOptions = FFmpegOptions["encoderOptions"];
 
 /**
@@ -69,7 +68,14 @@ class FFmpegStream extends PassThrough {
     private _noLossFrame = ({noLossFrame}: encoderOptions): (string | number)[] => noLossFrame || this.isM3u8 ? ["-crf", 0, "-qscale", 1 << 25] : [];
     private _seek = ({seek}: encoderOptions): (string | number)[] => seek > 0 ? ['-ss', seek] : [];
     private _OggOpusCodec = (): (string | number)[] => ["-compression_level", 10, "-c:a", "libopus", "-f", "opus", "-ar", 48e3, "-ac", 2, "-preset", "ultrafast"];
-    _destroy = (): void => (this.FFmpeg.destroy(), delete this.FFmpeg, delete this.url, delete this.isM3u8, this.destroy());
+
+    _destroy = (): void => {
+        this.FFmpeg.destroy()
+        delete this.FFmpeg
+        delete this.url
+        delete this.isM3u8
+        return this.destroy();
+    }
 }
 
 /**
@@ -139,9 +145,21 @@ class FFmpeg extends Transform {
     private _chunkSeg = (chunk: Buffer, pageSegments: number): false | null => chunk.length < 27 + pageSegments ? false : null;
     private _checkReadPage = (chunk: Buffer): Error | boolean => chunk.length < 26 ? true : !chunk.slice(0, 4).equals(OGGs_HEADER) ? Error(`capture_pattern is not ${OGGs_HEADER}`) : this._checkReadPageNext(chunk);
     private _checkReadPageNext = (chunk: Buffer): Error | boolean => chunk.readUInt8(4) !== 0 ? Error(`stream_structure_version is not ${0}`) : chunk.length < 27;
-    private _TrSizeOfSizes = (bitstream: number, segment: Buffer, header: Buffer): any => this._head ? (header.equals(OPUS_TAGS) ? this.emit('tags', segment) : this._bitstream === bitstream ? this.push(segment) : null) : header.equals(OPUS_HEAD) ? (this.emit('head'), segment, this._head = segment, this._bitstream = bitstream) : this.emit('unknownSegment', segment);
+    private _TrSizeOfSizes = (bitstream: number, segment: Buffer, header: Buffer): any => this._head ? (header.equals(OPUS_TAGS) ? this.emit('tags', segment) : this._bitstream === bitstream ? this.push(segment) : null) : header.equals(OPUS_HEAD) ? this._SegmentHead(segment, bitstream) : this.emit('unknownSegment', segment);
+    private _SegmentHead = (segment: Buffer, bitstream: number) => {
+        this.emit('head');
+        this._head = segment;
+        this._bitstream = bitstream;
+    };
+
     _final = (): void => this.destroy();
-    _destroy = (): void => (this.process.kill(), delete this.process, delete this._head, delete this._bitstream, this.destroy());
+    _destroy = (): void => {
+        this.process.kill()
+        delete this.process
+        delete this._head
+        delete this._bitstream
+        return this.destroy();
+    };
 }
 
 

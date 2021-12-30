@@ -1,13 +1,13 @@
 import {Guild, VoiceState} from "discord.js";
 import {getVoiceConnection} from "@discordjs/voice";
-import {W_Message} from "../../Core/Utils/W_Message";
+import {W_Client} from "../../Core/Utils/W_Message";
 
 export default class Connections {
     public readonly enable: boolean;
     constructor() {
         this.enable = true;
     };
-    public run = (client: W_Message["client"]): (Guild: Guild) => VoiceState[] => client.connections = (Guild: Guild): VoiceState[] => {
+    public run = (client: W_Client): (Guild: Guild) => VoiceState[] => client.connections = (Guild: Guild): VoiceState[] => {
         const Users = [], set = getVoiceConnection(Guild.id);
         if (set) {
             Guild.voiceStates.cache.find((fn: VoiceState): any => {

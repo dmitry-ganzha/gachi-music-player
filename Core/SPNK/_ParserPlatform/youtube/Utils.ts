@@ -2,7 +2,7 @@ import {httpsClient} from "./https";
 
 export class Utils {
     public RequestExp = async (url: string, options: object = {}) => new httpsClient(url)._parseBody({...options, ...(process.env.YTcookie !== undefined ? {headers: {'cookie': process.env.YTcookie}} : {})}).then(async (body: string) => !body ? null : body);
-    public _FindOpusFormat = async (formats: any[], isLive: boolean = false) => isLive ? null : formats.length >= 1 ? formats.filter(f => f.acodec === 'opus' || !f.fps)[0] : null;
+    public _FindOpusFormat = async (formats: any[]) => formats.length >= 1 ? formats.filter(f => f.acodec === 'opus' || !f.fps)[0] : null;
     public FindPlayer = (body: string) => body.split('var ytInitialPlayerResponse = ')?.[1]?.split(';</script>')[0].split(/;\s*(var|const|let)/)[0];
     public getID = (url: string) => {
         if (typeof url !== 'string') return 'Url is not string';

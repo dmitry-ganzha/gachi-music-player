@@ -1,6 +1,8 @@
 import {DiscordGatewayAdapterCreator, getVoiceConnection, joinVoiceChannel, VoiceConnection} from "@discordjs/voice";
 import {InternalDiscordGatewayAdapterCreator, StageChannel, VoiceChannel} from "discord.js";
 
+type ChannelType = "GUILD_VOICE" | "GUILD_STAGE_VOICE";
+
 export class VoiceManager {
     public getVoice = (GuildID: string): VoiceConnection => getVoiceConnection(GuildID);
     /**
@@ -34,7 +36,7 @@ export class VoiceManager {
      * @param type {string} Тип голосового канала
      * @constructor
      */
-    private SpeakStateChannel = (guild: any, type: string): void => {
+    private SpeakStateChannel = (guild: any, type: ChannelType): void => {
         if (type === 'GUILD_STAGE_VOICE' && guild.me) guild.me.voice.setRequestToSpeak(true).catch(() => undefined);
     }
 }

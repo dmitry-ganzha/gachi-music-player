@@ -56,7 +56,7 @@ class _YouTube {
     };
     public getVideo = async (search: string, message: W_Message, voiceChannel: VoiceChannel | StageChannel): Promise<void> => this.error(new YouTube().getVideo(search).then(async (video: InputTrack) => !video ? message.client.Send({text: `${message.author}, Хм, YouTube не хочет делится данными! Существует ли это видео вообще!`, message: message, color: 'RED'}) : this.runPlayer(video, message, voiceChannel)), message);
     public getPlaylist = async (search: string, message: W_Message, voiceChannel: VoiceChannel | StageChannel): Promise<void> => this.error(new YouTube().getPlaylist(search).then(async (playlist) => !playlist ? message.client.Send({text: `${message.author}, Хм, YouTube не хочет делится данными! Существует ли это плейлист вообще!`, message: message, color: 'RED'}) : this.runPlaylistSystem(message, playlist, voiceChannel)), message);
-    public SearchVideos = async (message: any, voiceChannel: VoiceChannel | StageChannel, searchString: string): Promise<void> => this.SearchVideo(searchString).then(async (results) => this.SendMessage(message, results, voiceChannel, await this.ArraySort(results, message), results.length).catch((err) => console.log(err)));
+    public SearchVideos = async (message: W_Message, voiceChannel: VoiceChannel | StageChannel, searchString: string): Promise<void> => this.SearchVideo(searchString).then(async (results) => this.SendMessage(message, results, voiceChannel, await this.ArraySort(results, message), results.length).catch((err) => console.log(err)));
 
     private SearchVideo = async (searchString: string): Promise<any> => new YouTube().searchVideos(searchString, {limit: 15});
     private ArraySort = async (results: any, message: W_Message): Promise<string> => {
@@ -69,13 +69,13 @@ class _YouTube {
         await this.MessageCollector(msg, message, num);
         return this.CreateCollector(msg, results, message, voiceChannel);
     });
-    private CreateCollector = async (msg: W_Message, results: any, message: W_Message, voiceChannel: VoiceChannel | StageChannel): Promise<MessageCollector> => this.collector.on('collect', async (m: any) => {
+    private CreateCollector = async (msg: W_Message, results: any[], message: W_Message, voiceChannel: VoiceChannel | StageChannel): Promise<MessageCollector> => this.collector.on('collect', async (m: any) => {
          await this.deleteMessage(msg);
          await this.deleteMessage(m);
          this.collector.stop();
          return this.pushSong(results, m, message, voiceChannel);
     });
-    private pushSong = async (results: any, m: W_Message, message: W_Message, voiceChannel: VoiceChannel | StageChannel): Promise<void> => this.getVideo(results[parseInt(m.content) - 1].url, message, voiceChannel);
+    private pushSong = async (results: any[], m: W_Message, message: W_Message, voiceChannel: VoiceChannel | StageChannel): Promise<void> => this.getVideo(results[parseInt(m.content) - 1].url, message, voiceChannel);
     private deleteMessage = async (msg: W_Message): Promise<NodeJS.Timeout> => setTimeout(async () => msg.delete().catch(() => null), 1000);
     private cancelReaction = async (msg: W_Message, message: W_Message): Promise<ReactionCollector> => msg.react('❌').then(async () => msg.createReactionCollector({filter: async (reaction: any, user: any) => (reaction.emoji.name === '❌' && user.id !== message.client.user.id)}).on('collect', () => (this.collector?.stop(), this.deleteMessage(msg))));
     private MessageCollector = async (msg: W_Message, message: W_Message, num: any): Promise<any> => this.collector = msg.channel.createMessageCollector({filter: async (m: any) => !isNaN(m.content) && m.content <= num && m.content > 0 && m.author.id === message.author.id, max: 1});

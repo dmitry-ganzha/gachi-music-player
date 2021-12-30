@@ -36,7 +36,6 @@ export class audioPlayer extends createAudioPlayer {
         //Не выводим стрим из основного потока, иначе будут лаги в музыке
         return res(this.CreateResource(message, seek).then((stream) => this.play(stream)));
     });
-
     /**
      * @description Включаем музыку
      * @param message {W_Message} Сообщение с сервера
@@ -48,11 +47,9 @@ export class audioPlayer extends createAudioPlayer {
         message.client.console(`[Playing: ${message.guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
 
         queue.events.message.emit('playSong', message); //Async send message
-        //if (!queue.channel.connection?.subscribe) (queue.channel.connection = new VoiceManager().Join(queue.channel.voice)).subscribe(queue.player as AudioPlayer);
         //Не выводим стрим из основного потока, иначе будут лаги в музыке
         return res(this.CreateResource(message).then((stream) => this.play(stream)));
     });
-
     /**
      * @description Создаем Opus поток
      * @param message {W_Message} Сообщение с сервера

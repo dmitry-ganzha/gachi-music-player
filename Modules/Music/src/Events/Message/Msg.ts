@@ -8,6 +8,8 @@ import {Song} from "../../Manager/Queue/Constructors/Song";
 import {DiscordAPIError, MessageActionRow, MessageComponent, MessageEmbed} from "discord.js";
 import {W_Message} from "../../../../../Core/Utils/W_Message";
 
+type MessageType = "playSong" | "update" | "warning" | "push";
+
 export class EventMessage extends EventEmitter {
     constructor() {
         super()
@@ -62,15 +64,15 @@ export class EventMessage extends EventEmitter {
      * @param time {number} Время через сколько удаляем
      * @param type {string} Тип сообщения
      */
-    private SendMessage = async (message: W_Message, Embed: MessageEmbed, component: MessageActionRow, time: number = 5e3, type: string): Promise<any> => new Promise(async (res) =>
+    private SendMessage = async (message: W_Message, Embed: MessageEmbed, component: MessageActionRow, time: number = 5e3, type: MessageType): Promise<any> => new Promise(async (res) =>
         res(this.DeleteMessage(message.channel.send( !component ? {embeds: [Embed]} : {embeds: [Embed], components: [component]}), time, type)));
     /**
      * @description Удаляем сообщение со временем
-     * @param send {object} Сообщение
+     * @param send {W_Message} Сообщение
      * @param time {number} Время через сколько удаляем
      * @param type {string} Тип сообщения
      */
-    private DeleteMessage = async (send: any, time: number = 5e3, type: string): Promise<any> => new Promise(async (res) =>
+    private DeleteMessage = async (send: any, time: number = 5e3, type: MessageType): Promise<any> => new Promise(async (res) =>
         res(this.ErrorMessage(send.then(async (msg: W_Message) => setTimeout(async () => this.ErrorMessage(msg.delete(), type, true), time)), type, false)));
     /**
      * @description Если есть ошибка, выводим в консоль
@@ -78,13 +80,13 @@ export class EventMessage extends EventEmitter {
      * @param type {string} Тип сообщения
      * @param del {boolean} Удалять сообщение?
      */
-    private ErrorMessage = async (send: any, type: string, del: boolean): Promise<any> => send.catch(async (e: DiscordAPIError) => console.log(!del ? `[MessageEmitter]: [on: ${type}, ${e.code}]: ${e}` : `[MessageEmitter]: [Method: ${e.method}, ${e.code}]: [on: ${type}]: ${e}`));
+    private ErrorMessage = async (send: any, type: MessageType, del: boolean): Promise<any> => send.catch(async (e: DiscordAPIError) => console.log(!del ? `[MessageEmitter]: [on: ${type}, ${e.code}]: ${e}` : `[MessageEmitter]: [Method: ${e.method}, ${e.code}]: [on: ${type}]: ${e}`));
     /**
      * @description Добавляем сообщение в очередь сервера
-     * @param message {object} Сообщение с сервера
-     * @param embed {object} Embed
+     * @param message {W_Message} Сообщение с сервера
+     * @param embed {MessageEmbed} Embed
      * @param component {MessageComponent} Компонент Discord.js
-     * @param queue {object} Очередь сервера
+     * @param queue {Queue} Очередь сервера
      */
     private AddInQueueMessage = async (message: W_Message, embed: MessageEmbed, component: MessageActionRow, {channels}: Queue): Promise<any> => new Promise(async (res) => res(this.ErrorMessage(message.channel.send({embeds: [embed], components: [component]}).then(async (msg: W_Message | any) => channels.message = msg), 'playSong', false)));
 }

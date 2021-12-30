@@ -26,14 +26,21 @@ class WatKLOK_BOT extends Client {
         this.aliases = new Collection();
         this.queue = new Collection();
         this.cfg = cfg;
-    }
-    public Login = (): void => {
+    };
+    /**
+     * @description Настраиваем бота и запускаем
+     */
+    public Login = (): Promise<void> => {
         this.SettingsProject();
-        this.login(cfg.Bot.token).then(() => {
+
+        return this.login(cfg.Bot.token).then(() => {
             if (!this.shard) this.ClientStatus();
             return Load(this)
         });
     };
+    /**
+     * @description Настройки бота (крутилочки)
+     */
     private SettingsProject = (): void => {
         if (cfg.Bot.ignoreError) this.ProcessEvents().catch(async (err: Error) => console.log(err));
         new YouTube().setCookie(cfg.youtube.cookie);
@@ -41,6 +48,9 @@ class WatKLOK_BOT extends Client {
         setFFmpeg(cfg.Player.Other.FFMPEG);
         if (cfg.Player.Other.YouTubeDL) new YouTubeDL().download();
     };
+    /**
+     * @description Статус бота (во что бот играет)
+     */
     private ClientStatus = (): ClientPresence => this.user.setPresence({
         activities: [
             {name: `twitch.tv`, type: "STREAMING", url: "https://www.twitch.tv/faeervoo"}
@@ -48,6 +58,9 @@ class WatKLOK_BOT extends Client {
         status: 'online',
         shardId: 0
     });
+    /**
+     * @description Настройки текущего процесса
+     */
     private ProcessEvents = async (): Promise<void> => {
         process.on('uncaughtException', async (err: Error): Promise<Message> => {
             console.error(err);
@@ -60,4 +73,4 @@ class WatKLOK_BOT extends Client {
         });
     };
 }
-new WatKLOK_BOT().Login();
+new WatKLOK_BOT().Login().catch(e => console.log("[Error]:", e));

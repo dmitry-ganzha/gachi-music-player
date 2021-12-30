@@ -1,10 +1,11 @@
 import {W_Message} from "../Core/Utils/W_Message";
+import {PermissionResolvable} from "discord.js";
 
 export class Command {
     public readonly name: string;
     public readonly aliases: string[];
     public readonly description: string;
-    public readonly permissions: {client: string[], user: string[]};
+    public readonly permissions: {client: PermissionResolvable[], user: PermissionResolvable[]};
     public readonly isOwner: boolean;
     public readonly slash: boolean;
     public readonly enable: boolean;

@@ -17,7 +17,7 @@ export class YouTube {
     getVideo = async (url: string): Promise<InputTrack> => getVideoInfo(url).then(async ({VideoData, LiveData, format}) => {
         if (!VideoData) return null;
 
-        return {...VideoData,  format: await new Utils()._FindOpusFormat(format, VideoData.isLive) ?? {url: LiveData.LiveUrl, other: 'm3u8'}};
+        return {...VideoData,  format: VideoData.isLive ? {url: LiveData.url, other: 'm3u8'} : await new Utils()._FindOpusFormat(format)};
     }).catch(() => null);
     getPlaylist = new ParsePlaylistPage().run;
     searchVideos = new SearchVideo().FindVideo;

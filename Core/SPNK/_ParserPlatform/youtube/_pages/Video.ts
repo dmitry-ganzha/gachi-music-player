@@ -30,15 +30,17 @@ export async function getVideoInfo(url: string): Promise<{LiveData: LiveData, ht
     };
     const LiveData: LiveData = {
         isLive: videoDetails.isLiveContent,
-        LiveUrl: player_response.streamingData?.dashManifestUrl || player_response.streamingData?.hlsManifestUrl || null
+        url: player_response.streamingData?.hlsManifestUrl || null
     };
 
     let VideoFormats: any[] = player_response.streamingData.formats && player_response.streamingData.adaptiveFormats;
 
-    if (VideoFormats[0].signatureCipher || VideoFormats[0].cipher) {
-        format = await decipherFormats(VideoFormats, html5player);
-    } else {
-        format.push(...(VideoFormats ?? []));
+    if (!VideoData.isLive) {
+        if (VideoFormats[0].signatureCipher || VideoFormats[0].cipher) {
+            format = await decipherFormats(VideoFormats, html5player);
+        } else {
+            format.push(...(VideoFormats ?? []));
+        }
     }
 
     return {
@@ -63,5 +65,5 @@ export interface VideoData {
 }
 interface LiveData {
     isLive: boolean,
-    LiveUrl: string | null
+    url: string | null
 }

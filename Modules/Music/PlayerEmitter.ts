@@ -1,4 +1,4 @@
-import {EventEmitter} from "node:events";
+import {EventEmitter} from "events";
 import {CreateQueue} from "./src/Manager/Queue/CreateQueue";
 import {ControlAudioPlayer} from "./src/AudioPlayer/ControlAudioPlayer";
 import {PlayList} from "./src/Manager/Queue/PlayLists";
