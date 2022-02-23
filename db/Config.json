@@ -1,19 +1,19 @@
 {
   "Channels": {
-    "Start": "", //Канал на который будет отправлятся сообщение о запуске
-    "SendErrors": "" //Канал нп который будет отправлятся сообщение об ошибке
+    "Start": "",
+    "SendErrors": ""
   },
   "Bot": {
-    "ignoreError": true, //Игнорировать критические ошибки
-    "token": "", //Токен
-    "prefix": "!", // Префикс
-    "DiscordServer": "https://discord.gg/qMf2Sv3" //Твой дискорд сервер, можешь оставить мой)
+    "ignoreError": true,
+    "token": "",
+    "prefix": "!",
+    "DiscordServer": "https://discord.gg/qMf2Sv3"
   },
-  "spotify": { // Тут и без коментариев все понятно
+  "spotify": {
     "clientID": "",
     "clientSecret": ""
   },
-  "vk": { // Необходим токен пользователя залогиненого через VK ADMIN, чтобы не было ограничений
+  "vk": {
     "token": ""
   }
 }
