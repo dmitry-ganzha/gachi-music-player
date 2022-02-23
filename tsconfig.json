@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
     "moduleResolution": "Node",
+    "baseUrl": "./",
     // Основные настройки.
     "module": "CommonJS",      // Определяет тип импорта кода в итоговом файле
-    "outDir": "./_JavaScript", // Поместить все скомпилированные файлы в данную папку
+    "outDir": "_JavaScript",   // Поместить все скомпилированные файлы в данную папку
     "alwaysStrict": true,      // Компилировать ли каждый файл в строгом режиме и создавать ли 'use strict'
     "sourceMap": false,        // Создавать ли соответствующие source map файлы ".map"?
     "target": "ES2021",        // Тип кода создаваемого итогового файла.
@@ -20,6 +21,7 @@
     "charset": "utf8",         // Кодировка входных файлов.
     "removeComments": true,    // Удалить все комментарии из итогового файла.
     "noEmitHelpers": false,    // Отключить создание пользовательских вспомогательных функций, таких как `__extends` в скомпилированном выводе
+    "newLine": "crlf",
 
     // Вспомогательные настройки.
     "noFallthroughCasesInSwitch": true,  // Сообщить об ошибке в случае обнаружения проваливания в конструкции switch-case?
@@ -27,9 +29,10 @@
     "strictNullChecks": false,           // Значения "null" и "undefined" могут быть присвоены только значениям данного типа
     "allowUnreachableCode": true,        // Сообщить об ошибке в случае обнаружения кода, который никогда не будет выполнен?
     "noImplicitThis": true,              // Показывать ошибку на "this", если где-то задан тип "any".
-    "importHelpers": false               // Имортировать созданные хелперы (__extends, __rest и так далее) из "tslib".
+    "importHelpers": false,              // Имортировать созданные хелперы (__extends, __rest и так далее) из "tslib".
+    "noImplicitAny": true,               // Запрет на использование any
   },
   "exclude": [                 // Секция "exclude" позволяет исключить при компиляции определенные файлы
-    "node_modules", "_build", ".DEV1", "youtube-dl/youtube-dl.exe"
+    "node_modules", "_JavaScript", ".DEV1", "youtube-dl/youtube-dl.exe", "Core/Utils/TypesHelper.ts"
   ]
 }
