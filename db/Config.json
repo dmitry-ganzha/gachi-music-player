@@ -1,28 +1,19 @@
 {
-  "Player": {
-    "MaxSkipFragment": 0,
-    "https": false,
-
-    "Other": {
-      "FFMPEG": "Путь (Пример C://FFmpeg/FFmpeg.exe)",
-      "YouTubeDL": true
-    }
-  },
   "Channels": {
-    "Start": "ID канала на который я буду отправлять сообщения о том что я запустился",
-    "SendErrors": "ID канала на который я буду отправлять ошибки"
+    "Start": "", //Канал на который будет отправлятся сообщение о запуске
+    "SendErrors": "" //Канал нп который будет отправлятся сообщение об ошибке
   },
   "Bot": {
-    "ignoreError": true,
-    "token": "Токен бота",
-    "prefix": "!",
-    "DiscordServer": "https://discord.gg/qMf2Sv3"
+    "ignoreError": true, //Игнорировать критические ошибки
+    "token": "", //Токен
+    "prefix": "!", // Префикс
+    "DiscordServer": "https://discord.gg/qMf2Sv3" //Твой дискорд сервер, можешь оставить мой)
   },
-  "spotify": {
-    "clientID": "ID клиента",
-    "clientSecret": "Secret клиента"
+  "spotify": { // Тут и без коментариев все понятно
+    "clientID": "",
+    "clientSecret": ""
   },
-  "youtube": {
-    "cookie": "Куки для включения 18+ видео"
+  "vk": { // Необходим токен пользователя залогиненого через VK ADMIN, чтобы не было ограничений
+    "token": ""
   }
 }
