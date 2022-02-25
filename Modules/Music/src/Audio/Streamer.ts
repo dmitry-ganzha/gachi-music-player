@@ -81,11 +81,10 @@ export class FinderResource {
     //Ищем трек на youtube
     protected static FindTrack = async (nameSong: string): Promise<InputFormat> => {
         const Song: string = await YouTube.SearchVideos(nameSong, {onlyLink: true}) as string;
-        return this.getFormatYouTube(Song);
+        if (Song) return this.getFormatYouTube(Song);
+        return null;
     };
-    protected static getFormatYouTube = async (url: string): Promise<InputFormat> => {
-        return YouTube.getVideo(url, {onlyFormats: true});
-    };
+    protected static getFormatYouTube = async (url: string): Promise<InputFormat> => YouTube.getVideo(url, {onlyFormats: true});
 }
 /**
  * @description Подготавливаем, получаем и создаем объект схожий с discord.js {AudioResource}
