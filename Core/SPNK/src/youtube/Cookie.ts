@@ -1,6 +1,6 @@
 import { writeFile, readFileSync } from 'node:fs';
 
-export function getCookies(): undefined | string {
+export function getCookies(): null | string {
     try {
         let youtubeData = JSON.parse(readFileSync(`./db/Cookie.json`, 'utf8'));
         return youtubeData.cookie;

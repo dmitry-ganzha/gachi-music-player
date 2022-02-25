@@ -43,7 +43,7 @@ class WatKLOK_BOT extends Client {
                     type: ActivityType.Listening
                 }]
             });
-            return Load(this as any)
+            return Load(this as any);
         });
     };
     /**

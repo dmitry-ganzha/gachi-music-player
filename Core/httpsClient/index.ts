@@ -24,8 +24,8 @@ function UserAgent(): string {
     return UserAgents[Math.floor(Math.random() * (MaxAgents - minAgents + 1)) + minAgents];
 }
 //Создаем Request
-function Request(url: string, options: ReqOptions): Promise<IncomingMessage> {
-    return new Promise((resolve) => {
+async function Request(url: string, options: ReqOptions): Promise<IncomingMessage> {
+    return new Promise(async (resolve) => {
         const DecodeLink = new URL(url);
         let ReqOptions: RequestOptions = {
             host: DecodeLink.hostname,
@@ -35,14 +35,14 @@ function Request(url: string, options: ReqOptions): Promise<IncomingMessage> {
         };
         const request = httpsRequest(ReqOptions, resolve);
 
-        request.once('error', (err: Error) => {
+        request.once('error', async (err: Error) => {
             console.log(`[httpsClient]: [${options?.method}]: [Error]: `, err);
             return resolve(null);
         });
         if (options?.method === 'POST') request.write(options.body);
         request.end();
         // Через 10 сек уничтожаем request (чтоб не засирать память)
-        setTimeout(() => request.destroy(), 10e3);
+        setTimeout(async () => request.destroy(), 10e3);
     });
 }
 
@@ -75,7 +75,7 @@ export class httpsClient {
             if (options.options?.english) options.request.headers = {...options.request.headers, 'accept-language': 'en-US,en-IN;q=0.9,en;q=0.8,hi;q=0.7'};
         }
 
-        return Request(options.url, options.request).then(async (req: IncomingMessage) => {
+        Request(options.url, options.request).then(async (req: IncomingMessage) => {
             if (req.headers && req.headers['set-cookie'] && options.url.match(/watch/) && cookies_added) {
                 setImmediate(async () => uploadCookie(req.headers['set-cookie']));
             }
@@ -122,7 +122,7 @@ export class httpsClient {
      * @description Создаем Json (не всегда работает)
      * @param options {httpsClientOptions}
      */
-    public parseJson = async (options: httpsClientOptions): Promise<{error: boolean, message: string} | any> => this.parseBody(options).then(async (body: string | null) => {
+    public parseJson = async (options: httpsClientOptions): Promise<any> => this.parseBody(options).then(async (body: string | null) => {
         if (!body) return null;
 
         return JSON.parse(body);
