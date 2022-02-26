@@ -58,13 +58,6 @@ export class CommandPlay extends Command {
             color: "RED"
         });
 
-        if (!search.match(/https/)) await message.client.Send({
-            text: `🔎 Search: ${message.client.ConvertedText(search, 25)}`,
-            message,
-            color: "BLUE",
-            type: 'css'
-        });
-
         return CommandPlay.getInfoPlatform(search, message, voiceChannel).catch(async (e: Error | string) => {
             console.log(`[PlayCommand]: [ERROR] -> `, e);
             return message.client.Send({
@@ -146,9 +139,9 @@ class HandleInfoResource {
             return this.YT_getVideo(search, message, voiceChannel);
         });
 
-        setTimeout(() => {
-            this.deleteMessage(msg as any);
-            this.deleteMessage(message);
+        setTimeout(async () => {
+            await this.deleteMessage(msg as any);
+            await this.deleteMessage(message);
             return this.collector?.stop();
         }, 10e3);
     })

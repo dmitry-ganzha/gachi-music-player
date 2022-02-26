@@ -1,4 +1,5 @@
 import {
+    ActionRow, ActionRowComponent,
     BaseGuildEmojiManager, ChannelManager, Client,
     ClientApplication, ClientEvents,
     ClientOptions,
@@ -13,7 +14,7 @@ import {Queue} from "../../Modules/Music/src/Manager/Queue/Structures/Queue";
 import {Command} from "../../Commands/Constructor";
 import {PlayerEmitter} from "../../Modules/Music/src/emit";
 
-type sendType = string | MessagePayload | MessageOptions | {embeds?: EmbedConstructor[], components?: []};
+type sendType = string | MessagePayload | MessageOptions | {embeds?: EmbedConstructor[] , components?: ActionRow<ActionRowComponent>};
 
 // @ts-ignore
 export class wMessage extends Message<any> {

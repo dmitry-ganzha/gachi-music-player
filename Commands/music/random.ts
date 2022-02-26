@@ -6,7 +6,7 @@ export class CommandRandom extends Command {
         super({
             name: 'randommusic',
             aliases: ["rm"],
-            description: '[Beta] Рандомная музыка',
+            description: 'Рандомная музыка',
 
             enable: true,
             slash: true
@@ -35,7 +35,7 @@ export class CommandRandom extends Command {
         });
 
         if (queue.songs.length <= 2) return message.client.Send({
-            text: `${message.author}, Всего играет ${queue.songs.length} музыки, нет смысла!`,
+            text: `${message.author}, Всего в списке ${queue.songs.length}, нет смысла!`,
             message,
             color: 'RED'
         });

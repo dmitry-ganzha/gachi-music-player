@@ -2,11 +2,11 @@ import { TypedEmitter } from 'tiny-typed-emitter';
 import {CurrentPlay} from "./Constructor/CurrentPlay";
 import {Warning} from "./Constructor/Warning";
 import {AddSong} from "./Constructor/AddSong";
-//import {RunButt} from "./Constructor/Helper";
 import {Queue} from "../../Manager/Queue/Structures/Queue";
 import {Song} from "../../Manager/Queue/Structures/Song";
 import {DiscordAPIError, ActionRow, MessageComponent, Embed} from "discord.js";
 import {Channel, wMessage} from "../../../../../Core/Utils/TypesHelper";
+import {ButtonComponents} from "./Constructor/Helper";
 
 type MessageType = "playSong" | "update" | "warning" | "push";
 type Events = {
@@ -32,7 +32,7 @@ export class EventMessage extends TypedEmitter<Events> {
      * @param message {object} Сообщение с сервера
      * @param need {boolean} Принудительно обновляем сообщение?
      */
-    protected static onUpdateMessage = async (message: wMessage, need: boolean = false): Promise<void | wMessage | null> => { //, components: [RunButt()]
+    protected static onUpdateMessage = async (message: wMessage, need: boolean = false): Promise<void | wMessage | null> => {
         const queue: Queue = message.client.queue.get(message.guild.id);
         if (message?.embeds[0]?.fields?.length === 1 || need) return this.ErrorMessage(message.edit({ embeds: [await CurrentPlay(message, queue.songs[0], queue) as any]}).then(async (msg: any) => queue.channels.message = msg), 'update');
         return null;
@@ -60,7 +60,7 @@ export class EventMessage extends TypedEmitter<Events> {
             }, 12e3);
         }
 
-        return this.AddInQueueMessage(channel, exampleEmbed, null, queue);
+        return this.AddInQueueMessage(channel, exampleEmbed, ButtonComponents(), queue);
     };
     /**
      * @description Показываем ошибку
@@ -69,24 +69,23 @@ export class EventMessage extends TypedEmitter<Events> {
      * @param err {Error} Ошибка
      */
     protected static onWarningMessage = async (message: wMessage, song: Song, err: Error = null): Promise<void | wMessage> =>
-        this.SendMessage(message.channel, await Warning(message, song, message.client.queue.get(message.guild.id), err), null, 10e3, 'warning');
+        this.SendMessage(message.channel, await Warning(message, song, message.client.queue.get(message.guild.id), err), 10e3, 'warning');
     /**
      * @description Показываем что было добавлено в очередь
      * @param message {object} Сообщение с сервера
      * @param song {Song} Сама музыка
      */
     protected static onPushMessage = async ({channel, client, guild}: wMessage, song: Song): Promise<void | wMessage> =>
-        this.SendMessage(channel, await AddSong(client, song, client.queue.get(guild.id)), null, 5e3, 'push');
+        this.SendMessage(channel, await AddSong(client, song, client.queue.get(guild.id)), 5e3, 'push');
     /**
      * @description Отправляем сообщение
      * @param channel {Channel} Текстовый канал
      * @param Embed {object} Embed
-     * @param component {ActionRow} Компонент Discord.js
      * @param time {number} Время через сколько удаляем
      * @param type {string} Тип сообщения
      */
-    protected static SendMessage = async (channel: Channel, Embed: Embed | object, component: ActionRow<any>, time: number = 5e3, type: MessageType): Promise<void | wMessage> =>
-        this.DeleteMessage(channel.send( !component ? {embeds: [Embed]} : {embeds: [Embed]}), time, type); //, components: [component]
+    protected static SendMessage = async (channel: Channel, Embed: Embed | object, time: number = 5e3, type: MessageType): Promise<void | wMessage> =>
+        this.DeleteMessage(channel.send( {embeds: [Embed]}), time, type);
     /**
      * @description Удаляем сообщение со временем
      * @param send {wMessage} Сообщение
@@ -110,5 +109,5 @@ export class EventMessage extends TypedEmitter<Events> {
      * @param queue {Queue} Очередь сервера
      */
     protected static AddInQueueMessage = async (channel: Channel, embed: Embed | object, component: ActionRow<any>, {channels}: Queue): Promise<void | wMessage> =>
-       this.ErrorMessage(channel.send({embeds: [embed]}).then(async (msg: any) => channels.message = msg), 'playSong'); //, components: [component]
+       this.ErrorMessage(channel.send({embeds: [embed], components: [component]}).then(async (msg: any) => channels.message = msg), 'playSong'); //, components: [component]
 }

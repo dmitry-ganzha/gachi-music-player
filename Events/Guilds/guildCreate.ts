@@ -10,11 +10,11 @@ export class guildCreate {
     public run = async (guild: Guild, f2: null, client: wClient): Promise<void | NodeJS.Timeout> | null => {
         const Buttons = {
             // @ts-ignore
-            MyUrl: new ButtonComponent().setURL(`https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji({name: '🔗'}).setStyle(ButtonStyle.Link).setLabel('Invite'),
+            MyUrl: new ButtonComponent().setURL(`https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji({name: '🔗'}).setLabel('Invite').setStyle(ButtonStyle.Link),
             // @ts-ignore
-            ServerUrl: new ButtonComponent().setURL(cfg.Bot.DiscordServer).setEmoji({name: '🛡'}).setStyle(ButtonStyle.Link).setLabel('Help server'),
+            ServerUrl: new ButtonComponent().setURL(cfg.Bot.DiscordServer).setEmoji({name: '🛡'}).setLabel('Help server').setStyle(ButtonStyle.Link),
             // @ts-ignore
-            Git: new ButtonComponent().setURL('https://github.com/SNIPPIK/WatKLOK-BOT').setEmoji({name: "🗂"}).setStyle(ButtonStyle.Link).setLabel("GitHub")
+            Git: new ButtonComponent().setURL('https://github.com/SNIPPIK/WatKLOK-BOT').setEmoji({name: "🗂"}).setLabel("GitHub").setStyle(ButtonStyle.Link)
         };
         const RunButt = new ActionRow().addComponents(Buttons.MyUrl, Buttons.ServerUrl);
 

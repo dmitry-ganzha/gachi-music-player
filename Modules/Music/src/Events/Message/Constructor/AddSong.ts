@@ -19,7 +19,7 @@ export async function AddSong(client: wClient, {color, author, image, title, url
             name: `Добавлено`,
             value: `**❯** [${client.ConvertedText(title, 40, true)}](${url}})\n**❯** [${duration.StringTime}]`
         }],
-        timestamp: new Date() as any,
+        timestamp: new Date(),
         footer: {
             text: `${requester.username} | ${FullTimeSongs(songs)} | 🎶: ${songs.length}`,
             iconURL: requester.displayAvatarURL(),

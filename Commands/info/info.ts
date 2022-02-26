@@ -1,8 +1,8 @@
 import {Command} from "../Constructor";
 import os from 'node:os';
-//import {ActionRow, ButtonComponent, ButtonStyle, Embed} from "discord.js";
+import {ActionRow, ButtonComponent, ButtonStyle} from "discord.js";
 import pak from "../../package.json";
-//import cfg from "../../db/Config.json";
+import cfg from "../../db/Config.json";
 import TSConfig from "../../tsconfig.json";
 import {ParserTimeSong} from "../../Modules/Music/src/Manager/Functions/ParserTimeSong";
 import {EmbedConstructor, wMessage} from "../../Core/Utils/TypesHelper";
@@ -21,19 +21,16 @@ export class CommandInfo extends Command {
             CoolDown: 10
         })
     };
-    public run = async (message: wMessage): Promise<void | NodeJS.Timeout> => {
-        /*
+    public run = async (message: wMessage): Promise<void | NodeJS.Timeout| any> => {
         const Buttons = {
             // @ts-ignore
-            MyUrl: new ButtonComponent().setURL(`https://discord.com/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji({name: '🔗'}).setStyle(ButtonStyle.Link).setLabel('Invite'),
+            MyUrl: new ButtonComponent().setURL(`https://discord.com/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji({name: '🔗'}).setLabel('Invite').setStyle(ButtonStyle.Link),
             // @ts-ignore
-            ServerUrl: new ButtonComponent().setURL(cfg.Bot.DiscordServer).setEmoji({name: "🛡"}).setStyle("LINK").setLabel('My server')
+            ServerUrl: new ButtonComponent().setURL(cfg.Bot.DiscordServer).setEmoji({name: "🛡"}).setLabel('My server').setStyle(ButtonStyle.Link)
         }
         const RunButt = new ActionRow().addComponents(Buttons.MyUrl, Buttons.ServerUrl);
-         */
 
-        //Remove component
-        return message.channel.send({embeds: [InfoEmbed(message)]}).then(async (msg: any) => Command.DeleteMessage(msg, 35e3)).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
+        return message.channel.send({embeds: [InfoEmbed(message)], components: RunButt}).then(async (msg: wMessage) => Command.DeleteMessage(msg, 35e3)).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
     };
 }
 

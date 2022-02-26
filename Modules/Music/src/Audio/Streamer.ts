@@ -186,44 +186,29 @@ export class FFmpegStream {
 
 //Запускаем FFmpeg для дальнейшего применения
 class FFmpeg extends Duplex {
-    protected get _reader() { return this.process.stdout; };
-    protected get _writer() { return this.process.stdin; };
-
+    protected get ProcessReader() { return this.process.stdout; };
+    protected get ProcessWriter() { return this.process.stdin; };
     protected process: ChildProcess.ChildProcessWithoutNullStreams & {stdout: {_readableState: Readable}, stdin: {_writableState: Writable}};
-    public _readableState: Readable;
-    public _writableState: Writable;
 
     public constructor(options: FFmpegArgs) {
-        super({ autoDestroy: true, highWaterMark: 8, destroy: () => this._cleanup()});
+        super({ autoDestroy: true, destroy: () => this._cleanup()});
         this.process = this.SpawnFFmpeg(options);
 
-        this._readableState = this._reader._readableState;
-        this._writableState = this._writer._writableState;
-
-        this._copy(['write', 'end'], this._writer);
-        this._copy(['read', 'setEncoding', 'pipe', 'unpipe'], this._reader);
+        this.createEvents(['write', 'end'], this.ProcessWriter);
+        this.createEvents(['read', 'setEncoding', 'pipe', 'unpipe'], this.ProcessReader);
 
         const processError = (error: Error) => this.emit('error', error);
-        this._reader.once('error', processError);
-        this._writer.once('error', processError);
+        this.ProcessReader.once('error', processError);
+        this.ProcessWriter.once('error', processError);
     };
     // @ts-ignore
-    protected _copy = (methods: string[], target: Writable | Readable) => methods.map((method) => this[method] = target[method].bind(target));
+    protected createEvents = (methods: string[], target: Writable | Readable) => methods.map((method) => this[method] = target[method].bind(target));
     protected SpawnFFmpeg = (options: FFmpegArgs): any => ChildProcess.spawn(FFmpegName, options as string[], { shell: false });
     protected _cleanup = (): void => {
         if (this.process) {
             this.process.kill('SIGKILL');
             delete this.process;
         }
-        try {
-            //Cleanup readableState
-            this._readableState.destroy();
-            this._readableState.read();
-            delete this._readableState;
-            //Cleanup writableState
-            this._writableState.destroy();
-            delete this._writableState;
-        } catch {/* Continue */}
         return;
     };
 }
