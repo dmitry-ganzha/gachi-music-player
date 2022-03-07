@@ -12,7 +12,7 @@ const FFmpegName = process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg";
 const FFmpegArguments = {
     OggOpus: ["-acodec", "libopus", "-f", "opus"],
     Seek: ["-ss"], // + number
-    Reconnect: ["-reconnect", 1, "-reconnect_delay_max", 1, "-reconnect_streamed", 1],
+    Reconnect: ["-reconnect", 1, "-reconnect_delay_max", 0, "-reconnect_streamed", 1],
     Compress: ["-compression_level", 10],
     DecoderPreset: ["-preset", "ultrafast", "-tune", "fastdecode", "-ar", 48e3, "-ac", 2],
     Other: ["-analyzeduration", 0, "-loglevel", 0],
@@ -33,6 +33,8 @@ const FFmpegArguments = {
 type AudioFilters = Queue['audioFilters'] & {seek: number};
 type FFmpegArgs = (string | number)[];
 
+
+//====================== ====================== ====================== ======================
 /**
  * @description Заготавливаем необходимые данные для создания потока
  */
@@ -42,10 +44,11 @@ export class FinderResource {
     public static init = async (song: Song): Promise<void> => {
         //Делаем проверку и 2 запроса
         if (!song.format?.url) {
-            let format = await this.getLinkFormat(song);
-            if (!format) format = await this.getLinkFormat(song);
+            let format = await getLinkFormat(song);
+            if (!format) format = await getLinkFormat(song);
             if (!format) {
                 song.format = {url: undefined, work: false};
+                delete this.req;
                 return;
             }
             song.format = ConstFormat(format);
@@ -56,7 +59,7 @@ export class FinderResource {
             return;
         }
 
-        const resource = await httpsClient.get(song.format?.url).catch(() => null);
+        const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 5, method: "GET"}}).catch(() => null);
         if (!resource || this.req > 3 || resource.statusCode >= 400) {
             delete song.format;
             this.req++;
@@ -67,25 +70,29 @@ export class FinderResource {
         song.format.work = true;
         return;
     }
-    //Получаем InputFormat
-    protected static getLinkFormat = async ({type, url, title, author}: Song): Promise<InputFormat> => {
-        try {
-            if (type === "SPOTIFY") return this.FindTrack(`${author.title} - ${title}`);
-            else if (type === "VK") return (await new VK().getTrack(url))?.format;
-            return this.getFormatYouTube(url);
-        } catch {
-            console.log('[Streamer]: [Fail: getLinkFormat]: [ReSearch]');
-            return null;
-        }
-    };
-    //Ищем трек на youtube
-    protected static FindTrack = async (nameSong: string): Promise<InputFormat> => {
-        const Song: string = await YouTube.SearchVideos(nameSong, {onlyLink: true}) as string;
-        if (Song) return this.getFormatYouTube(Song);
-        return null;
-    };
-    protected static getFormatYouTube = async (url: string): Promise<InputFormat> => YouTube.getVideo(url, {onlyFormats: true});
 }
+//Получаем InputFormat
+async function getLinkFormat({type, url, title, author}: Song): Promise<InputFormat> {
+    try {
+        if (type === "SPOTIFY") return FindTrack(`${author.title} - ${title}`);
+        else if (type === "VK") return (await new VK().getTrack(url))?.format;
+        return getFormatYouTube(url);
+    } catch {
+        console.log('[Streamer]: [Fail: getLinkFormat]: [ReSearch]');
+        return null;
+    }
+}
+//Ищем трек на youtube
+async function FindTrack(nameSong: string): Promise<InputFormat> {
+    const Song: string = await YouTube.SearchVideos(nameSong, {onlyLink: true}) as string;
+    if (Song) return getFormatYouTube(Song);
+    return null;
+}
+async function getFormatYouTube(url: string): Promise<InputFormat> {
+    return YouTube.getVideo(url, {onlyFormats: true});
+}
+//====================== ====================== ====================== ======================
+
 /**
  * @description Подготавливаем, получаем и создаем объект схожий с discord.js {AudioResource}
  */
@@ -109,15 +116,24 @@ export class FFmpegStream {
     };
     public get ended() { return this.playStream?.readableEnded || this.playStream?.destroyed || !!this.playStream; };
 
-    public constructor(url: string, AudioFilters: AudioFilters) {
-        this.FFmpeg = new FFmpeg(FFmpegStream.CreateArguments(AudioFilters, url));
+    public constructor(url: string | any, AudioFilters: AudioFilters) {
+        if (typeof url === "string") {
+            this.FFmpeg = new FFmpeg(CreateArguments(AudioFilters, url));
 
-        this.playStream = this.FFmpeg.pipe(this.opusEncoder);
-        this.playStream.once('readable', async () => (this.started = true));
-        ['end', 'close', 'error'].map((event) => this.playStream.once(event, this.destroy));
-        return;
+            this.playStream = this.FFmpeg.ProcessReader.pipe(this.opusEncoder);
+            this.playStream.once('readable', async () => (this.started = true));
+            ['end', 'close', 'error'].map((event) => this.playStream.once(event, this.destroy));
+            return;
+        } else {
+            this.FFmpeg = new FFmpeg(CreateArguments(AudioFilters, "-"));
+
+            url.pipe(this.FFmpeg.ProcessWriter);
+            this.playStream = this.FFmpeg.ProcessReader.pipe(this.opusEncoder);
+            this.playStream.once('readable', async () => (this.started = true));
+            ['end', 'close', 'error'].map((event) => this.playStream.once(event, this.destroy));
+            return;
+        }
     };
-
     //Использует Discord.js player
     public read(): Buffer | null {
         if (this.silenceRemaining === 0) return null;
@@ -129,40 +145,6 @@ export class FFmpegStream {
         if (packet) this.playbackDuration += 20;
         return packet;
     };
-    //
-
-    //Создаем аргументы для FFmpeg
-    protected static CreateArguments = (AudioFilters: AudioFilters, url: string): FFmpegArgs => [
-        ...FFmpegArguments.Reconnect, ...FFmpegArguments.Seek, AudioFilters.seek,
-        '-i', url, ...FFmpegArguments.Other, "-vn",
-        ...this.CreateFilters(AudioFilters), ...FFmpegArguments.OggOpus,
-        ...FFmpegArguments.DecoderPreset, ...FFmpegArguments.Compress, 'pipe:'
-    ];
-    //Создаем фильтры для FFmpeg
-    protected static CreateFilters = (AudioFilters: AudioFilters): FFmpegArgs => {
-        let resp: string[] = [], resSt = '', num = 0;
-
-        if (AudioFilters._3D) resp = [...resp, FFmpegArguments.Filters._3D];
-        if (AudioFilters.speed) resp = [...resp, `${FFmpegArguments.Filters.Speed}${AudioFilters.speed}`];
-        if (AudioFilters.karaoke) resp = [...resp, FFmpegArguments.Filters.Karaoke];
-        if (AudioFilters.echo) resp = [...resp, FFmpegArguments.Filters.Echo];
-
-        if (AudioFilters.nightcore) resp = [...resp, FFmpegArguments.Filters.NightCore];
-        if (AudioFilters.Vw) resp = [...resp, FFmpegArguments.Filters.vaporwave];
-
-        if (AudioFilters.bass) resp = [...resp, `${FFmpegArguments.Filters.bassboost}${AudioFilters.bass}`];
-        if (AudioFilters.Sab_bass) resp = [...resp, FFmpegArguments.Filters.Sub_boost];
-
-        for (let i in resp) {
-            if (num === resp.length) resSt += `${resp[i]}`;
-            resSt += `${resp[i]},`;
-            num++;
-        }
-
-        return resSt === '' ? [] : ['-af', resp] as any;
-    };
-    //
-
     //Чистим память!
     public destroy = async (): Promise<void> => {
         this.FFmpeg.destroy();
@@ -183,32 +165,69 @@ export class FFmpegStream {
         return;
     };
 }
+//Создаем аргументы для FFmpeg
+function CreateArguments (AudioFilters: AudioFilters, url: string): FFmpegArgs {
+    return [
+        ...FFmpegArguments.Reconnect, ...FFmpegArguments.Seek, AudioFilters?.seek ?? 0,
+        '-i', url, ...FFmpegArguments.Other, "-vn",
+        ...CreateFilters(AudioFilters), ...FFmpegArguments.OggOpus, ...FFmpegArguments.Compress, ...FFmpegArguments.DecoderPreset, 'pipe:'
+    ];
+}
+//Создаем фильтры для FFmpeg
+function CreateFilters(AudioFilters: AudioFilters): FFmpegArgs  {
+    if (!AudioFilters) return [];
+
+    let resp: string[] = [], resSt = '', num = 0;
+
+    if (AudioFilters._3D) resp = [...resp, FFmpegArguments.Filters._3D];
+    if (AudioFilters.speed) resp = [...resp, `${FFmpegArguments.Filters.Speed}${AudioFilters.speed}`];
+    if (AudioFilters.karaoke) resp = [...resp, FFmpegArguments.Filters.Karaoke];
+    if (AudioFilters.echo) resp = [...resp, FFmpegArguments.Filters.Echo];
+
+    if (AudioFilters.nightcore) resp = [...resp, FFmpegArguments.Filters.NightCore];
+    if (AudioFilters.Vw) resp = [...resp, FFmpegArguments.Filters.vaporwave];
+
+    if (AudioFilters.bass) resp = [...resp, `${FFmpegArguments.Filters.bassboost}${AudioFilters.bass}`];
+    if (AudioFilters.Sab_bass) resp = [...resp, FFmpegArguments.Filters.Sub_boost];
+
+    for (let i in resp) {
+        if (num === resp.length) resSt += `${resp[i]}`;
+        resSt += `${resp[i]},`;
+        num++;
+    }
+
+    return resSt === '' ? [] : ['-af', resp] as any;
+}
+//====================== ====================== ====================== ======================
+
 
 //Запускаем FFmpeg для дальнейшего применения
 class FFmpeg extends Duplex {
-    protected get ProcessReader() { return this.process.stdout; };
-    protected get ProcessWriter() { return this.process.stdin; };
+    public get ProcessReader() { return this.process.stdout; };
+    public get ProcessWriter() { return this.process.stdin; };
     protected process: ChildProcess.ChildProcessWithoutNullStreams & {stdout: {_readableState: Readable}, stdin: {_writableState: Writable}};
 
     public constructor(options: FFmpegArgs) {
-        super({ autoDestroy: true, destroy: () => this._cleanup()});
-        this.process = this.SpawnFFmpeg(options);
+        super({ autoDestroy: true});
+        this.process = SpawnFFmpeg(options);
 
         this.createEvents(['write', 'end'], this.ProcessWriter);
         this.createEvents(['read', 'setEncoding', 'pipe', 'unpipe'], this.ProcessReader);
 
-        const processError = (error: Error) => this.emit('error', error);
+        const processError = async (error: Error) => this.emit('error', error);
         this.ProcessReader.once('error', processError);
         this.ProcessWriter.once('error', processError);
     };
     // @ts-ignore
     protected createEvents = (methods: string[], target: Writable | Readable) => methods.map((method) => this[method] = target[method].bind(target));
-    protected SpawnFFmpeg = (options: FFmpegArgs): any => ChildProcess.spawn(FFmpegName, options as string[], { shell: false });
-    protected _cleanup = (): void => {
+    public _destroy = (): void => {
         if (this.process) {
             this.process.kill('SIGKILL');
             delete this.process;
         }
         return;
     };
+}
+function SpawnFFmpeg(options: FFmpegArgs): any {
+    return ChildProcess.spawn(FFmpegName, options as string[], { shell: false });
 }

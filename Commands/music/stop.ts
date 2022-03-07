@@ -18,6 +18,7 @@ export class CommandStop extends Command {
     public run = async (message: wMessage): Promise<void> => {
         const queue: Queue = message.client.queue.get(message.guild.id);
         if (queue) {
+            new VoiceManager().Disconnect(message.guild.id);
             queue.songs = [];
             void queue.events.queue.emit('DestroyQueue', queue, message);
             return;

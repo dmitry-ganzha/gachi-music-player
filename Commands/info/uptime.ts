@@ -1,5 +1,5 @@
 import {Command} from "../Constructor";
-import {ParserTimeSong} from "../../Modules/Music/src/Manager/Functions/ParserTimeSong";
+import {AsyncParserTimeSong} from "../../Modules/Music/src/Manager/Functions/ParserTimeSong";
 import {wMessage} from "../../Core/Utils/TypesHelper";
 
 export class CommandUptime extends Command {
@@ -12,5 +12,5 @@ export class CommandUptime extends Command {
             enable: true
         })
     }
-    public run = async (message: wMessage): Promise<void> => message.client.Send({text: `Uptime: ${ParserTimeSong(message.client.uptime / 1000)}`, message, type: 'css', color: "GREEN"});
+    public run = async (message: wMessage): Promise<void> => message.client.Send({text: `Uptime: ${await AsyncParserTimeSong(message.client.uptime / 1000)}`, message, type: 'css', color: "GREEN"});
 }

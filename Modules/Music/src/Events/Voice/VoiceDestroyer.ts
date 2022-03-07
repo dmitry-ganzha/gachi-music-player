@@ -7,25 +7,25 @@ type Events = {
 };
 
 export class VoiceEvents extends TypedEmitter<Events> {
-    #Timer: NodeJS.Timeout;
-    #state: boolean;
+    protected Timer: NodeJS.Timeout;
+    protected state: boolean;
 
     public constructor() {
         super();
-        this.on('StartTimerDestroyer', this.#onStartTimerDestroyer);
-        this.on('CancelTimerDestroyer', this.#onCancelTimerDestroyer);
+        this.on('StartTimerDestroyer', this.onStartTimerDestroyer);
+        this.on('CancelTimerDestroyer', this.onCancelTimerDestroyer);
         this.setMaxListeners(2);
     };
     /**
      * @description Создаем таймер (по истечению таймера будет удалена очередь)
      * @param queue {object} Очередь сервера
      */
-    #onStartTimerDestroyer = async (queue: Queue): Promise<boolean | null> => {
+    protected onStartTimerDestroyer = async (queue: Queue): Promise<boolean | null> => {
         const {player, options, events, channels} = queue;
 
         player.pause(true);
-        this.#state = true;
-        if (!this.#Timer) this.#Timer = setTimeout(async () => {
+        this.state = true;
+        if (!this.Timer) this.Timer = setTimeout(async () => {
             queue.songs = [];
             options.stop = true;
             return void events.queue.emit('DestroyQueue', queue, channels.message, false);
@@ -36,11 +36,11 @@ export class VoiceEvents extends TypedEmitter<Events> {
      * @description Удаляем таймер который удаляет очередь
      * @param queue {object} Очередь сервера
      */
-    #onCancelTimerDestroyer = async ({player}: Queue): Promise<boolean | null> => {
-        if (this.#state === true) {
-            this.#state = false;
-            clearTimeout(this.#Timer);
-            this.#Timer = null;
+    protected onCancelTimerDestroyer = async ({player}: Queue): Promise<boolean | null> => {
+        if (this.state === true) {
+            this.state = false;
+            clearTimeout(this.Timer);
+            this.Timer = null;
             return player.unpause();
         }
         return null;

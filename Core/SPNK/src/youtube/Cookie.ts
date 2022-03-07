@@ -10,7 +10,7 @@ export function getCookies(): null | string {
 }
 export async function uploadCookie(Cookie: string | string[]) {
     let youtubeData = JSON.parse(readFileSync(`./db/Cookie.json`, 'utf8'));
-    let EndCookieString = null;
+    let EndCookieString: {};
 
     if (typeof Cookie === "string") {
         let CookieJson = await ParsingCookieToJson(youtubeData.cookie);

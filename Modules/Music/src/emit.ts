@@ -6,7 +6,7 @@ import {InputPlaylist, InputTrack, wMessage} from "../../../Core/Utils/TypesHelp
 import {StageChannel, VoiceChannel} from "discord.js";
 
 type Events = {
-    play: (message: wMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack) => Promise<boolean | void>;
+    play: (message: wMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack) => Promise<boolean | void | unknown>;
     pause: (message: wMessage) => Promise<void>;
     resume: (message: wMessage) => Promise<void>;
     skip: (message: wMessage, args?: number) => Promise<void | boolean>;
@@ -15,23 +15,23 @@ type Events = {
     remove: (message: wMessage, args: number) => Promise<boolean | void>;
     seek: (message: wMessage, seek: number) => Promise<NodeJS.Immediate | void>;
 
-    playlist: (message: wMessage, playlist: InputPlaylist, VoiceChannel: VoiceChannel |  StageChannel) => Promise<void> | void;
+    playlist: (message: wMessage, playlist: InputPlaylist, VoiceChannel: VoiceChannel |  StageChannel) => Promise<void>;
 };
 
 export class PlayerEmitter extends TypedEmitter<Events> {
     public constructor() {
         super();
-        this.on('play', new CreateQueue()._);
+        this.on('play', CreateQueue);
 
-        this.on('pause', Controller.pause);
-        this.on('resume', Controller.resume);
-        this.on('remove', Controller.remove);
-        this.on('seek', Controller.seek);
-        this.on('skip', Controller.skip);
-        this.on('replay', Controller.replay);
-        this.on('filter', Controller.filter);
+        this.on('pause', Controller.PlayerPause);
+        this.on('resume', Controller.PlayerResume);
+        this.on('remove', Controller.PlayerRemove);
+        this.on('seek', Controller.PlayerSeek);
+        this.on('skip', Controller.PlayerSkip);
+        this.on('replay', Controller.PlayerReplay);
+        this.on('filter', Controller.PlayerFilter);
 
-        this.on('playlist', new PlayList().pushItems);
+        this.on('playlist', PlayList);
         this.setMaxListeners(9);
     };
 }

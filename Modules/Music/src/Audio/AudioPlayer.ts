@@ -12,7 +12,6 @@ import {VoiceManager} from "../Manager/Voice/Voice";
 import {Queue} from "../Manager/Queue/Structures/Queue";
 import {Song} from "../Manager/Queue/Structures/Song";
 import {Queue_Channels} from "../Events/Queue/QueueEvent";
-
 type PlayerState = AudioPlayerState & {missedFrames?: number, resource?: AudioResource};
 
 /**
@@ -25,11 +24,11 @@ export class audioPlayer extends AudioPlayer {
 
     public constructor(msg: wMessage) {
         super();
-        this.on(AudioPlayerStatus.Idle, async (): Promise<any> => audioPlayer.onIdlePlayer(msg));
-        this.on(AudioPlayerStatus.Buffering, async (): Promise<any> => audioPlayer.onBufferingPlayer(msg));
-        this.on(AudioPlayerStatus.AutoPaused, async () => audioPlayer.onAutoPausePlayer(msg));
+        this.on(AudioPlayerStatus.Idle, async (): Promise<any> => onIdlePlayer(msg));
+        this.on(AudioPlayerStatus.Buffering, async (): Promise<any> => onBufferingPlayer(msg));
+        this.on(AudioPlayerStatus.AutoPaused, async () => onAutoPausePlayer(msg));
 
-        this.on("error", async (err: AudioPlayerError): Promise<any> => audioPlayer.onErrorPlayer(err, msg));
+        this.on("error", async (err: AudioPlayerError): Promise<any> => onErrorPlayer(err, msg));
         this.setMaxListeners(4);
     };
 
@@ -37,7 +36,7 @@ export class audioPlayer extends AudioPlayer {
      * @description Заменяем оригинальный play на свой
      * @param resource {AudioResource} Поток
      */
-    public play = (resource: AudioResource): void => {
+    public play = async (resource: AudioResource): Promise<void> => {
         if (!resource) {
             void this.emit('error', 'Error: AudioResource has not found' as any);
             return;
@@ -72,12 +71,12 @@ export class audioPlayer extends AudioPlayer {
         const {channels}: Queue = message.client.queue.get(message.guild.id);
         let stream: any;
         try {
-            stream = await audioPlayer.CreateResource(message, seek);
+            stream = await CreateResource(message, seek);
 
-            void audioPlayer.AutoJoinVoice(channels, this);
+            await AutoJoinVoice(channels, this);
         } finally {
             setTimeout(async () => {
-                this.play(stream);
+                await this.play(stream);
                 this.playingTime = seek * 1000;
             }, 1e3);
         }
@@ -91,118 +90,129 @@ export class audioPlayer extends AudioPlayer {
         const queue: Queue = client.queue.get(guild.id);
 
         if (queue.songs?.length === 0) return void queue.events.queue.emit('DestroyQueue', queue, message);
-        const stream = await audioPlayer.CreateResource(message) as any;
+        const stream = await CreateResource(message) as any;
 
         client.console(`[${guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
         void queue.events.message.emit('playSong', message); //Отправляем данные в EventEmitter message для создания embed сообщения о текущем треке
-        void this.AutoJoinVoice(queue.channels, queue.player); // Подключаем плеер к гс
+        await AutoJoinVoice(queue.channels, queue.player); // Подключаем плеер к гс
         setImmediate(async () => queue.player.play(stream));
-    };
-    /**
-     * @description Подключаем плеер к голосовому каналу
-     * @param channels {Queue_Channels} Все каналы в очереди
-     * @param player {audioPlayer} Плеер
-     */
-    protected static AutoJoinVoice = (channels: Queue_Channels, player: audioPlayer): void => {
-        if (!channels.connection?.subscribe) (channels.connection = new VoiceManager().Join(channels.voice)).subscribe(player as any);
-    };
-    /**
-     * @description Создаем Opus поток
-     * @param message {wMessage} Сообщение с сервера
-     * @param seek {number} Пропуск музыки до 00:00:00
-     */
-    protected static CreateResource = async (message: wMessage, seek: number = 0): Promise<FFmpegStream> => {
-        const queue: Queue = message.client.queue.get(message.guild.id);
-        const song = queue.songs[0];
+    }
+}
 
-        if (!song.format) await FinderResource.init(song);
+/**
+ * @description Подключаем плеер к голосовому каналу
+ * @param channels {Queue_Channels} Все каналы в очереди
+ * @param player {audioPlayer} Плеер
+ */
+async function AutoJoinVoice(channels: Queue_Channels, player: audioPlayer): Promise<void> {
+    if (!channels.connection?.subscribe) (channels.connection = new VoiceManager().Join(channels.voice)).subscribe(player as any);
+}
+/**
+ * @description Создаем Opus поток
+ * @param message {wMessage} Сообщение с сервера
+ * @param seek {number} Пропуск музыки до 00:00:00
+ */
+async function CreateResource(message: wMessage, seek: number = 0): Promise<FFmpegStream> {
+    const queue: Queue = message.client.queue.get(message.guild.id);
+    const song = queue.songs[0];
 
-        return new FFmpegStream(song.format?.url, {...queue.audioFilters, seek});
-    };
-    /**
-     * @description Когда плеер завершит песню, он возвратит эту функцию
-     * @param message {wMessage} Сообщение с сервера
-     */
-    protected static onIdlePlayer = async (message: wMessage): Promise<NodeJS.Timeout | null | boolean | void> => {
-        const {client, guild} = message;
+    if (!song.format) await FinderResource.init(song);
+
+    return new FFmpegStream(song.format.url, {...queue.audioFilters, seek});
+}
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+//                                       Player events
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+/**
+ * @description Когда плеер завершит песню, он возвратит эту функцию
+ * @param message {wMessage} Сообщение с сервера
+ */
+async function onIdlePlayer(message: wMessage): Promise<NodeJS.Timeout | null | boolean | void> {
+    const {client, guild} = message;
+    const queue: Queue = client.queue.get(guild.id);
+
+    if (!queue || queue?.songs?.length <= 0) return null;
+    if (queue.player.state?.resource) void queue.player.state.resource.playStream.emit("close");
+    if (queue.player.state?.missedFrames) await message.client.Send({text: `[AudioPlayer]: Lost Frames [${queue.player.state.missedFrames}]`, message: message, color: queue.player.state.missedFrames >= 10 ? "RED" : "GREEN" });
+
+    await isRemoveSong(queue);
+    if (queue.options.random) return Shuffle(message, queue);
+    return audioPlayer.playStream(message);
+}
+/**
+ * @description Когда плеер выдает ошибку, он возвратит эту функцию
+ * @param err {AudioPlayerError} Ошибка
+ * @param message {wMessage} Сообщение с сервера
+ */
+async function onErrorPlayer(err: AudioPlayerError, message: wMessage): Promise<void> {
+    const {events, songs}: Queue = message.client.queue.get(message.guild.id);
+
+    void events.message.emit('warning', message, songs[0], err);
+    if (songs) songs.shift();
+
+    return;
+}
+/**
+ * @description Когда плеер получает поток (музыку), он возвратит эту функцию
+ * @param message {wMessage} Сообщение с сервера
+ */
+async function onBufferingPlayer(message: wMessage): Promise<NodeJS.Timeout | null | PlayerSubscription> {
+    const {client, guild} = message;
+
+    return setTimeout(async () => {
         const queue: Queue = client.queue.get(guild.id);
+        const song: Song = queue?.songs[0];
 
-        if (!queue || queue?.songs?.length <= 0) return null;
-        if (queue.player.state?.resource) void queue.player.state.resource.playStream.emit("close");
-        if (queue.player.state?.missedFrames) await message.client.Send({text: `[AudioPlayer]: Lost Frames [${queue.player.state.missedFrames}]`, message: message, color: queue.player.state.missedFrames >= 10 ? "RED" : "GREEN" });
+        if (!queue) return;
+        if (queue.player.state.status === 'buffering' && !queue.player.state?.resource?.started && !song.format?.work) {
+            console.log(`[Fail load] -> `, song.format?.url);
+            await client.Send({text: `${song.requester}, не удалось включить эту песню! Пропуск!`, message: queue.channels.message});
+            queue.player.stop();
+            return;
+        }
+    }, 15e3);
+}
+/**
+ * @description Если плеер сам ставит на паузу
+ * @param message {wMessage} Сообщение с сервера
+ */
+async function onAutoPausePlayer(message: wMessage) {
+    const {channels, player}: Queue = message.client.queue.get(message.guild.id);
 
-        this.isRemoveSong(queue);
-        if (queue.options.random) return this.Shuffle(message, queue);
-        return this.playStream(message);
-    };
-    /**
-     * @description Когда плеер выдает ошибку, он возвратит эту функцию
-     * @param err {AudioPlayerError} Ошибка
-     * @param message {wMessage} Сообщение с сервера
-     */
-    protected static onErrorPlayer = async (err: AudioPlayerError, message: wMessage): Promise<void> => {
-        const {events, songs}: Queue = message.client.queue.get(message.guild.id);
+    //Проверяем если канал на который надо выводить музыку
+    if (!channels.connection?.subscribe) (channels.connection = new VoiceManager().Join(channels.voice)).subscribe(player as any);
+}
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+/**
+ * @description Повтор музыки
+ * @param queue {Queue} Очередь сервера
+ */
+async function isRemoveSong({options, songs}: Queue): Promise<null> {
+    if (options.loop === "song") return null;
+    else if (options.loop === "songs") {
+        const repeat = songs.shift();
+        songs.push(repeat);
+    } else songs.shift();
 
-        void events.message.emit('warning', message, songs[0], err);
-        if (songs) songs.shift();
+    return null;
+}
+/**
+ * @description Перетасовка музыки в очереди
+ * @param message {wMessage} Сообщение с сервера
+ * @param queue {Queue} Очередь сервера
+ */
+async function Shuffle(message: wMessage, {songs}: Queue): Promise<boolean | void> {
+    const set: number = Math.floor(Math.random() * songs.length);
+    const LocalQueue2: Song = songs[set];
 
-        return;
-    };
-    /**
-     * @description Когда плеер получает поток (музыку), он возвратит эту функцию
-     * @param message {wMessage} Сообщение с сервера
-     */
-    protected static onBufferingPlayer = async (message: wMessage): Promise<NodeJS.Timeout | null | PlayerSubscription> => {
-        const {client, guild} = message;
+    songs[set] = songs[0];
+    songs[0] = LocalQueue2;
 
-        return setTimeout(async () => {
-            const queue: Queue = client.queue.get(guild.id);
-            const song: Song = queue?.songs[0];
-
-            if (!queue) return;
-            if (queue.player.state.status === 'buffering' && !queue.player.state?.resource?.started && !song.format?.work) {
-                console.log(`[Fail load] -> `, song.format?.url);
-                await client.Send({text: `${song.requester}, не удалось включить эту песню! Пропуск!`, message: queue.channels.message});
-                queue.player.stop();
-                return;
-            }
-        }, 15e3);
-    };
-    /**
-     * @description Если плеер сам ставит на паузу
-     * @param message {wMessage} Сообщение с сервера
-     */
-    protected static onAutoPausePlayer = async (message: wMessage) => {
-        const {channels, player}: Queue = message.client.queue.get(message.guild.id);
-
-        //Проверяем если канал на который надо выводить музыку
-        if (!channels.connection?.subscribe) (channels.connection = new VoiceManager().Join(channels.voice)).subscribe(player as any);
-    };
-    /**
-     * @description Повтор музыки
-     * @param queue {Queue} Очередь сервера
-     */
-    protected static isRemoveSong = ({options, songs}: Queue): null => {
-        if (options.loop === "song") return null;
-        else if (options.loop === "songs") {
-            const repeat = songs.shift();
-            songs.push(repeat);
-        } else songs.shift();
-
-        return null;
-    };
-    /**
-     * @description Перетасовка музыки в очереди
-     * @param message {wMessage} Сообщение с сервера
-     * @param queue {Queue} Очередь сервера
-     */
-    protected static Shuffle = async (message: wMessage, {songs}: Queue): Promise<boolean | void> => {
-        const set: number = Math.floor(Math.random() * songs.length);
-        const LocalQueue2: Song = songs[set];
-
-        songs[set] = songs[0];
-        songs[0] = LocalQueue2;
-
-        return this.playStream(message);
-    };
+    return audioPlayer.playStream(message);
 }

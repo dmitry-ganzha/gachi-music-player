@@ -1,4 +1,4 @@
-import {FullTimeSongs} from "../../../Manager/Functions/FullTimeSongs";
+import {AsyncFullTimeSongs} from "../../../Manager/Functions/FullTimeSongs";
 import {Song} from "../../../Manager/Queue/Structures/Song";
 import {Queue} from "../../../Manager/Queue/Structures/Queue";
 import {EmbedConstructor, wClient} from "../../../../../../Core/Utils/TypesHelper";
@@ -6,7 +6,7 @@ import {NotFound, NotImage, NotVer, Ver} from "./Helper";
 
 export async function AddSong(client: wClient, {color, author, image, title, url, duration, requester}: Song, {songs}: Queue): Promise<EmbedConstructor> {
     return {
-        color: color,
+        color,
         author: {
             name: client.ConvertedText(author.title, 45, false),
             iconURL: author.isVerified === undefined ? NotFound : author.isVerified ? Ver : NotVer,
@@ -19,9 +19,9 @@ export async function AddSong(client: wClient, {color, author, image, title, url
             name: `Добавлено`,
             value: `**❯** [${client.ConvertedText(title, 40, true)}](${url}})\n**❯** [${duration.StringTime}]`
         }],
-        timestamp: new Date(),
+        //timestamp: new Date(),
         footer: {
-            text: `${requester.username} | ${FullTimeSongs(songs)} | 🎶: ${songs.length}`,
+            text: `${requester.username} | ${await AsyncFullTimeSongs(songs)} | 🎶: ${songs.length}`,
             iconURL: requester.displayAvatarURL(),
         }
     }

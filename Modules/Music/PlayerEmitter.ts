@@ -4,5 +4,5 @@ import {PlayerEmitter} from "./src/emit";
 export class ClientPlayer {
     public readonly enable: boolean = true;
 
-    public run = (client: wClient): PlayerEmitter => client.player = new PlayerEmitter()
+    public run = (client: wClient): PlayerEmitter => client.player = new PlayerEmitter();
 }

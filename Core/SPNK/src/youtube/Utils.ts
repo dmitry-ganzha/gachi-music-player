@@ -54,8 +54,14 @@ export class Utils {
     public cutAfterJSON = async (mixedJson: string[] | string) => {
         let open, close, isString, isEscaped, counter = 0;
 
-        if (mixedJson[0] === '[') (open = '[', close = ']');
-        else if (mixedJson[0] === '{') (open = '{', close = '}');
+        if (mixedJson[0] === '[') {
+            open = '[';
+            close = ']';
+        }
+        else if (mixedJson[0] === '{') {
+            open = '{';
+            close = '}';
+        }
 
         if (!open) throw new Error(`Can't cut unsupported JSON (need to begin with [ or { ) but got: ${mixedJson[0]}`);
 

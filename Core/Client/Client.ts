@@ -10,7 +10,6 @@ import {
 import {Command} from "../../Commands/Constructor";
 import {Queue} from "../../Modules/Music/src/Manager/Queue/Structures/Queue";
 import cfg from "../../db/Config.json";
-import {Spotify} from "../SPNK";
 import {Load} from "./FileSystem";
 import {ClientDevice} from "../Utils/TypesHelper";
 
@@ -51,8 +50,6 @@ class WatKLOK_BOT extends Client {
      */
     protected static SettingsProject = (client: Client): void => {
         if (cfg.Bot.ignoreError) this.ProcessEvents(client.channels).catch(async (err: Error) => console.log(err));
-
-        new Spotify().Settings(cfg.spotify.clientID, cfg.spotify.clientSecret);
     };
     /**
      * @description Настройки текущего процесса

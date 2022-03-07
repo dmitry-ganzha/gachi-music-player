@@ -36,8 +36,7 @@ export class Decipher {
      * @param html5player {string} Ссылка на html5player
      */
     protected getFunctions = async (html5player: string): Promise<null | string[]> => {
-        const body = await new httpsClient().parseBody({
-            url: html5player,
+        const body = await new httpsClient().parseBody(html5player, {
             options: {zLibEncode: true, userAgent: true}
         });
         const functions = await this.extractFunctions(body);
@@ -82,7 +81,7 @@ export class Decipher {
     };
     /**
      * @description Извлекает действия, которые необходимо предпринять для расшифровки подписи и преобразования параметра n.
-     * @param body {string} Парсанутая страничка
+     * @param body {string} Страничка
      */
     protected extractFunctions = async (body: string): Promise<string[]> => {
         const functions: string[] = [];
@@ -94,7 +93,7 @@ export class Decipher {
     /**
      * @description Извлекает действия, которые необходимо предпринять для расшифровки подписи и преобразования параметра n.
      * @param caller {string} Данные
-     * @param body {string} Парсанутая страничка
+     * @param body {string} Страничка
      */
     protected extractManipulations = async (caller: string, body: string): Promise<"" | string> => {
         const functionName = await new Utils().between(caller, `a=a.split("");`, `.`);
@@ -110,7 +109,7 @@ export class Decipher {
     };
     /**
      * @description Вырезаем Decipher
-     * @param body {string} Парсанутая страничка
+     * @param body {string} Страничка
      * @param functions {any[]} данные youtube htmlPlayer
      */
     protected extractDecipher = async (body: string, functions: string[]): Promise<void> => {
@@ -130,7 +129,7 @@ export class Decipher {
     };
     /**
      * @description Вырезаем параметр n
-     * @param body {string} Парсанутая страничка
+     * @param body {string} Страничка
      * @param functions {any[]} данные youtube htmlPlayer
      */
     protected extractNCode = async (body: string, functions: any[]): Promise<void> => {

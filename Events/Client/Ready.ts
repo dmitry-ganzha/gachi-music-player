@@ -9,12 +9,12 @@ export class Ready {
     public run = async (f1: null, f2: null, client: wClient): Promise<null | wMessage> => {
         let channel = client.channels.cache.get(cfg.Channels.Start) as wMessage['channel'];
 
-        if (channel && !client.shard) return channel.send({embeds: [MessageEmbed(client)]});
+        if (channel && !client.shard) return channel.send({embeds: [await MessageEmbed(client)]});
         return null;
     };
 }
 
-function MessageEmbed(client: wClient): EmbedConstructor {
+async function MessageEmbed(client: wClient): Promise<EmbedConstructor> {
     return {
         color: Colors.WHITE,
         description: `**${client.user}**: Starting...`,

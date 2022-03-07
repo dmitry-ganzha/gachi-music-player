@@ -1,4 +1,4 @@
-import {FullTimeSongs} from "../../Modules/Music/src/Manager/Functions/FullTimeSongs";
+import {AsyncFullTimeSongs} from "../../Modules/Music/src/Manager/Functions/FullTimeSongs";
 import {Message, Embed, MessageReaction, ReactionCollector, User} from "discord.js";
 import {wMessage} from "./TypesHelper";
 import {Queue} from "../../Modules/Music/src/Manager/Queue/Structures/Queue";
@@ -35,7 +35,7 @@ export class CollectorSortReaction {
                 return setTimeout(async () => {
                     if (page === 1) return null;
                     page--;
-                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${FullTimeSongs(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
+                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${await AsyncFullTimeSongs(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
                 }, 150)
             },
             cancel: async (reaction: MessageReaction, user: User, message: wMessage, msg: wMessage): Promise<NodeJS.Timeout> => setTimeout(async () => (await this.DeleteMessage(msg), await this.DeleteMessage(message)), 50),
@@ -44,7 +44,7 @@ export class CollectorSortReaction {
                 return setTimeout(async () => {
                     if (page === pages.length) return null;
                     page++;
-                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${FullTimeSongs(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
+                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${await AsyncFullTimeSongs(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
                 }, 150)
             }
         };
@@ -65,7 +65,7 @@ export class CollectorSortReaction {
                     if (page === 1) return null;
                     page--;
                     embed.setDescription(pages[page - 1]);
-                    if (EnableQueue) embed.setFooter({text: `${message.author.username} | ${FullTimeSongs(queue)} | Лист ${page} из ${pages.length}`, iconURL: message.author.displayAvatarURL()});
+                    if (EnableQueue) embed.setFooter({text: `${message.author.username} | ${await AsyncFullTimeSongs(queue)} | Лист ${page} из ${pages.length}`, iconURL: message.author.displayAvatarURL()});
                      else embed.setFooter({text: `${message.author.username} | Лист ${page} из ${pages.length}`, iconURL: message.author.displayAvatarURL()});
                     return msg.edit({embeds: [embed]});
                 }, 150);
@@ -77,7 +77,7 @@ export class CollectorSortReaction {
                     if (page === pages.length) return null;
                     page++;
                     embed.setDescription(pages[page - 1]);
-                    if (EnableQueue) embed.setFooter({text: `${message.author.username} | ${FullTimeSongs(queue)} | Лист ${page} из ${pages.length}`, iconURL: message.author.displayAvatarURL()});
+                    if (EnableQueue) embed.setFooter({text: `${message.author.username} | ${await AsyncFullTimeSongs(queue)} | Лист ${page} из ${pages.length}`, iconURL: message.author.displayAvatarURL()});
                     else embed.setFooter({text: `${message.author.username} | Лист ${page} из ${pages.length}`, iconURL: message.author.displayAvatarURL()});
                     return msg.edit({embeds: [embed]});
                 }, 150);

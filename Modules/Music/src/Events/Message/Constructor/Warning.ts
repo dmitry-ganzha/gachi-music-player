@@ -1,12 +1,12 @@
-import {FullTimeSongs} from "../../../Manager/Functions/FullTimeSongs";
+import {AsyncFullTimeSongs} from "../../../Manager/Functions/FullTimeSongs";
 import {Song} from "../../../Manager/Queue/Structures/Song";
 import {Queue} from "../../../Manager/Queue/Structures/Queue";
-import {EmbedConstructor, wMessage} from "../../../../../../Core/Utils/TypesHelper";
+import {EmbedConstructor, wClient} from "../../../../../../Core/Utils/TypesHelper";
 import {NotFound, NotImage, NotVer, Ver} from "./Helper";
 
-export async function Warning({client}: wMessage, {color, author, image, title, url, duration, requester}: Song, {songs}: Queue, err: Error): Promise<EmbedConstructor> {
+export async function Warning(client: wClient, {color, author, image, title, url, duration, requester}: Song, {songs}: Queue, err: Error): Promise<EmbedConstructor> {
     return {
-        color: color,
+        color,
         description: `\n[${title}](${url})\n\`\`\`js\n${err}...\`\`\``,
         author: {
             name: client.ConvertedText(author.title, 45, false),
@@ -18,7 +18,7 @@ export async function Warning({client}: wMessage, {color, author, image, title, 
         },
         timestamp: new Date(),
         footer: {
-            text: `${requester.username} | ${FullTimeSongs(songs)} | 🎶: ${songs.length}`,
+            text: `${requester.username} | ${await AsyncFullTimeSongs(songs)} | 🎶: ${songs.length}`,
             iconURL: requester.displayAvatarURL() ? requester.displayAvatarURL() : client.user.displayAvatarURL(),
         }
     }

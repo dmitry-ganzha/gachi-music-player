@@ -1,8 +1,8 @@
-import {Channel, wMessage} from "../../Core/Utils/TypesHelper";
-import {ChannelType, Embed} from "discord.js";
+import {Channel, EmbedConstructor, wMessage} from "../../Core/Utils/TypesHelper";
+import {ChannelType} from "discord.js";
 import {Command} from "../../Commands/Constructor";
 import {Colors} from "../../Core/Utils/Colors";
-import {ParserTimeSong} from "../../Modules/Music/src/Manager/Functions/ParserTimeSong";
+import {AsyncParserTimeSong} from "../../Modules/Music/src/Manager/Functions/ParserTimeSong";
 import cfg from '../../db/Config.json';
 
 type CommandPermission = Command['permissions'];
@@ -16,14 +16,13 @@ export class GuildMessage {
         const prefix = message.client.cfg.Bot.prefix;
 
         if (Helper.isBot(message) || !message.content.startsWith(prefix)) return;
-        message.channel.sendTyping();
 
         const args = message.content.split(" ").slice(1);
         const command = GuildMessage.getCommand(message, prefix);
         const CoolDownFind = CoolDownBase.get(message.author.id);
 
         if (Helper.isOwner(true, message.author.id)) {
-            if (CoolDownFind) return message.client.Send({ text: `${message.author.username}, Воу воу, ты слишком быстро отправляешь сообщения. Подожди ${ParserTimeSong(CoolDownFind.time)}`, message, type: "css" });
+            if (CoolDownFind) return message.client.Send({ text: `${message.author.username}, Воу воу, ты слишком быстро отправляешь сообщения. Подожди ${await AsyncParserTimeSong(CoolDownFind.time)}`, message, type: "css" });
             else {
                 CoolDownBase.set(message.author.id, {
                     time: command?.CoolDown ?? 5
@@ -78,12 +77,12 @@ class Permissions {
     protected _createPresenceOnePerm = async (permissions: CommandPermission, message: wMessage): Promise<boolean> => {
         if (permissions.client) {
             if (!message.guild.me.permissions.has(permissions.client[0])) {
-                await this.SendMessage(new NotPermissions(message, `У меня нет таких прав!`, `•${permissions.client[0]}`), message.channel);
+                await this.SendMessage(await NotPermissions(message, `У меня нет таких прав!`, `•${permissions.client[0]}`), message.channel);
                 return true;
             }
         } else if (permissions.user) {
             if (!message.member.permissions.has(permissions.user[0])) {
-                await this.SendMessage(new NotPermissions(message, `У тебя нет таких прав!`, `•${permissions.user[0]}`), message.channel);
+                await this.SendMessage(await NotPermissions(message, `У тебя нет таких прав!`, `•${permissions.user[0]}`), message.channel);
                 return true;
             }
         }
@@ -93,7 +92,7 @@ class Permissions {
     protected _createPresencePerm = async (permissions: CommandPermission, message: wMessage): Promise<boolean> => {
         let resp = await this._parsePermissions(permissions, message);
         if (resp !== '') {
-            await this.SendMessage(new NotPermissions(message, `У меня нет таких прав!`, resp), message.channel);
+            await this.SendMessage(await NotPermissions(message, `У меня нет таких прав!`, resp), message.channel);
             return true;
         }
         return false;
@@ -113,20 +112,18 @@ class Permissions {
         return resp;
     };
     // Отправляем сообщение о том каких прав нет у пользователя или бота
-    protected SendMessage = async (embed: Embed, channel: Channel): Promise<NodeJS.Timeout> => channel.send({embeds: [embed]}).then((msg: wMessage | any) => Helper.DeleteMessage(msg, 12e3)).catch(null);
+    protected SendMessage = async (embed: EmbedConstructor, channel: Channel): Promise<NodeJS.Timeout> => channel.send({embeds: [embed as any]}).then((msg: wMessage | any) => Helper.DeleteMessage(msg, 12e3)).catch(null);
 }
 
 //Embed сообщение
-class NotPermissions extends Embed {
-    public constructor({author, client}: wMessage, name: string, text: string) {
-        super({
-            color: Colors.BLUE,
-            author: { name: author.username, icon_url: author.displayAvatarURL({}) },
-            thumbnail: { url: client.user.displayAvatarURL({}) },
-            fields: [{ name: name, value: text }],
-            timestamp: new Date() as any
-        });
-    };
+async function NotPermissions({author, client}: wMessage, name: string, text: string): Promise<EmbedConstructor> {
+    return {
+        color: Colors.BLUE,
+        author: { name: author.username, iconURL: author.displayAvatarURL({}) },
+        thumbnail: { url: client.user.displayAvatarURL({}) },
+        fields: [{ name: name, value: text }],
+        timestamp: new Date() as any
+    }
 }
 
 export const CoolDownBase = new Map();

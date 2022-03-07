@@ -127,8 +127,7 @@ export class VK {
      * @param type {string} Тип запроса
      * @param options {string} Параметры через &
      */
-    protected get = async (method: methodType, type: requestType, options: string): Promise<object> => new httpsClient().parseJson({
-        url: this.CreateUrl(method, type, options),
+    protected get = async (method: methodType, type: requestType, options: string): Promise<object> => new httpsClient().parseJson(this.CreateUrl(method, type, options), {
         options: {zLibEncode: true}
     });
     /**

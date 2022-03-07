@@ -1,4 +1,12 @@
-import {DiscordGatewayAdapterCreator, entersState, getVoiceConnection, joinVoiceChannel, VoiceConnection, VoiceConnectionDisconnectReason, VoiceConnectionStatus} from "@discordjs/voice";
+import {
+    DiscordGatewayAdapterCreator,
+    entersState,
+    getVoiceConnection,
+    joinVoiceChannel,
+    VoiceConnection,
+    VoiceConnectionDisconnectReason,
+    VoiceConnectionStatus
+} from "@discordjs/voice";
 import {Guild, InternalDiscordGatewayAdapterCreator, StageChannel, VoiceChannel, ChannelType} from "discord.js";
 
 export class VoiceManager {
@@ -8,7 +16,7 @@ export class VoiceManager {
      * @param VoiceChannel {VoiceChannel | VoiceConnection} Voice канал
      * @param options {mute: boolean} Доп опции
      */
-    public Join = ({id, guild, type}: VoiceChannel | StageChannel, options?: {mute: boolean}): VoiceConnection => {
+    public Join = ({id, guild, type}: VoiceChannel | StageChannel, options: {mute: boolean} = {mute: true}): VoiceConnection => {
         this.SpeakStateChannel(guild, type);
 
         const VoiceConnection = getVoiceConnection(id) ?? joinVoiceChannel({
@@ -19,7 +27,7 @@ export class VoiceManager {
         });
 
         try {
-            VoiceConnection.on("stateChange", async (oldState: null, newState: { status: any; reason: any; closeCode: number }): Promise<VoiceConnection | void | NodeJS.Timeout> => {
+            VoiceConnection.on("stateChange", async (oldState: any, newState: { status: any; reason: any; closeCode: number }): Promise<VoiceConnection | void | NodeJS.Timeout> => {
                 if (newState.status === VoiceConnectionStatus.Disconnected) {
                     if (newState.reason === VoiceConnectionDisconnectReason.WebSocketClose && newState.closeCode === 4014) {
                         try {
@@ -54,6 +62,7 @@ export class VoiceManager {
      * @param type {string} Тип голосового канала
      */
     protected SpeakStateChannel = ({me}: Guild, type: ChannelType.GuildVoice | ChannelType.GuildStageVoice): void => {
+        if (me.voice.mute) me.voice.setMute(false).catch(() => undefined);
         if (type === ChannelType.GuildStageVoice && me) me?.voice.setRequestToSpeak(true).catch(() => undefined);
     };
 }

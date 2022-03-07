@@ -109,10 +109,6 @@ export async function Load (client: wClient): Promise<void> {
 function FileType(file: string): string {
     return file.endsWith('.ts') ? `TS` : `JS`;
 }
-function AddSpace(dir: string): string {
-    let textSize: number = dir.length;
-    return textSize < maxLenStringDir ? (' ').repeat(maxLenStringDir - textSize) : '';
-}
 function AddTime(): string {
     return `[FileSystem]`;
 }
