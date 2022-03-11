@@ -113,12 +113,14 @@ async function AutoJoinVoice(channels: Queue_Channels, player: audioPlayer): Pro
  * @param seek {number} Пропуск музыки до 00:00:00
  */
 async function CreateResource(message: wMessage, seek: number = 0): Promise<FFmpegStream> {
-    const queue: Queue = message.client.queue.get(message.guild.id);
-    const song = queue.songs[0];
+    return new Promise(async (resolve) => {
+        const queue: Queue = message.client.queue.get(message.guild.id);
+        const song = queue.songs[0];
 
-    if (!song.format.url) await FinderResource.init(song);
+        if (!song.format?.url) await FinderResource.init(song);
 
-    return new FFmpegStream(song.format.url, {...queue.audioFilters, seek});
+        return resolve(new FFmpegStream(song.format.url, {...queue.audioFilters, seek}));
+    })
 }
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
