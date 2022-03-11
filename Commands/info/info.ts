@@ -32,12 +32,17 @@ export class CommandInfo extends Command {
         }
         const RunButt = new ActionRow().addComponents(Buttons.MyUrl, Buttons.ServerUrl, Buttons.Git);
 
-        // @ts-ignore
-        return message.channel.send({embeds: [await InfoEmbed(message)], components: [RunButt]}).then(async (msg: wMessage) => Command.DeleteMessage(msg, 35e3)).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
+        return getCPUUsage(async (cpu: number) => {
+            // @ts-ignore
+            return message.channel.send({
+                embeds: [await InfoEmbed(message, cpu.toFixed(2))],
+                components: [RunButt]
+            }).then(async (msg: wMessage) => Command.DeleteMessage(msg, 35e3)).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
+        })
     };
 }
 
-async function InfoEmbed(message: wMessage): Promise<EmbedConstructor> {
+async function InfoEmbed(message: wMessage, cpu: string): Promise<EmbedConstructor> {
     return {
         color: Colors.GREEN,
         thumbnail: {
@@ -53,7 +58,7 @@ async function InfoEmbed(message: wMessage): Promise<EmbedConstructor> {
             },
             {
                 name: 'Статистика',
-                value: `\`\`\`css\n• Uptime     => ${await AsyncParserTimeSong(message.client.uptime / 1000)}\n• Memory     => ${FormatBytes(process.memoryUsage().heapUsed)} + (${message.client.queue.size * 5} МБ)\n• Platform   => ${process.platform}\n• Node       => ${process.version}\n• ECMAScript => ${TSConfig.compilerOptions.target}\n\n• Servers    => ${message.client.guilds.cache.size}\n• Channels   => ${message.client.channels.cache.size}\n\`\`\`\n`
+                value: `\`\`\`css\n• Uptime     => ${await AsyncParserTimeSong(message.client.uptime / 1000)}\n• Memory     => ${FormatBytes(process.memoryUsage().heapUsed)} + (${message.client.queue.size * 5} МБ)\n• CPU        => ${cpu}%\n• Platform   => ${process.platform}\n• Node       => ${process.version}\n• ECMAScript => ${TSConfig.compilerOptions.target}\n\n• Servers    => ${message.client.guilds.cache.size}\n• Channels   => ${message.client.channels.cache.size}\n\`\`\`\n`
             },
             {
                 name: 'Код написан на',
@@ -66,7 +71,7 @@ async function InfoEmbed(message: wMessage): Promise<EmbedConstructor> {
         ],
         timestamp: new Date(),
         footer: {
-            text: `Ping - ${Date.now() - message.createdTimestamp < 0 ? 5 : Date.now() - message.createdTimestamp} | Api - ${Math.round(message.client.ws.ping < 0 ? 5 : message.client.ws.ping)}`,
+            text: `Latency - ${Date.now() - message.createdTimestamp < 0 ? 5 : Date.now() - message.createdTimestamp} | Api - ${Math.round(message.client.ws.ping < 0 ? 5 : message.client.ws.ping)}`,
             iconURL: message.client.user.displayAvatarURL()
         }
     }
@@ -76,4 +81,43 @@ function FormatBytes(heapUsed: number): string {
     const sizes: string[] = ['Байт', 'КБ', 'МБ', 'ГБ', 'ТБ', 'ПБ', 'ЕБ', 'ЗБ', 'УБ'];
     const i: number = Math.floor(Math.log(heapUsed) / Math.log(1024));
     return `${parseFloat((heapUsed / Math.pow(1024, i)).toFixed(2))} ${sizes[i]}`;
+}
+function getCPUUsage(callback: Function, free = false) {
+    const stats1 = getCPUInfo();
+    const startIdle = stats1.idle;
+    const startTotal = stats1.total;
+
+    setTimeout(function() {
+        const stats2 = getCPUInfo();
+        const endIdle = stats2.idle;
+        const endTotal = stats2.total;
+
+        const idle 	= endIdle - startIdle;
+        const total 	= endTotal - startTotal;
+        const per	= idle / total;
+
+        if(free === true)
+            callback( per );
+        else
+            callback( (1 - per) );
+
+    }, 1000 );
+}
+function getCPUInfo(){
+    const cpus = os.cpus();
+
+    let user = 0, nice = 0, sys = 0, idle = 0, irq = 0, total;
+
+    for (let cpu in cpus){
+        if (!cpus.hasOwnProperty(cpu)) continue;
+        user += cpus[cpu].times.user;
+        nice += cpus[cpu].times.nice;
+        sys += cpus[cpu].times.sys;
+        irq += cpus[cpu].times.irq;
+        idle += cpus[cpu].times.idle;
+    }
+
+    total = user + nice + sys + idle + irq;
+
+    return { idle, total };
 }

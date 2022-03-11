@@ -117,22 +117,12 @@ export class FFmpegStream {
     public get ended() { return this.playStream?.readableEnded || this.playStream?.destroyed || !!this.playStream; };
 
     public constructor(url: string | any, AudioFilters: AudioFilters) {
-        if (typeof url === "string") {
-            this.FFmpeg = new FFmpeg(CreateArguments(AudioFilters, url));
+        this.FFmpeg = new FFmpeg(CreateArguments(AudioFilters, url));
 
-            this.playStream = this.FFmpeg.ProcessReader.pipe(this.opusEncoder);
-            this.playStream.once('readable', async () => (this.started = true));
-            ['end', 'close', 'error'].map((event) => this.playStream.once(event, this.destroy));
-            return;
-        } else {
-            this.FFmpeg = new FFmpeg(CreateArguments(AudioFilters, "-"));
-
-            url.pipe(this.FFmpeg.ProcessWriter);
-            this.playStream = this.FFmpeg.ProcessReader.pipe(this.opusEncoder);
-            this.playStream.once('readable', async () => (this.started = true));
-            ['end', 'close', 'error'].map((event) => this.playStream.once(event, this.destroy));
-            return;
-        }
+        this.playStream = this.FFmpeg.ProcessReader.pipe(this.opusEncoder);
+        this.playStream.once('readable', async () => (this.started = true));
+        ['end', 'close', 'error'].map((event) => this.playStream.once(event, this.destroy));
+        return;
     };
     //Использует Discord.js player
     public read(): Buffer | null {

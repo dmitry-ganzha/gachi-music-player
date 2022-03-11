@@ -1,7 +1,5 @@
-import {Embed, StageChannel, VoiceChannel} from "discord.js";
 import {Command} from "../Constructor";
-import {wMessage} from "../../Core/Utils/TypesHelper";
-import {Queue} from "../../Modules/Music/src/Manager/Queue/Structures/Queue";
+import {EmbedConstructor, wMessage} from "../../Core/Utils/TypesHelper";
 import {Colors} from "../../Core/Utils/Colors";
 
 export class CommandEval extends Command {
@@ -17,8 +15,6 @@ export class CommandEval extends Command {
 
     public run = async (message: wMessage, args: string[]): Promise<NodeJS.Timeout | void> => {
         let code: string = args.join(" "),
-            queue: Queue = message.client.queue.get(message.guild.id),
-            voiceChannel: VoiceChannel | StageChannel = message.member.voice.channel,
             StartTime: number = new Date().getMilliseconds(),
             RunEval: any;
 
@@ -31,14 +27,26 @@ export class CommandEval extends Command {
         }
     };
     protected static MessageSend = (message: wMessage, response: string, color: number, type: string, code: string, StartTime: number): Promise<NodeJS.Timeout> => {
-        let embed = new Embed()
-            .setTitle(`${type === 'Fail' ? `❌ ${type}` : `✅ ${type}`}\n`)
-            .setColor(color)
-            .addField({name: "Input Code:", value: `\`\`\`js\n${code}\n\`\`\``, inline: false})
-            .addField({name: "Output Code:", value: `\`\`\`js\n${response}\`\`\``, inline: false})
         const EndTime = new Date().getMilliseconds();
-
-            embed.setFooter({text: `Time: ${EndTime - StartTime} ms`})
-        return message.channel.send({embeds:[embed]}).then(async (msg: any) => setTimeout(async () => msg.deletable ? msg.delete().catch(null) : null, 10000));
+        let embed: EmbedConstructor = {
+            color,
+            title: `${type === 'Fail' ? `❌ ${type}` : `✅ ${type}`}\n`,
+            fields: [
+                {
+                    name: "Input Code:",
+                    value: `\`\`\`js\n${code}\n\`\`\``,
+                    inline: false
+                },
+                {
+                    name: "Output Code:",
+                    value: `\`\`\`js\n${response}\`\`\``,
+                    inline: false
+                }
+            ],
+            footer: {
+                text: `Time: ${EndTime - StartTime} ms`
+            }
+        }
+        return message.channel.send({embeds: [embed]}).then(async (msg: any) => setTimeout(async () => msg.deletable ? msg.delete().catch(null) : null, 10000));
     };
 }

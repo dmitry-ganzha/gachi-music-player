@@ -52,7 +52,10 @@ async function PlayerEnd(message: wMessage): Promise<void> {
 
     if (StatusPlayerIsSkipped.has(player.state.status)) {
         await guild.me.voice.setMute(true);
-        setTimeout(() => guild.me.voice.setMute(false), 150);
+
+        player.once("stateChange", (oldState, newState) => {
+            if (newState.status !== 'buffering') guild.me.voice.setMute(false);
+        })
         player.stop(true);
     }
     return;
@@ -75,7 +78,7 @@ async function PlayerRemove(message: wMessage, args: number): Promise<boolean | 
 
     if (songs.length <= 1) return player.stop();
 
-    void events.message.emit('update', message);
+    await events.message.UpdateMessage(message);
     if (member.permissions.has('Administrator') || author.id === requester.id || !UserToVoice) {
         songs.splice(args - 1, 1);
         if (args === 1) await PlayerEnd(message);

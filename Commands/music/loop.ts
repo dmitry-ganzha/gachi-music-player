@@ -57,7 +57,6 @@ export class CommandLoop extends Command {
             case '1':
             case 'song':
                 queue.options.loop = "song";
-                void queue.events.message.emit("update", queue.channels.message);
                 return message.client.Send({
                     text: `🔂 | Повтор  | ${queue.songs[0].title}`,
                     message,

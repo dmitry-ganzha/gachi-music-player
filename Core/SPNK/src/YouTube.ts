@@ -66,7 +66,7 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
         isLive: videoDetails.isLiveContent,
         url: VideoRes.streamingData?.hlsManifestUrl || null
     };
-    const VideoFormats: YouTubeFormat[] = (VideoRes.streamingData.formats && VideoRes.streamingData.adaptiveFormats) ?? [];
+    const VideoFormats: YouTubeFormat[] = (VideoRes.streamingData.formats && VideoRes.streamingData.adaptiveFormats).filter((d: any) => d?.mimeType?.includes("opus") || d?.mimeType?.includes("audio")) ?? [];
 
     if (!LiveData.isLive) {
         if (VideoFormats[0].signatureCipher || VideoFormats[0].cipher) {
@@ -76,7 +76,7 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
         }
     }
 
-    if (options?.onlyFormats) return new Utils().FindOpusFormat(format);
+    if (options?.onlyFormats) return format[0];
 
     const authorVideo = await getChannel({id: videoDetails.channelId, name: videoDetails.author});
     const VideoData: InputTrack = {
@@ -92,7 +92,7 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
 
     return {
         ...VideoData,
-        format: VideoData.isLive ? {url: LiveData.url, work: true} : await new Utils().FindOpusFormat(format)
+        format: VideoData.isLive ? {url: LiveData.url, work: true} : format[0]
     };
 }
 //====================== ====================== ====================== ======================

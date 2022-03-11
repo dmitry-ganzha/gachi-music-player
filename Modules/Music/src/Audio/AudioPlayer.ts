@@ -36,7 +36,7 @@ export class audioPlayer extends AudioPlayer {
      * @description Заменяем оригинальный play на свой
      * @param resource {AudioResource} Поток
      */
-    public play = async (resource: AudioResource): Promise<void> => {
+    public play = (resource: AudioResource): void => {
         if (!resource) {
             void this.emit('error', 'Error: AudioResource has not found' as any);
             return;
@@ -93,7 +93,7 @@ export class audioPlayer extends AudioPlayer {
         const stream = await CreateResource(message) as any;
 
         client.console(`[${guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
-        void queue.events.message.emit('playSong', message); //Отправляем данные в EventEmitter message для создания embed сообщения о текущем треке
+        await queue.events.message.PlaySongMessage(message); //Отправляем данные в EventEmitter message для создания embed сообщения о текущем треке
         await AutoJoinVoice(queue.channels, queue.player); // Подключаем плеер к гс
         setImmediate(async () => queue.player.play(stream));
     }
@@ -116,7 +116,7 @@ async function CreateResource(message: wMessage, seek: number = 0): Promise<FFmp
     const queue: Queue = message.client.queue.get(message.guild.id);
     const song = queue.songs[0];
 
-    if (!song.format) await FinderResource.init(song);
+    if (!song.format.url) await FinderResource.init(song);
 
     return new FFmpegStream(song.format.url, {...queue.audioFilters, seek});
 }
@@ -149,7 +149,7 @@ async function onIdlePlayer(message: wMessage): Promise<NodeJS.Timeout | null | 
 async function onErrorPlayer(err: AudioPlayerError, message: wMessage): Promise<void> {
     const {events, songs}: Queue = message.client.queue.get(message.guild.id);
 
-    void events.message.emit('warning', message, songs[0], err);
+    await events.message.WarningMessage(message, songs[0], err);
     if (songs) songs.shift();
 
     return;

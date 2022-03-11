@@ -1,4 +1,3 @@
-import { TypedEmitter } from 'tiny-typed-emitter';
 import {CurrentPlay} from "./Constructor/CurrentPlay";
 import {Warning} from "./Constructor/Warning";
 import {AddSong} from "./Constructor/AddSong";
@@ -8,24 +7,14 @@ import {ActionRow, MessageComponent, Embed} from "discord.js";
 import {Channel, wMessage} from "../../../../../Core/Utils/TypesHelper";
 import {Button} from "./Constructor/Helper";
 
-type Events = {
-    update: (message: wMessage, need?: boolean) => Promise<void | wMessage>,
-    playSong: (message: wMessage) => Promise<void | wMessage>,
-    warning: (message: wMessage, song: Song, err?: Error) => Promise<void | wMessage>,
-    push: (message: wMessage, song: Song) => Promise<void | wMessage>
-};
 
-export class EventMessage extends TypedEmitter<Events> {
+export class MessageSystem {
     static Interval: NodeJS.Timeout = null;
 
-    public constructor() {
-        super();
-        this.on('update', onUpdateMessage);
-        this.on('playSong', onPlaySongMessage);
-        this.on('warning', onWarningMessage);
-        this.on('push', onPushSongMessage);
-        this.setMaxListeners(4);
-    }
+    UpdateMessage = onUpdateMessage;
+    PlaySongMessage = onPlaySongMessage;
+    PushSongMessage = onPushSongMessage;
+    WarningMessage = onWarningMessage;
 }
 
 /**
@@ -58,14 +47,14 @@ async function onPlaySongMessage({client, guild, channel}: wMessage): Promise<vo
     if (queue.channels.message.deletable) queue.channels.message.delete().catch((e) => console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: playSong, ${e.code}]: ${e?.message}`))
 
     if (!queue.songs[0]?.isLive) {
-        if (EventMessage.Interval) clearInterval(EventMessage.Interval);
-        EventMessage.Interval = setInterval(async () => {
+        if (MessageSystem.Interval) clearInterval(MessageSystem.Interval);
+        MessageSystem.Interval = setInterval(async () => {
             const queue: Queue = client.queue.get(guild.id);
 
-            if (!queue) return clearInterval(EventMessage.Interval);
+            if (!queue) return clearInterval(MessageSystem.Interval);
             if (queue.player.state.status !== 'playing') return;
 
-            return onUpdateMessage(queue.channels.message, true).catch(() => clearInterval(EventMessage.Interval));
+            return onUpdateMessage(queue.channels.message, true).catch(() => clearInterval(MessageSystem.Interval));
         }, 12e3);
     }
 

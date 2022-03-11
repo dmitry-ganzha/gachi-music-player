@@ -23,11 +23,11 @@ type IncomingHttpHeaders = IncomingMessage['headers'];
 
 export class httpsClient {
     public Request = async (url: string, options?: httpsClientOptions): Promise<ResponseData> => {
-        await EditRequestOptions(options);
+        EditRequestOptions(options);
         return request(url, options.request);
     };
 
-    public parseBody = async (url: string, options?: httpsClientOptions): Promise<string> => new Promise(async (resolve) => this.Request(url, options).then(async (req) => {
+    public parseBody = async (url: string, options?: httpsClientOptions): Promise<string> => new Promise(async (resolve) => this.Request(url, options).then((req) => {
         if (!req.body) return resolve(null);
         const data: string[] = [];
 
@@ -38,17 +38,17 @@ export class httpsClient {
         else if (encoding === 'br') decoder = createBrotliDecompress();
         else if (encoding === 'deflate') decoder = createDeflate();
 
-        await EditCookie(req.headers, url);
+        EditCookie(req.headers, url);
 
         if (decoder) {
             req.body.pipe(decoder);
             decoder.setEncoding('utf-8');
-            decoder.on('data', async (c) => data.push(c));
-            decoder.once('end', async () => resolve(data.join('')));
+            decoder.on('data', (c) => data.push(c));
+            decoder.once('end', () => resolve(data.join('')));
         } else {
             req.body.setEncoding('utf-8');
-            req.body.on('data', async (c) => data.push(c));
-            req.body.once('end', async () => resolve(data.join('')));
+            req.body.on('data', (c) => data.push(c));
+            req.body.once('end', () => resolve(data.join('')));
         }
     }));
 
@@ -66,7 +66,7 @@ function UserAgent(): string {
     return UserAgents[Math.floor(Math.random() * (MaxAgents - minAgents + 1)) + minAgents];
 }
 
-async function EditRequestOptions(options: httpsClientOptions): Promise<void> {
+function EditRequestOptions(options: httpsClientOptions): void {
     if (!options.request?.headers) options.request = {...options.request, headers: {}};
 
     if (options.request?.headers) {
@@ -82,7 +82,7 @@ async function EditRequestOptions(options: httpsClientOptions): Promise<void> {
         if (options.options?.english) options.request.headers = {...options.request.headers, 'accept-language': 'en-US,en-IN;q=0.9,en;q=0.8,hi;q=0.7'};
     }
 }
-async function EditCookie(req: IncomingHttpHeaders, url: string) {
+function EditCookie(req: IncomingHttpHeaders, url: string): void {
     if (req && req['set-cookie'] && url.match(/watch/)) {
         setImmediate(async () => uploadCookie(req['set-cookie']));
     }

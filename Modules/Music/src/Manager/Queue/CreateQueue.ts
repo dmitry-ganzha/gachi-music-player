@@ -42,8 +42,8 @@ async function CreateQueueGuild(message: wMessage, VoiceChannel: VoiceChannel, s
  * @param song {Song} Сам трек
  * @param sendMessage {boolean} Отправить сообщение?
  */
-export async function PushSong(queue: Queue, song: Song, sendMessage: boolean = true): Promise<void> {
+export async function PushSong(queue: Queue, song: Song, sendMessage: boolean = true): Promise<void | wMessage> {
     queue.songs.push(song);
-    if (sendMessage) void queue.events.message.emit("push", queue.channels.message, song);
+    if (sendMessage) return queue.events.message.PushSongMessage(queue.channels.message, song);
     return;
 }

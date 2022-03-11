@@ -1,12 +1,4 @@
-import {InputFormat} from "../../../Utils/TypesHelper";
-
-
 export class Utils {
-    /**
-     * @description Ищем opus аудио
-     * @param formats {any[]} Все форматы
-     */
-    public FindOpusFormat = async (formats: InputFormat[]) => formats.length >= 1 ? formats.filter(f => f.acodec === 'opus' || !f.fps)[0] : null;
     /**
      * @description Получаем ID
      * @param url {string} Ссылка

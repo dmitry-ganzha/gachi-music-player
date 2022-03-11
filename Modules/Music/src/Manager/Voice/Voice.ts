@@ -16,14 +16,15 @@ export class VoiceManager {
      * @param VoiceChannel {VoiceChannel | VoiceConnection} Voice канал
      * @param options {mute: boolean} Доп опции
      */
-    public Join = ({id, guild, type}: VoiceChannel | StageChannel, options: {mute: boolean} = {mute: true}): VoiceConnection => {
+    public Join = ({id, guild, type}: VoiceChannel | StageChannel, options: {deaf: boolean, mute?: boolean} = {deaf: true, mute: false}): VoiceConnection => {
         this.SpeakStateChannel(guild, type);
 
         const VoiceConnection = getVoiceConnection(id) ?? joinVoiceChannel({
             channelId: id,
             guildId: guild.id,
             adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator & DiscordGatewayAdapterCreator,
-            selfDeaf: options?.mute
+            selfDeaf: options?.deaf,
+            selfMute: options?.mute ?? false
         });
 
         try {
