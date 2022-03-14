@@ -1,7 +1,7 @@
-import {Embed, ReactionCollector} from "discord.js";
+import {ReactionCollector} from "discord.js";
 import {CollectorSortReaction} from "../../Core/Utils/CollectorArraySort";
 import {Command} from "../Constructor";
-import {wMessage} from "../../Core/Utils/TypesHelper";
+import {EmbedConstructor, wMessage} from "../../Core/Utils/TypesHelper";
 import {Colors} from "../../Core/Utils/Colors";
 
 export class CommandHelp extends Command {
@@ -28,8 +28,15 @@ export class CommandHelp extends Command {
 
         return new CollectorSortReaction()._run(embed, pages, page, message, false);
     };
-    protected static CreateEmbedMessage = (message: wMessage, List: Command[]): { embed: Embed, pages: any[], page: number } => {
-        const helpEmbed = new Embed().setTitle("Help Menu").setColor(Colors.YELLOW).setThumbnail(message.client.user.avatarURL()).setTimestamp();
+    protected static CreateEmbedMessage = (message: wMessage, List: Command[]): { embed: EmbedConstructor, pages: any[], page: number } => {
+        let helpEmbed: EmbedConstructor = {
+            title: "Help Menu",
+            color: Colors.YELLOW,
+            thumbnail: {
+                url: message.client.user.avatarURL()
+            },
+            timestamp: new Date()
+        };
         let pages: string[] = [], page: any = 1, i;
 
         List.forEach((s: any) => {
@@ -41,8 +48,7 @@ export class CommandHelp extends Command {
             if (i !== undefined) pages.push(i)
         });
 
-        helpEmbed.setDescription(pages[page - 1]);
-        helpEmbed.setFooter({text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL()});
+        helpEmbed = {...helpEmbed, description: pages[page - 1], footer: {text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL()}}
         return {
             embed: helpEmbed,
             pages: pages,

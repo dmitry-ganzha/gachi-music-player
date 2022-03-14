@@ -1,18 +1,18 @@
-import {AsyncFullTimeSongs} from "../../Modules/Music/src/Manager/Functions/FullTimeSongs";
-import {Message, Embed, MessageReaction, ReactionCollector, User} from "discord.js";
-import {wMessage} from "./TypesHelper";
+import {FullTimeSongs} from "../../Modules/Music/src/Manager/Functions/FullTimeSongs";
+import {Message, MessageReaction, ReactionCollector, User} from "discord.js";
+import {EmbedConstructor, wMessage} from "./TypesHelper";
 import {Queue} from "../../Modules/Music/src/Manager/Queue/Structures/Queue";
 
 export class CollectorSortReaction {
     /**
      * @description Создаем menu emoji
-     * @param embed { Embed | string } MessageEmbed или строка
+     * @param embed { EmbedConstructor | string } MessageEmbed или строка
      * @param pages {[]} ArraySort данные
      * @param page {number} Текущая страница
      * @param message {wMessage} Сообщение с сервера
      * @param EnableQueue {boolean} Добавляем сколько музыки есть в очереди
      */
-    public _run = async (embed: Embed | string, pages: any[], page: number, message: wMessage, EnableQueue: boolean): Promise<ReactionCollector> => message.channel.send(typeof embed === "string" ? embed : {embeds: [embed]}).then(async (msg: wMessage | Message) => {
+    public _run = async (embed: EmbedConstructor | string, pages: any[], page: number, message: wMessage, EnableQueue: boolean): Promise<ReactionCollector> => message.channel.send(typeof embed === "string" ? embed : {embeds: [embed]}).then(async (msg: wMessage | Message) => {
         if (!msg.deletable) return null;
         let user: User = message.author, queue: Queue = message.client.queue.get(message.guild.id);
 
@@ -22,6 +22,7 @@ export class CollectorSortReaction {
         await this._reaction(user, message, msg as wMessage, type.cancel, "❌");
         return this._reaction(user, message, msg as wMessage, type.up, "➡️");
     });
+
     /**
      * @description 3 функции для строкового menu emoji
      * @param page {number} Текущая страница
@@ -35,7 +36,7 @@ export class CollectorSortReaction {
                 return setTimeout(async () => {
                     if (page === 1) return null;
                     page--;
-                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${await AsyncFullTimeSongs(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
+                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${FullTimeSongs(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
                 }, 150)
             },
             cancel: async (reaction: MessageReaction, user: User, message: wMessage, msg: wMessage): Promise<NodeJS.Timeout> => setTimeout(async () => (await this.DeleteMessage(msg), await this.DeleteMessage(message)), 50),
@@ -44,11 +45,12 @@ export class CollectorSortReaction {
                 return setTimeout(async () => {
                     if (page === pages.length) return null;
                     page++;
-                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${await AsyncFullTimeSongs(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
+                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${FullTimeSongs(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
                 }, 150)
             }
         };
     };
+
     /**
      * @description 3 функции для messageEmbed menu emoji
      * @param page {number} Текущая страница
@@ -57,16 +59,16 @@ export class CollectorSortReaction {
      * @param queue {Queue} Очередь
      * @param EnableQueue {boolean} Добавляем сколько музыки есть в очереди
      */
-    protected _callbacks_embed = async (page: number, pages: any[], embed: Embed, queue: Queue, EnableQueue: boolean): Promise<CollectorSortReactionFunction> => {
+    protected _callbacks_embed = async (page: number, pages: any[], embed: EmbedConstructor, queue: Queue, EnableQueue: boolean): Promise<CollectorSortReactionFunction> => {
         return {
             back: async ({users}: MessageReaction, user: User, message: wMessage, msg: wMessage): Promise<NodeJS.Timeout> => {
                 await users.remove(user);
                 return setTimeout(async () => {
                     if (page === 1) return null;
                     page--;
-                    embed.setDescription(pages[page - 1]);
-                    if (EnableQueue) embed.setFooter({text: `${message.author.username} | ${await AsyncFullTimeSongs(queue)} | Лист ${page} из ${pages.length}`, iconURL: message.author.displayAvatarURL()});
-                     else embed.setFooter({text: `${message.author.username} | Лист ${page} из ${pages.length}`, iconURL: message.author.displayAvatarURL()});
+                    embed = {...embed, description: pages[page - 1]};
+                    if (EnableQueue) embed = {...embed, footer: {text: `${message.author.username} | ${FullTimeSongs(queue)} | Лист ${page} из ${pages.length}`, iconURL: message.author.displayAvatarURL()}};
+                    else embed = {...embed, footer: {text: `${message.author.username} | Лист ${page} из ${pages.length}`, iconURL: message.author.displayAvatarURL()}};
                     return msg.edit({embeds: [embed]});
                 }, 150);
             },
@@ -76,14 +78,16 @@ export class CollectorSortReaction {
                 return setTimeout(async () => {
                     if (page === pages.length) return null;
                     page++;
-                    embed.setDescription(pages[page - 1]);
-                    if (EnableQueue) embed.setFooter({text: `${message.author.username} | ${await AsyncFullTimeSongs(queue)} | Лист ${page} из ${pages.length}`, iconURL: message.author.displayAvatarURL()});
-                    else embed.setFooter({text: `${message.author.username} | Лист ${page} из ${pages.length}`, iconURL: message.author.displayAvatarURL()});
+
+                    embed = {...embed, description: pages[page - 1]};
+                    if (EnableQueue) embed = {...embed, footer: {text: `${message.author.username} | ${FullTimeSongs(queue)} | Лист ${page} из ${pages.length}`, iconURL: message.author.displayAvatarURL()}};
+                    else embed = {...embed, footer: {text: `${message.author.username} | Лист ${page} из ${pages.length}`, iconURL: message.author.displayAvatarURL()}};
                     return msg.edit({embeds: [embed]});
                 }, 150);
             }
         };
     };
+
     /**
      * @description Какие 3 функции выдаем
      * @param embed {MessageEmbed} MessageEmbed
@@ -92,7 +96,8 @@ export class CollectorSortReaction {
      * @param queue {Queue} Очередь
      * @param EnableQueue {boolean} Добавляем сколько музыки есть в очереди
      */
-    protected _type = async (embed: Embed | string, page: number, pages: any[], queue: Queue, EnableQueue: boolean): Promise<CollectorSortReactionFunction> => typeof embed === "string" ? this._callback_string(page, pages, queue) : this._callbacks_embed(page, pages, embed, queue, EnableQueue);
+    protected _type = async (embed: EmbedConstructor | string, page: number, pages: any[], queue: Queue, EnableQueue: boolean): Promise<CollectorSortReactionFunction> => typeof embed === "string" ? this._callback_string(page, pages, queue) : this._callbacks_embed(page, pages, embed, queue, EnableQueue);
+
     /**
      * @description Создание реакции
      * @param user {User} Пользователь
@@ -103,6 +108,7 @@ export class CollectorSortReaction {
      */
     protected _reaction = async (user: User, message: wMessage, msg: wMessage, callback: Function, emoji: string): Promise<ReactionCollector> => msg.react(emoji).then(async () => msg.createReactionCollector({filter: async (reaction: MessageReaction, user: User) => this._filter(emoji, reaction, user, message)})
         .on('collect', async (reaction: MessageReaction): Promise<ReactionCollector> => callback(reaction, user, message, msg))).catch(() => undefined);
+
     /**
      * @description Проверяем пользователь использовал смайл и пользователь не бот
      * @param emoji {string} Смайл
@@ -111,6 +117,7 @@ export class CollectorSortReaction {
      * @param message {wMessage} Сообщение
      */
     protected _filter = (emoji: string, reaction: MessageReaction, user: User, message: wMessage): boolean => (reaction.emoji.name === emoji && user.id !== message.client.user.id);
+
     /**
      * @description Удаляем сообщение
      * @param msg {wMessage} Сообщение

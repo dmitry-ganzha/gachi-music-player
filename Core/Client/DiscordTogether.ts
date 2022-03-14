@@ -26,8 +26,8 @@ async function createTogetherCode(client: wClient, ChannelID: string, code: stri
         options: {zLibEncode: true}
     });
     if (!invite) return "Not found out data"
-    if (invite.error || !invite.code) return "An error occured while retrieving data!";
-    if (Number(invite.code) === 50013) return "Your bot lacks permissions to perform that action!";
+    if (invite?.error || !invite?.code) return "An error occured while retrieving data!";
+    if (typeof invite.code !== "string") return `Your bot lacks permissions to perform that action! Code: ${invite.code}`;
 
     return `https://discord.com/invite/${invite.code}`;
 

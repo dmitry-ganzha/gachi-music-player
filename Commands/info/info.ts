@@ -1,10 +1,10 @@
 import {Command} from "../Constructor";
 import os from 'node:os';
-import {ActionRow, ButtonComponent, ButtonStyle} from "discord.js";
+import {ButtonStyle, ActionRowBuilder, ButtonBuilder} from "discord.js";
 import pak from "../../package.json";
 import cfg from "../../db/Config.json";
 import TSConfig from "../../tsconfig.json";
-import {AsyncParserTimeSong} from "../../Modules/Music/src/Manager/Functions/ParserTimeSong";
+import {ParserTimeSong} from "../../Modules/Music/src/Manager/Functions/ParserTimeSong";
 import {EmbedConstructor, wMessage} from "../../Core/Utils/TypesHelper";
 import {Colors} from "../../Core/Utils/Colors";
 
@@ -23,19 +23,16 @@ export class CommandInfo extends Command {
     };
     public run = async (message: wMessage): Promise<void | NodeJS.Timeout| any> => {
         const Buttons = {
-            // @ts-ignore
-            MyUrl: new ButtonComponent().setURL(`https://discord.com/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji({name: '🔗'}).setLabel('Invite').setStyle(ButtonStyle.Link),
-            // @ts-ignore
-            ServerUrl: new ButtonComponent().setURL(cfg.Bot.DiscordServer).setEmoji({name: "🛡"}).setLabel('My server').setStyle(ButtonStyle.Link),
-            // @ts-ignore
-            Git: new ButtonComponent().setURL('https://github.com/SNIPPIK/WatKLOK-BOT').setEmoji({name: "🗂"}).setLabel("GitHub").setStyle(ButtonStyle.Link)
+            MyUrl: new ButtonBuilder().setURL(`https://discord.com/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji({name: '🔗'}).setLabel('Invite').setStyle(ButtonStyle.Link),
+            ServerUrl: new ButtonBuilder().setURL(cfg.Bot.DiscordServer).setEmoji({name: "🛡"}).setLabel('My server').setStyle(ButtonStyle.Link),
+            Git: new ButtonBuilder().setURL('https://github.com/SNIPPIK/WatKLOK-BOT').setEmoji({name: "🗂"}).setLabel("GitHub").setStyle(ButtonStyle.Link)
         }
-        const RunButt = new ActionRow().addComponents(Buttons.MyUrl, Buttons.ServerUrl, Buttons.Git);
+        const RunButt = new ActionRowBuilder().addComponents(Buttons.MyUrl, Buttons.ServerUrl, Buttons.Git);
 
         return getCPUUsage(async (cpu: number) => {
-            // @ts-ignore
             return message.channel.send({
                 embeds: [await InfoEmbed(message, cpu.toFixed(2))],
+                // @ts-ignore
                 components: [RunButt]
             }).then(async (msg: wMessage) => Command.DeleteMessage(msg, 35e3)).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
         })
@@ -58,7 +55,7 @@ async function InfoEmbed(message: wMessage, cpu: string): Promise<EmbedConstruct
             },
             {
                 name: 'Статистика',
-                value: `\`\`\`css\n• Uptime     => ${await AsyncParserTimeSong(message.client.uptime / 1000)}\n• Memory     => ${FormatBytes(process.memoryUsage().heapUsed)} + (${message.client.queue.size * 5} МБ)\n• CPU        => ${cpu}%\n• Platform   => ${process.platform}\n• Node       => ${process.version}\n• ECMAScript => ${TSConfig.compilerOptions.target}\n\n• Servers    => ${message.client.guilds.cache.size}\n• Channels   => ${message.client.channels.cache.size}\n\`\`\`\n`
+                value: `\`\`\`css\n• Uptime     => ${ParserTimeSong(message.client.uptime / 1000)}\n• Memory     => ${FormatBytes(process.memoryUsage().heapUsed)} + (${message.client.queue.size * 5} МБ)\n• CPU        => ${cpu}%\n• Platform   => ${process.platform}\n• Node       => ${process.version}\n• ECMAScript => ${TSConfig.compilerOptions.target}\n\n• Servers    => ${message.client.guilds.cache.size}\n• Channels   => ${message.client.channels.cache.size}\n\`\`\`\n`
             },
             {
                 name: 'Код написан на',

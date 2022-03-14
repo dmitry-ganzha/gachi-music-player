@@ -1,9 +1,22 @@
-import {AsyncFullTimeSongs} from "../../../Manager/Functions/FullTimeSongs";
+import {FullTimeSongs} from "../../../Manager/Functions/FullTimeSongs";
 import {Song} from "../../../Manager/Queue/Structures/Song";
 import {Queue} from "../../../Manager/Queue/Structures/Queue";
 import {EmbedConstructor, wClient} from "../../../../../../Core/Utils/TypesHelper";
 import {NotFound, NotImage, NotVer, Ver} from "./Helper";
 
+/**
+ * @description Embed сообщение о добавленном треке
+ * @param client {wClient} Клиент
+ * @param color {Song<color>} Цвет
+ * @param author {Song<author>} Автор трека
+ * @param image {Song<image>} Картинка трека
+ * @param title {Song<title>} Название трека
+ * @param url {Song<url>} Ссылка на трек
+ * @param duration {Song<duration>} Длительность трека
+ * @param requester {Song<requester>} Кто включил трек
+ * @param songs {Queue<songs>} Все треки
+ * @param err {Error} Ошибка выданная плеером
+ */
 export async function Warning(client: wClient, {color, author, image, title, url, duration, requester}: Song, {songs}: Queue, err: Error): Promise<EmbedConstructor> {
     return {
         color,
@@ -18,7 +31,7 @@ export async function Warning(client: wClient, {color, author, image, title, url
         },
         timestamp: new Date(),
         footer: {
-            text: `${requester.username} | ${await AsyncFullTimeSongs(songs)} | 🎶: ${songs.length}`,
+            text: `${requester.username} | ${FullTimeSongs(songs)} | 🎶: ${songs.length}`,
             iconURL: requester.displayAvatarURL() ? requester.displayAvatarURL() : client.user.displayAvatarURL(),
         }
     }

@@ -142,7 +142,7 @@ export class VK {
         if (url.match(/\/audio/)) return url.split('/audio')[1];
         return url.split('playlist/')[1];
     };
-    //Убераем пропуск между словами
+    //Убираем пропуск между словами
     protected ReplaceAuthorUrl = (AuthorName: string): string => `https://vk.com/audio&q=${AuthorName.replaceAll(" ", "").toLowerCase()}`;
 }
 

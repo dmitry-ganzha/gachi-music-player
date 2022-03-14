@@ -1,4 +1,11 @@
-import {ActionRow, ButtonComponent, ButtonStyle, DiscordAPIError, Guild, Message} from "discord.js";
+import {
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    DiscordAPIError,
+    Guild,
+    Message
+} from "discord.js";
 import {EmbedConstructor, wClient, wMessage} from "../../Core/Utils/TypesHelper";
 import cfg from "../../db/Config.json";
 import {Colors} from "../../Core/Utils/Colors";
@@ -9,15 +16,13 @@ export class guildCreate {
 
     public run = async (guild: Guild, f2: null, client: wClient): Promise<void | NodeJS.Timeout> | null => {
         const Buttons = {
-            // @ts-ignore
-            MyUrl: new ButtonComponent().setURL(`https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji({name: '🔗'}).setLabel('Invite').setStyle(ButtonStyle.Link),
-            // @ts-ignore
-            ServerUrl: new ButtonComponent().setURL(cfg.Bot.DiscordServer).setEmoji({name: '🛡'}).setLabel('Help server').setStyle(ButtonStyle.Link),
-            // @ts-ignore
-            Git: new ButtonComponent().setURL('https://github.com/SNIPPIK/WatKLOK-BOT').setEmoji({name: "🗂"}).setLabel("GitHub").setStyle(ButtonStyle.Link)
+            MyUrl: new ButtonBuilder().setURL(`https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji({name: '🔗'}).setLabel('Invite').setStyle(ButtonStyle.Link),
+            ServerUrl: new ButtonBuilder().setURL(cfg.Bot.DiscordServer).setEmoji({name: '🛡'}).setLabel('Help server').setStyle(ButtonStyle.Link),
+            Git: new ButtonBuilder().setURL('https://github.com/SNIPPIK/WatKLOK-BOT').setEmoji({name: "🗂"}).setLabel("GitHub").setStyle(ButtonStyle.Link)
         };
-        const RunButt = new ActionRow().addComponents(Buttons.MyUrl, Buttons.ServerUrl);
+        const RunButt = new ActionRowBuilder().addComponents(Buttons.MyUrl, Buttons.ServerUrl);
 
+        // @ts-ignore
         return guild.systemChannel ? guild.systemChannel.send({ embeds: [await ConstructEmbed(guild) as any], components: [RunButt]}).then(async (msg: wMessage | Message) => setTimeout(async () => msg.delete().catch(async (err: DiscordAPIError) => console.log(`[Discord Message]: [guildCreate]: [Delete]: ${err}`)), 60e3)).catch(async (e: DiscordAPIError) => console.log(`[Discord event]: [guildCreate]: ${e}`)) : null;
     };
 }

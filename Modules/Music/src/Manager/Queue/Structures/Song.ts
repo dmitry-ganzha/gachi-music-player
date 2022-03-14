@@ -44,15 +44,32 @@ export class Song {
     };
 }
 
+/**
+ * @description Подготавливаем время трека для системы
+ * @param duration {InputTrackDuration} Время
+ * @constructor
+ */
 function ConstDuration(duration: InputTrackDuration): { StringTime: string | "Live"; seconds: number } {
     const seconds = parseInt(duration.seconds);
     return {
         seconds, StringTime: seconds > 0 ? ParserTimeSong(seconds) : 'Live'
     };
 }
+
+/**
+ * @description Подготавливаем цвет трека
+ * @param type {string}
+ * @constructor
+ */
 function Color(type: string): number {
     return type === "YOUTUBE" ? Colors.RED : type === "SPOTIFY" ? Colors.GREEN : Colors.BLUE;
 }
+
+/**
+ * @description Ищем в ссылке тип трека
+ * @param url {string} Ссылка
+ * @constructor
+ */
 function Type(url: string): SongType {
     try {
         let start = url.split('://')[1].split('/')[0];
@@ -63,7 +80,11 @@ function Type(url: string): SongType {
     }
 }
 
-
+/**
+ * @description Подготавливаем формат трека для FFmpeg
+ * @param format {InputFormat} Исходный формат
+ * @constructor
+ */
 export function ConstFormat (format: InputFormat): null | FFmpegFormat {
     if (!format) return null;
 

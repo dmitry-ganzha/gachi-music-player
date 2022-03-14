@@ -81,7 +81,7 @@ export async function Load (client: wClient): Promise<void> {
             const {dir, file} = op;
 
             if (pull) {
-                client.on(pull.name, async (ev: any, ev2: any) => pull.run(ev, ev2, client));
+                client.on(pull.name as any, async (ev: any, ev2: any) => pull.run(ev, ev2, client));
                 console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Events/${dir}/${file}]`);
             } else {
                 console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Events/${dir}/${file}]`);

@@ -1,7 +1,6 @@
 import {Command} from "../Constructor";
 import {wMessage} from "../../Core/Utils/TypesHelper";
-import {ChannelType} from "discord-api-types";
-import {TextChannel} from "discord.js";
+import {ChannelType, TextChannel} from "discord.js";
 
 export class CommandDeploy extends Command {
     public constructor() {

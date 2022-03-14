@@ -39,8 +39,6 @@ type FFmpegArgs = (string | number)[];
  * @description Заготавливаем необходимые данные для создания потока
  */
 export class FinderResource {
-    protected static req: number = 0;
-
     public static init = async (song: Song): Promise<void> => {
         //Делаем проверку и 2 запроса
         if (!song.format?.url) {
@@ -48,30 +46,28 @@ export class FinderResource {
             if (!format) format = await getLinkFormat(song);
             if (!format) {
                 song.format = {url: undefined, work: false};
-                delete this.req;
                 return;
             }
             song.format = ConstFormat(format);
         }
 
-        if (song.format.work) {
-            delete this.req;
-            return;
-        }
+        if (song.format.work) return;
 
         const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 5, method: "GET"}}).catch(() => null);
-        if (!resource || this.req > 3 || resource.statusCode >= 400) {
+        if (!resource || resource.statusCode >= 400) {
             delete song.format;
-            this.req++;
             return this.init(song);
         }
 
-        delete this.req;
         song.format.work = true;
         return;
     }
 }
-//Получаем InputFormat
+
+/**
+ * @description Получаем InputFormat
+ * @param song {Song} Трек
+ */
 async function getLinkFormat({type, url, title, author}: Song): Promise<InputFormat> {
     try {
         if (type === "SPOTIFY") return FindTrack(`${author.title} - ${title}`);
@@ -82,12 +78,22 @@ async function getLinkFormat({type, url, title, author}: Song): Promise<InputFor
         return null;
     }
 }
-//Ищем трек на youtube
+
+/**
+ * @description Ищем трек на youtube
+ * @param nameSong {string} Название музыки
+ * @constructor
+ */
 async function FindTrack(nameSong: string): Promise<InputFormat> {
     const Song: string = await YouTube.SearchVideos(nameSong, {onlyLink: true}) as string;
     if (Song) return getFormatYouTube(Song);
     return null;
 }
+
+/**
+ * @description Получаем от видео все доступные форматы
+ * @param url {string} Ссылка
+ */
 async function getFormatYouTube(url: string): Promise<InputFormat> {
     return YouTube.getVideo(url, {onlyFormats: true});
 }
@@ -124,7 +130,10 @@ export class FFmpegStream {
         ['end', 'close', 'error'].map((event) => this.playStream.once(event, this.destroy));
         return;
     };
-    //Использует Discord.js player
+
+    /**
+     * @description Использует Discord.js player
+     */
     public read(): Buffer | null {
         if (this.silenceRemaining === 0) return null;
         else if (this.silenceRemaining > 0) {
@@ -135,7 +144,10 @@ export class FFmpegStream {
         if (packet) this.playbackDuration += 20;
         return packet;
     };
-    //Чистим память!
+
+    /**
+     * @description Чистим память!
+     */
     public destroy = async (): Promise<void> => {
         this.FFmpeg.destroy();
 
@@ -155,7 +167,13 @@ export class FFmpegStream {
         return;
     };
 }
-//Создаем аргументы для FFmpeg
+
+/**
+ * @description Создаем аргументы для FFmpeg
+ * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
+ * @param url {string} Ссылка
+ * @constructor
+ */
 function CreateArguments (AudioFilters: AudioFilters, url: string): FFmpegArgs {
     return [
         ...FFmpegArguments.Reconnect, ...FFmpegArguments.Seek, AudioFilters?.seek ?? 0,
@@ -163,7 +181,12 @@ function CreateArguments (AudioFilters: AudioFilters, url: string): FFmpegArgs {
         ...CreateFilters(AudioFilters), ...FFmpegArguments.OggOpus, ...FFmpegArguments.Compress, ...FFmpegArguments.DecoderPreset, 'pipe:'
     ];
 }
-//Создаем фильтры для FFmpeg
+
+/**
+ * @description Создаем фильтры для FFmpeg
+ * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
+ * @constructor
+ */
 function CreateFilters(AudioFilters: AudioFilters): FFmpegArgs  {
     if (!AudioFilters) return [];
 
@@ -191,7 +214,9 @@ function CreateFilters(AudioFilters: AudioFilters): FFmpegArgs  {
 //====================== ====================== ====================== ======================
 
 
-//Запускаем FFmpeg для дальнейшего применения
+/**
+ * @description Запускаем FFmpeg для дальнейшего применения
+ */
 class FFmpeg extends Duplex {
     public get ProcessReader() { return this.process.stdout; };
     public get ProcessWriter() { return this.process.stdin; };
@@ -218,6 +243,12 @@ class FFmpeg extends Duplex {
         return;
     };
 }
+
+/**
+ * @description Создаем FFmpeg
+ * @param options {(string | number)[]} Аргументы для FFmpeg
+ * @constructor
+ */
 function SpawnFFmpeg(options: FFmpegArgs): any {
     return ChildProcess.spawn(FFmpegName, options as string[], { shell: false });
 }

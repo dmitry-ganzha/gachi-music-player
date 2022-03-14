@@ -2,7 +2,7 @@ import {ApplicationCommand, CommandInteractionOption, GuildResolvable, Interacti
 import {Command} from "../../Commands/Constructor";
 import {wClient, wMessage} from "../../Core/Utils/TypesHelper";
 import {CoolDownBase, Helper} from './Message';
-import {AsyncParserTimeSong, ParserTimeSong} from "../../Modules/Music/src/Manager/Functions/ParserTimeSong";
+import {ParserTimeSong} from "../../Modules/Music/src/Manager/Functions/ParserTimeSong";
 
 const CustomID = new Set(['skip', 'resume', 'pause', 'replay']);
 
@@ -26,7 +26,7 @@ export class SlashCommand {
         const CoolDownFind = CoolDownBase.get(interaction.user.id);
 
         if (Helper.isOwner(null, interaction.author.id)) {
-            if (CoolDownFind) return client.Send({ text: `${interaction.user.username}, Воу воу, ты слишком быстро вызываешь "Interaction". Подожди ${await AsyncParserTimeSong(CoolDownFind.time)}`, message: interaction, type: "css" });
+            if (CoolDownFind) return client.Send({ text: `${interaction.user.username}, Воу воу, ты слишком быстро вызываешь "Interaction". Подожди ${ParserTimeSong(CoolDownFind.time)}`, message: interaction, type: "css" });
             else {
                 CoolDownBase.set(interaction.user.id, {
                     time: 10

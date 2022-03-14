@@ -65,6 +65,7 @@ export class CommandPlay extends Command {
             });
         });
     };
+    //Выбираем платформу
     protected static getInfoPlatform = async (search: string, message: wMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean | MessageCollector> => {
         if (search.match(youtubeStr)) return this.PlayYouTube(message, search, voiceChannel);
         else if (search.match(spotifySrt)) return this.PlaySpotify(message, search, voiceChannel);
@@ -82,16 +83,19 @@ export class CommandPlay extends Command {
 
         return new HandleInfoResource().YT_SearchVideos(message, voiceChannel, search);
     };
+    //Для системы youtube
     protected static PlayYouTube = async (message: wMessage, search: string, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => {
         if (search.match(/v=/) && search.match(/list=/)) return new HandleInfoResource().ChangeRes(message, search, voiceChannel);
         if (search.match(/playlist/)) return new HandleInfoResource().YT_getPlaylist(search, message, voiceChannel);
         return new HandleInfoResource().YT_getVideo(search, message, voiceChannel);
     };
+    //Для системы spotify
     protected static PlaySpotify = async (message: wMessage, search: string, voiceChannel: VoiceChannel | StageChannel): Promise<void| boolean> => {
         if (search.match(/playlist/)) return new HandleInfoResource().SP_getPlaylist(search, message, voiceChannel);
         if (search.match(/album/)) return new HandleInfoResource().SP_getAlbum(search, message, voiceChannel);
         return new HandleInfoResource().SP_getTrack(search, message, voiceChannel);
     };
+    //Для системы VK
     protected static PlayVK = async (message: wMessage, search: string, voiceChannel: VoiceChannel | StageChannel): Promise<void| boolean> => {
         if (search.match(/playlist/)) return new HandleInfoResource().VK_getPlaylist(search, message, voiceChannel);
         return new HandleInfoResource().VK_getTrack(search, message, voiceChannel);
@@ -159,23 +163,30 @@ class HandleInfoResource {
     protected SendMessage = async (message: wMessage, results: any[], voiceChannel: VoiceChannel | StageChannel, resp: string, num: number): Promise<MessageCollector> => message.channel.send(`\`\`\`css\nВыбери от 1 до ${results.length}\n[Find -> ${this.isType()}]\n\n${resp}\`\`\``).then(async (msg: any) => {
         this.Reaction(msg, message, "❌", () => (this.collector?.stop(), this.deleteMessage(msg))).catch((err: Error) => console.log(err));
         await this.MessageCollector(msg, message, num);
-        return this.CreateCollector(msg, results, message, voiceChannel);
+        return this.CollectorCollect(msg, results, message, voiceChannel);
     });
-    protected CreateCollector = async (msg: wMessage, results: any[], message: wMessage, voiceChannel: VoiceChannel | StageChannel): Promise<MessageCollector> => this.collector.on('collect', async (m: any): Promise<any> => {
+    //Добавляем к коллектору ивент сбора
+    protected CollectorCollect = async (msg: wMessage, results: any[], message: wMessage, voiceChannel: VoiceChannel | StageChannel): Promise<MessageCollector> => this.collector.on('collect', async (m: any): Promise<any> => {
         await this.deleteMessage(msg);
         await this.deleteMessage(m);
         this.collector.stop();
         return this.pushSong(results, m, message, voiceChannel);
     });
+    //Из типа выдает поиск трека
     protected pushSong = async (results: any[], m: wMessage, message: wMessage, voiceChannel: VoiceChannel | StageChannel) => {
         if (this.type === "sp") return this.SP_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
         else if (this.type === "vk") return this.VK_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
         return this.YT_getVideo(results[parseInt(m.content) - 1].url, message, voiceChannel);
     };
+    //Удаляем сообщение
     protected deleteMessage = async (msg: wMessage): Promise<NodeJS.Timeout> => setTimeout(async () => msg.delete().catch(() => null), 1000);
+    //Добавляем реакцию (эмодзи)
     protected Reaction = async (msg: wMessage | any, message: wMessage, emoji: string, callback: any): Promise<ReactionCollector> => msg.react(emoji).then(async () => msg.createReactionCollector({filter: async (reaction: any, user: any) => (reaction.emoji.name === emoji && user.id !== message.client.user.id), max: 1}).on('collect', () => callback()));
+    //Создаем коллектор (discord.js) для обработки сообщений от пользователя
     protected MessageCollector = async (msg: wMessage, message: wMessage, num: any): Promise<any> => this.collector = msg.channel.createMessageCollector({filter: async (m: any) => !isNaN(m.content) && m.content <= num && m.content > 0 && m.author.id === message.author.id, max: 1});
+    //Тип поиска
     protected isType = () => this.type === "sp" ? "SPOTIFY" : this.type === "yt" ? "YOUTUBE" : this.type === "vk" ? "VK" : undefined;
+    //Конвертируем время в 00:00
     protected ConvertTimeSearch = (duration: string) => {
         if (this.type === 'yt') return duration;
         return ParserTimeSong(parseInt(duration));

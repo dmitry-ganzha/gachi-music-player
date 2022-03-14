@@ -2,7 +2,7 @@ import {Channel, EmbedConstructor, wMessage} from "../../Core/Utils/TypesHelper"
 import {ChannelType} from "discord.js";
 import {Command} from "../../Commands/Constructor";
 import {Colors} from "../../Core/Utils/Colors";
-import {AsyncParserTimeSong} from "../../Modules/Music/src/Manager/Functions/ParserTimeSong";
+import {ParserTimeSong} from "../../Modules/Music/src/Manager/Functions/ParserTimeSong";
 import cfg from '../../db/Config.json';
 
 type CommandPermission = Command['permissions'];
@@ -22,7 +22,7 @@ export class GuildMessage {
         const CoolDownFind = CoolDownBase.get(message.author.id);
 
         if (Helper.isOwner(true, message.author.id)) {
-            if (CoolDownFind) return message.client.Send({ text: `${message.author.username}, Воу воу, ты слишком быстро отправляешь сообщения. Подожди ${await AsyncParserTimeSong(CoolDownFind.time)}`, message, type: "css" });
+            if (CoolDownFind) return message.client.Send({ text: `${message.author.username}, Воу воу, ты слишком быстро отправляешь сообщения. Подожди ${ParserTimeSong(CoolDownFind.time)}`, message, type: "css" });
             else {
                 CoolDownBase.set(message.author.id, {
                     time: command?.CoolDown ?? 5

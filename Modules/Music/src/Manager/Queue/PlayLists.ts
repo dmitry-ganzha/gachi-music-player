@@ -1,6 +1,6 @@
 import {DiscordAPIError, VoiceChannel} from "discord.js";
 import {Song} from "./Structures/Song";
-import {AsyncFullTimeSongs} from "../Functions/FullTimeSongs";
+import {FullTimeSongs} from "../Functions/FullTimeSongs";
 import {EmbedConstructor, InputPlaylist, InputTrack, wMessage} from "../../../../../Core/Utils/TypesHelper";
 import {Colors} from "../../../../../Core/Utils/Colors";
 import {NotImage} from "../../Events/Message/Constructor/Helper";
@@ -78,7 +78,7 @@ async function PlaylistEmbed({client, author: DisAuthor}: wMessage, {author, ima
         description: `Найден плейлист [${title}](${url})`,
         timestamp: new Date(),
         footer: {
-            text: `${DisAuthor.username} | ${await AsyncFullTimeSongs(items)} | 🎶: ${items?.length}`,
+            text: `${DisAuthor.username} | ${FullTimeSongs(items)} | 🎶: ${items?.length}`,
             iconURL: DisAuthor.displayAvatarURL({}),
         }
     };

@@ -1,21 +1,43 @@
 import {
-    ActionRow, ActionRowComponent,
-    BaseGuildEmojiManager, ChannelManager, Client,
-    ClientApplication, ClientEvents,
+    ActionRow,
+    ActionRowBuilder,
+    ActionRowComponent,
+    BaseGuildEmojiManager,
+    ChannelManager,
+    Client,
+    ClientApplication,
+    ClientEvents,
     ClientOptions,
-    ClientUser, Collection, DMChannel, EmbedData, Guild,
+    ClientUser,
+    Collection,
+    DMChannel,
+    EmbedData,
+    Guild,
     GuildManager,
-    Message, MessageEditOptions, MessageOptions, MessagePayload, NewsChannel, PartialDMChannel,
-    ShardClientUtil, TextChannel, ThreadChannel,
-    UserManager, VoiceState, WebSocketManager
+    Message,
+    MessageActionRowComponent,
+    MessageEditOptions,
+    MessageOptions,
+    MessagePayload,
+    NewsChannel,
+    PartialDMChannel,
+    ShardClientUtil,
+    TextChannel,
+    ThreadChannel,
+    UserManager,
+    VoiceState,
+    WebSocketManager
 } from "discord.js";
 import {VoiceManager} from '../../Modules/Music/src/Manager/Voice/Voice';
 import {Queue} from "../../Modules/Music/src/Manager/Queue/Structures/Queue";
 import {Command} from "../../Commands/Constructor";
 import {PlayerEmitter} from "../../Modules/Music/src/emit";
 
-type sendType = string | MessagePayload | MessageOptions | {embeds?: EmbedConstructor[] , components?: ActionRow<ActionRowComponent>};
+type sendType = string | MessagePayload | MessageOptions | {embeds?: EmbedConstructor[] , components?: ActionRow<any> | ActionRowBuilder<any>};
 
+/**
+ * @description Модифицируем Discordjs<Message> под свои нужды
+ */
 // @ts-ignore
 export class wMessage extends Message<any> {
     // @ts-ignore
@@ -24,7 +46,6 @@ export class wMessage extends Message<any> {
     channel: {
         send(options: sendType): Promise<wMessage>
     } & Channel
-    // @ts-ignore
     client: {
         player: PlayerEmitter;
         queue: {
@@ -62,25 +83,31 @@ export class wMessage extends Message<any> {
         users: UserManager;
         voice: VoiceManager;
         ws: WebSocketManager;
-
-        on(name: ClientEvents, callback: (f1: {}, f2: {}) => Promise<void> | void): void;
     } & Client;
 }
 
+/**
+ * @description Json Embed
+ */
 export interface EmbedConstructor extends EmbedData {}
 
-
+//Клиент (Бот)
 export type wClient = wMessage["client"];
+//Типы каналов
 export type Channel = DMChannel | PartialDMChannel | NewsChannel | TextChannel | ThreadChannel;
-/*
-All interfaces
-Все интерфейсы хранятся здесь
-*/
+
+/**
+ * @description FFmpeg формат для воспроизведения
+ */
 export interface FFmpegFormat {
     url: string;
     isM3U8?: boolean;
     work: boolean;
 }
+
+/**
+ * @description Получаемый формат из SPNK<YouTube.getVideo>
+ */
 export interface InputFormat {
     url: string;
     other?: boolean | string;
@@ -90,7 +117,10 @@ export interface InputFormat {
     quality?: VideoQuality;
     fps?: number
 }
-//InputTrack
+
+/**
+ * @description Пример получаемого трека
+ */
 export interface InputTrack {
     id: string | number;
     title: string;
@@ -120,6 +150,9 @@ export type InputTrackDuration = InputTrack['duration'];
 export type InputTrackAuthor = InputTrack['author'];
 export type InputTrackImage = InputTrack['image'];
 //
+/**
+ * @description Пример получаемого автора трека
+ */
 export interface InputAuthor {
     id: string | number,
     title: string,
@@ -131,6 +164,9 @@ export interface InputAuthor {
     },
     isVerified: boolean | undefined
 }
+/**
+ * @description Пример получаемого плейлиста
+ */
 export interface InputPlaylist {
     id: string | number;
     url: string;

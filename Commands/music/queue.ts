@@ -1,6 +1,6 @@
 import {Command} from "../Constructor";
 import {CollectorSortReaction} from "../../Core/Utils/CollectorArraySort";
-import {AsyncFullTimeSongs} from "../../Modules/Music/src/Manager/Functions/FullTimeSongs";
+import {FullTimeSongs} from "../../Modules/Music/src/Manager/Functions/FullTimeSongs";
 import {wMessage} from "../../Core/Utils/TypesHelper";
 import {Queue} from "../../Modules/Music/src/Manager/Queue/Structures/Queue";
 import {ReactionCollector} from "discord.js";
@@ -34,6 +34,6 @@ export class CommandQueue extends Command {
             )).join(`\n`);
             if (i !== undefined) pages.push(i);
         });
-        return new CollectorSortReaction()._run(`\`\`\`css\n➡️ | Current playing [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${await AsyncFullTimeSongs(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``, pages, page, message, true);
+        return new CollectorSortReaction()._run(`\`\`\`css\n➡️ | Current playing [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${FullTimeSongs(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``, pages, page, message, true);
     };
 }

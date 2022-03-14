@@ -1,4 +1,4 @@
-import {AsyncParserTimeSong} from "../Manager/Functions/ParserTimeSong";
+import {ParserTimeSong} from "../Manager/Functions/ParserTimeSong";
 import {Queue} from "../Manager/Queue/Structures/Queue";
 import {Song} from "../Manager/Queue/Structures/Song";
 import {wMessage} from "../../../../Core/Utils/TypesHelper";
@@ -7,7 +7,6 @@ import {VoiceState} from "discord.js";
 const StatusPlayerIsSkipped: Set<string> = new Set(['playing', 'paused', 'buffering', 'autopaused']); //Статусы плеера для пропуска музыки
 export const Controller = {PlayerFilter, PlayerRemove, PlayerPause, PlayerReplay, PlayerResume, PlayerSeek, PlayerSkip};
 
-//====================== ====================== ====================== ======================
 /**
  * @description Продолжает воспроизведение музыки
  * @param message {wMessage} Сообщение с сервера
@@ -23,7 +22,6 @@ async function PlayerResume (message: wMessage): Promise<void> {
     }
     return client.Send({text: `${author}, Текущий статус плеера [\`\`${player.state.status}\`\`\`]`, message: message, color: 'RED'});
 }
-//====================== ====================== ====================== ======================
 
 /**
  * @description Приостанавливает воспроизведение музыки
@@ -40,7 +38,6 @@ async function PlayerPause(message: wMessage): Promise<void> {
     }
     return client.Send({text: `${author}, Текущий статус плеера [\`\`${player.state.status}\`\`\`]`, message: message, color: 'RED'});
 }
-//====================== ====================== ====================== ======================
 
 /**
  * @description Завершает текущую музыку
@@ -53,14 +50,14 @@ async function PlayerEnd(message: wMessage): Promise<void> {
     if (StatusPlayerIsSkipped.has(player.state.status)) {
         await guild.me.voice.setMute(true);
 
+        //Разовый ивент для включения микрофона бота
         player.once("stateChange", (oldState, newState) => {
-            if (newState.status !== 'buffering') guild.me.voice.setMute(false);
+            if (newState.status !== 'buffering') setTimeout(() => guild.me.voice.setMute(false), 150);
         })
         player.stop(true);
     }
     return;
 }
-//====================== ====================== ====================== ======================
 
 /**
  * @description Убираем музыку из очереди
@@ -86,7 +83,6 @@ async function PlayerRemove(message: wMessage, args: number): Promise<boolean | 
     }
     return client.Send({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: 'RED'});
 }
-//====================== ====================== ====================== ======================
 
 /**
  * @description Завершает текущую музыку
@@ -99,13 +95,12 @@ async function PlayerSeek(message: wMessage, seek: number): Promise<NodeJS.Immed
     const {title, color}: Song = songs[0];
 
     try {
-        await client.Send({text: `⏭️ | Seeking to [${await AsyncParserTimeSong(seek)}] song | ${title}`, message, type: 'css', color});
+        await client.Send({text: `⏭️ | Seeking to [${ParserTimeSong(seek)}] song | ${title}`, message, type: 'css', color});
         return player.seek(message, seek);
     } catch {
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
     }
 }
-//====================== ====================== ====================== ======================
 
 /**
  * @description Пропускает текущую музыку
@@ -131,7 +126,6 @@ async function PlayerSkip(message: wMessage, args: number): Promise<void | boole
     }
     return client.Send({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: 'RED'});
 }
-//====================== ====================== ====================== ======================
 
 /**
  * @description Пропускает музыку под номером
@@ -158,7 +152,6 @@ async function PlayerSkipTo(message: wMessage, args: number): Promise<void | boo
     }
     return client.Send({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: 'RED'});
 }
-//====================== ====================== ====================== ======================
 
 /**
  * @description Повтор текущей музыки
@@ -176,9 +169,9 @@ async function PlayerReplay(message: wMessage): Promise<NodeJS.Immediate | void>
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
     }
 }
-//====================== ====================== ====================== ======================
 
 /**
+ * @description Применяем фильтры для плеера
  * @param message {wMessage} Сообщение с сервера
  */
 async function PlayerFilter(message: wMessage): Promise<NodeJS.Immediate | void> {
@@ -192,4 +185,3 @@ async function PlayerFilter(message: wMessage): Promise<NodeJS.Immediate | void>
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
     }
 }
-//====================== ====================== ====================== ======================

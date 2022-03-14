@@ -3,7 +3,7 @@ import {Warning} from "./Constructor/Warning";
 import {AddSong} from "./Constructor/AddSong";
 import {Queue} from "../../Manager/Queue/Structures/Queue";
 import {Song} from "../../Manager/Queue/Structures/Song";
-import {ActionRow, MessageComponent, Embed} from "discord.js";
+import {ActionRow, MessageComponent, Embed, ActionRowBuilder} from "discord.js";
 import {Channel, wMessage} from "../../../../../Core/Utils/TypesHelper";
 import {Button} from "./Constructor/Helper";
 
@@ -108,7 +108,7 @@ async function DeleteMessage(send: any, time: number = 5e3): Promise<void | wMes
  * @param component {MessageComponent} Компонент Discord.js
  * @param queue {Queue} Очередь сервера
  */
-async function AddInQueueMessage(channel: Channel, embed: Embed | object, component: ActionRow<any>, {channels}: Queue): Promise<void | wMessage>  {
+async function AddInQueueMessage(channel: Channel, embed: Embed | object, component: ActionRow<any> | ActionRowBuilder<any>, {channels}: Queue): Promise<void | wMessage>  {
     try {
         return channel.send({embeds: [embed], components: [component]}).then(async (msg: any) => channels.message = msg);
     } catch (e) {

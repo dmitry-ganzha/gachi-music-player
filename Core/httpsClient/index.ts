@@ -22,12 +22,23 @@ interface httpsClientOptions {
 type IncomingHttpHeaders = IncomingMessage['headers'];
 
 export class httpsClient {
+    /**
+     * @description Чистый запрос
+     * @param url {string} Ссылка
+     * @param options {httpsClientOptions} Настройки запроса
+     */
     public Request = async (url: string, options?: httpsClientOptions): Promise<ResponseData> => {
         EditRequestOptions(options);
         return request(url, options.request);
     };
+    /**
+     * @description Получаем страницу в формате string
+     * @param url {string} Ссылка
+     * @param options {httpsClientOptions} Настройки запроса
+     */
+    public parseBody = async (url: string, options?: httpsClientOptions): Promise<string> => new Promise(async (resolve) => {
+        const req = await this.Request(url, options);
 
-    public parseBody = async (url: string, options?: httpsClientOptions): Promise<string> => new Promise(async (resolve) => this.Request(url, options).then((req) => {
         if (!req.body) return resolve(null);
         const data: string[] = [];
 
@@ -38,7 +49,7 @@ export class httpsClient {
         else if (encoding === 'br') decoder = createBrotliDecompress();
         else if (encoding === 'deflate') decoder = createDeflate();
 
-        EditCookie(req.headers, url);
+        setImmediate(() => EditCookie(req.headers, url));
 
         if (decoder) {
             req.body.pipe(decoder);
@@ -50,22 +61,39 @@ export class httpsClient {
             req.body.on('data', (c) => data.push(c));
             req.body.once('end', () => resolve(data.join('')));
         }
-    }));
+    });
 
-    public parseJson = async (url: string, options?: httpsClientOptions) => this.parseBody(url, options).then(async (body) => {
+    /**
+     * @description Получаем со страницы JSON (Работает только тогда когда все страница JSON)
+     * @param url {string} Ссылка
+     * @param options {httpsClientOptions} Настройки запроса
+     */
+    public parseJson = async (url: string, options?: httpsClientOptions) => {
+        const body = await this.parseBody(url, options);
         if (!body) return null;
 
-        return JSON.parse(body);
-    }).catch(async (e: Error) => `Invalid json response body at ${url} reason: ${e.message}`);
+        try {
+            return JSON.parse(body);
+        } catch (e) {
+            console.log(`Invalid json response body at ${url} reason: ${e.message}`);
+            return null;
+        }
+    };
 }
 
-//Получаем рандомный user-agent
+/**
+ * @description Получаем рандомный user-agent
+ */
 function UserAgent(): string {
     const minAgents = Math.ceil(0);
     const MaxAgents = Math.floor(UserAgents.length - 1);
     return UserAgents[Math.floor(Math.random() * (MaxAgents - minAgents + 1)) + minAgents];
 }
 
+/**
+ * @description Добавляем свои аргументы запроса
+ * @param options {httpsClientOptions} Настройки запроса
+ */
 function EditRequestOptions(options: httpsClientOptions): void {
     if (!options.request?.headers) options.request = {...options.request, headers: {}};
 
@@ -82,8 +110,15 @@ function EditRequestOptions(options: httpsClientOptions): void {
         if (options.options?.english) options.request.headers = {...options.request.headers, 'accept-language': 'en-US,en-IN;q=0.9,en;q=0.8,hi;q=0.7'};
     }
 }
-function EditCookie(req: IncomingHttpHeaders, url: string): void {
-    if (req && req['set-cookie'] && url.match(/watch/)) {
-        setImmediate(async () => uploadCookie(req['set-cookie']));
+
+/**
+ * @description Отправляем данные которые надо заменить в куки для работоспособности
+ * @param headers {IncomingHttpHeaders} Заголовки
+ * @param url {string} Ссылка
+ * @constructor
+ */
+function EditCookie(headers: IncomingHttpHeaders, url: string): void {
+    if (headers && headers['set-cookie'] && url.match(/watch/)) {
+        setImmediate(async () => uploadCookie(headers['set-cookie']));
     }
 }

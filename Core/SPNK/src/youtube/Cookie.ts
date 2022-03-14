@@ -13,24 +13,23 @@ export async function uploadCookie(Cookie: string | string[]) {
     let EndCookieString: {};
 
     if (typeof Cookie === "string") {
-        let CookieJson = await ParsingCookieToJson(youtubeData.cookie);
-        let newCookieJson = await ParsingCookieToJson([Cookie]);
+        let CookieJson = ParsingCookieToJson(youtubeData.cookie);
+        let newCookieJson = ParsingCookieToJson([Cookie]);
 
         let EndCookieJson = {...CookieJson, ...newCookieJson};
-        EndCookieString = {cookie: await ParsingCookieToString(EndCookieJson)};
+        EndCookieString = {cookie: ParsingCookieToString(EndCookieJson)};
     } else {
-        let CookieJson = await ParsingCookieToJson(youtubeData.cookie);
+        let CookieJson = ParsingCookieToJson(youtubeData.cookie);
 
-        let newCookieJson = await ParsingCookieToJson(Cookie);
+        let newCookieJson = ParsingCookieToJson(Cookie);
         let EndCookieJson = {...CookieJson, ...newCookieJson};
-        EndCookieString = {cookie: await ParsingCookieToString(EndCookieJson)};
+        EndCookieString = {cookie: ParsingCookieToString(EndCookieJson)};
     }
 
-    writeFile('./db/Cookie.json', JSON.stringify(EndCookieString, null, `\t`), () => null);
-    return;
+    return writeFile('./db/Cookie.json', JSON.stringify(EndCookieString, null, `\t`), () => null);
 }
-async function ParsingCookieToJson(headCookie: string[] | string) {
-    let Json = {}
+function ParsingCookieToJson(headCookie: string[] | string) {
+    let Json: {};
     if (typeof headCookie === "string") {
         headCookie.split(';').forEach((z) => {
             const arr = z.split('=');
@@ -54,7 +53,7 @@ async function ParsingCookieToJson(headCookie: string[] | string) {
     }
     return Json;
 }
-async function ParsingCookieToString(JsonCookie: object) {
+function ParsingCookieToString(JsonCookie: object) {
     let result = '', num = 1;
 
     for (const [key, value] of Object.entries(JsonCookie)) {

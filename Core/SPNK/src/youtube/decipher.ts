@@ -37,6 +37,9 @@ export class Decipher {
      */
     protected getFunctions = async (html5player: string): Promise<null | string[]> => {
         const body = await new httpsClient().parseBody(html5player, {
+            request: {
+                method: "GET"
+            },
             options: {zLibEncode: true, userAgent: true}
         });
         const functions = await this.extractFunctions(body);
