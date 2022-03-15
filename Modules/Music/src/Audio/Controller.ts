@@ -45,15 +45,17 @@ async function PlayerPause(message: wMessage): Promise<void> {
  */
 async function PlayerEnd(message: wMessage): Promise<void> {
     const {client, guild} = message;
-    const {player}: Queue = client.queue.get(guild.id);
+    const {player, songs}: Queue = client.queue.get(guild.id);
+    const song = songs[0];
 
     if (StatusPlayerIsSkipped.has(player.state.status)) {
         await guild.me.voice.setMute(true);
 
         //Разовый ивент для включения микрофона бота
         player.once("stateChange", (oldState, newState) => {
-            if (newState.status !== 'buffering') setTimeout(() => guild.me.voice.setMute(false), 150);
-        })
+            if (newState.status !== 'buffering') setTimeout(() => guild.me.voice.setMute(false), song.type === "VK" ? 250 : 150);
+        });
+
         player.stop(true);
     }
     return;

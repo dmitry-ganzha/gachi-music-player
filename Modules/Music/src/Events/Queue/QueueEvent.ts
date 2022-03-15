@@ -14,7 +14,7 @@ export type Queue_Options = Queue["options"];
 export class QueueEvents extends TypedEmitter<EventsQueue> {
     public constructor() {
         super();
-        this.on('DestroyQueue', onDestroyQueue);
+        this.once('DestroyQueue', onDestroyQueue);
         this.on('pushSong', onPushSong);
         this.setMaxListeners(2);
     };
@@ -88,7 +88,7 @@ async function SendChannelToEnd({stop}: Queue_Options, message: wMessage): Promi
  */
 async function DeleteQueue(message: wMessage): Promise<NodeJS.Timeout> {
     return setTimeout(async () => {
-        message.client.console(`[GuildQueue]: [Delete]: [${message.guild.id}]`);
+        message.client.console(`[${message.guild.id}]: [Queue]: [Method: Delete]`);
         return message.client.queue.delete(message.guild.id);
     }, 1);
 }

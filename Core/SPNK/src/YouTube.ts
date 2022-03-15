@@ -45,7 +45,7 @@ async function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
  * @param options {Options} настройки
  */
 async function getVideo(url: string, options: Options = {onlyFormats: false}): Promise<InputTrack | InputFormat> {
-    const VideoID = await new Utils().getID(url);
+    const VideoID = new Utils().getID(url);
     const body = await new httpsClient().parseBody(`${DefaultLinkYouTube}/watch?v=${VideoID}&has_verified=1`, {
         options: {
             userAgent: true, cookie: true, zLibEncode: true, english: true
@@ -118,7 +118,7 @@ async function SearchVideos(search: any, options: SearchOptions = {limit: 15, on
     if (options?.onlyLink) return `${DefaultLinkYouTube}/watch?v=${details.find((fn: any) => !!fn.videoRenderer).videoRenderer.videoId}`;
     return parsingVideos(details, options);
 }
-async function parsingVideos(details: any[], {limit}: SearchOptions, FakeBase: InputTrack[] = []): Promise<InputTrack[]> {
+function parsingVideos(details: any[], {limit}: SearchOptions, FakeBase: InputTrack[] = []): InputTrack[] {
     let num = 0;
 
     for (let i = 0; i < details.length; i++) {
@@ -158,7 +158,7 @@ async function parsingVideos(details: any[], {limit}: SearchOptions, FakeBase: I
  * @param url {string} Ссылка на плейлист
  */
 async function getPlaylist(url: string): Promise<InputPlaylist> {
-    const playlistID = await new Utils().getID(url, true);
+    const playlistID = new Utils().getID(url, true);
     const body = await new httpsClient().parseBody(`${DefaultLinkYouTube}/playlist?list=${playlistID}`, {
         options: {userAgent: true, cookie: true, zLibEncode: true, english: true}
     });
@@ -174,14 +174,14 @@ async function getPlaylist(url: string): Promise<InputPlaylist> {
         id: playlistID,
         url: `${DefaultLinkYouTube}/playlist?list=${playlistID}`,
         title: playlistInfo?.title?.runs[0]?.text ?? 'Not found',
-        items: await _parsingVideos(parsed),
+        items: _parsingVideos(parsed),
         author: await getChannel({id: channel.navigationEndpoint.browseEndpoint.browseId, name: channel.text}),
         image: {
             url: (playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer?.thumbnail.thumbnails.length ? playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer.thumbnail.thumbnails[playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer.thumbnail.thumbnails.length - 1].url : null)?.split('?sqp=')[0]
         }
     }
 }
-async function _parsingVideos(parsed: any[], finder: InputTrack[] = []): Promise<InputTrack[]> {
+function _parsingVideos(parsed: any[], finder: InputTrack[] = []): InputTrack[] {
     let num = 0;
     for (let i in parsed) {
         let video = parsed[i].playlistVideoRenderer;
@@ -216,6 +216,11 @@ async function _parsingVideos(parsed: any[], finder: InputTrack[] = []): Promise
 }
 
 
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
 /*
 Interface getChannel
 */

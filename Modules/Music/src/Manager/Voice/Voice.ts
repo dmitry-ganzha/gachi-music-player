@@ -29,6 +29,8 @@ export class VoiceManager {
 
         try {
             VoiceConnection.on("stateChange", async (oldState: any, newState: { status: any; reason: any; closeCode: number }): Promise<VoiceConnection | void | NodeJS.Timeout> => {
+                if (!VoiceConnection) return VoiceConnection.destroy();
+
                 if (newState.status === VoiceConnectionStatus.Disconnected) {
                     if (newState.reason === VoiceConnectionDisconnectReason.WebSocketClose && newState.closeCode === 4014) {
                         try {

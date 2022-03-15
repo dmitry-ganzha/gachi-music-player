@@ -71,7 +71,7 @@ export class FinderResource {
 async function getLinkFormat({type, url, title, author}: Song): Promise<InputFormat> {
     try {
         if (type === "SPOTIFY") return FindTrack(`${author.title} - ${title}`);
-        else if (type === "VK") return (await new VK().getTrack(url))?.format;
+        else if (type === "VK") return (await VK.getTrack(url))?.format;
         return getFormatYouTube(url);
     } catch {
         console.log('[Streamer]: [Fail: getLinkFormat]: [ReSearch]');

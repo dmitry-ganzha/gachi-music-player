@@ -125,11 +125,11 @@ class HandleInfoResource {
     };
 
     //VK (vk.com) взаимодействие с vk
-    public VK_getTrack = async (search: string, message: wMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => new VK().getTrack(search).then(async (track: InputTrack) => !track ? message.client.Send({text: `Хм, Vk не хочет делится данными! Существует ли это трек вообще!`, message: message, color: 'RED'}) : this.runPlayer(track, message, voiceChannel));
-    public VK_getPlaylist = async (search: string, message: wMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => new VK().getPlaylist(search).then(async (playlist: InputPlaylist) => !playlist ? message.client.Send({text: `${message.author}, Хм, Vk не хочет делится данными! Существует ли это плейлист вообще!`, message: message, color: 'RED'}) : this.runPlaylistSystem(message, playlist, voiceChannel));
+    public VK_getTrack = async (search: string, message: wMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => VK.getTrack(search).then(async (track: InputTrack) => !track ? message.client.Send({text: `Хм, Vk не хочет делится данными! Существует ли это трек вообще!`, message: message, color: 'RED'}) : this.runPlayer(track, message, voiceChannel));
+    public VK_getPlaylist = async (search: string, message: wMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => VK.getPlaylist(search).then(async (playlist: InputPlaylist) => !playlist ? message.client.Send({text: `${message.author}, Хм, Vk не хочет делится данными! Существует ли это плейлист вообще!`, message: message, color: 'RED'}) : this.runPlaylistSystem(message, playlist, voiceChannel));
     public VK_SearchTracks = async (search: string, message: wMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | MessageCollector> => {
         this.type = "vk";
-        return new VK().SearchTracks(search).then(async (result) => this.SendMessage(message, result?.items, voiceChannel, await this.ArraySort(result?.items, message), result?.items?.length));
+        return VK.SearchTracks(search).then(async (result) => this.SendMessage(message, result?.items, voiceChannel, await this.ArraySort(result?.items, message), result?.items?.length));
     };
 
     //Создаем сборщик для выбора плейлиста или трека
@@ -166,7 +166,7 @@ class HandleInfoResource {
         return this.CollectorCollect(msg, results, message, voiceChannel);
     });
     //Добавляем к коллектору ивент сбора
-    protected CollectorCollect = async (msg: wMessage, results: any[], message: wMessage, voiceChannel: VoiceChannel | StageChannel): Promise<MessageCollector> => this.collector.on('collect', async (m: any): Promise<any> => {
+    protected CollectorCollect = async (msg: wMessage, results: any[], message: wMessage, voiceChannel: VoiceChannel | StageChannel): Promise<MessageCollector> => this.collector.once('collect', async (m: any): Promise<any> => {
         await this.deleteMessage(msg);
         await this.deleteMessage(m);
         this.collector.stop();
@@ -181,7 +181,7 @@ class HandleInfoResource {
     //Удаляем сообщение
     protected deleteMessage = async (msg: wMessage): Promise<NodeJS.Timeout> => setTimeout(async () => msg.delete().catch(() => null), 1000);
     //Добавляем реакцию (эмодзи)
-    protected Reaction = async (msg: wMessage | any, message: wMessage, emoji: string, callback: any): Promise<ReactionCollector> => msg.react(emoji).then(async () => msg.createReactionCollector({filter: async (reaction: any, user: any) => (reaction.emoji.name === emoji && user.id !== message.client.user.id), max: 1}).on('collect', () => callback()));
+    protected Reaction = async (msg: wMessage | any, message: wMessage, emoji: string, callback: any): Promise<ReactionCollector> => msg.react(emoji).then(async () => msg.createReactionCollector({filter: async (reaction: any, user: any) => (reaction.emoji.name === emoji && user.id !== message.client.user.id), max: 1}).once('collect', () => callback()));
     //Создаем коллектор (discord.js) для обработки сообщений от пользователя
     protected MessageCollector = async (msg: wMessage, message: wMessage, num: any): Promise<any> => this.collector = msg.channel.createMessageCollector({filter: async (m: any) => !isNaN(m.content) && m.content <= num && m.content > 0 && m.author.id === message.author.id, max: 1});
     //Тип поиска

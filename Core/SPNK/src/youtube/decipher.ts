@@ -12,8 +12,8 @@ export interface YouTubeFormat {
     sp?: string;
     s?: string
 }
-//vm.Script
-interface Script {
+// @ts-ignore
+interface Script extends vm<Script> {
     runInNewContext(param: { sig?: string, ncode?: string }): string;
 }
 
@@ -42,7 +42,7 @@ export class Decipher {
             },
             options: {zLibEncode: true, userAgent: true}
         });
-        const functions = await this.extractFunctions(body);
+        const functions = this.extractFunctions(body);
 
         return !functions || !functions.length ? null : functions;
     };
@@ -52,10 +52,10 @@ export class Decipher {
      * @param decipherScript {Script} vm.Script
      * @param nTransformScript {Script} vm.Script
      */
-    protected setDownloadURL = async (format: YouTubeFormat, decipherScript: Script, nTransformScript: Script) => {
+    protected setDownloadURL = (format: YouTubeFormat, decipherScript: Script, nTransformScript: Script) => {
         const url = format.url ?? format.signatureCipher ?? format.cipher;
 
-        format.url = !format.url ? await this.EncodeCode(await this._decipher(url, decipherScript), nTransformScript) : await this.EncodeCode(url, nTransformScript);
+        format.url = !format.url ? this.EncodeCode(this._decipher(url, decipherScript), nTransformScript) : this.EncodeCode(url, nTransformScript);
         delete format.signatureCipher;
         delete format.cipher;
     };
@@ -64,7 +64,7 @@ export class Decipher {
      * @param url {string} Ссылка
      * @param decipherScript {Script} vm.Script
      */
-    protected _decipher = async (url: string, decipherScript: Script): Promise<string> => {
+    protected _decipher = (url: string, decipherScript: Script): string => {
         const args = querystring.parse(url) as { url: string, sp: string, s: string };
 
         if (!args.s || !decipherScript) return args.url;
@@ -73,7 +73,7 @@ export class Decipher {
         components.searchParams.set(args.sp ? args.sp : 'signature', decipherScript.runInNewContext({ sig: decodeURIComponent(args.s) }));
         return components.toString();
     };
-    protected EncodeCode = async (url: string, nTransformScript: Script): Promise<string> => {
+    protected EncodeCode = (url: string, nTransformScript: Script): string => {
         const components = new URL(decodeURIComponent(url));
         const n = components.searchParams.get('n');
 
@@ -86,11 +86,11 @@ export class Decipher {
      * @description Извлекает действия, которые необходимо предпринять для расшифровки подписи и преобразования параметра n.
      * @param body {string} Страничка
      */
-    protected extractFunctions = async (body: string): Promise<string[]> => {
+    protected extractFunctions = (body: string): string[] => {
         const functions: string[] = [];
 
-        await this.extractDecipher(body, functions);
-        await this.extractNCode(body, functions);
+        this.extractDecipher(body, functions);
+        this.extractNCode(body, functions);
         return functions;
     };
     /**
@@ -98,8 +98,8 @@ export class Decipher {
      * @param caller {string} Данные
      * @param body {string} Страничка
      */
-    protected extractManipulations = async (caller: string, body: string): Promise<"" | string> => {
-        const functionName = await new Utils().between(caller, `a=a.split("");`, `.`);
+    protected extractManipulations = (caller: string, body: string): string => {
+        const functionName = new Utils().between(caller, `a=a.split("");`, `.`);
         if (!functionName) return '';
 
         const functionStart = `var ${functionName}={`;
@@ -108,15 +108,15 @@ export class Decipher {
         if (ndx < 0) return '';
 
         const subBody = body.slice(ndx + functionStart.length - 1);
-        return `var ${functionName}=${await new Utils().cutAfterJSON(subBody)}`;
+        return `var ${functionName}=${new Utils().cutAfterJSON(subBody)}`;
     };
     /**
      * @description Вырезаем Decipher
      * @param body {string} Страничка
      * @param functions {any[]} данные youtube htmlPlayer
      */
-    protected extractDecipher = async (body: string, functions: string[]): Promise<void> => {
-        const functionName = await new Utils().between(body, `a.set("alr","yes");c&&(c=`, `(decodeURIC`);
+    protected extractDecipher = (body: string, functions: string[]): void => {
+        const functionName = new Utils().between(body, `a.set("alr","yes");c&&(c=`, `(decodeURIC`);
 
         if (functionName && functionName.length) {
             const functionStart = `${functionName}=function(a)`;
@@ -124,8 +124,8 @@ export class Decipher {
 
             if (ndx >= 0) {
                 const subBody = body.slice(ndx + functionStart.length);
-                let functionBody = `var ${functionStart}${await new Utils().cutAfterJSON(subBody)}`;
-                functionBody = `${await this.extractManipulations(functionBody, body)};${functionBody};${functionName}(sig);`;
+                let functionBody = `var ${functionStart}${new Utils().cutAfterJSON(subBody)}`;
+                functionBody = `${this.extractManipulations(functionBody, body)};${functionBody};${functionName}(sig);`;
                 functions.push(functionBody);
             }
         }
@@ -135,17 +135,17 @@ export class Decipher {
      * @param body {string} Страничка
      * @param functions {any[]} данные youtube htmlPlayer
      */
-    protected extractNCode = async (body: string, functions: any[]): Promise<void> => {
-        let functionName = await new Utils().between(body, `&&(b=a.get("n"))&&(b=`, `(b)`);
+    protected extractNCode = (body: string, functions: any[]): void => {
+        let functionName = new Utils().between(body, `&&(b=a.get("n"))&&(b=`, `(b)`);
 
-        if (functionName.includes('[')) functionName = await new Utils().between(body, `${functionName.split('[')[0]}=[`, `]`);
+        if (functionName.includes('[')) functionName = new Utils().between(body, `${functionName.split('[')[0]}=[`, `]`);
         if (functionName && functionName.length) {
             const functionStart = `${functionName}=function(a)`;
             const ndx = body.indexOf(functionStart);
 
             if (ndx >= 0) {
                 const subBody = body.slice(ndx + functionStart.length);
-                const functionBody = `var ${functionStart}${await new Utils().cutAfterJSON(subBody)};${functionName}(ncode);`;
+                const functionBody = `var ${functionStart}${new Utils().cutAfterJSON(subBody)};${functionName}(ncode);`;
                 functions.push(functionBody);
             }
         }

@@ -27,7 +27,7 @@ export async function CreateQueue(message: wMessage, VoiceChannel: VoiceChannel,
 async function CreateQueueGuild(message: wMessage, VoiceChannel: VoiceChannel, song: Song): Promise<boolean | void> {
     const {client, guild} = message;
 
-    client.console(`[GuildQueue]: [Create]: [${guild.id}]`);
+    client.console(`[${guild.id}]: [Queue]: [Method: Set]`);
     client.queue.set(guild.id, new Queue(message, VoiceChannel));
 
     const queue = client.queue.get(message.guild.id);

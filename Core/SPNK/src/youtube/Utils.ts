@@ -4,7 +4,7 @@ export class Utils {
      * @param url {string} Ссылка
      * @param isPlaylist {boolean} Это плейлист
      */
-    public getID = async (url: string, isPlaylist = false) => {
+    public getID = (url: string, isPlaylist = false) => {
         if (typeof url !== 'string') return 'Url is not string';
         let _parseUrl = new URL(url);
 
@@ -18,7 +18,7 @@ export class Utils {
      * @param left {string | RegExpConstructor} точно не понял
      * @param right {string} точно не понял
      */
-    public between = async (haystack: string, left: string | RegExpConstructor, right: string) => {
+    public between = (haystack: string, left: string | RegExpConstructor, right: string) => {
         let pos;
 
         if (left instanceof RegExp) {
@@ -43,7 +43,7 @@ export class Utils {
      * @description Функция ytdl-core
      * @param mixedJson {string[] | string} точно не понял
      */
-    public cutAfterJSON = async (mixedJson: string[] | string) => {
+    public cutAfterJSON = (mixedJson: string[] | string) => {
         let open, close, isString, isEscaped, counter = 0;
 
         if (mixedJson[0] === '[') {

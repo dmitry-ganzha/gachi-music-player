@@ -40,7 +40,7 @@ async function getToken(): Promise<void> {
  * @description Создаем запрос к SPOTIFY API и обновляем токен
  * @param method {string} Ссылка api
  */
-async function get(method: string): Promise<SpotifyPlaylist & FailResult | SpotifyTrack & FailResult | SpotifyArtist & FailResult | SpotifyUser & FailResult | SpotifyAlbumFull & FailResult | SearchTracks & FailResult> {
+async function RequestSpotify(method: string): Promise<SpotifyPlaylist & FailResult | SpotifyTrack & FailResult | SpotifyArtist & FailResult | SpotifyUser & FailResult | SpotifyAlbumFull & FailResult | SearchTracks & FailResult> {
     await login();
     return new httpsClient().parseJson(`${GetApi}/${method}`, {
         request: {
@@ -54,18 +54,6 @@ async function get(method: string): Promise<SpotifyPlaylist & FailResult | Spoti
         options: {zLibEncode: true}
     })
 }
-//Проверяем надо ли обновлять токен
-async function login() { return !await isLoggedIn() ? await getToken() : null}
-//Вышел ли токен из строя (timeout)
-async function isLoggedIn() {return Token !== undefined && TokenTime > Date.now() + 2}
-//Получаем ID трека, плейлиста, альбома
-function getID(url: string): string {
-    if (typeof url !== 'string') return undefined;
-    if (!url.match(SpotifyStr)) return undefined;
-
-    return new URL(url).pathname.split('/')[2];
-}
-//====================== ====================== ====================== ======================
 
 /**
  * @description Получаем данные о треке
@@ -73,7 +61,7 @@ function getID(url: string): string {
  */
 async function getTrack(url: string): Promise<InputTrack | null> {
     const id = getID(url);
-    const result = await get(`tracks/${id}`) as SpotifyTrack & FailResult;
+    const result = await RequestSpotify(`tracks/${id}`) as SpotifyTrack & FailResult;
 
     if (!result || !result?.name) return null;
 
@@ -90,7 +78,6 @@ async function getTrack(url: string): Promise<InputTrack | null> {
         PrevFile: result.preview_url
     }
 }
-//====================== ====================== ====================== ======================
 
 /**
  * @description получаем данные о плейлисте + треки
@@ -100,7 +87,7 @@ async function getTrack(url: string): Promise<InputTrack | null> {
 async function getPlaylist(url: string, options: {limit: number} = {limit: 101}): Promise<InputPlaylist | null> {
     try {
         const id = getID(url);
-        const result = await get(`playlists/${id}?offset=0&limit=${options.limit}`) as SpotifyPlaylist & FailResult;
+        const result = await RequestSpotify(`playlists/${id}?offset=0&limit=${options.limit}`) as SpotifyPlaylist & FailResult;
 
         if (!result || !result?.name) return null;
 
@@ -130,7 +117,6 @@ async function getPlaylist(url: string, options: {limit: number} = {limit: 101})
         return null;
     }
 }
-//====================== ====================== ====================== ======================
 
 /**
  * @description Получаем данные на альбом + треки
@@ -140,7 +126,7 @@ async function getPlaylist(url: string, options: {limit: number} = {limit: 101})
 async function getAlbum(url: string, options: {limit: number} = {limit: 101}): Promise<InputPlaylist | null> {
     try {
         const id = getID(url);
-        const result = await get(`albums/${id}?offset=0&limit=${options.limit}`) as SpotifyAlbumFull & FailResult;
+        const result = await RequestSpotify(`albums/${id}?offset=0&limit=${options.limit}`) as SpotifyAlbumFull & FailResult;
 
         if (!result || !result?.name) return null;
 
@@ -170,7 +156,6 @@ async function getAlbum(url: string, options: {limit: number} = {limit: 101}): P
         return null;
     }
 }
-//====================== ====================== ====================== ======================
 
 /**
  * @description Ищем треки в базах spotify
@@ -179,7 +164,7 @@ async function getAlbum(url: string, options: {limit: number} = {limit: 101}): P
  */
 async function SearchTracks(search: string, options: {limit: number} = {limit: 15}): Promise<{ items: InputTrack[] } | null> {
     try {
-        const result = await get(`search?q=${search}&type=track&limit=${options.limit}`) as SearchTracks & FailResult;
+        const result = await RequestSpotify(`search?q=${search}&type=track&limit=${options.limit}`) as SearchTracks & FailResult;
 
         if (!result) return null;
 
@@ -210,7 +195,6 @@ async function SearchTracks(search: string, options: {limit: number} = {limit: 1
         return null;
     }
 }
-//====================== ====================== ====================== ======================
 
 /**
  * @description Получаем данные об авторе или пользователе
@@ -219,12 +203,27 @@ async function SearchTracks(search: string, options: {limit: number} = {limit: 1
  */
 async function getAuthorTrack(url: string, isUser: boolean = false): Promise<InputAuthor> {
     const id = getID(url);
-    const result = await get(`${isUser ? "users" : "artists"}/${id}`) as (SpotifyArtist | SpotifyUser) & FailResult
+    const result = await RequestSpotify(`${isUser ? "users" : "artists"}/${id}`) as (SpotifyArtist | SpotifyUser) & FailResult
 
     return { //@ts-ignore
         id, title: result?.name ?? result?.display_name, url, image: result.images[0], isVerified: result.followers.total >= 500
     }
 }
+
+//Проверяем надо ли обновлять токен
+async function login() { return !isLoggedIn() ? getToken() : null}
+
+//Вышел ли токен из строя (timeout)
+function isLoggedIn() {return Token !== undefined && TokenTime > Date.now() + 2}
+
+//Получаем ID трека, плейлиста, альбома
+function getID(url: string): string {
+    if (typeof url !== 'string') return undefined;
+    if (!url.match(SpotifyStr)) return undefined;
+
+    return new URL(url).pathname.split('/')[2];
+}
+
 
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
