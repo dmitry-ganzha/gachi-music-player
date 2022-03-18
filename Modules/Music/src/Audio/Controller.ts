@@ -53,7 +53,7 @@ async function PlayerEnd(message: wMessage): Promise<void> {
 
         //Разовый ивент для включения микрофона бота
         player.once("stateChange", (oldState, newState) => {
-            if (newState.status !== 'buffering') setTimeout(() => guild.me.voice.setMute(false), song.type === "VK" ? 250 : 150);
+            if (newState.status !== 'buffering') setTimeout(() => guild.me.voice.setMute(false), song.type === "VK" ? 250 : 200);
         });
 
         player.stop(true);

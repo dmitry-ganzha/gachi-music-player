@@ -5,6 +5,7 @@ import {EmbedConstructor, wClient} from "../../../../../../Core/Utils/TypesHelpe
 import {audioPlayer} from "../../../Audio/AudioPlayer";
 import {ParserTimeSong} from "../../../Manager/Functions/ParserTimeSong";
 import {NotFound, NotImage, NotVer, Ver} from "./Helper";
+import {AudioFilters} from "../../../Audio/Streamer";
 
 const ProgressBarValue = true;
 
@@ -42,10 +43,11 @@ export async function CurrentPlay(client: wClient, song: Song, queue: Queue): Pr
  * @param song {Song} Трек
  * @param player {Queue<player>} Плеер
  * @param songs {Queue<songs>>} Все треки
+ * @param audioFilters
  * @param client {wClient} Клиент
  */
-async function createFields(song: Song, {player, songs}: Queue, client: wClient): Promise<{ name: string, value: string }[]> {
-    const PlayingDuration = await ConvertCurrentTime(player, ProgressBarValue);
+async function createFields(song: Song, {player, songs, audioFilters}: Queue, client: wClient): Promise<{ name: string, value: string }[]> {
+    const PlayingDuration = await ConvertCurrentTime(player, ProgressBarValue, audioFilters);
     const DurationMusic = await MusicDuration(song, PlayingDuration, ProgressBarValue);
 
     let fields = [{
@@ -79,11 +81,18 @@ async function MusicDuration({isLive, duration}: Song, curTime: number | string,
  * @description Конвертируем секунды проигранные плеером
  * @param state {audioPlayer<state>} Статус плеера
  * @param ProgressBar {boolean} Показать прогресс
+ * @param filters {AudioFilters}
  * @constructor
  */
-async function ConvertCurrentTime({state}: audioPlayer, ProgressBar: boolean = true): Promise<number | string> {
+async function ConvertCurrentTime({state}: audioPlayer, ProgressBar: boolean = true, filters: AudioFilters): Promise<number | string> {
     const duration = state.resource?.playbackDuration ?? 0;
-    const seconds = parseInt((duration / 1000).toFixed(0));
+    let seconds: number;
+
+    if (filters.speed) seconds = parseInt(((duration / 1000) * filters.speed).toFixed(0));
+    else if (filters.nightcore) seconds = parseInt(((duration / 1000) * 1.25).toFixed(0));
+    else if (filters.Vw) seconds = parseInt(((duration / 1000) * 0.8).toFixed(0));
+    else seconds = parseInt((duration / 1000).toFixed(0));
+    //const seconds = filters.speed ? parseInt(((duration / 1000) * filters.).toFixed(0));
 
     if (ProgressBar) return seconds;
     return ParserTimeSong(seconds);

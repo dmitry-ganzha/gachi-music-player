@@ -3,10 +3,9 @@ import {Warning} from "./Constructor/Warning";
 import {AddSong} from "./Constructor/AddSong";
 import {Queue} from "../../Manager/Queue/Structures/Queue";
 import {Song} from "../../Manager/Queue/Structures/Song";
-import {ActionRow, MessageComponent, Embed, ActionRowBuilder} from "discord.js";
-import {Channel, wMessage} from "../../../../../Core/Utils/TypesHelper";
+import {MessageComponent, ActionRowBuilder} from "discord.js";
+import {EmbedConstructor, wMessage} from "../../../../../Core/Utils/TypesHelper";
 import {Button} from "./Constructor/Helper";
-
 
 export class MessageSystem {
     static Interval: NodeJS.Timeout = null;
@@ -28,7 +27,7 @@ async function onUpdateMessage(message: wMessage, need: boolean = false): Promis
         const CurrentPlayEmbed = await CurrentPlay(message.client, queue.songs[0], queue);
 
         try {
-            return message.edit({embeds: [CurrentPlayEmbed]}).then(async (msg: any) => queue.channels.message = msg);
+           return message.edit({embeds: [CurrentPlayEmbed]}).then(async (msg: any) => queue.channels.message = msg);
         } catch (e) {
             return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: update, ${e.code}]: ${e?.message}`);
         }
@@ -103,14 +102,14 @@ async function DeleteMessage(send: any, time: number = 5e3): Promise<void | wMes
 }
 /**
  * @description Добавляем сообщение в очередь сервера
- * @param channel {Channel} Текстовый канал
+ * @param channel {wMessage["channel"]} Текстовый канал
  * @param embed {MessageEmbed} Embed
  * @param component {MessageComponent} Компонент Discord.js
  * @param queue {Queue} Очередь сервера
  */
-async function AddInQueueMessage(channel: Channel, embed: Embed | object, component: ActionRow<any> | ActionRowBuilder<any>, {channels}: Queue): Promise<void | wMessage>  {
+async function AddInQueueMessage(channel: wMessage["channel"], embed: EmbedConstructor, component: ActionRowBuilder<any>, {channels}: Queue): Promise<void | wMessage>  {
     try {
-        return channel.send({embeds: [embed], components: [component]}).then(async (msg: any) => channels.message = msg);
+        return channel.send({embeds: [embed as any], components: [component]}).then(async (msg: any) => channels.message = msg);
     } catch (e) {
         return console.log(`[${(new Date).toLocaleString("ru")}] [MessageEmitter]: [Method: ${e.method ?? null}]: [on: playSong, ${e.code}]: ${e?.message}`);
     }

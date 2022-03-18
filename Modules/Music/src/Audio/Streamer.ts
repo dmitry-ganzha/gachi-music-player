@@ -30,7 +30,7 @@ const FFmpegArguments = {
     }
 };
 
-type AudioFilters = Queue['audioFilters'] & {seek: number};
+export type AudioFilters = Queue['audioFilters'] & {seek?: number};
 type FFmpegArgs = (string | number)[];
 
 

@@ -113,14 +113,12 @@ async function AutoJoinVoice(channels: Queue_Channels, player: audioPlayer): Pro
  * @param seek {number} Пропуск музыки до 00:00:00
  */
 async function CreateResource(message: wMessage, seek: number = 0): Promise<FFmpegStream> {
-    return new Promise(async (resolve) => {
-        const queue: Queue = message.client.queue.get(message.guild.id);
-        const song = queue.songs[0];
+    const queue: Queue = message.client.queue.get(message.guild.id);
+    const song = queue.songs[0];
 
-        if (!song.format?.url) await FinderResource.init(song);
+    if (!song.format?.url) await FinderResource.init(song);
 
-        return resolve(new FFmpegStream(song.format.url, {...queue.audioFilters, seek}));
-    })
+    return new FFmpegStream(song.format.url, {...queue.audioFilters, seek});
 }
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
@@ -149,10 +147,11 @@ async function onIdlePlayer(message: wMessage): Promise<NodeJS.Timeout | null | 
  * @param message {wMessage} Сообщение с сервера
  */
 async function onErrorPlayer(err: AudioPlayerError, message: wMessage): Promise<void> {
-    const {events, songs}: Queue = message.client.queue.get(message.guild.id);
+    const queue: Queue = message.client.queue.get(message.guild.id);
 
-    await events.message.WarningMessage(message, songs[0], err);
-    if (songs) songs.shift();
+    await queue.events.message.WarningMessage(message, queue.songs[0], err);
+    if (queue.songs) queue.songs.shift();
+    else if (queue.songs.length === 0) queue.events.queue.emit("DestroyQueue", queue, message);
 
     return;
 }
