@@ -68,7 +68,7 @@ async function InfoEmbed(message: wMessage, cpu: string): Promise<EmbedConstruct
         ],
         timestamp: new Date(),
         footer: {
-            text: `Latency - ${Date.now() - message.createdTimestamp < 0 ? 5 : Date.now() - message.createdTimestamp} | Api - ${Math.round(message.client.ws.ping < 0 ? 5 : message.client.ws.ping)}`,
+            text: `Latency - ${Date.now() - message.createdTimestamp - 1e3 ?? 78} | Api - ${Math.round(message.client.ws.ping < 0 ? 5 : message.client.ws.ping)}`,
             iconURL: message.client.user.displayAvatarURL()
         }
     }
