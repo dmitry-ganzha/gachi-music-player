@@ -6,13 +6,17 @@ import {
     AudioResource,
     PlayerSubscription
 } from "@discordjs/voice";
-import {FFmpegStream, FinderResource} from "./Streamer";
+import {FFmpegStream, FinderResource} from "./Helper";
 import {wMessage} from "../../../../Core/Utils/TypesHelper";
 import {VoiceManager} from "../Manager/Voice/Voice";
 import {Queue} from "../Manager/Queue/Structures/Queue";
 import {Song} from "../Manager/Queue/Structures/Song";
 import {Queue_Channels} from "../Events/Queue/QueueEvent";
+
 type PlayerState = AudioPlayerState & {missedFrames?: number, resource?: AudioResource};
+
+//Статусы плеера для пропуска музыки
+export const StatusPlayerHasSkipped: Set<string> = new Set(['playing', 'paused', 'buffering', 'autopaused']);
 
 /**
  * @description Настраиваем AudioPlayer
@@ -24,9 +28,13 @@ export class audioPlayer extends AudioPlayer {
 
     public constructor(msg: wMessage) {
         super();
-        this.on(AudioPlayerStatus.Idle, async (): Promise<any> => onIdlePlayer(msg));
-        this.on(AudioPlayerStatus.Buffering, async (): Promise<any> => onBufferingPlayer(msg));
-        this.on(AudioPlayerStatus.AutoPaused, async () => onAutoPausePlayer(msg));
+        try {
+            this.on(AudioPlayerStatus.Idle, async (): Promise<any> => onIdlePlayer(msg));
+            this.on(AudioPlayerStatus.Buffering, async (): Promise<any> => onBufferingPlayer(msg));
+            this.on(AudioPlayerStatus.AutoPaused, async () => onAutoPausePlayer(msg));
+        } catch (e) {
+            this.emit("error", e);
+        }
 
         this.on("error", async (err: AudioPlayerError): Promise<any> => onErrorPlayer(err, msg));
         this.setMaxListeners(4);
@@ -62,6 +70,7 @@ export class audioPlayer extends AudioPlayer {
         }
         return;
     };
+
     /**
      * @description Включаем музыку с пропуском
      * @param message {wMessage} Сообщение с сервера
@@ -78,9 +87,10 @@ export class audioPlayer extends AudioPlayer {
             setTimeout(async () => {
                 await this.play(stream);
                 this.playingTime = seek * 1000;
-            }, 1e3);
+            }, seek ? 1500: 1e3);
         }
     };
+
     /**
      * @description Включаем музыку
      * @param message {wMessage} Сообщение с сервера
@@ -88,14 +98,21 @@ export class audioPlayer extends AudioPlayer {
     public static playStream = async (message: wMessage): Promise<boolean | void> => {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
+        let stream: any;
 
         if (queue.songs?.length === 0) return void queue.events.queue.emit('DestroyQueue', queue, message);
-        const stream = await CreateResource(message) as any;
 
-        client.console(`[${guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
-        await queue.events.message.PlaySongMessage(message); //Отправляем данные в EventEmitter message для создания embed сообщения о текущем треке
-        await AutoJoinVoice(queue.channels, queue.player); // Подключаем плеер к гс
-        setImmediate(async () => queue.player.play(stream));
+        try {
+            stream = await CreateResource(message) as any;
+        } finally {
+            setImmediate(async () => queue.player.play(stream));
+        }
+
+        setImmediate(async () => {
+            client.console(`[${guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
+            await queue.events.message.PlaySongMessage(message); //Отправляем данные в EventEmitter message для создания embed сообщения о текущем треке
+            await AutoJoinVoice(queue.channels, queue.player); // Подключаем плеер к гс
+        });
     }
 }
 
@@ -107,6 +124,7 @@ export class audioPlayer extends AudioPlayer {
 async function AutoJoinVoice(channels: Queue_Channels, player: audioPlayer): Promise<void> {
     if (!channels.connection?.subscribe) (channels.connection = new VoiceManager().Join(channels.voice)).subscribe(player as any);
 }
+
 /**
  * @description Создаем Opus поток
  * @param message {wMessage} Сообщение с сервера
@@ -141,6 +159,7 @@ async function onIdlePlayer(message: wMessage): Promise<NodeJS.Timeout | null | 
     if (queue.options.random) return Shuffle(message, queue);
     return audioPlayer.playStream(message);
 }
+
 /**
  * @description Когда плеер выдает ошибку, он возвратит эту функцию
  * @param err {AudioPlayerError} Ошибка
@@ -155,6 +174,7 @@ async function onErrorPlayer(err: AudioPlayerError, message: wMessage): Promise<
 
     return;
 }
+
 /**
  * @description Когда плеер получает поток (музыку), он возвратит эту функцию
  * @param message {wMessage} Сообщение с сервера
@@ -175,6 +195,7 @@ async function onBufferingPlayer(message: wMessage): Promise<NodeJS.Timeout | nu
         }
     }, 15e3);
 }
+
 /**
  * @description Если плеер сам ставит на паузу
  * @param message {wMessage} Сообщение с сервера
@@ -203,6 +224,7 @@ async function isRemoveSong({options, songs}: Queue): Promise<null> {
 
     return null;
 }
+
 /**
  * @description Перетасовка музыки в очереди
  * @param message {wMessage} Сообщение с сервера

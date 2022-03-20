@@ -3,8 +3,8 @@ import {Queue} from "../Manager/Queue/Structures/Queue";
 import {Song} from "../Manager/Queue/Structures/Song";
 import {wMessage} from "../../../../Core/Utils/TypesHelper";
 import {VoiceState} from "discord.js";
+import {StatusPlayerHasSkipped} from "./AudioPlayer";
 
-const StatusPlayerIsSkipped: Set<string> = new Set(['playing', 'paused', 'buffering', 'autopaused']); //Статусы плеера для пропуска музыки
 export const Controller = {PlayerFilter, PlayerRemove, PlayerPause, PlayerReplay, PlayerResume, PlayerSeek, PlayerSkip};
 
 /**
@@ -22,6 +22,7 @@ async function PlayerResume (message: wMessage): Promise<void> {
     }
     return client.Send({text: `${author}, Текущий статус плеера [\`\`${player.state.status}\`\`\`]`, message: message, color: 'RED'});
 }
+//====================== ====================== ====================== ======================
 
 /**
  * @description Приостанавливает воспроизведение музыки
@@ -38,6 +39,7 @@ async function PlayerPause(message: wMessage): Promise<void> {
     }
     return client.Send({text: `${author}, Текущий статус плеера [\`\`${player.state.status}\`\`\`]`, message: message, color: 'RED'});
 }
+//====================== ====================== ====================== ======================
 
 /**
  * @description Завершает текущую музыку
@@ -48,18 +50,19 @@ async function PlayerEnd(message: wMessage): Promise<void> {
     const {player, songs}: Queue = client.queue.get(guild.id);
     const song = songs[0];
 
-    if (StatusPlayerIsSkipped.has(player.state.status)) {
-        await guild.me.voice.setMute(true);
+    if (StatusPlayerHasSkipped.has(player.state.status)) {
+        await guild.me.voice.setMute(true).catch(() => undefined);
 
         //Разовый ивент для включения микрофона бота
         player.once("stateChange", (oldState, newState) => {
-            if (newState.status !== 'buffering') setTimeout(() => guild.me.voice.setMute(false), song.type === "VK" ? 250 : 200);
+            if (newState.status !== 'buffering') setTimeout(() => guild.me.voice.setMute(false).catch(() => undefined), song.type === "VK" ? 250 : 200);
         });
 
         player.stop(true);
     }
     return;
 }
+//====================== ====================== ====================== ======================
 
 /**
  * @description Убираем музыку из очереди
@@ -73,7 +76,7 @@ async function PlayerRemove(message: wMessage, args: number): Promise<boolean | 
     const voiceConnection: VoiceState[] = client.connections(guild);
     const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === songs[0].requester.id);
 
-    if (!StatusPlayerIsSkipped.has(player.state.status)) return client.Send({text: `${author}, ⚠ Музыка еще не играет. Текущий статус плеера - [${player.state.status}]`, message, color: 'RED'});
+    if (!StatusPlayerHasSkipped.has(player.state.status)) return client.Send({text: `${author}, ⚠ Музыка еще не играет. Текущий статус плеера - [${player.state.status}]`, message, color: 'RED'});
 
     if (songs.length <= 1) return player.stop();
 
@@ -85,6 +88,7 @@ async function PlayerRemove(message: wMessage, args: number): Promise<boolean | 
     }
     return client.Send({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: 'RED'});
 }
+//====================== ====================== ====================== ======================
 
 /**
  * @description Завершает текущую музыку
@@ -103,6 +107,7 @@ async function PlayerSeek(message: wMessage, seek: number): Promise<NodeJS.Immed
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
     }
 }
+//====================== ====================== ====================== ======================
 
 /**
  * @description Пропускает текущую музыку
@@ -118,16 +123,17 @@ async function PlayerSkip(message: wMessage, args: number): Promise<void | boole
     const voiceConnection: VoiceState[] = client.connections(guild);
     const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === requester.id);
 
-    if (!StatusPlayerIsSkipped.has(player.state.status)) return client.Send({text: `${author}, ⚠ Музыка еще не играет. Текущий статус плеера - [${player.state.status}]`, message, color: 'RED'});
+    if (!StatusPlayerHasSkipped.has(player.state.status)) return client.Send({text: `${author}, ⚠ Музыка еще не играет. Текущий статус плеера - [${player.state.status}]`, message, color: 'RED'});
 
     if (member.permissions.has('Administrator') || author.id === requester.id || !UserToVoice) {
-        if (StatusPlayerIsSkipped.has(player.state.status)) {
+        if (StatusPlayerHasSkipped.has(player.state.status)) {
             await client.Send({text: `⏭️ | [${duration.StringTime}] | Skip song | ${title}`, message, type: 'css', color});
             return PlayerEnd(message);
         }
     }
     return client.Send({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: 'RED'});
 }
+//====================== ====================== ====================== ======================
 
 /**
  * @description Пропускает музыку под номером
@@ -141,7 +147,7 @@ async function PlayerSkipTo(message: wMessage, args: number): Promise<void | boo
     const voiceConnection: VoiceState[] = client.connections(guild);
     const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === queue.songs[0].requester.id);
 
-    if (!StatusPlayerIsSkipped.has(queue.player.state.status)) return client.Send({text: `${author}, ⚠ Музыка еще не играет. Текущий статус плеера - [${queue.player.state.status}]`, message, color: 'RED'});
+    if (!StatusPlayerHasSkipped.has(queue.player.state.status)) return client.Send({text: `${author}, ⚠ Музыка еще не играет. Текущий статус плеера - [${queue.player.state.status}]`, message, color: 'RED'});
 
     if (args > queue.songs.length) return client.Send({text: `${author}, В очереди ${queue.songs.length}!`, message, color: 'RED'});
 
@@ -154,6 +160,7 @@ async function PlayerSkipTo(message: wMessage, args: number): Promise<void | boo
     }
     return client.Send({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: 'RED'});
 }
+//====================== ====================== ====================== ======================
 
 /**
  * @description Повтор текущей музыки
@@ -171,6 +178,7 @@ async function PlayerReplay(message: wMessage): Promise<NodeJS.Immediate | void>
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
     }
 }
+//====================== ====================== ====================== ======================
 
 /**
  * @description Применяем фильтры для плеера

@@ -60,13 +60,14 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
 
     const html5player = `https://www.youtube.com${body.split('"jsUrl":"')[1].split('"')[0]}`;
     const videoDetails = VideoRes.videoDetails;
-    let format: YouTubeFormat[] = [];
+    let format: YouTubeFormat[];
 
     const LiveData: LiveData = {
         isLive: videoDetails.isLiveContent,
-        url: VideoRes.streamingData?.hlsManifestUrl || null
+        url: VideoRes.streamingData?.hlsManifestUrl ?? null //dashManifestUrl
     };
-    const VideoFormats: YouTubeFormat[] = (VideoRes.streamingData.formats && VideoRes.streamingData.adaptiveFormats).filter((d: any) => d?.mimeType?.includes("opus") || d?.mimeType?.includes("audio")) ?? [];
+
+    const VideoFormats: YouTubeFormat[] = [...VideoRes.streamingData.formats ?? [], ...VideoRes.streamingData.adaptiveFormats ?? []].filter((d: any) => d?.mimeType?.match(/opus/) || d?.mimeType?.match(/audio/)) ?? [];
 
     if (!LiveData.isLive) {
         if (VideoFormats[0].signatureCipher || VideoFormats[0].cipher) {
@@ -74,7 +75,7 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
         } else {
             format = [...VideoFormats];
         }
-    }
+    } else format = [{url: LiveData.url, work: true}];
 
     if (options?.onlyFormats) return format[0];
 
@@ -90,10 +91,7 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
         isPrivate: videoDetails.isPrivate,
     };
 
-    return {
-        ...VideoData,
-        format: VideoData.isLive ? {url: LiveData.url, work: true} : format[0]
-    };
+    return {...VideoData, ...format};
 }
 //====================== ====================== ====================== ======================
 

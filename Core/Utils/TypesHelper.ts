@@ -1,12 +1,10 @@
 import {
     ActionRow,
     ActionRowBuilder,
-    ActionRowComponent,
     BaseGuildEmojiManager,
     ChannelManager,
     Client,
     ClientApplication,
-    ClientEvents,
     ClientOptions,
     ClientUser,
     Collection,
@@ -15,7 +13,6 @@ import {
     Guild,
     GuildManager,
     Message,
-    MessageActionRowComponent,
     MessageEditOptions,
     MessageOptions,
     MessagePayload,
@@ -33,7 +30,7 @@ import {Queue} from "../../Modules/Music/src/Manager/Queue/Structures/Queue";
 import {Command} from "../../Commands/Constructor";
 import {PlayerEmitter} from "../../Modules/Music/src/emit";
 
-type sendType = string | MessagePayload | MessageOptions | {embeds?: EmbedConstructor[] , components?: ActionRow<any> | ActionRowBuilder<any>};
+type sendType = string | MessagePayload | MessageOptions | {embeds?: EmbedConstructor[], components?: ActionRow<any> | ActionRowBuilder<any>};
 
 /**
  * @description Модифицируем Discordjs<Message> под свои нужды

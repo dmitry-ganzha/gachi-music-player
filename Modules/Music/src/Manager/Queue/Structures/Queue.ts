@@ -1,7 +1,7 @@
 import {StageChannel, VoiceChannel} from "discord.js";
 import {VoiceConnection} from "@discordjs/voice";
 import {LoopType, wMessage} from "../../../../../../Core/Utils/TypesHelper";
-import {MessageSystem} from "../../../Events/Message/Msg";
+import {MessageSystem} from "../../../Events/Message/MessageEmitter";
 import {audioPlayer} from "../../../Audio/AudioPlayer";
 import {VoiceEvents} from "../../../Events/Voice/VoiceDestroyer";
 import {Song} from "./Song";

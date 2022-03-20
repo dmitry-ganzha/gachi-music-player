@@ -5,7 +5,7 @@ import {EmbedConstructor, wClient} from "../../../../../../Core/Utils/TypesHelpe
 import {audioPlayer} from "../../../Audio/AudioPlayer";
 import {ParserTimeSong} from "../../../Manager/Functions/ParserTimeSong";
 import {NotFound, NotImage, NotVer, Ver} from "./Helper";
-import {AudioFilters} from "../../../Audio/Streamer";
+import {AudioFilters} from "../../../Audio/Helper";
 
 const ProgressBarValue = true;
 

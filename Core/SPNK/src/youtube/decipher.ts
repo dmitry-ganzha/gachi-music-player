@@ -10,8 +10,10 @@ export interface YouTubeFormat {
     signatureCipher?: string;
     cipher?: string
     sp?: string;
-    s?: string
+    s?: string;
+    work?: boolean;
 }
+
 // @ts-ignore
 interface Script extends vm<Script> {
     runInNewContext(param: { sig?: string, ncode?: string }): string;

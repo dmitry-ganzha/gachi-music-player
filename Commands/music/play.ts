@@ -61,7 +61,7 @@ export class CommandPlay extends Command {
         return CommandPlay.getInfoPlatform(search, message, voiceChannel).catch(async (e: Error | string) => {
             console.log(`[PlayCommand]: [ERROR] -> `, e);
             return message.client.Send({
-                text: `${message.author}, Error: ${e}`, message, color: "RED"
+                text: `${message.author.username} | Произошла ошибка: ${e}`, message, color: "RED", type: "css"
             });
         });
     };

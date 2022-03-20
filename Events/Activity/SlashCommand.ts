@@ -35,8 +35,10 @@ export class SlashCommand {
             }
         }
 
-        if (interaction.isCommand()) return this.runCommand(interaction, client)
-        else if (CustomID.has(interaction.customId) && client.queue.get(interaction.guildId)) return this.ButtonsMessage(interaction, client);
+        setImmediate(async () => {
+            if (interaction.isCommand()) return this.runCommand(interaction, client)
+            else if (CustomID.has(interaction.customId) && client.queue.get(interaction.guildId)) return this.ButtonsMessage(interaction, client);
+        });
     };
     /**
      * @description Редактируем взаимодействие для запуска любых команд

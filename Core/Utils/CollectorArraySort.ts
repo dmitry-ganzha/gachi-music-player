@@ -6,8 +6,8 @@ import {Queue} from "../../Modules/Music/src/Manager/Queue/Structures/Queue";
 export class CollectorSortReaction {
     /**
      * @description Создаем menu emoji
-     * @param embed { EmbedConstructor | string } MessageEmbed или строка
-     * @param pages {[]} ArraySort данные
+     * @param embed { EmbedConstructor | string } MessageEmbed или текст
+     * @param pages {any[]} ArraySort данные
      * @param page {number} Текущая страница
      * @param message {wMessage} Сообщение с сервера
      * @param EnableQueue {boolean} Добавляем сколько музыки есть в очереди
@@ -24,9 +24,9 @@ export class CollectorSortReaction {
     });
 
     /**
-     * @description 3 функции для строкового menu emoji
+     * @description 3 функции для текстовой menu emoji
      * @param page {number} Текущая страница
-     * @param pages {[]} ArraySort данные
+     * @param pages {any[]} ArraySort данные
      * @param queue {Queue} Очередь
      */
     protected _callback_string = async (page: number, pages: any[], queue: Queue): Promise<CollectorSortReactionFunction> => {
@@ -54,7 +54,7 @@ export class CollectorSortReaction {
     /**
      * @description 3 функции для messageEmbed menu emoji
      * @param page {number} Текущая страница
-     * @param pages {[]} ArraySort данные
+     * @param pages {any[]} ArraySort данные
      * @param embed {MessageEmbed} MessageEmbed
      * @param queue {Queue} Очередь
      * @param EnableQueue {boolean} Добавляем сколько музыки есть в очереди
@@ -90,9 +90,9 @@ export class CollectorSortReaction {
 
     /**
      * @description Какие 3 функции выдаем
-     * @param embed {MessageEmbed} MessageEmbed
+     * @param embed {EmbedConstructor | string} EmbedConstructor или string
      * @param page {number} Текущая страница
-     * @param pages {[]} ArraySort данные
+     * @param pages {any[]} ArraySort данные
      * @param queue {Queue} Очередь
      * @param EnableQueue {boolean} Добавляем сколько музыки есть в очереди
      */
