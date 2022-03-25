@@ -83,10 +83,9 @@ export class audioPlayer extends AudioPlayer {
             stream = await CreateResource(message, seek);
         } finally {
             setTimeout(async () => {
-                await Promise.all([
-                    this.play(stream),
-                ]);
-                if (queue.channels.connection.isMute) queue.channels.connection.setMute = false;
+                await Promise.all([this.play(stream)]);
+                
+                queue.channels.connection.setMute = false;
                 this.playingTime = seek * 1000;
             }, seek >= 400 ? 1500 : 240);
         }
@@ -110,9 +109,9 @@ export class audioPlayer extends AudioPlayer {
 
             await Promise.all([
                 queue.player.play(stream),
-                queue.events.message.PlaySongMessage(message),
+                queue.events.message.PlaySongMessage(message)
             ]);
-            if (queue.channels.connection.isMute) queue.channels.connection.setMute = false;
+            queue.channels.connection.setMute = false;
         }
     };
 }
