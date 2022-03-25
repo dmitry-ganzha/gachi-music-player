@@ -14,30 +14,27 @@ export type AudioFilters = Queue['audioFilters'] & {seek?: number};
 /**
  * @description Заготавливаем необходимые данные для создания потока
  */
-export class FinderResource {
-    public static init = async (song: Song): Promise<void> => {
-        //Делаем проверку и 2 запроса
-        if (!song.format?.url) {
-            let format = await getLinkFormat(song);
-            if (!format) format = await getLinkFormat(song);
-            if (!format) {
-                song.format = {url: undefined, work: false};
-                return;
-            }
-            song.format = ConstFormat(format);
+export async function FindResource(song: Song): Promise<void> {
+    if (song?.format?.work) return;
+
+    if (!song.format?.url) {
+        let format = await getLinkFormat(song);
+        if (!format) format = await getLinkFormat(song);
+        if (!format) {
+            song.format = {url: undefined, work: false};
+            return;
         }
+        song.format = ConstFormat(format);
+    }
 
-        if (song.format.work) return;
+    const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 5, method: "GET"}}).catch(() => null);
+    if (!resource || resource.statusCode >= 400 && resource.statusCode !== 404) {
+        delete song.format;
+        return FindResource(song);
+    }
 
-        const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 5, method: "GET"}}).catch(() => null);
-        if (!resource || resource.statusCode >= 400) {
-            delete song.format;
-            return this.init(song);
-        }
-
-        song.format.work = true;
-        return;
-    };
+    song.format.work = true;
+    return;
 }
 
 /**
@@ -73,19 +70,24 @@ async function FindTrack(nameSong: string): Promise<InputFormat> {
 async function getFormatYouTube(url: string): Promise<InputFormat> {
     return YouTube.getVideo(url, {onlyFormats: true});
 }
+
+
 //====================== ====================== ====================== ======================
 
 /**
  * @description Подготавливаем, получаем и создаем объект схожий с discord.js {AudioResource}
  */
 export class FFmpegStream {
-    public readonly playStream: opus.OggDemuxer;
+    public playStream: opus.OggDemuxer;
+    public silencePaddingFrames: number = 0;
     public playbackDuration = 0;
     public started = false;
-    public readonly silencePaddingFrames: number = 0;
     public silenceRemaining = -1;
-    protected readonly FFmpeg: FFmpeg;
-    protected readonly opusEncoder = new opus.OggDemuxer({autoDestroy: true});
+    protected FFmpeg: FFmpeg;
+    protected opusEncoder = new opus.OggDemuxer({
+        autoDestroy: true,
+        destroy: () => this.destroy().catch(() => undefined)
+    });
 
     public get readable() {
         if (this.silenceRemaining === 0) return false;
@@ -96,7 +98,9 @@ export class FFmpegStream {
         }
         return read;
     };
-    public get ended() { return this.playStream?.readableEnded || this.playStream?.destroyed || !!this.playStream; };
+    public get ended() {
+        return this.playStream?.readableEnded || this.playStream?.destroyed || !!this.playStream;
+    };
 
     public constructor(url: string | any, AudioFilters: AudioFilters) {
         this.FFmpeg = new FFmpeg(CreateArguments(AudioFilters, url) as any);
@@ -110,7 +114,7 @@ export class FFmpegStream {
     /**
      * @description Использует Discord.js player
      */
-    public read(): Buffer | null {
+    public read = (): Buffer | null => {
         if (this.silenceRemaining === 0) return null;
         else if (this.silenceRemaining > 0) {
             this.silenceRemaining--;
@@ -125,20 +129,34 @@ export class FFmpegStream {
      * @description Чистим память!
      */
     public destroy = async (): Promise<void> => {
-        this.FFmpeg.destroy();
+        if (this.FFmpeg) {
+            this.FFmpeg.destroy();
+            delete this.FFmpeg;
+        }
 
         //Delete other
         delete this.playbackDuration;
         delete this.started;
         delete this.silenceRemaining;
 
-        //Cleanup playStream
-        this.playStream.destroy();
-        this.playStream.read();
+        setTimeout(() => {
+            //Cleanup playStream
+            if (this.playStream) {
+                this.playStream.removeAllListeners();
+                this.playStream.destroy();
+                this.playStream.read();
+                delete this.playStream;
+            }
 
-        //Cleanup opusEncoder
-        this.opusEncoder.destroy();
-        this.opusEncoder.read();
+            //Cleanup opusEncoder
+            if (this.opusEncoder) {
+                this.opusEncoder.removeAllListeners();
+                this.opusEncoder.destroy();
+                this.opusEncoder.read();
+                delete this.opusEncoder;
+            }
+            delete this.silencePaddingFrames;
+        }, 125);
 
         return;
     };

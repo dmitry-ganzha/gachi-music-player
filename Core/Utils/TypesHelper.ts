@@ -25,7 +25,6 @@ import {
     VoiceState,
     WebSocketManager
 } from "discord.js";
-import {VoiceManager} from '../../Modules/Music/src/Manager/Voice/Voice';
 import {Queue} from "../../Modules/Music/src/Manager/Queue/Structures/Queue";
 import {Command} from "../../Commands/Constructor";
 import {PlayerEmitter} from "../../Modules/Music/src/emit";
@@ -78,7 +77,6 @@ export class wMessage extends Message<any> {
         uptime: number;
         user: ClientUser;
         users: UserManager;
-        voice: VoiceManager;
         ws: WebSocketManager;
     } & Client;
 }

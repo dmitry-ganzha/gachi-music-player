@@ -15,7 +15,7 @@ export class GuildMessage {
     public run = async (message: wMessage) => {
         const prefix = message.client.cfg.Bot.prefix;
 
-        if (Helper.isBot(message) || !message.content.startsWith(prefix)) return;
+        if (message.author.bot || !message.content.startsWith(prefix) || message.channel.type === ChannelType.DM) return;
 
         const args = message.content.split(" ").slice(1);
         const command = GuildMessage.getCommand(message, prefix);
@@ -32,10 +32,10 @@ export class GuildMessage {
         }
 
         if (command) {
-            await Helper.DeleteMessage(message, 12e3);
+            await Promise.all([Helper.DeleteMessage(message, 12e3)]);
 
             if (Helper.isOwner(command?.isOwner, message.author.id)) return message.client.Send({ text: `${message.author}, Эта команда не для тебя!`, message, color: 'RED'})
-            if (await Helper.isPermissions(command?.permissions, message)) return console.log('User has Permission');
+            if ((await Promise.all([Helper.isPermissions(command?.permissions, message)]))[0]) return console.log('User has Permission');
 
             return command.run(message, args);
         }
@@ -49,8 +49,6 @@ export class GuildMessage {
 }
 
 export class Helper {
-    // Проверяем пользователя на бота и пишет ли в лс
-    public static isBot = ({author, channel}: wMessage) => author.bot || channel.type === ChannelType.DM;
     // Пользователь owner?
     public static isOwner = (isOwner: CommandIsOwner, AuthorID: string) => {
         if (isOwner) return !cfg.Bot.OwnerIDs.includes(AuthorID);

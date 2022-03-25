@@ -55,7 +55,7 @@ async function InfoEmbed(message: wMessage, cpu: string): Promise<EmbedConstruct
             },
             {
                 name: 'Статистика',
-                value: `\`\`\`css\n• Uptime     => ${ParserTimeSong(message.client.uptime / 1000)}\n• Memory     => ${FormatBytes(process.memoryUsage().heapUsed)} + (${message.client.queue.size * 5} МБ)\n• CPU        => ${cpu}%\n• Platform   => ${process.platform}\n• Node       => ${process.version}\n• ECMAScript => ${TSConfig.compilerOptions.target}\n\n• Servers    => ${message.client.guilds.cache.size}\n• Channels   => ${message.client.channels.cache.size}\n\`\`\`\n`
+                value: `\`\`\`css\n• Memory     => ${FormatBytes(process.memoryUsage().heapUsed)} + (${message.client.queue.size * 5} МБ)\n• CPU        => ${cpu}%\n• Platform   => ${process.platform}\n• Node       => ${process.version}\n• ECMAScript => ${TSConfig.compilerOptions.target}\n\n• Servers    => ${message.client.guilds.cache.size}\n• Channels   => ${message.client.channels.cache.size}\n\`\`\`\n`
             },
             {
                 name: 'Код написан на',
@@ -68,7 +68,7 @@ async function InfoEmbed(message: wMessage, cpu: string): Promise<EmbedConstruct
         ],
         timestamp: new Date(),
         footer: {
-            text: `Latency - ${Date.now() - message.createdTimestamp - 1e3 ?? 78} | Api - ${Math.round(message.client.ws.ping < 0 ? 5 : message.client.ws.ping)}`,
+            text: `Latency - ${message.createdTimestamp} | Api - ${Math.round(message.client.ws.ping < 0 ? 5 : message.client.ws.ping)} | Uptime: ${ParserTimeSong(message.client.uptime / 1000)}`,
             iconURL: message.client.user.displayAvatarURL()
         }
     }

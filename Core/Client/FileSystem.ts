@@ -3,7 +3,7 @@ import {Command} from "../../Commands/Constructor";
 import {wClient} from "../Utils/TypesHelper";
 import {ClientEvents} from "discord.js";
 
-const maxLenStringDir: number = 9;
+//const maxLenStringDir: number = 9;
 
 class MultiLoader {
     protected readonly name: string;
@@ -19,7 +19,7 @@ class MultiLoader {
     /**
      * @description Открываем директорию (папку) и смотрим что в ней, проверяем что-бы были файлы js или ts. Загружаем...
      */
-    public readdirSync = (): void => {
+    public readdirSync = async (): Promise<void> => {
         return readdirSync(this.path).forEach((dir: string) => {
             if (dir.endsWith(".js") || dir.endsWith(".ts")) return null;
 
@@ -30,7 +30,7 @@ class MultiLoader {
     /**
      * @description Загружаем файлы находящиеся в dir
      * @param Files {string[]} Все файлы в этой директории
-     * @param dir {string} Дериктория из которой загружаем файлы
+     * @param dir {string} Директория из которой загружаем файлы
      */
     protected ForLoad = async (Files: string[], dir: string): Promise<void> => {
         for (let file of Files) {
@@ -59,50 +59,53 @@ class MultiLoader {
 
 export async function Load (client: wClient): Promise<void> {
     if (!client.shard) console.clear();
-    new MultiLoader({
-        name: 'Commands',
-        path: 'Commands',
-        callback: (pull: Command, op: { dir: string, file: string }): void => {
-            const {dir, file} = op;
 
-            if (pull.name) {
-                client.commands.set(pull.name, pull);
-                console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Commands/${dir}/${file}]`);
-            } else {
-                console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Commands/${dir}/${file}]`);
-            }
-            if (pull.aliases && Array.isArray(pull.aliases)) pull.aliases.forEach((alias: string) => client.aliases.set(alias, pull.name));
-        }
-    }).readdirSync();
-    new MultiLoader({
-        name: 'Events',
-        path: 'Events',
-        callback: (pull: { name: ClientEvents, run (ev: any, ev2: any, client: wClient): Promise<void> | void }, op: { dir: string, file: string }): void => {
-            const {dir, file} = op;
+    await Promise.all([
+        new MultiLoader({
+            name: 'Commands',
+            path: 'Commands',
+            callback: (pull: Command, op: { dir: string, file: string }): void => {
+                const {dir, file} = op;
 
-            if (pull) {
-                client.on(pull.name as any, async (ev: any, ev2: any) => pull.run(ev, ev2, client));
-                console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Events/${dir}/${file}]`);
-            } else {
-                console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Events/${dir}/${file}]`);
+                if (pull.name) {
+                    client.commands.set(pull.name, pull);
+                    console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Commands/${dir}/${file}]`);
+                } else {
+                    console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Commands/${dir}/${file}]`);
+                }
+                if (pull.aliases && Array.isArray(pull.aliases)) pull.aliases.forEach((alias: string) => client.aliases.set(alias, pull.name));
             }
-        }
-    }).readdirSync();
-    new MultiLoader({
-        name: 'Modules',
-        path: 'Modules',
-        callback: (pull: {run (client: wClient): Promise<void> | void }, op: { dir: string, file: string }): void => {
-            const {dir, file} = op;
+        }).readdirSync(),
+        new MultiLoader({
+            name: 'Events',
+            path: 'Events',
+            callback: (pull: { name: ClientEvents, run (ev: any, ev2: any, client: wClient): Promise<void> | void }, op: { dir: string, file: string }): void => {
+                const {dir, file} = op;
 
-            if (pull) {
-                pull.run(client);
-                console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Modules/${dir}/${file}]`);
-            } else {
-                console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Modules/${dir}/${file}]`);
+                if (pull) {
+                    client.on(pull.name as any, async (ev: any, ev2: any) => pull.run(ev, ev2, client));
+                    console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Events/${dir}/${file}]`);
+                } else {
+                    console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Events/${dir}/${file}]`);
+                }
             }
-        }
-    }).readdirSync();
-    setImmediate(() => console.log(`----------------------------> [FileSystem Ending loading] <----------------------------`));
+        }).readdirSync(),
+        new MultiLoader({
+            name: 'Modules',
+            path: 'Modules',
+            callback: (pull: {run (client: wClient): Promise<void> | void }, op: { dir: string, file: string }): void => {
+                const {dir, file} = op;
+
+                if (pull) {
+                    pull.run(client);
+                    console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Modules/${dir}/${file}]`);
+                } else {
+                    console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Modules/${dir}/${file}]`);
+                }
+            }
+        }).readdirSync(),
+        (() => setImmediate(() => console.log(`----------------------------> [FileSystem Ending loading] <----------------------------`)))()
+    ]);
 }
 
 //

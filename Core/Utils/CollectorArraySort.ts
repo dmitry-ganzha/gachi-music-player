@@ -106,7 +106,7 @@ export class CollectorSortReaction {
      * @param callback {Function} Выполняем функцию реакции
      * @param emoji {string} Смайл
      */
-    protected _reaction = async (user: User, message: wMessage, msg: wMessage, callback: Function, emoji: string): Promise<ReactionCollector> => msg.react(emoji).then(async () => msg.createReactionCollector({filter: async (reaction: MessageReaction, user: User) => this._filter(emoji, reaction, user, message)})
+    protected _reaction = async (user: User, message: wMessage, msg: wMessage, callback: Function, emoji: string): Promise<ReactionCollector> => msg.react(emoji).then(async () => msg.createReactionCollector({filter: async (reaction: MessageReaction, user: User) => this._filter(emoji, reaction, user, message), time: 1e4 * 25})
         .on('collect', async (reaction: MessageReaction): Promise<ReactionCollector> => callback(reaction, user, message, msg))).catch(() => undefined);
 
     /**

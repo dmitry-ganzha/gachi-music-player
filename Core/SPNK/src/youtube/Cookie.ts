@@ -8,7 +8,7 @@ export function getCookies(): null | string {
         return null;
     }
 }
-export async function uploadCookie(Cookie: string | string[]) {
+export async function uploadCookie(Cookie: string | string[]): Promise<void | any> {
     let youtubeData = JSON.parse(readFileSync(`./db/Cookie.json`, 'utf8'));
     let EndCookieString: {};
 

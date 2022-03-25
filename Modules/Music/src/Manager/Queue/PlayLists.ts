@@ -17,7 +17,7 @@ export async function PlayList(message: wMessage, playlist: InputPlaylist, Voice
     if (!playlist.items) return message.client.Send({text: `${message.author}, Я не смог загрузить этот плейлист, Ошибка: Здесь больше 100 треков, youtube не позволит сделать мне столько запросов!`, message: message, color: "RED"});
 
     SendMessage(message, playlist).catch(async (err: DiscordAPIError) => console.log(`[Discord Error]: [Send message]: ${err}`));
-    return addSongsQueue(playlist.items, message, VoiceChannel);
+    return (await Promise.all([addSongsQueue(playlist.items, message, VoiceChannel)]))[0];
 }
 //====================== ====================== ====================== ======================
 

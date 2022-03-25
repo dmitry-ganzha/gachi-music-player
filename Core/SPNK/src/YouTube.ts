@@ -15,7 +15,7 @@ export const YouTube = {getVideo, getPlaylist, SearchVideos};
  * @param name {string} Название канала
  */
 async function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
-    const channel = await new httpsClient().parseJson(`${DefaultLinkYouTube}/channel/${id}/channels?flow=grid&view=0&pbj=1`, {
+    const channel: YouTubeChannelParse[] = (await Promise.all([new httpsClient().parseJson(`${DefaultLinkYouTube}/channel/${id}/channels?flow=grid&view=0&pbj=1`, {
         request: {
             headers: {
                 'x-youtube-client-name': '1',
@@ -24,7 +24,7 @@ async function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
             method: "GET"
         },
         options: {zLibEncode: true, english: true}
-    }) as YouTubeChannelParse[];
+    })]))[0];
 
     const data = channel[1]?.response || null as any;
     const info = data?.header?.c4TabbedHeaderRenderer, Channel = data?.metadata?.channelMetadataRenderer, avatar = info?.avatar, badges = info?.badges;
@@ -46,11 +46,11 @@ async function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
  */
 async function getVideo(url: string, options: Options = {onlyFormats: false}): Promise<InputTrack | InputFormat> {
     const VideoID = new Utils().getID(url);
-    const body = await new httpsClient().parseBody(`${DefaultLinkYouTube}/watch?v=${VideoID}&has_verified=1`, {
+    const body = (await Promise.all([new httpsClient().parseBody(`${DefaultLinkYouTube}/watch?v=${VideoID}&has_verified=1`, {
         options: {
             userAgent: true, cookie: true, zLibEncode: true, english: true
         }
-    });
+    })]))[0];
     //if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw new Error('Google понял что я бот! Это может занять много времени!');
 
     const VideoRes = JSON.parse(body.split('var ytInitialPlayerResponse = ')?.[1]?.split(';</script>')[0].split(/;\s*(var|const|let)\s/)[0]);
@@ -71,7 +71,7 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
 
     if (!LiveData.isLive) {
         if (VideoFormats[0].signatureCipher || VideoFormats[0].cipher) {
-            format = await new Decipher()._formats(VideoFormats, html5player);
+            format = (await Promise.all([new Decipher()._formats(VideoFormats, html5player)]))[0];
         } else {
             format = [...VideoFormats];
         }
@@ -79,7 +79,7 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
 
     if (options?.onlyFormats) return format[0];
 
-    const authorVideo = await getChannel({id: videoDetails.channelId, name: videoDetails.author});
+    const authorVideo = (await Promise.all([getChannel({id: videoDetails.channelId, name: videoDetails.author})]))[0];
     const VideoData: InputTrack = {
         id: VideoID,
         url: `${DefaultLinkYouTube}/watch?v=${VideoID}`,
@@ -103,9 +103,9 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
  * @constructor
  */
 async function SearchVideos(search: any, options: SearchOptions = {limit: 15, onlyLink: false}): Promise<string | InputTrack[]> {
-    const body = await new httpsClient().parseBody(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}`, {
+    const body = (await Promise.all([new httpsClient().parseBody(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}`, {
         options: {userAgent: true, cookie: true, zLibEncode: true, english: true}
-    });
+    })]))[0];
 
     //if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw new Error('Google понял что я бот! Это может занять много времени!');
 
@@ -114,7 +114,7 @@ async function SearchVideos(search: any, options: SearchOptions = {limit: 15, on
     if (!details) throw new Error(`Не удалось найти: ${search}`);
 
     if (options?.onlyLink) return `${DefaultLinkYouTube}/watch?v=${details.find((fn: any) => !!fn.videoRenderer).videoRenderer.videoId}`;
-    return parsingVideos(details, options);
+    return (await Promise.all([parsingVideos(details, options)]))[0];
 }
 function parsingVideos(details: any[], {limit}: SearchOptions, FakeBase: InputTrack[] = []): InputTrack[] {
     let num = 0;
@@ -157,9 +157,9 @@ function parsingVideos(details: any[], {limit}: SearchOptions, FakeBase: InputTr
  */
 async function getPlaylist(url: string): Promise<InputPlaylist> {
     const playlistID = new Utils().getID(url, true);
-    const body = await new httpsClient().parseBody(`${DefaultLinkYouTube}/playlist?list=${playlistID}`, {
+    const body = (await Promise.all([new httpsClient().parseBody(`${DefaultLinkYouTube}/playlist?list=${playlistID}`, {
         options: {userAgent: true, cookie: true, zLibEncode: true, english: true}
-    });
+    })]))[0];
 
     //if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw new Error('Google понял что я бот! Это может занять много времени!');
 
@@ -172,8 +172,8 @@ async function getPlaylist(url: string): Promise<InputPlaylist> {
         id: playlistID,
         url: `${DefaultLinkYouTube}/playlist?list=${playlistID}`,
         title: playlistInfo?.title?.runs[0]?.text ?? 'Not found',
-        items: _parsingVideos(parsed),
-        author: await getChannel({id: channel.navigationEndpoint.browseEndpoint.browseId, name: channel.text}),
+        items: (await Promise.all([_parsingVideos(parsed)]))[0],
+        author: (await Promise.all([getChannel({id: channel.navigationEndpoint.browseEndpoint.browseId, name: channel.text})]))[0],
         image: {
             url: (playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer?.thumbnail.thumbnails.length ? playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer.thumbnail.thumbnails[playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer.thumbnail.thumbnails.length - 1].url : null)?.split('?sqp=')[0]
         }

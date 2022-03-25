@@ -32,7 +32,7 @@ class WatKLOK_BOT extends Client {
     /**
      * @description Настраиваем бота и запускаем
      */
-    public Login = (): Promise<void> => {
+    public Login = (): Promise<[void]> => {
         WatKLOK_BOT.SettingsProject(this);
 
         return this.login(cfg.Bot.token).then(() => {
@@ -42,7 +42,7 @@ class WatKLOK_BOT extends Client {
                     type: ActivityType.Listening
                 }]
             });
-            return Load(this as any);
+            return Promise.all([Load(this as any)]);
         });
     };
     /**

@@ -47,18 +47,12 @@ async function PlayerPause(message: wMessage): Promise<void> {
  */
 async function PlayerEnd(message: wMessage): Promise<void> {
     const {client, guild} = message;
-    const {player, songs}: Queue = client.queue.get(guild.id);
-    const song = songs[0];
+    const {player, channels}: Queue = client.queue.get(guild.id);
 
     if (StatusPlayerHasSkipped.has(player.state.status)) {
-        await guild.me.voice.setMute(true).catch(() => undefined);
+        if (!channels.connection.isMute) channels.connection.setMute = true;
 
-        //Разовый ивент для включения микрофона бота
-        player.once("stateChange", (oldState, newState) => {
-            if (newState.status !== 'buffering') setTimeout(() => guild.me.voice.setMute(false).catch(() => undefined), song.type === "VK" ? 250 : 200);
-        });
-
-        player.stop(true);
+        setTimeout(() => player.stop(true), 250);
     }
     return;
 }
@@ -71,7 +65,7 @@ async function PlayerEnd(message: wMessage): Promise<void> {
  */
 async function PlayerRemove(message: wMessage, args: number): Promise<boolean | void> {
     const {client, guild, member, author} = message;
-    const {player, songs, events}: Queue = client.queue.get(guild.id);
+    const {player, songs}: Queue = client.queue.get(guild.id);
     const {duration, title, color, requester, url}: Song = songs[args - 1];
     const voiceConnection: VoiceState[] = client.connections(guild);
     const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === songs[0].requester.id);
@@ -80,7 +74,6 @@ async function PlayerRemove(message: wMessage, args: number): Promise<boolean | 
 
     if (songs.length <= 1) return player.stop();
 
-    await events.message.UpdateMessage(message);
     if (member.permissions.has('Administrator') || author.id === requester.id || !UserToVoice) {
         songs.splice(args - 1, 1);
         if (args === 1) await PlayerEnd(message);

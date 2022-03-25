@@ -1,4 +1,4 @@
-import {VoiceManager} from "../../Modules/Music/src/Manager/Voice/Voice";
+import {JoinVoiceChannel} from "../../Modules/Music/src/Manager/Voice/Voice";
 import {Command} from "../Constructor";
 import {wMessage} from "../../Core/Utils/TypesHelper";
 import {Queue} from "../../Modules/Music/src/Manager/Queue/Structures/Queue";
@@ -37,8 +37,10 @@ export class CommandJoin extends Command {
         });
 
         if (queue) {
+            const connection = new JoinVoiceChannel(voiceChannel);
+
             queue.channels.voice = voiceChannel;
-            queue.channels.connection = new VoiceManager().Join(voiceChannel);
+            queue.channels.connection = connection;
             queue.channels.message = message;
         }
         return;

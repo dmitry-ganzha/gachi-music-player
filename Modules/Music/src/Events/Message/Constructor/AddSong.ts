@@ -25,7 +25,7 @@ export async function AddSong(client: wClient, {color, author, image, title, url
             url: author.url,
         },
         thumbnail: {
-            url: !image?.url ? author?.url : image?.url ?? NotImage,
+            url: !image?.url ? author?.image.url : image?.url ?? NotImage,
         },
         fields: [{
             name: `Добавлено`,

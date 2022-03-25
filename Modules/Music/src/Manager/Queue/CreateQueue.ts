@@ -2,8 +2,9 @@ import {Queue} from "./Structures/Queue";
 import {Song} from "./Structures/Song";
 import {InputTrack, wMessage} from "../../../../../Core/Utils/TypesHelper";
 import {VoiceChannel} from "discord.js";
-import {VoiceManager} from "../Voice/Voice";
+import {JoinVoiceChannel} from "../Voice/Voice";
 import {audioPlayer} from "../../Audio/AudioPlayer";
+import {PushSongMessage} from "../../Events/Message/MessageEmitter";
 
 /**
  * @description Выбираем что сделать создать базу для сервера или добавить в базу музыку
@@ -32,8 +33,12 @@ async function CreateQueueGuild(message: wMessage, VoiceChannel: VoiceChannel, s
 
     const queue = client.queue.get(message.guild.id);
 
-    await PushSong(queue, song, false);
-    new VoiceManager().Join(VoiceChannel).subscribe(queue.player as any);
+    (await Promise.all([PushSong(queue, song, false)]));
+
+    const connection = new JoinVoiceChannel(VoiceChannel);
+    connection.subscribe = queue.player;
+    queue.channels.connection = connection;
+
     return audioPlayer.playStream(message);
 }
 /**
@@ -44,6 +49,6 @@ async function CreateQueueGuild(message: wMessage, VoiceChannel: VoiceChannel, s
  */
 export async function PushSong(queue: Queue, song: Song, sendMessage: boolean = true): Promise<void | wMessage> {
     queue.songs.push(song);
-    if (sendMessage) return queue.events.message.PushSongMessage(queue.channels.message, song);
+    if (sendMessage) return PushSongMessage(queue.channels.message, song);
     return;
 }

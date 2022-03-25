@@ -1,71 +1,67 @@
-import {
-    DiscordGatewayAdapterCreator,
-    entersState,
-    getVoiceConnection,
-    joinVoiceChannel,
-    VoiceConnection,
-    VoiceConnectionDisconnectReason,
-    VoiceConnectionStatus
-} from "@discordjs/voice";
+import { DiscordGatewayAdapterCreator, getVoiceConnection, joinVoiceChannel, VoiceConnection } from "@discordjs/voice";
 import {Guild, InternalDiscordGatewayAdapterCreator, StageChannel, VoiceChannel, ChannelType} from "discord.js";
+import {audioPlayer} from "../../Audio/AudioPlayer";
 
-export class VoiceManager {
-    //public getVoice = (GuildID: string): VoiceConnection => getVoiceConnection(GuildID);
-    /**
-     * @description Подключаемся к голосовому каналу
-     * @param VoiceChannel {VoiceChannel | VoiceConnection} Voice канал
-     * @param options {mute: boolean} Доп опции
-     */
-    public Join = ({id, guild, type}: VoiceChannel | StageChannel, options: {deaf: boolean, mute?: boolean} = {deaf: true, mute: false}): VoiceConnection => {
-        this.SpeakStateChannel(guild, type);
+/**
+ * @description Отключение от голосового канала
+ * @param GuildID {string} ID сервера
+ */
+export function Disconnect(GuildID: string) {
+    const connection: VoiceConnection | null = getVoiceConnection(GuildID);
+    if (connection) return connection.destroy();
+    return null;
 
-        const VoiceConnection = getVoiceConnection(id) ?? joinVoiceChannel({
+}
+
+export class JoinVoiceChannel {
+    public VoiceConnection: VoiceConnection;
+    protected me: Guild["me"]["voice"];
+
+    public constructor({id, guild, type}: VoiceChannel | StageChannel) {
+        this.VoiceConnection = joinVoiceChannel({
             channelId: id,
             guildId: guild.id,
             adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator & DiscordGatewayAdapterCreator,
-            selfDeaf: options?.deaf,
-            selfMute: options?.mute ?? false
+            selfDeaf: true
         });
-
-        try {
-            VoiceConnection.on("stateChange", async (oldState: any, newState: { status: any; reason: any; closeCode: number }): Promise<VoiceConnection | void | NodeJS.Timeout> => {
-                if (!VoiceConnection) return VoiceConnection.destroy();
-
-                if (newState.status === VoiceConnectionStatus.Disconnected) {
-                    if (newState.reason === VoiceConnectionDisconnectReason.WebSocketClose && newState.closeCode === 4014) {
-                        try {
-                            return entersState(VoiceConnection, VoiceConnectionStatus.Connecting, 5e3);
-                        } catch {
-                            return VoiceConnection.destroy();
-                        }
-                    } else if (VoiceConnection.rejoinAttempts < 5) return setTimeout(() => {
-                        VoiceConnection.rejoinAttempts++;
-                        return VoiceConnection.rejoin();
-                    }, 5e3);
-                }
-                return;
-            });
-        } catch (e) {
-            console.log(`[${(new Date).toLocaleString("ru")}] [VoiceConnection]: [ID: ${id}]: [stateChange]: ${e}`);
-        }
-        return VoiceConnection;
+        this.me = guild.me.voice;
+        this.SpeakStateChannel(guild.me, type);
+        // @ts-ignore
+        ["destroyed", "disconnected"].map(event => this.VoiceConnection.once(event, this.destroy));
     };
-    /**
-     * @description Отключение от голосового канала
-     * @param GuildID {string} ID сервера
-     */
-    public Disconnect = (GuildID: string): void | null => {
-        const connection: VoiceConnection | null = getVoiceConnection(GuildID);
-        if (connection) return connection.destroy();
-        return null;
+
+    //Включен микрофон бота?
+    public get isMute() {
+        return this.me.mute;
     };
+    //Задаем <boolean> значение для микрофона
+    public set setMute(state: boolean) {
+        if (this.me.mute === state) return;
+        Promise.all([this.me.setMute(state)]).catch(() => undefined);
+    };
+
+    public set subscribe(player: audioPlayer) {
+        if (!this.VoiceConnection) return;
+        this.VoiceConnection.subscribe(player as any);
+    };
+
     /**
      * @description Отправить запрос на передачу музыки на трибуне
-     * @param guild {Guild} Сервер
+     * @param me {<Guild>me}
      * @param type {string} Тип голосового канала
      */
-    protected SpeakStateChannel = ({me}: Guild, type: ChannelType.GuildVoice | ChannelType.GuildStageVoice): void => {
+    protected SpeakStateChannel = (me: Guild["me"], type: ChannelType.GuildVoice | ChannelType.GuildStageVoice): void => {
         if (me.voice.mute) me.voice.setMute(false).catch(() => undefined);
         if (type === ChannelType.GuildStageVoice && me) me?.voice.setRequestToSpeak(true).catch(() => undefined);
+    };
+
+    protected destroy = () => {
+        try {
+            this.VoiceConnection?.destroy();
+        } catch {/* Continue */}
+        this.VoiceConnection?.removeAllListeners();
+
+        delete this.VoiceConnection;
+        delete this.me;
     };
 }

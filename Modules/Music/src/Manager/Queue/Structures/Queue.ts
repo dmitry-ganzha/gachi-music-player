@@ -1,11 +1,11 @@
 import {StageChannel, VoiceChannel} from "discord.js";
-import {VoiceConnection} from "@discordjs/voice";
 import {LoopType, wMessage} from "../../../../../../Core/Utils/TypesHelper";
 import {MessageSystem} from "../../../Events/Message/MessageEmitter";
 import {audioPlayer} from "../../../Audio/AudioPlayer";
 import {VoiceEvents} from "../../../Events/Voice/VoiceDestroyer";
 import {Song} from "./Song";
 import {QueueEvents} from "../../../Events/Queue/QueueEvent";
+import {JoinVoiceChannel} from "../../Voice/Voice";
 
 export class Queue {
     public player: audioPlayer;
@@ -14,7 +14,7 @@ export class Queue {
         queue: new QueueEvents(),
         helper: new VoiceEvents()
     };
-    public channels: { message: wMessage, voice: VoiceChannel | StageChannel, connection: VoiceConnection };
+    public channels: { message: wMessage, voice: VoiceChannel | StageChannel, connection: JoinVoiceChannel };
     public options: { random: boolean, loop: LoopType, stop: boolean } = {
         random: false,
         loop: "off",

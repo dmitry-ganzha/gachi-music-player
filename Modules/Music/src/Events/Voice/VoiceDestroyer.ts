@@ -21,6 +21,8 @@ export class VoiceEvents extends TypedEmitter<Events> {
      * @param queue {object} Очередь сервера
      */
     protected onStartTimerDestroyer = async (queue: Queue): Promise<boolean | null> => {
+        if (!queue) return null;
+
         const {player, options, events, channels} = queue;
 
         player.pause(true);
@@ -44,5 +46,13 @@ export class VoiceEvents extends TypedEmitter<Events> {
             return player.unpause();
         }
         return null;
+    };
+
+    public destroy = () => {
+        clearTimeout(this.Timer);
+        delete this.Timer;
+        delete this.state;
+
+        this.removeAllListeners();
     };
 }

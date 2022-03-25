@@ -6,12 +6,11 @@ import {
     AudioResource,
     PlayerSubscription
 } from "@discordjs/voice";
-import {FFmpegStream, FinderResource} from "./Helper";
+import {FFmpegStream, FindResource} from "./Helper";
 import {wMessage} from "../../../../Core/Utils/TypesHelper";
-import {VoiceManager} from "../Manager/Voice/Voice";
 import {Queue} from "../Manager/Queue/Structures/Queue";
 import {Song} from "../Manager/Queue/Structures/Song";
-import {Queue_Channels} from "../Events/Queue/QueueEvent";
+import {WarningMessage} from "../Events/Message/MessageEmitter";
 
 type PlayerState = AudioPlayerState & {missedFrames?: number, resource?: AudioResource};
 
@@ -44,7 +43,7 @@ export class audioPlayer extends AudioPlayer {
      * @description Заменяем оригинальный play на свой
      * @param resource {AudioResource} Поток
      */
-    public play = (resource: AudioResource): void => {
+    public play = (resource: AudioResource): void | any => {
         if (!resource) {
             void this.emit('error', 'Error: AudioResource has not found' as any);
             return;
@@ -77,17 +76,19 @@ export class audioPlayer extends AudioPlayer {
      * @param seek {number} Пропуск музыки до 00:00:00
      */
     public seek = async (message: wMessage, seek: number): Promise<void> => {
-        const {channels}: Queue = message.client.queue.get(message.guild.id);
+        const queue: Queue = message.client.queue.get(message.guild.id);
         let stream: any;
+
         try {
             stream = await CreateResource(message, seek);
-
-            await AutoJoinVoice(channels, this);
         } finally {
             setTimeout(async () => {
-                await this.play(stream);
+                await Promise.all([
+                    this.play(stream),
+                ]);
+                if (queue.channels.connection.isMute) queue.channels.connection.setMute = false;
                 this.playingTime = seek * 1000;
-            }, seek ? 1500: 1e3);
+            }, seek >= 400 ? 1500 : 240);
         }
     };
 
@@ -103,26 +104,17 @@ export class audioPlayer extends AudioPlayer {
         if (queue.songs?.length === 0) return void queue.events.queue.emit('DestroyQueue', queue, message);
 
         try {
-            stream = await CreateResource(message) as any;
+            stream = await CreateResource(message); //(await Promise.all([CreateResource(message)]))[0];
         } finally {
-            setImmediate(async () => queue.player.play(stream));
-        }
-
-        setImmediate(async () => {
             client.console(`[${guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
-            await queue.events.message.PlaySongMessage(message); //Отправляем данные в EventEmitter message для создания embed сообщения о текущем треке
-            await AutoJoinVoice(queue.channels, queue.player); // Подключаем плеер к гс
-        });
-    }
-}
 
-/**
- * @description Подключаем плеер к голосовому каналу
- * @param channels {Queue_Channels} Все каналы в очереди
- * @param player {audioPlayer} Плеер
- */
-async function AutoJoinVoice(channels: Queue_Channels, player: audioPlayer): Promise<void> {
-    if (!channels.connection?.subscribe) (channels.connection = new VoiceManager().Join(channels.voice)).subscribe(player as any);
+            await Promise.all([
+                queue.player.play(stream),
+                queue.events.message.PlaySongMessage(message),
+            ]);
+            if (queue.channels.connection.isMute) queue.channels.connection.setMute = false;
+        }
+    };
 }
 
 /**
@@ -134,7 +126,7 @@ async function CreateResource(message: wMessage, seek: number = 0): Promise<FFmp
     const queue: Queue = message.client.queue.get(message.guild.id);
     const song = queue.songs[0];
 
-    if (!song.format?.url) await FinderResource.init(song);
+    if (!song.format?.url) await Promise.all([FindResource(song)]);
 
     return new FFmpegStream(song.format.url, {...queue.audioFilters, seek});
 }
@@ -153,7 +145,6 @@ async function onIdlePlayer(message: wMessage): Promise<NodeJS.Timeout | null | 
 
     if (!queue || queue?.songs?.length <= 0) return null;
     if (queue.player.state?.resource) void queue.player.state.resource.playStream.emit("close");
-    if (queue.player.state?.missedFrames) await message.client.Send({text: `[AudioPlayer]: Lost Frames [${queue.player.state.missedFrames}]`, message: message, color: queue.player.state.missedFrames >= 10 ? "RED" : "GREEN" });
 
     await isRemoveSong(queue);
     if (queue.options.random) return Shuffle(message, queue);
@@ -168,7 +159,7 @@ async function onIdlePlayer(message: wMessage): Promise<NodeJS.Timeout | null | 
 async function onErrorPlayer(err: AudioPlayerError, message: wMessage): Promise<void> {
     const queue: Queue = message.client.queue.get(message.guild.id);
 
-    await queue.events.message.WarningMessage(message, queue.songs[0], err);
+    await WarningMessage(message, queue.songs[0], err);
     if (queue.songs) queue.songs.shift();
     else if (queue.songs.length === 0) queue.events.queue.emit("DestroyQueue", queue, message);
 
@@ -204,7 +195,7 @@ async function onAutoPausePlayer(message: wMessage) {
     const {channels, player}: Queue = message.client.queue.get(message.guild.id);
 
     //Проверяем если канал на который надо выводить музыку
-    if (!channels.connection?.subscribe) (channels.connection = new VoiceManager().Join(channels.voice)).subscribe(player as any);
+    if (!channels.connection?.subscribe) channels.connection.subscribe = player;
 }
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================

@@ -1,8 +1,8 @@
 import {TypedEmitter} from "tiny-typed-emitter";
 import {Song} from "../../Manager/Queue/Structures/Song";
 import {wMessage} from "../../../../../Core/Utils/TypesHelper";
-import {VoiceManager} from "../../Manager/Voice/Voice";
 import {Queue} from "../../Manager/Queue/Structures/Queue";
+import {Disconnect} from "../../Manager/Voice/Voice";
 
 type EventsQueue = {
     DestroyQueue: (queue: Queue, message: wMessage, sendDelQueue?: boolean) => Promise<NodeJS.Timeout>,
@@ -17,6 +17,10 @@ export class QueueEvents extends TypedEmitter<EventsQueue> {
         this.once('DestroyQueue', onDestroyQueue);
         this.on('pushSong', onPushSong);
         this.setMaxListeners(2);
+    };
+
+    public destroy = () => {
+        this.removeAllListeners();
     };
 }
 /**
@@ -42,11 +46,20 @@ async function onDestroyQueue(queue: Queue, message: wMessage, sendDelQueue: boo
 
     await DeleteMessage(queue.channels);
     await LeaveVoice(queue?.channels?.message?.guild.id);
-    await DestroyEvents(queue);
     await CleanPlayer(queue);
     if (sendDelQueue) await SendChannelToEnd(queue.options, message);
 
-    queue.songs = [];
+    delete queue.songs;
+    delete queue.audioFilters;
+    delete queue.options;
+
+    delete queue.channels;
+
+    queue.events.queue.destroy();
+    queue.events.helper.destroy();
+    queue.events.message.destroy();
+    delete queue.events;
+
     return DeleteQueue(message);
 }
 /**
@@ -57,6 +70,11 @@ async function CleanPlayer(queue: Queue): Promise<void> {
     if (queue.player.state.resource) void queue.player.state.resource.playStream.emit('close');
 
     queue.player?.stop();
+
+    setTimeout(() => {
+        queue.player?.removeAllListeners();
+        delete queue.player;
+    }, 7e3);
     return;
 }
 /**
@@ -64,7 +82,7 @@ async function CleanPlayer(queue: Queue): Promise<void> {
  * @param GuildID {string} ID сервера
  */
 async function LeaveVoice(GuildID: string): Promise<void> {
-    return new VoiceManager().Disconnect(GuildID);
+    return Disconnect(GuildID);
 }
 /**
  * @description Удаляем сообщение о текущей песне
@@ -91,16 +109,4 @@ async function DeleteQueue(message: wMessage): Promise<NodeJS.Timeout> {
         message.client.console(`[${message.guild.id}]: [Queue]: [Method: Delete]`);
         return message.client.queue.delete(message.guild.id);
     }, 1);
-}
-/**
- * @description Удаляем ивенты (не ждем пока Node.js сама со всем справится, память нужна всегда)
- * @param queue {Queue} Очередь
- */
-async function DestroyEvents(queue: Queue): Promise<void> {
-    //Destroy Message events
-    queue.events.message = null;
-    //Destroy Voice events
-    queue.events.helper = null;
-    //Destroy Queue events
-    queue.events.queue = null;
 }

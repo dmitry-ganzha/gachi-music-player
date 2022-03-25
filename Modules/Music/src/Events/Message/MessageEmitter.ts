@@ -8,12 +8,41 @@ import {EmbedConstructor, wMessage} from "../../../../../Core/Utils/TypesHelper"
 import {Button} from "./Constructor/Helper";
 
 export class MessageSystem {
-    static Interval: NodeJS.Timeout;
+    protected _int: NodeJS.Timeout;
 
-    UpdateMessage = onUpdateMessage;
-    PlaySongMessage = onPlaySongMessage;
-    PushSongMessage = onPushSongMessage;
-    WarningMessage = onWarningMessage;
+    /**
+     * @description Показываем что играет сейчас
+     * @param message {object} Сообщение с сервера
+     */
+    public PlaySongMessage = async ({client, guild, channel}: wMessage): Promise<void | wMessage> =>{
+        const queue: Queue = client.queue.get(guild.id);
+        const exampleEmbed = await CurrentPlay(client, queue.songs[0], queue);
+
+        if (queue.channels.message.deletable) queue.channels.message.delete().catch((e) => console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: playSong, ${e.code}]: ${e?.message}`))
+
+        if (!queue.songs[0]?.isLive) {
+            if (this._int) clearInterval(this._int);
+            this._int = setInterval(async () => {
+                try {
+                    const queue: Queue = client.queue.get(guild.id);
+
+                    if (!queue) return clearInterval(this._int);
+                    if (queue.player.state.status !== 'playing') return;
+
+                    return UpdateMessage(queue.channels.message, true).catch(() => clearInterval(this._int));
+                } catch {
+                    return clearInterval(this._int)
+                }
+            }, 12e3);
+        }
+
+        return AddInQueueMessage(channel, exampleEmbed, Button, queue);
+    };
+
+    public destroy = () => {
+        clearInterval(this._int);
+        delete this._int;
+    }
 }
 
 /**
@@ -21,7 +50,7 @@ export class MessageSystem {
  * @param message {object} Сообщение с сервера
  * @param need {boolean} Принудительно обновляем сообщение?
  */
-async function onUpdateMessage(message: wMessage, need: boolean = false): Promise<void | wMessage | null> {
+async function UpdateMessage(message: wMessage, need: boolean = false): Promise<void | wMessage | null> {
     const queue: Queue = message.client.queue.get(message.guild.id);
     if (message?.embeds[0]?.fields?.length === 1 || need) {
         const CurrentPlayEmbed = await CurrentPlay(message.client, queue.songs[0], queue);
@@ -32,40 +61,15 @@ async function onUpdateMessage(message: wMessage, need: boolean = false): Promis
             return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: update, ${e.code}]: ${e?.message}`);
         }
     }
-
-    return null;
 }
-/**
- * @description Показываем что играет сейчас
- * @param message {object} Сообщение с сервера
- */
-async function onPlaySongMessage({client, guild, channel}: wMessage): Promise<void | wMessage> {
-    const queue: Queue = client.queue.get(guild.id);
-    const exampleEmbed = await CurrentPlay(client, queue.songs[0], queue);
 
-    if (queue.channels.message.deletable) queue.channels.message.delete().catch((e) => console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: playSong, ${e.code}]: ${e?.message}`))
-
-    if (!queue.songs[0]?.isLive) {
-        if (MessageSystem.Interval) clearInterval(MessageSystem.Interval);
-        MessageSystem.Interval = setInterval(async () => {
-            const queue: Queue = client.queue.get(guild.id);
-
-            if (!queue) return clearInterval(MessageSystem.Interval);
-            if (queue.player.state.status !== 'playing') return;
-
-            return onUpdateMessage(queue.channels.message, true).catch(() => clearInterval(MessageSystem.Interval));
-        }, 12e3);
-    }
-
-    return AddInQueueMessage(channel, exampleEmbed, Button, queue);
-}
 /**
  * @description Показываем ошибку
  * @param message {object} Сообщение с сервера
  * @param song {Song} Сама музыка
  * @param err {Error} Ошибка
  */
-async function onWarningMessage({channel, client, guild}: wMessage, song: Song, err: Error = null): Promise<void | wMessage> {
+export async function WarningMessage({channel, client, guild}: wMessage, song: Song, err: Error = null): Promise<void | wMessage> {
     try {
         const queue: Queue = client.queue.get(guild.id);
         const Embed = await Warning(client, song, queue, err);
@@ -76,12 +80,13 @@ async function onWarningMessage({channel, client, guild}: wMessage, song: Song, 
         return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`)
     }
 }
+
 /**
  * @description Показываем что было добавлено в очередь
  * @param message {object} Сообщение с сервера
  * @param song {Song} Сама музыка
  */
-async function onPushSongMessage({channel, client, guild}: wMessage, song: Song): Promise<void | wMessage> {
+export async function PushSongMessage({channel, client, guild}: wMessage, song: Song): Promise<void | wMessage> {
     try {
         const queue: Queue = client.queue.get(guild.id);
         const EmbedPushedSong = await AddSong(client, song, queue);
@@ -92,6 +97,7 @@ async function onPushSongMessage({channel, client, guild}: wMessage, song: Song)
         return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`)
     }
 }
+
 /**
  * @description Удаляем сообщение со временем
  * @param send {wMessage} Сообщение
@@ -100,6 +106,7 @@ async function onPushSongMessage({channel, client, guild}: wMessage, song: Song)
 async function DeleteMessage(send: any, time: number = 5e3): Promise<void | wMessage> {
     return send.then(async (msg: wMessage) => setTimeout(async () => msg.deletable ? msg.delete() : null, time));
 }
+
 /**
  * @description Добавляем сообщение в очередь сервера
  * @param channel {wMessage["channel"]} Текстовый канал

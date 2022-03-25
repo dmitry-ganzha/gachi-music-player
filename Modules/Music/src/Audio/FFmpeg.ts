@@ -34,7 +34,7 @@ export const FFmpegArguments = {
 /**
  * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a если он будет найден
  */
-(() => {
+const FFmpegCheck = async () => {
     for (let source of sources) {
         try {
             const result = spawnSync(source, ['-h'], {windowsHide: true});
@@ -43,7 +43,8 @@ export const FFmpegArguments = {
         } catch {/* Nothing */}
     }
     throw new Error('FFmpeg/avconv not found!');
-})();
+};
+if (!FFmpegName) Promise.all([FFmpegCheck()]).catch();
 
 //====================== ====================== ====================== ======================
 /**
@@ -51,18 +52,18 @@ export const FFmpegArguments = {
  * Это круче вашего Lavalink
  */
 export class FFmpeg extends Duplex {
-    public _readableState: Readable;
-    public _writableState: Writable;
+    //public _readableState: Readable = this.ProcessReader._readableState;
+    //public _writableState: Writable = this.ProcessWriter._writableState;
 
     protected process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
     protected get ProcessReader() { return this.process.stdout; };
     protected get ProcessWriter() { return this.process.stdin; };
 
     public constructor(args: FFmpegArgs) {
-        super({highWaterMark: 8, autoDestroy: true});
+        super({highWaterMark: 12, autoDestroy: true});
         this.process = SpawnFFmpeg(args);
-        this._readableState = this.ProcessReader._readableState;
-        this._writableState = this.ProcessWriter._writableState;
+        //this._readableState = this.ProcessReader._readableState;
+        //this._writableState = this.ProcessWriter._writableState;
 
         this.Binding(['write', 'end'], this.ProcessWriter);
         this.Binding(['read', 'setEncoding', 'pipe', 'unpipe'], this.ProcessReader);
@@ -90,12 +91,28 @@ export class FFmpeg extends Duplex {
      * @param error {any} По какой ошибке завершаем работу FFmpeg'a
      */
     public _destroy = (error?: Error | null) => {
-        try {
-            this._readableState?.destroy();
-            this._writableState?.destroy();
-        } catch {/* Nothing */}
+        //delete this._readableState;
+        //delete this._writableState;
 
-        if (this.process) this.process.kill("SIGKILL");
+        if (this.ProcessReader) {
+            this.ProcessReader.removeAllListeners();
+            this.ProcessReader.destroy();
+            this.ProcessReader.read();
+            delete this.process.stdout;
+        }
+
+        if (this.ProcessWriter) {
+            this.ProcessWriter.removeAllListeners();
+            this.ProcessWriter.destroy();
+            delete this.process.stdin;
+        }
+
+        if (this.process) {
+            this.removeAllListeners();
+            this.process.removeAllListeners();
+            this.process.kill("SIGKILL");
+            delete this.process;
+        }
 
         if (error) return console.error(error);
     };
@@ -108,7 +125,8 @@ export class FFmpeg extends Duplex {
  * @constructor
  */
 function SpawnFFmpeg(Arguments: FFmpegArgs): any {
-    return spawn(FFmpegName, Arguments.concat(['pipe:1']) as any, { shell: false });
+    const Args = [...Arguments, 'pipe:1'] as string[];
+    return spawn(FFmpegName, Args, { shell: false, windowsHide: true });
 }
 
 /*

@@ -3,7 +3,7 @@ import {Guild, VoiceState} from "discord.js";
 import {Queue} from "../../Modules/Music/src/Manager/Queue/Structures/Queue";
 import {wClient} from "../../Core/Utils/TypesHelper";
 
-const IsDestroyStatus: Set<string> = new Set(['playing', 'paused']);
+const IsDestroyStatus: Set<string> = new Set(['playing', 'paused', 'buffering', 'autopaused']);
 
 export class voiceStateUpdate {
     public readonly name: string = 'voiceStateUpdate';

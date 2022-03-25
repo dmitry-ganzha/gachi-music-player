@@ -26,7 +26,7 @@ export class Decipher {
      * @param html5player {string} Ссылка на html5player
      */
     public _formats = async (formats: YouTubeFormat[], html5player: string): Promise<YouTubeFormat[]> => {
-        let functions = await this.getFunctions(html5player);
+        let functions = (await Promise.all([this.getFunctions(html5player)]))[0];
 
         const decipherScript = functions.length ? new vm.Script(functions[0]) : null;
         const nTransformScript = functions.length > 1 ? new vm.Script(functions[1]) : null;
@@ -38,12 +38,12 @@ export class Decipher {
      * @param html5player {string} Ссылка на html5player
      */
     protected getFunctions = async (html5player: string): Promise<null | string[]> => {
-        const body = await new httpsClient().parseBody(html5player, {
+        const body = (await Promise.all([new httpsClient().parseBody(html5player, {
             request: {
                 method: "GET"
             },
             options: {zLibEncode: true, userAgent: true}
-        });
+        })]))[0];
         const functions = this.extractFunctions(body);
 
         return !functions || !functions.length ? null : functions;

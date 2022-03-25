@@ -23,18 +23,18 @@ export class guildCreate {
         const RunButt = new ActionRowBuilder().addComponents(Buttons.MyUrl, Buttons.ServerUrl);
 
         // @ts-ignore
-        return guild.systemChannel ? guild.systemChannel.send({ embeds: [await ConstructEmbed(guild) as any], components: [RunButt]}).then(async (msg: wMessage | Message) => setTimeout(async () => msg.delete().catch(async (err: DiscordAPIError) => console.log(`[Discord Message]: [guildCreate]: [Delete]: ${err}`)), 60e3)).catch(async (e: DiscordAPIError) => console.log(`[Discord event]: [guildCreate]: ${e}`)) : null;
+        return guild.systemChannel ? guild.systemChannel.send({ embeds: [await ConstructEmbed(guild, client) as any], components: [RunButt]}).then(async (msg: wMessage | Message) => setTimeout(async () => msg.delete().catch(async (err: DiscordAPIError) => console.log(`[Discord Message]: [guildCreate]: [Delete]: ${err}`)), 60e3)).catch(async (e: DiscordAPIError) => console.log(`[Discord event]: [guildCreate]: ${e}`)) : null;
     };
 }
 
-async function ConstructEmbed(guild: Guild): Promise<EmbedConstructor> {
+async function ConstructEmbed(guild: Guild, client: wClient): Promise<EmbedConstructor> {
     return {
         color: Colors.GREEN,
         author: {
             name: guild.name,
             iconURL: guild.iconURL({size: 512})
         },
-        description: `**Спасибо что добавили меня 😉**\nМоя основная задача музыка, официальные платформы которые я поддерживаю (YouTube, Spotify, VK)\nПоддержка других языков дорабатывается.\nЯ полностью бесплатный\nНасчет ошибок и багов писать в лс SNIPPIK#4178.\nДанное сообщение будет удалено через 1 мин.`,
+        description: `**Спасибо что добавили меня 😉**\nМоя основная задача музыка, официальные платформы которые я поддерживаю (YouTube, Spotify, VK)\nЯ полностью бесплатный.\nНасчет ошибок и багов писать в лс SNIPPIK#4178.\nДанное сообщение будет удалено через 1 мин.\nРестарт каждые 24 часа.`,
         thumbnail: { url: guild.bannerURL({size: 4096})},
         timestamp: new Date()
     }
