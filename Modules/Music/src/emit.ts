@@ -10,10 +10,10 @@ type Events = {
     pause: (message: wMessage) => Promise<void>;
     resume: (message: wMessage) => Promise<void>;
     skip: (message: wMessage, args?: number) => Promise<void | boolean>;
-    replay: (message: wMessage) => Promise<NodeJS.Immediate | void>;
-    filter: (message: wMessage) => Promise<NodeJS.Immediate | void>;
+    replay: (message: wMessage) => Promise<NodeJS.Immediate | void | NodeJS.Timeout>;
+    filter: (message: wMessage) => Promise<NodeJS.Immediate | void | NodeJS.Timeout>;
     remove: (message: wMessage, args: number) => Promise<boolean | void>;
-    seek: (message: wMessage, seek: number) => Promise<NodeJS.Immediate | void>;
+    seek: (message: wMessage, seek: number) => Promise<NodeJS.Immediate | void | NodeJS.Timeout>;
 
     playlist: (message: wMessage, playlist: InputPlaylist, VoiceChannel: VoiceChannel |  StageChannel) => Promise<void>;
 };

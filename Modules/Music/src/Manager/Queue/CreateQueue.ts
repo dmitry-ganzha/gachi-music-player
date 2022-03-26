@@ -37,6 +37,7 @@ async function CreateQueueGuild(message: wMessage, VoiceChannel: VoiceChannel, s
 
     const connection = new JoinVoiceChannel(VoiceChannel);
     connection.subscribe = queue.player;
+    connection.setMute = true;
     queue.channels.connection = connection;
 
     return audioPlayer.playStream(message);

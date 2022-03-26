@@ -37,7 +37,7 @@ export class JoinVoiceChannel {
     //Задаем <boolean> значение для микрофона
     public set setMute(state: boolean) {
         if (this.me.mute === state) return;
-        Promise.all([this.me.setMute(state)]).catch(() => undefined);
+        Promise.all([this.me.setMute(state)]).catch(() => new Error('[JoinVoiceChannel]: [setMute]: Fail disable mute a bot'));
     };
 
     public set subscribe(player: audioPlayer) {
@@ -51,7 +51,6 @@ export class JoinVoiceChannel {
      * @param type {string} Тип голосового канала
      */
     protected SpeakStateChannel = (me: Guild["me"], type: ChannelType.GuildVoice | ChannelType.GuildStageVoice): void => {
-        if (me.voice.mute) me.voice.setMute(false).catch(() => undefined);
         if (type === ChannelType.GuildStageVoice && me) me?.voice.setRequestToSpeak(true).catch(() => undefined);
     };
 

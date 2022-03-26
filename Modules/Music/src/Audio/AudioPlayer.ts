@@ -23,7 +23,7 @@ export const StatusPlayerHasSkipped: Set<string> = new Set(['playing', 'paused',
 export class audioPlayer extends AudioPlayer {
     public set state(newState: PlayerState) { super.state = newState; };
     public get state(): PlayerState { return super.state; };
-    protected set playingTime(time: number) { this.state.resource.playbackDuration = time; };
+    public set playingTime(time: number) { this.state.resource.playbackDuration = time; };
 
     public constructor(msg: wMessage) {
         super();
@@ -77,17 +77,12 @@ export class audioPlayer extends AudioPlayer {
      */
     public seek = async (message: wMessage, seek: number): Promise<void> => {
         const queue: Queue = message.client.queue.get(message.guild.id);
-        let stream: any;
+        let stream: FFmpegStream;
 
         try {
             stream = await CreateResource(message, seek);
         } finally {
-            setTimeout(async () => {
-                await Promise.all([this.play(stream)]);
-                
-                queue.channels.connection.setMute = false;
-                this.playingTime = seek * 1000;
-            }, seek >= 400 ? 1500 : 240);
+            CheckReadableStream(queue, stream, seek);
         }
     };
 
@@ -98,7 +93,7 @@ export class audioPlayer extends AudioPlayer {
     public static playStream = async (message: wMessage): Promise<boolean | void> => {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
-        let stream: any;
+        let stream: FFmpegStream;
 
         if (queue.songs?.length === 0) return void queue.events.queue.emit('DestroyQueue', queue, message);
 
@@ -106,14 +101,28 @@ export class audioPlayer extends AudioPlayer {
             stream = await CreateResource(message); //(await Promise.all([CreateResource(message)]))[0];
         } finally {
             client.console(`[${guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
-
-            await Promise.all([
-                queue.player.play(stream),
-                queue.events.message.PlaySongMessage(message)
-            ]);
-            queue.channels.connection.setMute = false;
+            CheckReadableStream(queue, stream);
         }
     };
+}
+
+/**
+ * @description Авто проверка на работоспособность аудио
+ * @param queue {Queue} Очередь сервера
+ * @param stream {FFmpegStream} Аудио
+ * @param seek {number} Пропуск музыки до 00:00:00
+ */
+function CheckReadableStream(queue: Queue, stream: FFmpegStream, seek: number = 1): NodeJS.Timeout | void | boolean {
+    if (stream.ended) return queue.player.emit('error', `[AudioPlayer]: [Message: Fail to load a ended stream]` as any);
+    if (!stream.readable) return setTimeout(() => CheckReadableStream, 75);
+
+    let QueueFunctions = [queue.player.play(stream as any)];
+
+    if (!seek) QueueFunctions.push(queue.events.message.PlaySongMessage(queue.channels.message));
+    Promise.all(QueueFunctions).catch((err: Error) => new Error(`[AudioPlayer]: [Message: Fail to promise.all] [Reason]: ${err}`));
+
+    if (seek) queue.player.playingTime = seek * 1000;
+    setTimeout(() => queue.channels.connection.setMute = false, 225);
 }
 
 /**

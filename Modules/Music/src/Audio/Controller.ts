@@ -72,7 +72,7 @@ async function PlayerRemove(message: wMessage, args: number): Promise<boolean | 
 
     if (!StatusPlayerHasSkipped.has(player.state.status)) return client.Send({text: `${author}, ⚠ Музыка еще не играет. Текущий статус плеера - [${player.state.status}]`, message, color: 'RED'});
 
-    if (songs.length <= 1) return player.stop();
+    if (songs.length <= 1) return PlayerEnd(message);
 
     if (member.permissions.has('Administrator') || author.id === requester.id || !UserToVoice) {
         songs.splice(args - 1, 1);
@@ -88,14 +88,16 @@ async function PlayerRemove(message: wMessage, args: number): Promise<boolean | 
  * @param message {wMessage} Сообщение с сервера
  * @param seek {number} музыка будет играть с нужной секунды (не работает без ffmpeg)
  */
-async function PlayerSeek(message: wMessage, seek: number): Promise<NodeJS.Immediate | void> {
+async function PlayerSeek(message: wMessage, seek: number): Promise<NodeJS.Immediate | void | NodeJS.Timeout> {
     const {client, guild, author} = message;
-    const {player, songs}: Queue = client.queue.get(guild.id);
+    const {player, songs, channels}: Queue = client.queue.get(guild.id);
     const {title, color}: Song = songs[0];
 
     try {
+        if (!channels.connection.isMute) channels.connection.setMute = true;
+
         await client.Send({text: `⏭️ | Seeking to [${ParserTimeSong(seek)}] song | ${title}`, message, type: 'css', color});
-        return player.seek(message, seek);
+        return setTimeout(() => player.seek(message, seek), 225);
     } catch {
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
     }
@@ -159,14 +161,16 @@ async function PlayerSkipTo(message: wMessage, args: number): Promise<void | boo
  * @description Повтор текущей музыки
  * @param message {wMessage} Сообщение с сервера
  */
-async function PlayerReplay(message: wMessage): Promise<NodeJS.Immediate | void> {
+async function PlayerReplay(message: wMessage): Promise<NodeJS.Immediate | void | NodeJS.Timeout> {
     const {client, guild, author} = message;
-    const {player, songs}: Queue = client.queue.get(guild.id);
+    const {player, songs, channels}: Queue = client.queue.get(guild.id);
     const {title, color, duration}: Song = songs[0];
 
     try {
+        if (!channels.connection.isMute) channels.connection.setMute = true;
+
         await client.Send({text: `🔂 | [${duration.StringTime}] | Replay | ${title}`, message, color, type: "css"});
-        return player.seek(message, 0);
+        return setTimeout(() => player.seek(message, 1), 225);
     } catch {
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
     }
@@ -177,13 +181,15 @@ async function PlayerReplay(message: wMessage): Promise<NodeJS.Immediate | void>
  * @description Применяем фильтры для плеера
  * @param message {wMessage} Сообщение с сервера
  */
-async function PlayerFilter(message: wMessage): Promise<NodeJS.Immediate | void> {
+async function PlayerFilter(message: wMessage): Promise<NodeJS.Immediate | void | NodeJS.Timeout> {
     const {client, guild, author} = message;
-    const {player}: Queue = client.queue.get(guild.id);
-    const seek: number = player.state.resource?.playbackDuration ? parseInt((player.state.resource.playbackDuration / 1000).toFixed(0)) : 0;
+    const {player, channels}: Queue = client.queue.get(guild.id);
+    const seek: number = player.state.resource?.playbackDuration ? parseInt((player.state.resource?.playbackDuration / 1000).toFixed(0)) : 1;
 
     try {
-        return player.seek(message, seek);
+        if (!channels.connection.isMute) channels.connection.setMute = true;
+
+        return setTimeout(() => player.seek(message, seek), 225);
     } catch {
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
     }

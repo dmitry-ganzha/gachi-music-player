@@ -99,7 +99,7 @@ export class FFmpegStream {
         return read;
     };
     public get ended() {
-        return this.playStream?.readableEnded || this.playStream?.destroyed || !!this.playStream;
+        return this.playStream?.readableEnded || this.playStream?.destroyed || !this.playStream;
     };
 
     public constructor(url: string | any, AudioFilters: AudioFilters) {
