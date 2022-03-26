@@ -170,7 +170,7 @@ async function PlayerReplay(message: wMessage): Promise<NodeJS.Immediate | void 
         if (!channels.connection.isMute) channels.connection.setMute = true;
 
         await client.Send({text: `🔂 | [${duration.StringTime}] | Replay | ${title}`, message, color, type: "css"});
-        return setTimeout(() => player.seek(message, 1), 225);
+        return setTimeout(() => player.seek(message), 225);
     } catch {
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
     }
@@ -184,7 +184,7 @@ async function PlayerReplay(message: wMessage): Promise<NodeJS.Immediate | void 
 async function PlayerFilter(message: wMessage): Promise<NodeJS.Immediate | void | NodeJS.Timeout> {
     const {client, guild, author} = message;
     const {player, channels}: Queue = client.queue.get(guild.id);
-    const seek: number = player.state.resource?.playbackDuration ? parseInt((player.state.resource?.playbackDuration / 1000).toFixed(0)) : 1;
+    const seek: number = player.state.resource?.playbackDuration ? parseInt((player.state.resource?.playbackDuration / 1000).toFixed(0)) : 0;
 
     try {
         if (!channels.connection.isMute) channels.connection.setMute = true;

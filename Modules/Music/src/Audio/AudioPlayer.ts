@@ -75,7 +75,7 @@ export class audioPlayer extends AudioPlayer {
      * @param message {wMessage} Сообщение с сервера
      * @param seek {number} Пропуск музыки до 00:00:00
      */
-    public seek = async (message: wMessage, seek: number): Promise<void> => {
+    public seek = async (message: wMessage, seek: number = 0): Promise<void> => {
         const queue: Queue = message.client.queue.get(message.guild.id);
         let stream: FFmpegStream;
 
@@ -101,7 +101,7 @@ export class audioPlayer extends AudioPlayer {
             stream = await CreateResource(message); //(await Promise.all([CreateResource(message)]))[0];
         } finally {
             client.console(`[${guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
-            CheckReadableStream(queue, stream);
+            CheckReadableStream(queue, stream, 0, true);
         }
     };
 }
@@ -111,14 +111,15 @@ export class audioPlayer extends AudioPlayer {
  * @param queue {Queue} Очередь сервера
  * @param stream {FFmpegStream} Аудио
  * @param seek {number} Пропуск музыки до 00:00:00
+ * @param sendMessage {boolean} Отправить сообщение о текущей музыке
  */
-function CheckReadableStream(queue: Queue, stream: FFmpegStream, seek: number = 1): NodeJS.Timeout | void | boolean {
+function CheckReadableStream(queue: Queue, stream: FFmpegStream, seek: number = 0, sendMessage: boolean = false): NodeJS.Timeout | void | boolean {
     if (stream.ended) return queue.player.emit('error', `[AudioPlayer]: [Message: Fail to load a ended stream]` as any);
     if (!stream.readable) return setTimeout(() => CheckReadableStream, 75);
 
     let QueueFunctions = [queue.player.play(stream as any)];
 
-    if (!seek) QueueFunctions.push(queue.events.message.PlaySongMessage(queue.channels.message));
+    if (sendMessage) QueueFunctions.push(queue.events.message.PlaySongMessage(queue.channels.message));
     Promise.all(QueueFunctions).catch((err: Error) => new Error(`[AudioPlayer]: [Message: Fail to promise.all] [Reason]: ${err}`));
 
     if (seek) queue.player.playingTime = seek * 1000;
