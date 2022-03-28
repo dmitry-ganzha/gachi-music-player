@@ -54,7 +54,7 @@ class MultiLoader {
         let cmd = (await import(path));
         let name = Object.keys(cmd)[0];
         return new cmd[name];
-    }
+    };
 }
 
 export async function Load (client: wClient): Promise<void> {

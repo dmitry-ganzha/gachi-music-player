@@ -52,7 +52,7 @@ async function PlayerEnd(message: wMessage): Promise<void> {
     if (StatusPlayerHasSkipped.has(player.state.status)) {
         if (!channels.connection.isMute) channels.connection.setMute = true;
 
-        setTimeout(() => player.stop(true), 250);
+        setTimeout(() => player.stop(true), 300);
     }
     return;
 }
@@ -97,7 +97,7 @@ async function PlayerSeek(message: wMessage, seek: number): Promise<NodeJS.Immed
         if (!channels.connection.isMute) channels.connection.setMute = true;
 
         await client.Send({text: `⏭️ | Seeking to [${ParserTimeSong(seek)}] song | ${title}`, message, type: 'css', color});
-        return setTimeout(() => player.seek(message, seek), 225);
+        return setTimeout(() => player.seek(message, seek), 500);
     } catch {
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
     }
@@ -170,7 +170,7 @@ async function PlayerReplay(message: wMessage): Promise<NodeJS.Immediate | void 
         if (!channels.connection.isMute) channels.connection.setMute = true;
 
         await client.Send({text: `🔂 | [${duration.StringTime}] | Replay | ${title}`, message, color, type: "css"});
-        return setTimeout(() => player.seek(message), 225);
+        return setTimeout(() => player.seek(message, 0), 500);
     } catch {
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
     }
@@ -189,7 +189,7 @@ async function PlayerFilter(message: wMessage): Promise<NodeJS.Immediate | void 
     try {
         if (!channels.connection.isMute) channels.connection.setMute = true;
 
-        return setTimeout(() => player.seek(message, seek), 225);
+        return setTimeout(() => player.seek(message, seek), 500);
     } catch {
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
     }

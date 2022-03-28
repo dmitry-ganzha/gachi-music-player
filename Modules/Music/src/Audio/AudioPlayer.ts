@@ -44,10 +44,6 @@ export class audioPlayer extends AudioPlayer {
      * @param resource {AudioResource} Поток
      */
     public play = (resource: AudioResource): void | any => {
-        if (!resource) {
-            void this.emit('error', 'Error: AudioResource has not found' as any);
-            return;
-        }
         const onStreamError = (error: Error) => {
             if (this.state.status !== AudioPlayerStatus.Idle) void this.emit('error', new AudioPlayerError(error, this.state.resource));
             if (this.state.status !== AudioPlayerStatus.Idle && this.state.resource === resource) this.state = { status: AudioPlayerStatus.Idle };
@@ -114,8 +110,9 @@ export class audioPlayer extends AudioPlayer {
  * @param sendMessage {boolean} Отправить сообщение о текущей музыке
  */
 function CheckReadableStream(queue: Queue, stream: FFmpegStream, seek: number = 0, sendMessage: boolean = false): NodeJS.Timeout | void | boolean {
-    if (stream.ended) return queue.player.emit('error', `[AudioPlayer]: [Message: Fail to load a ended stream]` as any);
-    if (!stream.readable) return setTimeout(() => CheckReadableStream, 75);
+    if (!stream) return void queue.player.emit('error', 'Error: AudioResource has not found' as any);
+    if (stream?.ended) return void queue.player.emit('error', `[AudioPlayer]: [Message: Fail to load a ended stream]` as any);
+    if (!stream?.readable) return setTimeout(() => CheckReadableStream, 50);
 
     let QueueFunctions = [queue.player.play(stream as any)];
 
@@ -123,7 +120,7 @@ function CheckReadableStream(queue: Queue, stream: FFmpegStream, seek: number = 
     Promise.all(QueueFunctions).catch((err: Error) => new Error(`[AudioPlayer]: [Message: Fail to promise.all] [Reason]: ${err}`));
 
     if (seek) queue.player.playingTime = seek * 1000;
-    setTimeout(() => queue.channels.connection.setMute = false, 225);
+    setTimeout(() => queue.channels.connection.setMute = false, 300);
 }
 
 /**
@@ -155,7 +152,7 @@ async function onIdlePlayer(message: wMessage): Promise<NodeJS.Timeout | null | 
     if (!queue || queue?.songs?.length <= 0) return null;
     if (queue.player.state?.resource) void queue.player.state.resource.playStream.emit("close");
 
-    await isRemoveSong(queue);
+    isRemoveSong(queue);
     if (queue.options.random) return Shuffle(message, queue);
     return audioPlayer.playStream(message);
 }
@@ -169,8 +166,9 @@ async function onErrorPlayer(err: AudioPlayerError, message: wMessage): Promise<
     const queue: Queue = message.client.queue.get(message.guild.id);
 
     await WarningMessage(message, queue.songs[0], err);
-    if (queue.songs) queue.songs.shift();
-    else if (queue.songs.length === 0) queue.events.queue.emit("DestroyQueue", queue, message);
+
+    if (queue.songs.length === 1) queue.events.queue.emit("DestroyQueue", queue, message);
+    if (queue.songs) queue.player.stop();
 
     return;
 }
@@ -215,7 +213,7 @@ async function onAutoPausePlayer(message: wMessage) {
  * @description Повтор музыки
  * @param queue {Queue} Очередь сервера
  */
-async function isRemoveSong({options, songs}: Queue): Promise<null> {
+function isRemoveSong({options, songs}: Queue): null {
     if (options.loop === "song") return null;
     else if (options.loop === "songs") {
         const repeat = songs.shift();
@@ -230,7 +228,7 @@ async function isRemoveSong({options, songs}: Queue): Promise<null> {
  * @param message {wMessage} Сообщение с сервера
  * @param queue {Queue} Очередь сервера
  */
-async function Shuffle(message: wMessage, {songs}: Queue): Promise<boolean | void> {
+function Shuffle(message: wMessage, {songs}: Queue): Promise<boolean | void> {
     const set: number = Math.floor(Math.random() * songs.length);
     const LocalQueue2: Song = songs[set];
 

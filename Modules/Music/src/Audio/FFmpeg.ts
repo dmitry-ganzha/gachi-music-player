@@ -4,7 +4,7 @@ import { Duplex, Readable, Writable } from 'stream';
 export type FFmpegArgs = (string | number)[];
 
 let FFmpegName: string;
-let sources = ['ffmpeg', 'avconv', './FFmpeg/ffmpeg', './FFmpeg/avconv'];
+let sources = ['ffmpeg', 'avconv', './FFmpeg/ffmpeg', './FFmpeg/avconv', './node_modules/ffmpeg-static/ffmpeg'];
 
 //====================== ====================== ====================== ======================
 
@@ -36,6 +36,8 @@ export const FFmpegArguments = {
  */
 const FFmpegCheck = async () => {
     for (let source of sources) {
+        if (FFmpegName) break;
+
         try {
             const result = spawnSync(source, ['-h'], {windowsHide: true});
             if (result.error) continue;
@@ -52,25 +54,23 @@ if (!FFmpegName) Promise.all([FFmpegCheck()]).catch();
  * Это круче вашего Lavalink
  */
 export class FFmpeg extends Duplex {
-    //public _readableState: Readable = this.ProcessReader._readableState;
-    //public _writableState: Writable = this.ProcessWriter._writableState;
+    //public _readableState: Readable = this.ProcessInput._readableState;
+    //public _writableState: Writable = this.ProcessOutput._writableState;
 
     protected process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
-    protected get ProcessReader() { return this.process.stdout; };
-    protected get ProcessWriter() { return this.process.stdin; };
+    protected get ProcessInput() { return this.process.stdout; };
+    protected get ProcessOutput() { return this.process.stdin; };
 
     public constructor(args: FFmpegArgs) {
         super({highWaterMark: 12, autoDestroy: true});
         this.process = SpawnFFmpeg(args);
-        //this._readableState = this.ProcessReader._readableState;
-        //this._writableState = this.ProcessWriter._writableState;
+        this.Binding(['write', 'end'], this.ProcessOutput);
+        this.Binding(['read', 'setEncoding', 'pipe', 'unpipe'], this.ProcessInput);
 
-        this.Binding(['write', 'end'], this.ProcessWriter);
-        this.Binding(['read', 'setEncoding', 'pipe', 'unpipe'], this.ProcessReader);
-
+        //Если есть ошибка в <input, output>, выводим!
         const processError = (error: Error) => this.emit('error', error);
-        this.ProcessReader.on('error', processError);
-        this.ProcessWriter.on('error', processError);
+        this.ProcessInput.once('error', processError);
+        this.ProcessOutput.once('error', processError);
     };
 
     /**
@@ -94,16 +94,16 @@ export class FFmpeg extends Duplex {
         //delete this._readableState;
         //delete this._writableState;
 
-        if (this.ProcessReader) {
-            this.ProcessReader.removeAllListeners();
-            this.ProcessReader.destroy();
-            this.ProcessReader.read();
+        if (this.ProcessInput) {
+            this.ProcessInput.removeAllListeners();
+            this.ProcessInput.destroy();
+            this.ProcessInput.read();
             delete this.process.stdout;
         }
 
-        if (this.ProcessWriter) {
-            this.ProcessWriter.removeAllListeners();
-            this.ProcessWriter.destroy();
+        if (this.ProcessOutput) {
+            this.ProcessOutput.removeAllListeners();
+            this.ProcessOutput.destroy();
             delete this.process.stdin;
         }
 

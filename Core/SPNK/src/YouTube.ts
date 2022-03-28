@@ -91,7 +91,7 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
         isPrivate: videoDetails.isPrivate,
     };
 
-    return {...VideoData, ...format};
+    return {...VideoData, format: format[format.length - 1]};
 }
 //====================== ====================== ====================== ======================
 

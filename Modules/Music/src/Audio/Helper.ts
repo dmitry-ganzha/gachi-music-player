@@ -14,31 +14,29 @@ export type AudioFilters = Queue['audioFilters'] & {seek?: number};
 /**
  * @description Заготавливаем необходимые данные для создания потока
  */
-export async function FindResource(song: Song): Promise<void> {
-    if (song?.format?.work) return;
+export async function FindResource(song: Song, req: number = 0): Promise<void> {
+    if (req > 5) return;
 
-    if (!song.format?.url) {
-        let format = await getLinkFormat(song);
-        if (!format) format = await getLinkFormat(song);
-        if (!format) {
-            song.format = {url: undefined, work: false};
-            return;
-        }
-        song.format = ConstFormat(format);
-    }
+    //Получаем данные о ресурсе
+    let format = await getLinkFormat(song);
+    if (!format) return FindResource(song, req++);
 
+    //Подгоняем под общую сетку
+    song.format = ConstFormat(format);
+
+    //Проверяем можно ли скачивать с ресурса
     const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 5, method: "GET"}}).catch(() => null);
-    if (!resource || resource.statusCode >= 400 && resource.statusCode !== 404) {
-        delete song.format;
-        return FindResource(song);
+    if (resource.statusCode === 200) {
+        song.format.work = true;
+        return;
     }
-
-    song.format.work = true;
+    //Если этот формат невозможно включить прогоняем по новой
+    if (resource.statusCode >= 400 && resource.statusCode <= 500) return FindResource(song, req++);
     return;
 }
 
 /**
- * @description Получаем InputFormat
+ * @description Получаем данные формата
  * @param song {Song} Трек
  */
 async function getLinkFormat({type, url, title, author}: Song): Promise<InputFormat> {
@@ -64,7 +62,7 @@ async function FindTrack(nameSong: string): Promise<InputFormat> {
 }
 
 /**
- * @description Получаем от видео все доступные форматы
+ * @description Получаем от видео аудио формат
  * @param url {string} Ссылка
  */
 async function getFormatYouTube(url: string): Promise<InputFormat> {
@@ -84,11 +82,9 @@ export class FFmpegStream {
     public started = false;
     public silenceRemaining = -1;
     protected FFmpeg: FFmpeg;
-    protected opusEncoder = new opus.OggDemuxer({
-        autoDestroy: true,
-        destroy: () => this.destroy().catch(() => undefined)
-    });
+    protected opusEncoder: opus.OggDemuxer;
 
+    //Для проверки, читабельный ли стрим
     public get readable() {
         if (this.silenceRemaining === 0) return false;
         const read = this.playStream.readable;
@@ -98,13 +94,18 @@ export class FFmpegStream {
         }
         return read;
     };
+    //Для проверки, закончился ли стрим ресурса
     public get ended() {
         return this.playStream?.readableEnded || this.playStream?.destroyed || !this.playStream;
     };
 
     public constructor(url: string | any, AudioFilters: AudioFilters) {
-        this.FFmpeg = new FFmpeg(CreateArguments(AudioFilters, url) as any);
+        this.opusEncoder = new opus.OggDemuxer({
+            autoDestroy: true,
+            destroy: () => this.destroy().catch(() => undefined)
+        });
 
+        this.FFmpeg = new FFmpeg(CreateArguments(AudioFilters, url) as any);
         this.playStream = this.FFmpeg.pipe(this.opusEncoder);
         this.playStream.once('readable', () => (this.started = true));
         ['end', 'close', 'error'].map((event) => this.playStream.once(event, this.destroy));

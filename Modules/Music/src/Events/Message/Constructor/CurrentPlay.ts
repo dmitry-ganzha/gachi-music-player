@@ -92,7 +92,6 @@ async function ConvertCurrentTime({state}: audioPlayer, ProgressBar: boolean = t
     else if (filters.nightcore) seconds = parseInt(((duration / 1000) * 1.25).toFixed(0));
     else if (filters.Vw) seconds = parseInt(((duration / 1000) * 0.8).toFixed(0));
     else seconds = parseInt((duration / 1000).toFixed(0));
-    //const seconds = filters.speed ? parseInt(((duration / 1000) * filters.).toFixed(0));
 
     if (ProgressBar) return seconds;
     return ParserTimeSong(seconds);
