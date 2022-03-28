@@ -78,7 +78,7 @@ export class audioPlayer extends AudioPlayer {
         try {
             stream = await CreateResource(message, seek);
         } finally {
-            CheckReadableStream(queue, stream, seek);
+            setTimeout(() => CheckReadableStream(queue, stream, seek), 200);
         }
     };
 
@@ -120,7 +120,7 @@ function CheckReadableStream(queue: Queue, stream: FFmpegStream, seek: number = 
     Promise.all(QueueFunctions).catch((err: Error) => new Error(`[AudioPlayer]: [Message: Fail to promise.all] [Reason]: ${err}`));
 
     if (seek) queue.player.playingTime = seek * 1000;
-    setTimeout(() => queue.channels.connection.setMute = false, 300);
+    setTimeout(() => queue.channels.connection.setMute = false, 350);
 }
 
 /**
@@ -150,11 +150,12 @@ async function onIdlePlayer(message: wMessage): Promise<NodeJS.Timeout | null | 
     const queue: Queue = client.queue.get(guild.id);
 
     if (!queue || queue?.songs?.length <= 0) return null;
-    if (queue.player.state?.resource) void queue.player.state.resource.playStream.emit("close");
 
-    isRemoveSong(queue);
-    if (queue.options.random) return Shuffle(message, queue);
-    return audioPlayer.playStream(message);
+    setTimeout(() => {
+        isRemoveSong(queue);
+        if (queue.options.random) return Shuffle(message, queue);
+        return audioPlayer.playStream(message);
+    }, 755);
 }
 
 /**
