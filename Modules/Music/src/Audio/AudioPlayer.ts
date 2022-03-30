@@ -78,9 +78,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (OldState.status !== newState.status || isNewResources) {
 
             //Фикс фризом музыки
-            this._signalStopSpeaking();
             this._playPacket(SILENCE_FRAME, this.PlayableVoiceChannels);
-
             this.emit(newState.status, OldState, this._state as any);
         }
     };

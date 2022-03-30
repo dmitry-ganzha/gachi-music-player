@@ -18,14 +18,14 @@ export async function FindResource(song: Song, req: number = 0): Promise<void> {
     if (req > 5) return;
 
     //Получаем данные о ресурсе
-    let format = await getLinkFormat(song);
+    let format = (await Promise.all([getLinkFormat(song)]))[0];
     if (!format) return FindResource(song, req++);
 
     //Подгоняем под общую сетку
     song.format = ConstFormat(format);
 
     //Проверяем можно ли скачивать с ресурса
-    const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 5, method: "GET"}}).catch(() => null);
+    const resource = (await Promise.all([new httpsClient().Request(song.format?.url, {request: {maxRedirections: 5, method: "GET"}}).catch(() => null)]))[0];
     if (resource.statusCode === 200) {
         song.format.work = true;
         return;

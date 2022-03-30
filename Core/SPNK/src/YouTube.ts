@@ -166,14 +166,14 @@ async function getPlaylist(url: string): Promise<InputPlaylist> {
     const parsed = JSON.parse(`${body.split('{"playlistVideoListRenderer":{"contents":')[1].split('}],"playlistId"')[0]}}]`);
     const playlistDetails = JSON.parse(body.split('{"playlistSidebarRenderer":')[1].split("}};</script>")[0]).items;
     const playlistInfo = playlistDetails[0].playlistSidebarPrimaryInfoRenderer;
-    const channel = playlistDetails[1]?.playlistSidebarSecondaryInfoRenderer.videoOwner.videoOwnerRenderer.title.runs[0];
+    const channel = (playlistDetails[1] ?? playlistDetails[0])?.playlistSidebarSecondaryInfoRenderer?.videoOwner?.videoOwnerRenderer.title.runs[0] ?? null;
 
     return {
         id: playlistID,
         url: `${DefaultLinkYouTube}/playlist?list=${playlistID}`,
         title: playlistInfo?.title?.runs[0]?.text ?? 'Not found',
         items: (await Promise.all([_parsingVideos(parsed)]))[0],
-        author: (await Promise.all([getChannel({id: channel.navigationEndpoint.browseEndpoint.browseId, name: channel.text})]))[0],
+        author: channel === null ? null : (await Promise.all([getChannel({id: channel.navigationEndpoint.browseEndpoint.browseId, name: channel.text})]))[0],
         image: {
             url: (playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer?.thumbnail.thumbnails.length ? playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer.thumbnail.thumbnails[playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer.thumbnail.thumbnails.length - 1].url : null)?.split('?sqp=')[0]
         }

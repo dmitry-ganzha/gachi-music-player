@@ -44,7 +44,7 @@ export class CommandLoop extends Command {
         });
 
         if (queue.songs[0].isLive) return message.client.Send({
-            text: `${message.author}, Пока это не работает со стримами!`,
+            text: `${message.author}, Фильтры не работают со стримами`,
             message,
             color: 'RED'
         });

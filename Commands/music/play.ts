@@ -160,7 +160,7 @@ class HandleInfoResource {
         results.ArraySort(15).forEach((s: any) => resp = s.map((video: InputTrack) => (`${num++} ➜ [${this.ConvertTimeSearch(video.duration.seconds) ?? "LIVE"}] [${message.client.ConvertedText(video.author.title, 12, true)}] [${message.client.ConvertedText(video.title, 80, true)}]`)).join(`\n`));
         return resp === undefined ? `😟 Похоже ${this.isType()} не хочет делится поиском!` : resp;
     };
-    protected SendMessage = async (message: wMessage, results: any[], voiceChannel: VoiceChannel | StageChannel, resp: string, num: number): Promise<MessageCollector> => message.channel.send(`\`\`\`css\nВыбери от 1 до ${results.length}\n[Find -> ${this.isType()}]\n\n${resp}\`\`\``).then(async (msg: any) => {
+    protected SendMessage = async (message: wMessage, results: any[], voiceChannel: VoiceChannel | StageChannel, resp: string, num: number): Promise<MessageCollector> => message.channel.send(`\`\`\`css\nВыбери от 1 до ${results.length}\n[Платформа: ${this.isType()} | Запросил: ${message.author}]\n\n${resp}\`\`\``).then(async (msg: any) => {
         this.Reaction(msg, message, "❌", () => (this.collector?.stop(), this.deleteMessage(msg))).catch((err: Error) => console.log(err));
         await this.MessageCollector(msg, message, num);
         return this.CollectorCollect(msg, results, message, voiceChannel);
