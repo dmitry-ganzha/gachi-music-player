@@ -18,20 +18,20 @@ export async function FindResource(song: Song, req: number = 0): Promise<void> {
     if (req > 5) return;
 
     //Получаем данные о ресурсе
-    let format = (await Promise.all([getLinkFormat(song)]))[0];
+    let format = await getLinkFormat(song);
     if (!format) return FindResource(song, req++);
 
     //Подгоняем под общую сетку
     song.format = ConstFormat(format);
 
     //Проверяем можно ли скачивать с ресурса
-    const resource = (await Promise.all([new httpsClient().Request(song.format?.url, {request: {maxRedirections: 5, method: "GET"}}).catch(() => null)]))[0];
-    if (resource.statusCode === 200) {
+    const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 5, method: "GET"}});
+    if (resource?.statusCode === 200) {
         song.format.work = true;
         return;
     }
     //Если этот формат невозможно включить прогоняем по новой
-    if (resource.statusCode >= 400 && resource.statusCode <= 500) return FindResource(song, req++);
+    if (resource?.statusCode >= 400 && resource?.statusCode <= 500) return FindResource(song, req++);
     return;
 }
 
@@ -45,7 +45,7 @@ async function getLinkFormat({type, url, title, author}: Song): Promise<InputFor
         else if (type === "VK") return (await VK.getTrack(url))?.format;
         return getFormatYouTube(url);
     } catch {
-        console.log('[Streamer]: [Fail: getLinkFormat]: [ReSearch]');
+        console.log('[FindResource]: [Fail to found format!]');
         return null;
     }
 }
@@ -80,13 +80,13 @@ async function getFormatYouTube(url: string): Promise<InputFormat> {
  * @description Подготавливаем, получаем и создаем объект схожий с discord.js {AudioResource}
  */
 export class FFmpegStream {
-    public playStream: opus.OggDemuxer;
     public silencePaddingFrames: number = 0;
     public playbackDuration = 0;
     public started = false;
     public silenceRemaining = -1;
+    public playStream: opus.OggDemuxer;
     protected FFmpeg: FFmpeg;
-    protected opusEncoder: opus.OggDemuxer;
+    protected opusEncoder: opus.OggDemuxer = new opus.OggDemuxer({ destroy: () => this.destroy().catch(() => undefined) });
 
     //Для проверки, читабельный ли стрим
     public get readable() {
@@ -104,11 +104,6 @@ export class FFmpegStream {
     };
 
     public constructor(url: string | any, AudioFilters: AudioFilters) {
-        this.opusEncoder = new opus.OggDemuxer({
-            autoDestroy: true,
-            destroy: () => this.destroy().catch(() => undefined)
-        });
-
         this.FFmpeg = new FFmpeg(CreateArguments(AudioFilters, url) as any);
         this.playStream = this.FFmpeg.pipe(this.opusEncoder);
         this.playStream.once('readable', () => (this.started = true));
@@ -207,7 +202,6 @@ function CreateFilters(AudioFilters: AudioFilters): FFmpegArgs  {
 
     return resSt === '' ? [] : ['-af', resp] as any;
 }
-
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
@@ -225,7 +219,7 @@ function audioCycleStep() {
     if (nextTime === -1) return;
 
     nextTime += 20;
-    const available = audioPlayers.filter((player) => player.checkPlayable());
+    const available = audioPlayers.filter((player) => player.checkPlayable);
 
     prepareNextAudioFrame(available);
 }

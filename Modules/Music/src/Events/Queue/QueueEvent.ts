@@ -73,6 +73,7 @@ async function CleanPlayer(queue: Queue): Promise<void> {
 
     setTimeout(() => {
         queue.player?.removeAllListeners();
+        queue.player.destroy();
         delete queue.player;
     }, 7e3);
     return;

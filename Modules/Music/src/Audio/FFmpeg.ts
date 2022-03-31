@@ -55,9 +55,6 @@ if (!FFmpegName) Promise.all([FFmpegCheck()]).catch();
  * Это круче вашего Lavalink
  */
 export class FFmpeg extends Duplex {
-    //public _readableState: Readable = this.ProcessInput._readableState;
-    //public _writableState: Writable = this.ProcessOutput._writableState;
-
     protected process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
     protected get ProcessInput() { return this.process.stdout; };
     protected get ProcessOutput() { return this.process.stdin; };
@@ -92,9 +89,6 @@ export class FFmpeg extends Duplex {
      * @param error {any} По какой ошибке завершаем работу FFmpeg'a
      */
     public _destroy = (error?: Error | null) => {
-        //delete this._readableState;
-        //delete this._writableState;
-
         if (this.ProcessInput) {
             this.ProcessInput.removeAllListeners();
             this.ProcessInput.destroy();
@@ -129,23 +123,3 @@ function SpawnFFmpeg(Arguments: FFmpegArgs): any {
     const Args = [...Arguments, 'pipe:1'] as string[];
     return spawn(FFmpegName, Args, { shell: false, windowsHide: true });
 }
-
-/*
-const EVENTS = {
-    readable: this.ProcessReader,
-    data: this.ProcessReader,
-    end: this.ProcessReader,
-    unpipe: this.ProcessReader,
-    finish: this.ProcessWriter,
-    drain: this.ProcessWriter,
-};
- */
-
-//Remove on and once
-/*
-for (const method of ['on', 'once', 'removeListener', 'removeListeners', 'listeners']) {
-    // @ts-ignore
-    this[method] = (ev, fn) => EVENTS[ev] ? EVENTS[ev][method](ev, fn) : Duplex.prototype[method].call(this, ev, fn);
-}
-
- */
