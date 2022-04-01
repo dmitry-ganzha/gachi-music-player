@@ -12,15 +12,18 @@ type OptionsSendType =  "css" | "js" | "ts" | "cpp" | "html" | "cs";
 
 
 export class Send {
-    public run = (options: SendOptions): Promise<void> => typeof options.type === 'string' ? this.SendCode(options) : this.SendNotCode(options);
-    protected SendCode = async (options: SendOptions): Promise<void> => this.Catch(options.message.channel.send({
+    public run = (options: SendOptions): void => typeof options.type === 'string' ? this.SendCode(options) : this.SendNotCode(options);
+
+    protected SendCode = (options: SendOptions): void => this.Catch(options.message.channel.send({
         embeds: [MessageEmbed(options.color, `\`\`\`${options.type}\n${options.text}\n\`\`\``)],
     }));
-    protected SendNotCode = async (options: SendOptions): Promise<void> => this.Catch(options.message.channel.send({
+
+    protected SendNotCode = (options: SendOptions): void => this.Catch(options.message.channel.send({
         embeds: [MessageEmbed(options.color, options.text)]
     }));
-    protected Catch = async (type: Promise<ClientMessage>): Promise<void> => {
-        type.then(async (msg: ClientMessage) => setTimeout(() => msg.deletable ? msg.delete().catch((err: Error) => console.log(`[Discord Error]: [Delete Message] -> ${err}`)) : null, 12e3)
+
+    protected Catch = (type: Promise<ClientMessage>): void => {
+        type.then((msg: ClientMessage) => setTimeout(() => msg.deletable ? msg.delete().catch((err: Error) => console.log(`[Discord Error]: [Delete Message] -> ${err}`)) : null, 12e3)
         ).catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
     };
 }

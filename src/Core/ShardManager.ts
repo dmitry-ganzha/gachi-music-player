@@ -17,6 +17,6 @@ class ShardManager extends ShardingManager {
         });
         this.AsyncSpawn().catch((err: Error) => console.log(`[ShardManager]: [Error]: ${err}`));
     };
-    protected AsyncSpawn = async () => this.spawn({amount: "auto"});
+    protected AsyncSpawn = () => this.spawn({amount: "auto"});
 }
 new ShardManager();

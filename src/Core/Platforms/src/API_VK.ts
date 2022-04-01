@@ -133,7 +133,7 @@ async function getPlaylist(url: string, options = {limit: 50}): Promise<null | I
  * @param type {string} Тип запроса
  * @param options {string} Параметры через &
  */
-async function RequestVK(method: methodType, type: requestType, options: string): Promise<object> {
+function RequestVK(method: methodType, type: requestType, options: string): Promise<any> {
     return new httpsClient().parseJson(CreateUrl(method, type, options), {
         options: {zLibEncode: true}
     });

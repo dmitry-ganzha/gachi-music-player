@@ -20,7 +20,7 @@ export class CommandJoin extends Command {
         })
     };
 
-    public run = async (message: ClientMessage): Promise<void> => {
+    public run = (message: ClientMessage): void => {
         const voiceChannel: VoiceChannel | StageChannel = message.member.voice.channel;
         const queue: Queue = message.client.queue.get(message.guild.id);
 

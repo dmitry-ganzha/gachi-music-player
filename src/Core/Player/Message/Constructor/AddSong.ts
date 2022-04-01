@@ -17,7 +17,7 @@ import {EmbedConstructor} from "../../../Utils/TypeHelper";
  * @param requester {Song<requester>} Кто включил трек
  * @param songs {Queue<songs>} Все треки
  */
-export async function AddSong(client: WatKLOK, {color, author, image, title, url, duration, requester}: Song, {songs}: Queue): Promise<EmbedConstructor> {
+export function AddSong(client: WatKLOK, {color, author, image, title, url, duration, requester}: Song, {songs}: Queue): EmbedConstructor {
     return {
         color,
         author: {

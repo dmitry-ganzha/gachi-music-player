@@ -14,7 +14,7 @@ export class guildCreate {
     public readonly name: string = 'guildCreate';
     public readonly enable: boolean = true;
 
-    public run = async (guild: Guild, f2: null, client: WatKLOK): Promise<void | NodeJS.Timeout> | null => {
+    public run = (guild: Guild, f2: null, client: WatKLOK): Promise<void | number> => {
         const Buttons = {
             MyUrl: new ButtonBuilder().setURL(`https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji({name: '🔗'}).setLabel('Invite').setStyle(ButtonStyle.Link),
             ServerUrl: new ButtonBuilder().setURL(cfg.Bot.DiscordServer).setEmoji({name: '🛡'}).setLabel('Help server').setStyle(ButtonStyle.Link),
@@ -23,11 +23,11 @@ export class guildCreate {
         const RunButt = new ActionRowBuilder().addComponents(Buttons.MyUrl, Buttons.ServerUrl);
 
         // @ts-ignore
-        return guild.systemChannel ? guild.systemChannel.send({ embeds: [await ConstructEmbed(guild)], components: [RunButt]}).then(async (msg: ClientMessage) => setTimeout(async () => msg.delete().catch(async (err: DiscordAPIError) => console.log(`[Discord Message]: [guildCreate]: [Delete]: ${err}`)), 60e3)).catch(async (e: DiscordAPIError) => console.log(`[Discord event]: [guildCreate]: ${e}`)) : null;
+        return guild.systemChannel ? guild.systemChannel.send({ embeds: [ConstructEmbed(guild)], components: [RunButt]}).then((msg: ClientMessage) => setTimeout(async () => msg.delete().catch(async (err: DiscordAPIError) => console.log(`[Discord Message]: [guildCreate]: [Delete]: ${err}`)), 60e3)).catch(async (e: DiscordAPIError) => console.log(`[Discord event]: [guildCreate]: ${e}`)) : null;
     };
 }
 
-async function ConstructEmbed(guild: Guild): Promise<EmbedConstructor> {
+function ConstructEmbed(guild: Guild): EmbedConstructor {
     return {
         color: Colors.GREEN,
         author: {

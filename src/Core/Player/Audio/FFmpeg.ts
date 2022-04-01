@@ -35,10 +35,8 @@ export const FFmpegArguments = {
 /**
  * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a если он будет найден
  */
-const FFmpegCheck = async () => {
+const FFmpegCheck = () => {
     for (let source of sources) {
-        if (FFmpegName) break;
-
         try {
             const result = spawnSync(source, ['-h'], {windowsHide: true});
             if (result.error) continue;
@@ -47,7 +45,7 @@ const FFmpegCheck = async () => {
     }
     throw new Error('FFmpeg/avconv not found!');
 };
-if (!FFmpegName) Promise.all([FFmpegCheck()]).catch();
+if (FFmpegName === undefined) Promise.all([FFmpegCheck()]).catch();
 
 //====================== ====================== ====================== ======================
 /**
@@ -66,9 +64,9 @@ export class FFmpeg extends Duplex {
         this.Binding(['read', 'setEncoding', 'pipe', 'unpipe'], this.Input);
 
         //Если есть ошибка в <input, output>, выводим!
-        const processError = (error: Error) => this.emit('error', error);
-        this.Input.once('error', processError);
-        this.Output.once('error', processError);
+        //const processError = (error: Error) => this.emit('error', error);
+        //this.Input.once('error', processError);
+        //this.Output.once('error', processError);
     };
 
     /**

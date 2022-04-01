@@ -22,7 +22,7 @@ export class CommandInfo extends Command {
             CoolDown: 10
         })
     };
-    public run = async (message: ClientMessage): Promise<void | NodeJS.Timeout| any> => {
+    public run = (message: ClientMessage): void => {
         const Buttons = {
             MyUrl: new ButtonBuilder().setURL(`https://discord.com/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji({name: '🔗'}).setLabel('Invite').setStyle(ButtonStyle.Link),
             ServerUrl: new ButtonBuilder().setURL(cfg.Bot.DiscordServer).setEmoji({name: "🛡"}).setLabel('My server').setStyle(ButtonStyle.Link),
@@ -30,17 +30,17 @@ export class CommandInfo extends Command {
         }
         const RunButt = new ActionRowBuilder().addComponents(Buttons.MyUrl, Buttons.ServerUrl, Buttons.Git);
 
-        return getCPUUsage(async (cpu: number) => {
+        return getCPUUsage((cpu: number) => {
             return message.channel.send({
-                embeds: [await InfoEmbed(message, cpu.toFixed(2))],
+                embeds: [InfoEmbed(message, cpu.toFixed(2))],
                 // @ts-ignore
                 components: [RunButt]
-            }).then(async (msg: ClientMessage) => Command.DeleteMessage(msg, 35e3)).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
+            }).then((msg: ClientMessage) => Command.DeleteMessage(msg, 35e3)).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
         })
     };
 }
 
-async function InfoEmbed(message: ClientMessage, cpu: string): Promise<EmbedConstructor> {
+function InfoEmbed(message: ClientMessage, cpu: string): EmbedConstructor {
     return {
         color: Colors.GREEN,
         thumbnail: {
@@ -69,7 +69,7 @@ async function InfoEmbed(message: ClientMessage, cpu: string): Promise<EmbedCons
         ],
         timestamp: new Date(),
         footer: {
-            text: `Latency - ${message.createdTimestamp} | Api - ${Math.round(message.client.ws.ping < 0 ? 5 : message.client.ws.ping)} | Uptime: ${ParserTimeSong(message.client.uptime / 1000)}`,
+            text: `Latency - 78 | Api - ${Math.round(message.client.ws.ping < 0 ? 5 : message.client.ws.ping)} | Uptime: ${ParserTimeSong(message.client.uptime / 1000)}`,
             iconURL: message.client.user.displayAvatarURL()
         }
     }

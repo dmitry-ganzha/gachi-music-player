@@ -244,14 +244,14 @@ export class RunPlayer extends AudioPlayer {
     public constructor(msg: ClientMessage) {
         super();
         try {
-            this.on("idle", async () => onIdlePlayer(msg));
-            this.on("buffering", async () => onBufferingPlayer(msg));
-            this.on("autoPaused", async () => onAutoPausePlayer(msg));
+            this.on("idle", () => onIdlePlayer(msg));
+            this.on("buffering", () => onBufferingPlayer(msg));
+            this.on("autoPaused", () => onAutoPausePlayer(msg));
         } catch (e) {
             void this.emit("error", e);
         }
 
-        this.on("error", async (err: any) => onErrorPlayer(err, msg));
+        this.on("error", (err: any) => onErrorPlayer(err, msg));
         this.setMaxListeners(4);
     };
     /**
@@ -333,7 +333,7 @@ async function CreateResource(message: ClientMessage, seek: number = 0): Promise
  * @description Когда плеер завершит песню, он возвратит эту функцию
  * @param message {ClientMessage} Сообщение с сервера
  */
-async function onIdlePlayer(message: ClientMessage): Promise<NodeJS.Timeout | null | boolean | void> {
+function onIdlePlayer(message: ClientMessage): NodeJS.Timeout | null | boolean | void {
     const {client, guild} = message;
     const queue: Queue = client.queue.get(guild.id);
 
@@ -351,10 +351,10 @@ async function onIdlePlayer(message: ClientMessage): Promise<NodeJS.Timeout | nu
  * @param err {any} Ошибка
  * @param message {ClientMessage} Сообщение с сервера
  */
-async function onErrorPlayer(err: any, message: ClientMessage): Promise<void> {
+function onErrorPlayer(err: any, message: ClientMessage): void {
     const queue: Queue = message.client.queue.get(message.guild.id);
 
-    await WarningMessage(message, queue.songs[0], err);
+    WarningMessage(message, queue.songs[0], err);
 
     if (queue.songs.length === 1) void queue.events.queue.emit("DestroyQueue", queue, message);
     if (queue.songs) queue.player.stop();
@@ -366,7 +366,7 @@ async function onErrorPlayer(err: any, message: ClientMessage): Promise<void> {
  * @description Когда плеер получает поток (музыку), он возвратит эту функцию
  * @param message {ClientMessage} Сообщение с сервера
  */
-async function onBufferingPlayer(message: ClientMessage): Promise<NodeJS.Timeout | null> {
+function onBufferingPlayer(message: ClientMessage): NodeJS.Timeout | null {
     const {client, guild} = message;
 
     return setTimeout(async () => {
@@ -387,7 +387,7 @@ async function onBufferingPlayer(message: ClientMessage): Promise<NodeJS.Timeout
  * @description Если плеер сам ставит на паузу
  * @param message {ClientMessage} Сообщение с сервера
  */
-async function onAutoPausePlayer(message: ClientMessage) {
+function onAutoPausePlayer(message: ClientMessage) {
     const {channels, player}: Queue = message.client.queue.get(message.guild.id);
 
     //Проверяем если канал на который надо выводить музыку

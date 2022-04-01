@@ -15,7 +15,7 @@ export class CommandPackage extends Command {
         })
     };
 
-    public run = async (message: ClientMessage): Promise<void | NodeJS.Timeout> => message.channel.send({embeds: [CommandPackage.CreateEmbed()]}).then(async (msg: ClientMessage) => Command.DeleteMessage(msg, 25e3)).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
+    public run = (message: ClientMessage): Promise<void | NodeJS.Timeout> => message.channel.send({embeds: [CommandPackage.CreateEmbed()]}).then((msg: ClientMessage) => Command.DeleteMessage(msg, 25e3)).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
     protected static CreateEmbed = (): EmbedConstructor => {
         let base = '';
 

@@ -12,7 +12,7 @@ export class CommandDeploy extends Command {
         })
     };
 
-    public run = async (message: ClientMessage): Promise<NodeJS.Immediate> => new Promise((resolve: any) => {
+    public run = (message: ClientMessage): Promise<void> => new Promise((resolve: any) => {
         let TotalCommands: number = 0;
         message.client.commands.map(async (cmd: Command) => {
             if (cmd.isOwner || !cmd.slash) return;

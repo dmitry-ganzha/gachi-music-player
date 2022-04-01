@@ -13,7 +13,7 @@ export class GuildMessage {
     public readonly name: string = "messageCreate";
     public readonly enable: boolean = true;
 
-    public run = async (message: ClientMessage) => {
+    public run = (message: ClientMessage) => {
         const prefix = message.client.cfg.Bot.prefix;
 
         if (message.author.bot || !message.content.startsWith(prefix) || message.channel.type === ChannelType.DM) return;
@@ -33,12 +33,12 @@ export class GuildMessage {
         }
 
         if (command) {
-            await Promise.all([Helper.DeleteMessage(message, 12e3)]);
+            Helper.DeleteMessage(message, 12e3);
 
             if (Helper.isOwner(command?.isOwner, message.author.id)) return message.client.Send({ text: `${message.author}, Эта команда не для тебя!`, message, color: 'RED'})
-            if ((await Promise.all([Helper.isPermissions(command?.permissions, message)]))[0]) return console.log('User has Permission');
+            if (Helper.isPermissions(command?.permissions, message)) return console.log('User has Permission');
 
-            return (await Promise.all([command.run(message, args)]))[0];
+            return command.run(message, args);
         }
         return message.client.Send({ text: `${message.author}, Я не нахожу такой команды, используй ${prefix}help  :confused:`, message, color: 'RED'});
     };
@@ -56,14 +56,14 @@ export class Helper {
         return false;
     }
     // У пользователя есть ограничения?
-    public static isPermissions = async (permissions: CommandPermission, message: ClientMessage): Promise<boolean> => {
+    public static isPermissions = (permissions: CommandPermission, message: ClientMessage): boolean => {
         let isEnablePermissions = false;
         if (permissions) {
-            if ((permissions?.user || permissions?.client)?.length > 0) isEnablePermissions = await new Permissions().PermissionSize(permissions, message);
+            if ((permissions?.user || permissions?.client)?.length > 0) isEnablePermissions = new Permissions().PermissionSize(permissions, message);
         }
         return isEnablePermissions;
     };
-    public static DeleteMessage = async (message: ClientMessage, time: number = 2e3): Promise<NodeJS.Timeout> => setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, time);
+    public static DeleteMessage = (message: ClientMessage, time: number = 2e3): NodeJS.Timeout => setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, time);
 }
 
 class Permissions {
@@ -73,30 +73,30 @@ class Permissions {
         return this._createPresenceOnePerm(permissions, message);
     };
     // Если одно право
-    protected _createPresenceOnePerm = async (permissions: CommandPermission, message: ClientMessage): Promise<boolean> => {
+    protected _createPresenceOnePerm = (permissions: CommandPermission, message: ClientMessage): boolean => {
         if (permissions.client) {
             if (!message.guild.me.permissions.has(permissions.client[0])) {
-                await this.SendMessage(await NotPermissions(message, `У меня нет таких прав!`, `•${permissions.client[0]}`), message.channel);
+                this.SendMessage(NotPermissions(message, `У меня нет таких прав!`, `•${permissions.client[0]}`), message.channel).catch(() => null);
                 return true;
             }
         } else if (permissions.user) {
             if (!message.member.permissions.has(permissions.user[0])) {
-                await this.SendMessage(await NotPermissions(message, `У тебя нет таких прав!`, `•${permissions.user[0]}`), message.channel);
+                this.SendMessage(NotPermissions(message, `У тебя нет таких прав!`, `•${permissions.user[0]}`), message.channel).catch(() => null);
                 return true;
             }
         }
         return false;
     };
     // Если прав более 1
-    protected _createPresencePerm = async (permissions: CommandPermission, message: ClientMessage): Promise<boolean> => {
-        let resp = await this._parsePermissions(permissions, message);
+    protected _createPresencePerm = (permissions: CommandPermission, message: ClientMessage): boolean => {
+        let resp = this._parsePermissions(permissions, message);
         if (resp !== '') {
-            await this.SendMessage(await NotPermissions(message, `У меня нет таких прав!`, resp), message.channel);
+            this.SendMessage(NotPermissions(message, `У меня нет таких прав!`, resp), message.channel).catch(() => null);
             return true;
         }
         return false;
     };
-    protected _parsePermissions = async (permissions: CommandPermission, message: ClientMessage, resp: string = ''): Promise<string> => {
+    protected _parsePermissions = (permissions: CommandPermission, message: ClientMessage, resp: string = ''): string => {
         // Права бота
         if (permissions.client) {
             for (let i in permissions.client) {
@@ -111,11 +111,11 @@ class Permissions {
         return resp;
     };
     // Отправляем сообщение о том каких прав нет у пользователя или бота
-    protected SendMessage = async (embed: EmbedConstructor, channel: Channel): Promise<NodeJS.Timeout> => channel.send({embeds: [embed as any]}).then((msg: ClientMessage) => Helper.DeleteMessage(msg, 12e3)).catch(null);
+    protected SendMessage = (embed: EmbedConstructor, channel: Channel): Promise<NodeJS.Timeout> => channel.send({embeds: [embed as any]}).then((msg: ClientMessage) => Helper.DeleteMessage(msg, 12e3));
 }
 
 //Embed сообщение
-async function NotPermissions({author, client}: ClientMessage, name: string, text: string): Promise<EmbedConstructor> {
+function NotPermissions({author, client}: ClientMessage, name: string, text: string): EmbedConstructor {
     return {
         color: Colors.BLUE,
         author: { name: author.username, iconURL: author.displayAvatarURL({}) },

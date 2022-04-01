@@ -14,11 +14,11 @@ import {PushSong} from "../Queue/Create";
  * @param playlist {object} Сам плейлист
  * @param VoiceChannel {VoiceChannel} Подключение к голосовому каналу
  */
-export async function PlayList(message: ClientMessage, playlist: InputPlaylist, VoiceChannel: VoiceChannel): Promise<void> {
+export function PlayList(message: ClientMessage, playlist: InputPlaylist, VoiceChannel: VoiceChannel): void {
     if (!playlist.items) return message.client.Send({text: `${message.author}, Я не смог загрузить этот плейлист, Ошибка: Здесь больше 100 треков, youtube не позволит сделать мне столько запросов!`, message: message, color: "RED"});
 
     SendMessage(message, playlist).catch(async (err: DiscordAPIError) => console.log(`[Discord Error]: [Send message]: ${err}`));
-    return (await Promise.all([addSongsQueue(playlist.items, message, VoiceChannel)]))[0];
+    return addSongsQueue(playlist.items, message, VoiceChannel);
 }
 //====================== ====================== ====================== ======================
 
@@ -28,7 +28,7 @@ export async function PlayList(message: ClientMessage, playlist: InputPlaylist, 
  * @param playlist {object} Сам плейлист
  */
 async function SendMessage(message: ClientMessage, playlist: InputPlaylist): Promise<NodeJS.Timeout> {
-   return message.channel.send({embeds: [await PlaylistEmbed(message, playlist, Colors.BLUE)]}).then(async (msg: ClientMessage) => setTimeout(() => msg.delete().catch(() => null), 15e3));
+   return message.channel.send({embeds: [PlaylistEmbed(message, playlist, Colors.BLUE)]}).then(async (msg: ClientMessage) => setTimeout(() => msg.delete().catch(() => null), 15e3));
 }
 //====================== ====================== ====================== ======================
 
@@ -38,7 +38,7 @@ async function SendMessage(message: ClientMessage, playlist: InputPlaylist): Pro
  * @param message {ClientMessage} Сообщение с сервера
  * @param VoiceChannel {VoiceChannel} Подключение к голосовому каналу
  */
-async function addSongsQueue(playlistItems: InputTrack[], message: ClientMessage, VoiceChannel: VoiceChannel): Promise<void> {
+function addSongsQueue(playlistItems: InputTrack[], message: ClientMessage, VoiceChannel: VoiceChannel): void {
     const {player} = message.client;
     let queue = message.client.queue.get(message.guild.id)
 
@@ -65,7 +65,7 @@ async function addSongsQueue(playlistItems: InputTrack[], message: ClientMessage
  * @param items {InputPlaylist.items} Треки плейлиста
  * @param color {number} Цвет левой части embed
  */
-async function PlaylistEmbed({client, author: DisAuthor}: ClientMessage, {author, image, url, title, items}: InputPlaylist, color: number): Promise<EmbedConstructor> {
+function PlaylistEmbed({client, author: DisAuthor}: ClientMessage, {author, image, url, title, items}: InputPlaylist, color: number): EmbedConstructor {
     return {
         color,
         author: {

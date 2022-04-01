@@ -18,7 +18,7 @@ export class CommandHelp extends Command {
         })
     };
 
-    public run = async (message: ClientMessage): Promise<ReactionCollector | void> => {
+    public run = (message: ClientMessage): Promise<ReactionCollector | void> => {
         const commands = message.client.commands, fakeCommands: Command[] = [];
 
         commands.map((cmd: Command) => !cmd.isOwner ? fakeCommands.push(cmd) : null);

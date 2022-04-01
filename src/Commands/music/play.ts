@@ -1,5 +1,5 @@
 import {Command} from "../Constructor";
-import {MessageCollector, ReactionCollector, StageChannel, VoiceChannel} from "discord.js";
+import {MessageCollector, MessageReaction, ReactionCollector, StageChannel, User, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
 import {Spotify, VK, YouTube} from "../../Core/Platforms";
 import {Queue} from "../../Core/Player/Queue/Structures/Queue";
@@ -37,7 +37,7 @@ export class CommandPlay extends Command {
         })
     };
 
-    public run = async (message: ClientMessage, args: string[]): Promise<void | boolean | string | MessageCollector> => {
+    public run = (message: ClientMessage, args: string[]): Promise<void | boolean | MessageCollector> | string | void => {
         const voiceChannel: VoiceChannel | StageChannel = message.member.voice.channel, search: string = args.join(' '),
             queue: Queue = message.client.queue.get(message.guild.id);
 
@@ -67,7 +67,7 @@ export class CommandPlay extends Command {
         });
     };
     //Выбираем платформу
-    protected static getInfoPlatform = async (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean | MessageCollector> => {
+    protected static getInfoPlatform = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean | MessageCollector> => {
         if (search.match(youtubeStr)) return this.PlayYouTube(message, search, voiceChannel);
         else if (search.match(spotifySrt)) return this.PlaySpotify(message, search, voiceChannel);
         else if (search.match(/vk.com/)) return this.PlayVK(message, search, voiceChannel);
@@ -85,19 +85,19 @@ export class CommandPlay extends Command {
         return new HandleInfoResource().YT_SearchVideos(message, voiceChannel, search);
     };
     //Для системы youtube
-    protected static PlayYouTube = async (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => {
+    protected static PlayYouTube = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => {
         if (search.match(/v=/) && search.match(/list=/)) return new HandleInfoResource().ChangeRes(message, search, voiceChannel);
         if (search.match(/playlist/)) return new HandleInfoResource().YT_getPlaylist(search, message, voiceChannel);
         return new HandleInfoResource().YT_getVideo(search, message, voiceChannel);
     };
     //Для системы spotify
-    protected static PlaySpotify = async (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): Promise<void| boolean> => {
+    protected static PlaySpotify = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): Promise<void| boolean> => {
         if (search.match(/playlist/)) return new HandleInfoResource().SP_getPlaylist(search, message, voiceChannel);
         if (search.match(/album/)) return new HandleInfoResource().SP_getAlbum(search, message, voiceChannel);
         return new HandleInfoResource().SP_getTrack(search, message, voiceChannel);
     };
     //Для системы VK
-    protected static PlayVK = async (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): Promise<void| boolean> => {
+    protected static PlayVK = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): Promise<void| boolean> => {
         if (search.match(/playlist/)) return new HandleInfoResource().VK_getPlaylist(search, message, voiceChannel);
         return new HandleInfoResource().VK_getTrack(search, message, voiceChannel);
     };
@@ -109,82 +109,82 @@ class HandleInfoResource {
     protected type: "yt" | "sp" | "vk" = null;
 
     //YouTube (youtube.com) взаимодействие с youtube
-    public YT_getVideo = async (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => YouTube.getVideo(search).then(async (video: InputTrack) => !video ? message.client.Send({text: `${message.author}, Хм, YouTube не хочет делится данными! Существует ли это видео вообще!`, message: message, color: 'RED'}) : this.runPlayer(video, message, voiceChannel));
-    public YT_getPlaylist = async (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => YouTube.getPlaylist(search).then(async (playlist: InputPlaylist) => !playlist ? message.client.Send({text: `${message.author}, Хм, YouTube не хочет делится данными! Существует ли это плейлист вообще!`, message: message, color: 'RED'}) : this.runPlaylistSystem(message, playlist, voiceChannel));
-    public YT_SearchVideos = async (message: ClientMessage, voiceChannel: VoiceChannel | StageChannel, searchString: string): Promise<void | MessageCollector> => {
+    public YT_getVideo = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => YouTube.getVideo(search).then((video: InputTrack) => !video ? message.client.Send({text: `${message.author}, Хм, YouTube не хочет делится данными! Существует ли это видео вообще!`, message: message, color: 'RED'}) : this.runPlayer(video, message, voiceChannel));
+    public YT_getPlaylist = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => YouTube.getPlaylist(search).then((playlist: InputPlaylist) => !playlist ? message.client.Send({text: `${message.author}, Хм, YouTube не хочет делится данными! Существует ли это плейлист вообще!`, message: message, color: 'RED'}) : this.runPlaylistSystem(message, playlist, voiceChannel));
+    public YT_SearchVideos = (message: ClientMessage, voiceChannel: VoiceChannel | StageChannel, searchString: string): Promise<void | MessageCollector> => {
         this.type = "yt";
-        return YouTube.SearchVideos(searchString).then(async (result: InputTrack[]) => this.SendMessage(message, result, voiceChannel, await this.ArraySort(result, message), result.length));
+        return YouTube.SearchVideos(searchString).then((result: InputTrack[]) => this.SendMessage(message, result, voiceChannel, this.ArraySort(result, message), result.length));
     };
 
     //Spotify (open.spotify.com) взаимодействие с spotify
-    public SP_getTrack = async (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => Spotify.getTrack(search).then(async (track: InputTrack) => !track?.isValid ? message.client.Send({text: `Хм, Spotify не хочет делится данными! Существует ли это трек вообще!`, message: message, color: 'RED'}) : this.runPlayer(track, message, voiceChannel));
-    public SP_getPlaylist = async (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => Spotify.getPlaylist(search).then(async (playlist: InputPlaylist) => !playlist?.title ? message.client.Send({text: `${message.author}, Хм, Spotify не хочет делится данными! Существует ли это плейлист вообще!`, message: message, color: 'RED'}) : this.runPlaylistSystem(message, playlist, voiceChannel));
-    public SP_getAlbum = async (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => Spotify.getAlbum(search).then(async (playlist: InputPlaylist) => !playlist?.title ? message.client.Send({text: `${message.author}, Хм, Spotify не хочет делится данными! Существует ли это альбом вообще!`, message: message, color: 'RED'}) : this.runPlaylistSystem(message, playlist, voiceChannel));
-    public SP_SearchTracks = async (message: ClientMessage, voiceChannel: VoiceChannel | StageChannel, searchString: string): Promise<void | MessageCollector> => {
+    public SP_getTrack = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => Spotify.getTrack(search).then((track: InputTrack) => !track?.isValid ? message.client.Send({text: `Хм, Spotify не хочет делится данными! Существует ли это трек вообще!`, message: message, color: 'RED'}) : this.runPlayer(track, message, voiceChannel));
+    public SP_getPlaylist = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => Spotify.getPlaylist(search).then((playlist: InputPlaylist) => !playlist?.title ? message.client.Send({text: `${message.author}, Хм, Spotify не хочет делится данными! Существует ли это плейлист вообще!`, message: message, color: 'RED'}) : this.runPlaylistSystem(message, playlist, voiceChannel));
+    public SP_getAlbum = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => Spotify.getAlbum(search).then((playlist: InputPlaylist) => !playlist?.title ? message.client.Send({text: `${message.author}, Хм, Spotify не хочет делится данными! Существует ли это альбом вообще!`, message: message, color: 'RED'}) : this.runPlaylistSystem(message, playlist, voiceChannel));
+    public SP_SearchTracks = (message: ClientMessage, voiceChannel: VoiceChannel | StageChannel, searchString: string): Promise<void | MessageCollector> => {
         this.type = "sp";
-        return Spotify.SearchTracks(searchString).then(async (result) => this.SendMessage(message, result?.items, voiceChannel, await this.ArraySort(result?.items, message), result.items?.length));
+        return Spotify.SearchTracks(searchString).then((result) => this.SendMessage(message, result?.items, voiceChannel, this.ArraySort(result?.items, message), result.items?.length));
     };
 
     //VK (vk.com) взаимодействие с vk
-    public VK_getTrack = async (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => VK.getTrack(search).then(async (track: InputTrack) => !track ? message.client.Send({text: `Хм, Vk не хочет делится данными! Существует ли это трек вообще!`, message: message, color: 'RED'}) : this.runPlayer(track, message, voiceChannel));
-    public VK_getPlaylist = async (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => VK.getPlaylist(search).then(async (playlist: InputPlaylist) => !playlist ? message.client.Send({text: `${message.author}, Хм, Vk не хочет делится данными! Существует ли это плейлист вообще!`, message: message, color: 'RED'}) : this.runPlaylistSystem(message, playlist, voiceChannel));
-    public VK_SearchTracks = async (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | MessageCollector> => {
+    public VK_getTrack = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => VK.getTrack(search).then((track: InputTrack) => !track ? message.client.Send({text: `Хм, Vk не хочет делится данными! Существует ли это трек вообще!`, message: message, color: 'RED'}) : this.runPlayer(track, message, voiceChannel));
+    public VK_getPlaylist = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => VK.getPlaylist(search).then((playlist: InputPlaylist) => !playlist ? message.client.Send({text: `${message.author}, Хм, Vk не хочет делится данными! Существует ли это плейлист вообще!`, message: message, color: 'RED'}) : this.runPlaylistSystem(message, playlist, voiceChannel));
+    public VK_SearchTracks = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | MessageCollector> => {
         this.type = "vk";
-        return VK.SearchTracks(search).then(async (result) => this.SendMessage(message, result?.items, voiceChannel, await this.ArraySort(result?.items, message), result?.items?.length));
+        return VK.SearchTracks(search).then((result) => this.SendMessage(message, result?.items, voiceChannel, this.ArraySort(result?.items, message), result?.items?.length));
     };
 
     //Создаем сборщик для выбора плейлиста или трека
-    public ChangeRes = async (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel) => message.channel.send(`\`\`\`css\nЯ обнаружил в этой ссылке, видео и плейлист. Что включить\n\n1️⃣ - Включить плейлист\n2️⃣ - Включить видео\`\`\``).then(async (msg) => {
-        await this.Reaction(msg, message, "1️⃣", async () => {
-            await this.deleteMessage(msg as any);
+    public ChangeRes = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel) => message.channel.send(`\`\`\`css\nЯ обнаружил в этой ссылке, видео и плейлист. Что включить\n\n1️⃣ - Включить плейлист\n2️⃣ - Включить видео\`\`\``).then(async (msg: ClientMessage) => {
+        await this.Reaction(msg, message, "1️⃣", () => {
+            this.deleteMessage(msg as any);
             return this.YT_getPlaylist(search, message, voiceChannel);
         });
-        await this.Reaction(msg, message, "2️⃣", async () => {
-            await this.deleteMessage(msg as any);
+        await this.Reaction(msg, message, "2️⃣", () => {
+            this.deleteMessage(msg as any);
             return this.YT_getVideo(search, message, voiceChannel);
         });
 
-        setTimeout(async () => {
-            await this.deleteMessage(msg as any);
-            await this.deleteMessage(message);
+        setTimeout(() => {
+            this.deleteMessage(msg as any);
+            this.deleteMessage(message);
             return this.collector?.stop();
         }, 10e3);
     })
 
     //Какое перенаправление делаем в систему плейлистов или просто добавим трек?
-    protected runPlayer = async (video: InputTrack, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<boolean> => void message.client.player.emit('play', message, voiceChannel, video);
-    protected runPlaylistSystem = async (message: ClientMessage, playlist: InputPlaylist, voiceChannel: VoiceChannel | StageChannel): Promise<boolean> => void message.client.player.emit('playlist', message, playlist, voiceChannel);
+    protected runPlayer = (video: InputTrack, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): boolean => void message.client.player.emit('play', message, voiceChannel, video);
+    protected runPlaylistSystem = (message: ClientMessage, playlist: InputPlaylist, voiceChannel: VoiceChannel | StageChannel): boolean => void message.client.player.emit('playlist', message, playlist, voiceChannel);
 
     //Создаем сборщик для поиска треков
-    protected ArraySort = async (results: any, message: ClientMessage): Promise<string> => {
+    protected ArraySort = (results: any, message: ClientMessage): string => {
         let num = 1, resp;
         results.ArraySort(15).forEach((s: any) => resp = s.map((video: InputTrack) => (`${num++} ➜ [${this.ConvertTimeSearch(video.duration.seconds) ?? "LIVE"}] [${message.client.ConvertedText(video.author.title, 12, true)}] [${message.client.ConvertedText(video.title, 80, true)}]`)).join(`\n`));
         return resp === undefined ? `😟 Похоже ${this.isType()} не хочет делится поиском!` : resp;
     };
-    protected SendMessage = async (message: ClientMessage, results: any[], voiceChannel: VoiceChannel | StageChannel, resp: string, num: number): Promise<MessageCollector> => message.channel.send(`\`\`\`css\nВыбери от 1 до ${results.length}\n[Платформа: ${this.isType()} | Запросил: ${message.author}]\n\n${resp}\`\`\``).then(async (msg: any) => {
+    protected SendMessage = (message: ClientMessage, results: any[], voiceChannel: VoiceChannel | StageChannel, resp: string, num: number): Promise<MessageCollector> => message.channel.send(`\`\`\`css\nВыбери от 1 до ${results.length}\n[Платформа: ${this.isType()} | Запросил: ${message.author}]\n\n${resp}\`\`\``).then((msg: ClientMessage) => {
         this.Reaction(msg, message, "❌", () => (this.collector?.stop(), this.deleteMessage(msg))).catch((err: Error) => console.log(err));
-        await this.MessageCollector(msg, message, num);
+        this.MessageCollector(msg, message, num);
         return this.CollectorCollect(msg, results, message, voiceChannel);
     });
     //Добавляем к коллектору ивент сбора
-    protected CollectorCollect = async (msg: ClientMessage, results: any[], message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<MessageCollector> => this.collector.once('collect', async (m: any): Promise<any> => {
-        await this.deleteMessage(msg);
-        await this.deleteMessage(m);
+    protected CollectorCollect = (msg: ClientMessage, results: any[], message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): MessageCollector => this.collector.once('collect', (m: any): Promise<any> => {
+        this.deleteMessage(msg);
+        this.deleteMessage(m);
         this.collector.stop();
         return this.pushSong(results, m, message, voiceChannel);
     });
     //Из типа выдает поиск трека
-    protected pushSong = async (results: any[], m: ClientMessage, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) => {
+    protected pushSong = (results: any[], m: ClientMessage, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) => {
         if (this.type === "sp") return this.SP_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
         else if (this.type === "vk") return this.VK_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
         return this.YT_getVideo(results[parseInt(m.content) - 1].url, message, voiceChannel);
     };
     //Удаляем сообщение
-    protected deleteMessage = async (msg: ClientMessage): Promise<NodeJS.Timeout> => setTimeout(async () => msg.delete().catch(() => null), 1000);
+    protected deleteMessage = (msg: ClientMessage): NodeJS.Timeout => setTimeout(() => msg.delete().catch(() => null), 1000);
     //Добавляем реакцию (эмодзи)
-    protected Reaction = async (msg: ClientMessage | any, message: ClientMessage, emoji: string, callback: any): Promise<ReactionCollector> => msg.react(emoji).then(async () => msg.createReactionCollector({filter: async (reaction: any, user: any) => (reaction.emoji.name === emoji && user.id !== message.client.user.id), max: 1}).once('collect', () => callback()));
+    protected Reaction = (msg: ClientMessage | any, message: ClientMessage, emoji: string, callback: any): Promise<ReactionCollector> => msg.react(emoji).then(() => msg.createReactionCollector({filter: (reaction: MessageReaction, user: User) => (reaction.emoji.name === emoji && user.id !== message.client.user.id), max: 1}).once('collect', () => callback()));
     //Создаем коллектор (discord.js) для обработки сообщений от пользователя
-    protected MessageCollector = async (msg: ClientMessage, message: ClientMessage, num: any): Promise<any> => this.collector = msg.channel.createMessageCollector({filter: async (m: any) => !isNaN(m.content) && m.content <= num && m.content > 0 && m.author.id === message.author.id, max: 1});
+    protected MessageCollector = (msg: ClientMessage, message: ClientMessage, num: any): any => this.collector = msg.channel.createMessageCollector({filter: (m: any) => !isNaN(m.content) && m.content <= num && m.content > 0 && m.author.id === message.author.id, max: 1});
     //Тип поиска
     protected isType = () => this.type === "sp" ? "SPOTIFY" : this.type === "yt" ? "YOUTUBE" : this.type === "vk" ? "VK" : undefined;
     //Конвертируем время в 00:00

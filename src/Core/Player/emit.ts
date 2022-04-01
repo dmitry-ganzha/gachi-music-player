@@ -7,16 +7,16 @@ import {InputPlaylist, InputTrack} from "../Utils/TypeHelper";
 import {CreateQueue} from "./Queue/Create";
 
 type Events = {
-    play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack) => Promise<boolean | void | unknown>;
-    pause: (message: ClientMessage) => Promise<void>;
-    resume: (message: ClientMessage) => Promise<void>;
-    skip: (message: ClientMessage, args?: number) => Promise<void | boolean>;
-    replay: (message: ClientMessage) => Promise<NodeJS.Immediate | void | NodeJS.Timeout>;
-    filter: (message: ClientMessage) => Promise<NodeJS.Immediate | void | NodeJS.Timeout>;
-    remove: (message: ClientMessage, args: number) => Promise<boolean | void>;
-    seek: (message: ClientMessage, seek: number) => Promise<NodeJS.Immediate | void | NodeJS.Timeout>;
+    play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack) => Promise<boolean | void | ClientMessage> | void;
+    pause: (message: ClientMessage) => void;
+    resume: (message: ClientMessage) => void;
+    skip: (message: ClientMessage, args?: number) => void;
+    replay: (message: ClientMessage) => void;
+    filter: (message: ClientMessage) => void;
+    remove: (message: ClientMessage, args: number) => boolean | void;
+    seek: (message: ClientMessage, seek: number) => void;
 
-    playlist: (message: ClientMessage, playlist: InputPlaylist, VoiceChannel: VoiceChannel |  StageChannel) => Promise<void>;
+    playlist: (message: ClientMessage, playlist: InputPlaylist, VoiceChannel: VoiceChannel |  StageChannel) => void;
 };
 
 export class PlayerEmitter extends TypedEmitter<Events> {

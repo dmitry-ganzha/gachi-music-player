@@ -14,7 +14,7 @@ export class CommandRandom extends Command {
         })
     };
 
-    public run = async (message: ClientMessage): Promise<void> => {
+    public run = (message: ClientMessage): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         if (!queue) return message.client.Send({

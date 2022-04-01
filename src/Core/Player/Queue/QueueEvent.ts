@@ -5,8 +5,8 @@ import {Disconnect} from "../Voice/VoiceManager";
 import {ClientMessage} from "../../Client";
 
 type EventsQueue = {
-    DestroyQueue: (queue: Queue, message: ClientMessage, sendDelQueue?: boolean) => Promise<NodeJS.Timeout>,
-    pushSong: (song: Song, message: ClientMessage) => Promise<number | null>
+    DestroyQueue: (queue: Queue, message: ClientMessage, sendDelQueue?: boolean) => NodeJS.Timeout,
+    pushSong: (song: Song, message: ClientMessage) => number | null
 };
 export type Queue_Channels = Queue["channels"];
 export type Queue_Options = Queue["options"];
@@ -28,7 +28,7 @@ export class QueueEvents extends TypedEmitter<EventsQueue> {
  * @param song {object}
  * @param message {object}
  */
-async function onPushSong(song: Song, {client, guild}: ClientMessage): Promise<number | null> {
+function onPushSong(song: Song, {client, guild}: ClientMessage): number | null {
     const queue: Queue = client.queue.get(guild.id);
 
     if (!queue) return null;
@@ -41,13 +41,13 @@ async function onPushSong(song: Song, {client, guild}: ClientMessage): Promise<n
  * @param message {object} Сообщение с сервера
  * @param sendDelQueue {boolean} Отправить сообщение об удалении очереди
  */
-async function onDestroyQueue(queue: Queue, message: ClientMessage, sendDelQueue: boolean = true): Promise<NodeJS.Timeout> {
+function onDestroyQueue(queue: Queue, message: ClientMessage, sendDelQueue: boolean = true): NodeJS.Timeout {
     if (!queue) return null;
 
-    await DeleteMessage(queue.channels);
-    await LeaveVoice(queue?.channels?.message?.guild.id);
-    await CleanPlayer(queue);
-    if (sendDelQueue) await SendChannelToEnd(queue.options, message);
+    DeleteMessage(queue.channels);
+    LeaveVoice(queue?.channels?.message?.guild.id);
+    CleanPlayer(queue);
+    if (sendDelQueue) SendChannelToEnd(queue.options, message);
 
     delete queue.songs;
     delete queue.audioFilters;
@@ -66,7 +66,7 @@ async function onDestroyQueue(queue: Queue, message: ClientMessage, sendDelQueue
  * @description Завершаем воспроизведение в player
  * @param queue {Queue}
  */
-async function CleanPlayer(queue: Queue): Promise<void> {
+function CleanPlayer(queue: Queue): void {
     if (queue.player.state.resource) void queue.player.state.resource.playStream.emit('close');
 
     queue.player?.stop();
@@ -82,30 +82,30 @@ async function CleanPlayer(queue: Queue): Promise<void> {
  * @description Отключаемся от голосового канала
  * @param GuildID {string} ID сервера
  */
-async function LeaveVoice(GuildID: string): Promise<void> {
+function LeaveVoice(GuildID: string) {
     return Disconnect(GuildID);
 }
 /**
  * @description Удаляем сообщение о текущей песне
  * @param channels {Queue_Channels} Все каналы из очереди
  */
-async function DeleteMessage({message}: Queue_Channels): Promise<NodeJS.Timeout> {
-    return setTimeout(async () => message?.deletable ? message?.delete().catch(() => undefined) : null, 3e3);
+function DeleteMessage({message}: Queue_Channels): NodeJS.Timeout {
+    return setTimeout(() => message?.deletable ? message?.delete().catch(() => undefined) : null, 3e3);
 }
 /**
  * @description Отправляем сообщение, что музыка завершена
  * @param options {Queue_Options} Опции из очереди
  * @param message {ClientMessage} Сообщение с сервера
  */
-async function SendChannelToEnd({stop}: Queue_Options, message: ClientMessage): Promise<void> {
-    if (stop) return message.client.Send({text: `🎵 | Музыка была выключена`, message: message, type: 'css'});
-    return message.client.Send({text: `🎵 | Музыка закончилась`, message: message, type: 'css'});
+function SendChannelToEnd({stop}: Queue_Options, message: ClientMessage): void {
+    if (stop) return message.client.Send({text: `🎵 | Музыка была выключена`, message, type: 'css'});
+    return message.client.Send({text: `🎵 | Музыка закончилась`, message, type: 'css'});
 }
 /**
  * @description Удаляем очередь
  * @param message {ClientMessage} Сообщение с сервера
  */
-async function DeleteQueue(message: ClientMessage): Promise<NodeJS.Timeout> {
+function DeleteQueue(message: ClientMessage): NodeJS.Timeout {
     return setTimeout(async () => {
         message.client.console(`[${message.guild.id}]: [Queue]: [Method: Delete]`);
         return message.client.queue.delete(message.guild.id);

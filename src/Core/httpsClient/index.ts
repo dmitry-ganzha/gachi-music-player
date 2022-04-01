@@ -4,7 +4,6 @@ import {IncomingMessage} from "http";
 import {RequestOptions, ResponseData} from "undici/types/dispatcher";
 import {getCookies, uploadCookie} from "../Platforms/src/youtube/Cookie";
 import UserAgents from "./UserAgents.json";
-import * as https from "https";
 
 // @ts-ignore
 interface ReqOptions extends RequestOptions {
@@ -28,7 +27,7 @@ export class httpsClient {
      * @param url {string} Ссылка
      * @param options {httpsClientOptions} Настройки запроса
      */
-    public Request = async (url: string, options?: httpsClientOptions): Promise<ResponseData> => {
+    public Request = (url: string, options?: httpsClientOptions): Promise<ResponseData> => {
         EditRequestOptions(options);
         return request(url, options.request);
     };
@@ -37,7 +36,7 @@ export class httpsClient {
      * @param url {string} Ссылка
      * @param options {httpsClientOptions} Настройки запроса
      */
-    public parseBody = async (url: string, options?: httpsClientOptions): Promise<string> => new Promise(async (resolve) => {
+    public parseBody = (url: string, options?: httpsClientOptions): Promise<string> => new Promise(async (resolve) => {
         const req = (await Promise.all([this.Request(url, options)]))[0];
 
         if (!req.body) return resolve(null);
@@ -80,11 +79,6 @@ export class httpsClient {
             return null;
         }
     };
-    public get = async (url: string): Promise<IncomingMessage> => new Promise(async (resolve) => https.get(url, (req: IncomingMessage) => {
-            if ((req.statusCode >= 400 && req.statusCode < 510)) return resolve(null);
-            return resolve(req);
-        })
-    );
 }
 
 /**

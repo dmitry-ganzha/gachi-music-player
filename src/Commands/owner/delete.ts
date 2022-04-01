@@ -12,7 +12,7 @@ export class CommandDelete extends Command {
             slash: false
         })
     };
-    public run = async (message: ClientMessage, args: string[]): Promise<void> => {
+    public run = (message: ClientMessage, args: string[]): void => {
 
         if (!args[0]) return message.client.Send({text: `${message.author}, Укажи ID канала!`, message, color: "RED"});
 

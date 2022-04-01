@@ -16,7 +16,7 @@ const ProgressBarValue = true;
  * @param song {Song} Текущий трек
  * @param queue {Queue} Очередь
  */
-export async function CurrentPlay(client: WatKLOK, song: Song, queue: Queue): Promise<EmbedConstructor> {
+export function CurrentPlay(client: WatKLOK, song: Song, queue: Queue): EmbedConstructor {
     return {
         color: song.color,
         author: {
@@ -27,7 +27,7 @@ export async function CurrentPlay(client: WatKLOK, song: Song, queue: Queue): Pr
         thumbnail: {
             url: song.author?.image?.url ?? NotImage,
         },
-        fields: await createFields(song, queue, client),
+        fields: createFields(song, queue, client),
         image: {
             url: song.image?.url ?? null
         },
@@ -47,9 +47,9 @@ export async function CurrentPlay(client: WatKLOK, song: Song, queue: Queue): Pr
  * @param audioFilters
  * @param client {WatKLOK} Клиент
  */
-async function createFields(song: Song, {player, songs, audioFilters}: Queue, client: WatKLOK): Promise<{ name: string, value: string }[]> {
-    const PlayingDuration = await ConvertCurrentTime(player, ProgressBarValue, audioFilters);
-    const DurationMusic = await MusicDuration(song, PlayingDuration, ProgressBarValue);
+function createFields(song: Song, {player, songs, audioFilters}: Queue, client: WatKLOK): { name: string, value: string }[] {
+    const PlayingDuration = ConvertCurrentTime(player, ProgressBarValue, audioFilters);
+    const DurationMusic = MusicDuration(song, PlayingDuration, ProgressBarValue);
 
     let fields = [{
         name: `Щас играет`,
@@ -66,13 +66,13 @@ async function createFields(song: Song, {player, songs, audioFilters}: Queue, cl
  * @param curTime {number | string} Текущее время проигрывания трека
  * @param progressBar {boolean} Показать прогресс
  */
-async function MusicDuration({isLive, duration}: Song, curTime: number | string, progressBar: boolean = true): Promise<string> {
+function MusicDuration({isLive, duration}: Song, curTime: number | string, progressBar: boolean = true): string {
     const str = `${duration.StringTime}]`;
 
     if (isLive) return `[${str}`;
 
     const parsedTimeSong = ParserTimeSong(curTime as number);
-    const progress = await ProgressBar(curTime as number, duration.seconds, 12);
+    const progress = ProgressBar(curTime as number, duration.seconds, 12);
 
     if (progressBar) return `**❯** [${parsedTimeSong} - ${str}\n|${progress}|`;
     return `**❯** [${curTime} - ${str}`;
@@ -85,7 +85,7 @@ async function MusicDuration({isLive, duration}: Song, curTime: number | string,
  * @param filters {AudioFilters}
  * @constructor
  */
-async function ConvertCurrentTime({state}: AudioPlayer, ProgressBar: boolean = true, filters: AudioFilters): Promise<number | string> {
+function ConvertCurrentTime({state}: AudioPlayer, ProgressBar: boolean = true, filters: AudioFilters): number | string {
     const duration = state.resource?.playbackDuration ?? 0;
     let seconds: number;
 
@@ -104,7 +104,7 @@ async function ConvertCurrentTime({state}: AudioPlayer, ProgressBar: boolean = t
  * @param maxTime {number} Макс времени
  * @param size {number} Кол-во символов
  */
-async function ProgressBar(currentTime: number, maxTime: number, size: number = 15): Promise<string> {
+function ProgressBar(currentTime: number, maxTime: number, size: number = 15): string {
     const progressSize = Math.round(size * (currentTime / maxTime));
     const emptySize = size - progressSize;
 

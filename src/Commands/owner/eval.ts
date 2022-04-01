@@ -14,7 +14,7 @@ export class CommandEval extends Command {
         })
     };
 
-    public run = async (message: ClientMessage, args: string[]): Promise<NodeJS.Timeout | void> => {
+    public run = async (message: ClientMessage, args: string[]): Promise<number | NodeJS.Timeout> => {
         let code: string = args.join(" "),
             StartTime: number = new Date().getMilliseconds(),
             RunEval: any;
@@ -27,7 +27,7 @@ export class CommandEval extends Command {
             return message.client.console(`[EVAL]: [ERROR: ${err.code ? err.code : err}]`);
         }
     };
-    protected static MessageSend = (message: ClientMessage, response: string, color: number, type: string, code: string, StartTime: number): Promise<NodeJS.Timeout> => {
+    protected static MessageSend = (message: ClientMessage, response: string, color: number, type: string, code: string, StartTime: number): Promise<number | NodeJS.Timeout> => {
         const EndTime = new Date().getMilliseconds();
         let embed: EmbedConstructor = {
             color,
@@ -48,6 +48,6 @@ export class CommandEval extends Command {
                 text: `Time: ${EndTime - StartTime} ms`
             }
         }
-        return message.channel.send({embeds: [embed]}).then(async (msg: ClientMessage) => setTimeout(async () => msg.deletable ? msg.delete().catch(null) : null, 10000));
+        return message.channel.send({embeds: [embed]}).then((msg: ClientMessage) => Command.DeleteMessage(msg, 30e3));
     };
 }

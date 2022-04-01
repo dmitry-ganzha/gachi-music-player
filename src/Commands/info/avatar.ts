@@ -26,12 +26,10 @@ export class CommandAvatar extends Command {
 
     public run = async (message: ClientMessage, args: string[]): Promise<void | NodeJS.Timeout> => {
         const mentionedUser = await CommandAvatar.getUser(args, message);
-        return CommandAvatar.SendMessage(message, mentionedUser).catch(async (err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
+        return CommandAvatar.SendMessage(message, mentionedUser).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
     };
+    protected static SendMessage = (message: ClientMessage, mentionedUser: User): Promise<NodeJS.Timeout> => message.channel.send({embeds: [this.CreateEmbedMessage(mentionedUser, message)]}).then((msg: ClientMessage) => Command.DeleteMessage(msg, 2e4));
 
-    protected static SendMessage = (message: ClientMessage, mentionedUser: User): Promise<NodeJS.Timeout> => message.channel.send({embeds: [this.CreateEmbedMessage(mentionedUser, message)]}).then(async (msg: ClientMessage) =>
-        setTimeout(() => msg.deletable ? msg.delete().catch((): null => null) : null, 2e4)
-    );
     protected static CreateEmbedMessage = (mentionedUser: User, message: ClientMessage): EmbedConstructor => {
         return {
             color: mentionedUser?.accentColor ?? Colors.YELLOW,

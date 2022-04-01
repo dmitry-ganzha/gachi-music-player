@@ -15,7 +15,7 @@ export class CommandRestart extends Command {
         })
     };
 
-    public run = async (message: ClientMessage): Promise<ReactionCollector | boolean | void> => {
+    public run = (message: ClientMessage): Promise<ReactionCollector | boolean | void> | void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         if (!queue) return message.client.Send({ text: `${message.author}, ⚠ | Музыка щас не играет.`, message: message, color: "RED" });

@@ -12,5 +12,5 @@ export class CommandUptime extends Command {
             enable: true
         })
     }
-    public run = async (message: ClientMessage): Promise<void> => message.client.Send({text: `Uptime: ${ParserTimeSong(message.client.uptime / 1000)}`, message, type: 'css', color: "GREEN"});
+    public run = (message: ClientMessage): void => message.client.Send({text: `Uptime: ${ParserTimeSong(message.client.uptime / 1000)}`, message, type: 'css', color: "GREEN"});
 }

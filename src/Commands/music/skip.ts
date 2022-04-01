@@ -19,7 +19,7 @@ export class CommandSkip extends Command {
         })
     };
 
-    public run = async (message: ClientMessage, args: string[]): Promise<void | boolean> => {
+    public run = (message: ClientMessage, args: string[]): void | boolean => {
         const queue: Queue = message.client.queue.get(message.guild.id);
         const argsNum = parseInt(args[0]);
 

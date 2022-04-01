@@ -15,7 +15,7 @@ export class CommandDeploy extends Command {
         })
     };
 
-    public run = async (message: ClientMessage, args: string[]) => {
+    public run = (message: ClientMessage, args: string[]): void => {
         if (!args[0]) return message.client.Send({text: `${message.author}, Ты не указал ID сервера!`, message});
 
         const server = message.client.guilds.cache.filter((guild) => guild.id === args[0]).first();

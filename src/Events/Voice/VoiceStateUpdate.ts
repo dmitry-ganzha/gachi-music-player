@@ -9,7 +9,7 @@ export class voiceStateUpdate {
     public readonly name: string = 'voiceStateUpdate';
     public readonly enable: boolean = true;
 
-    public run = async ({guild}: VoiceState, newState: VoiceState, client: WatKLOK): Promise<void | boolean> => {
+    public run = ({guild}: VoiceState, newState: VoiceState, client: WatKLOK): void | boolean => {
         const queue: Queue = client.queue.get(guild.id);
 
         if (queue) {
@@ -23,7 +23,7 @@ export class voiceStateUpdate {
         }
         return;
     };
-    protected CheckToRun = async (voiceConnection: VoiceState[], client: WatKLOK, guild: Guild, queue: Queue): Promise<void | boolean> => {
+    protected CheckToRun = (voiceConnection: VoiceState[], client: WatKLOK, guild: Guild, queue: Queue): void | boolean => {
         const PlayableVoiceChannel: VoiceConnection = getVoiceConnection(guild.id);
 
         if (voiceConnection && PlayableVoiceChannel) return voiceConnection.length <= 1 && IsDestroyStatus.has(queue.player.state.status) ?

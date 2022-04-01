@@ -2,8 +2,8 @@ import { TypedEmitter } from 'tiny-typed-emitter';
 import {Queue} from "../Queue/Structures/Queue";
 
 type Events = {
-    StartTimerDestroyer: (queue: Queue) => Promise<boolean | null>,
-    CancelTimerDestroyer: (queue: Queue) => Promise<boolean | null>
+    StartTimerDestroyer: (queue: Queue) => boolean | null,
+    CancelTimerDestroyer: (queue: Queue) => boolean | null
 };
 
 export class VoiceEvent extends TypedEmitter<Events> {
@@ -20,7 +20,7 @@ export class VoiceEvent extends TypedEmitter<Events> {
      * @description Создаем таймер (по истечению таймера будет удалена очередь)
      * @param queue {object} Очередь сервера
      */
-    protected onStartTimerDestroyer = async (queue: Queue): Promise<boolean | null> => {
+    protected onStartTimerDestroyer = (queue: Queue): boolean | null => {
         if (!queue) return null;
 
         const {player, options, events, channels} = queue;
@@ -38,7 +38,7 @@ export class VoiceEvent extends TypedEmitter<Events> {
      * @description Удаляем таймер который удаляет очередь
      * @param queue {object} Очередь сервера
      */
-    protected onCancelTimerDestroyer = async ({player}: Queue): Promise<boolean | null> => {
+    protected onCancelTimerDestroyer = ({player}: Queue): boolean | null => {
         if (this.state === true) {
             this.state = false;
             clearTimeout(this.Timer);

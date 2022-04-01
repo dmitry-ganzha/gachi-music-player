@@ -13,7 +13,7 @@ export class Command {
     public readonly CoolDown: number
     public type: string;
     // @ts-ignore
-    public run (message: ClientMessage, args?: string[]): Promise<void | unknown>;
+    public run (message: ClientMessage, args?: string[]): Promise<void | any> | void | any;
 
     public constructor(
         {

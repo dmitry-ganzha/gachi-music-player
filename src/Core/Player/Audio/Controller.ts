@@ -11,7 +11,7 @@ export const Controller = {PlayerFilter, PlayerRemove, PlayerPause, PlayerReplay
  * @description Продолжает воспроизведение музыки
  * @param message {ClientMessage} Сообщение с сервера
  */
-async function PlayerResume (message: ClientMessage): Promise<void> {
+function PlayerResume (message: ClientMessage): void {
     const {client, guild, author} = message;
     const {player, songs}: Queue = client.queue.get(guild.id);
     const {duration, title, color}: Song = songs[0];
@@ -28,7 +28,7 @@ async function PlayerResume (message: ClientMessage): Promise<void> {
  * @description Приостанавливает воспроизведение музыки
  * @param message {ClientMessage} Сообщение с сервера
  */
-async function PlayerPause(message: ClientMessage): Promise<void> {
+function PlayerPause(message: ClientMessage): void {
     const {client, guild, author} = message;
     const {player, songs}: Queue = client.queue.get(guild.id);
     const {duration, title, color}: Song = songs[0];
@@ -45,7 +45,7 @@ async function PlayerPause(message: ClientMessage): Promise<void> {
  * @description Завершает текущую музыку
  * @param message {ClientMessage} Сообщение с сервера
  */
-async function PlayerEnd(message: ClientMessage): Promise<void> {
+function PlayerEnd(message: ClientMessage): void {
     const {client, guild} = message;
     const {player}: Queue = client.queue.get(guild.id);
 
@@ -61,7 +61,7 @@ async function PlayerEnd(message: ClientMessage): Promise<void> {
  * @param message {ClientMessage} Сообщение с сервера
  * @param args {string} Аргументы Пример: команда аргумент1 аргумент2
  */
-async function PlayerRemove(message: ClientMessage, args: number): Promise<boolean | void> {
+function PlayerRemove(message: ClientMessage, args: number): boolean | void {
     const {client, guild, member, author} = message;
     const {player, songs}: Queue = client.queue.get(guild.id);
     const {duration, title, color, requester, url}: Song = songs[args - 1];
@@ -74,7 +74,7 @@ async function PlayerRemove(message: ClientMessage, args: number): Promise<boole
 
     if (member.permissions.has('Administrator') || author.id === requester.id || !UserToVoice) {
         songs.splice(args - 1, 1);
-        if (args === 1) await PlayerEnd(message);
+        if (args === 1) PlayerEnd(message);
         return client.Send({text: `⏭️ | [${duration.StringTime}] | Remove song | ${title}`, message, type: 'css', color});
     }
     return client.Send({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: 'RED'});
@@ -86,13 +86,13 @@ async function PlayerRemove(message: ClientMessage, args: number): Promise<boole
  * @param message {ClientMessage} Сообщение с сервера
  * @param seek {number} музыка будет играть с нужной секунды (не работает без ffmpeg)
  */
-async function PlayerSeek(message: ClientMessage, seek: number): Promise<NodeJS.Immediate | void | NodeJS.Timeout> {
+function PlayerSeek(message: ClientMessage, seek: number): void | Promise<void> {
     const {client, guild, author} = message;
     const {player, songs}: Queue = client.queue.get(guild.id);
     const {title, color}: Song = songs[0];
 
     try {
-        await client.Send({text: `⏭️ | Seeking to [${ParserTimeSong(seek)}] song | ${title}`, message, type: 'css', color});
+        client.Send({text: `⏭️ | Seeking to [${ParserTimeSong(seek)}] song | ${title}`, message, type: 'css', color});
         return player.seek(message, seek);
     } catch {
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
@@ -105,7 +105,7 @@ async function PlayerSeek(message: ClientMessage, seek: number): Promise<NodeJS.
  * @param message {ClientMessage} Сообщение с сервера
  * @param args {number} Сколько треков пропускаем
  */
-async function PlayerSkip(message: ClientMessage, args: number): Promise<void | boolean> {
+function PlayerSkip(message: ClientMessage, args: number): void | boolean {
     if (args) return PlayerSkipTo(message, args);
 
     const {client, guild, member, author} = message;
@@ -118,7 +118,7 @@ async function PlayerSkip(message: ClientMessage, args: number): Promise<void | 
 
     if (member.permissions.has('Administrator') || author.id === requester.id || !UserToVoice) {
         if (StatusPlayerHasSkipped.has(player.state.status)) {
-            await client.Send({text: `⏭️ | [${duration.StringTime}] | Skip song | ${title}`, message, type: 'css', color});
+            client.Send({text: `⏭️ | [${duration.StringTime}] | Skip song | ${title}`, message, type: 'css', color});
             return PlayerEnd(message);
         }
     }
@@ -131,7 +131,7 @@ async function PlayerSkip(message: ClientMessage, args: number): Promise<void | 
  * @param message {ClientMessage} Сообщение с сервера
  * @param args {string} Аргументы Пример: команда аргумент1 аргумент2
  */
-async function PlayerSkipTo(message: ClientMessage, args: number): Promise<void | boolean> {
+function PlayerSkipTo(message: ClientMessage, args: number): void | boolean {
     const {client, guild, member, author} = message;
     const queue: Queue = client.queue.get(guild.id);
     const {duration, title, color, requester, url}: Song = queue.songs[args - 1];
@@ -146,7 +146,7 @@ async function PlayerSkipTo(message: ClientMessage, args: number): Promise<void 
         if (queue.options.loop === "songs") for (let i = 0; i < args - 2; i++) queue.songs.push(queue.songs.shift());
         else queue.songs = queue.songs.slice(args - 2);
 
-        await client.Send({text: `⏭️ | [${duration.StringTime}] | Skip to song [${args}] | ${title}`, message, type: 'css', color});
+        client.Send({text: `⏭️ | [${duration.StringTime}] | Skip to song [${args}] | ${title}`, message, type: 'css', color});
         return PlayerEnd(message);
     }
     return client.Send({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: 'RED'});
@@ -157,13 +157,13 @@ async function PlayerSkipTo(message: ClientMessage, args: number): Promise<void 
  * @description Повтор текущей музыки
  * @param message {ClientMessage} Сообщение с сервера
  */
-async function PlayerReplay(message: ClientMessage): Promise<NodeJS.Immediate | void | NodeJS.Timeout> {
+function PlayerReplay(message: ClientMessage): void | Promise<void> {
     const {client, guild, author} = message;
     const {player, songs}: Queue = client.queue.get(guild.id);
     const {title, color, duration}: Song = songs[0];
 
     try {
-        await client.Send({text: `🔂 | [${duration.StringTime}] | Replay | ${title}`, message, color, type: "css"});
+        client.Send({text: `🔂 | [${duration.StringTime}] | Replay | ${title}`, message, color, type: "css"});
         return player.seek(message);
     } catch {
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
@@ -175,7 +175,7 @@ async function PlayerReplay(message: ClientMessage): Promise<NodeJS.Immediate | 
  * @description Применяем фильтры для плеера
  * @param message {ClientMessage} Сообщение с сервера
  */
-async function PlayerFilter(message: ClientMessage): Promise<NodeJS.Immediate | void | NodeJS.Timeout> {
+function PlayerFilter(message: ClientMessage): void | Promise<void> {
     const {client, guild, author} = message;
     const {player}: Queue = client.queue.get(guild.id);
     const seek: number = player.state.resource?.playbackDuration ? parseInt((player.state.resource?.playbackDuration / 1000).toFixed(0)) : 0;

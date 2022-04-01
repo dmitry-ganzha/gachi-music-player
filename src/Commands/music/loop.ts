@@ -21,7 +21,7 @@ export class CommandLoop extends Command {
         })
     };
 
-    public run = async (message: ClientMessage, args: string[]): Promise<void> => {
+    public run = (message: ClientMessage, args: string[]): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.Send({

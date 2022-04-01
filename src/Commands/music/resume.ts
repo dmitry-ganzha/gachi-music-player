@@ -14,7 +14,7 @@ export class CommandResume extends Command {
         })
     };
 
-    public run = async (message: ClientMessage): Promise<void | boolean> => {
+    public run = (message: ClientMessage): void | boolean => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         if (!queue) return message.client.Send({

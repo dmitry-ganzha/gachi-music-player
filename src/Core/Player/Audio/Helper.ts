@@ -64,7 +64,7 @@ async function FindTrack(nameSong: string): Promise<InputFormat> {
  * @description Получаем от видео аудио формат
  * @param url {string} Ссылка
  */
-async function getFormatYouTube(url: string): Promise<InputFormat> {
+function getFormatYouTube(url: string): Promise<InputFormat> {
     return YouTube.getVideo(url, {onlyFormats: true});
 }
 

@@ -13,7 +13,7 @@ import {VoiceChannel} from "discord.js";
  * @param VoiceChannel {VoiceChannel} Подключение к голосовому каналу
  * @param track {any} Сама музыка
  */
-export async function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel, track: InputTrack): Promise<boolean | void | unknown> {
+export function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel, track: InputTrack): Promise<boolean | void | ClientMessage> | void {
     const queue: Queue = message.client.queue.get(message.guild.id);
     const song: Song = new Song(track, message);
 
@@ -26,7 +26,7 @@ export async function CreateQueue(message: ClientMessage, VoiceChannel: VoiceCha
  * @param VoiceChannel {VoiceChannel} Подключение к голосовому каналу
  * @param song {Song} Сам трек
  */
-async function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChannel, song: Song): Promise<boolean | void> {
+function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChannel, song: Song): Promise<boolean | void> {
     const {client, guild} = message;
 
     client.console(`[${guild.id}]: [Queue]: [Method: Set]`);
@@ -34,7 +34,7 @@ async function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChann
 
     const queue = client.queue.get(message.guild.id);
 
-    (await Promise.all([PushSong(queue, song, false)]));
+    PushSong(queue, song, false);
 
     const connection = new JoinVoiceChannel(VoiceChannel);
     connection.subscribe = queue.player;
@@ -48,7 +48,7 @@ async function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChann
  * @param song {Song} Сам трек
  * @param sendMessage {boolean} Отправить сообщение?
  */
-export async function PushSong(queue: Queue, song: Song, sendMessage: boolean = true): Promise<void | ClientMessage> {
+export function PushSong(queue: Queue, song: Song, sendMessage: boolean = true): Promise<void | ClientMessage> | void {
     queue.songs.push(song);
     if (sendMessage) return PushSongMessage(queue.channels.message, song);
     return;
