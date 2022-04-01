@@ -1,0 +1,19 @@
+{
+  "Channels": {
+    "Start": "",
+    "SendErrors": ""
+  },
+  "Bot": {
+    "ignoreError": true,
+    "token": "",
+    "prefix": "!",
+    "DiscordServer": "https://discord.gg/qMf2Sv3"
+  },
+  "spotify": {
+    "clientID": "",
+    "clientSecret": ""
+  },
+  "vk": {
+    "token": ""
+  }
+}
