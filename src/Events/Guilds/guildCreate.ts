@@ -1,29 +1,25 @@
 import {
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle,
-    DiscordAPIError,
-    Guild,
+    Guild, Message,
 } from "discord.js";
-import cfg from "../../../DataBase/Config.json";
 import {Colors} from "../../Core/Utils/Colors";
-import {ClientMessage, WatKLOK} from "../../Core/Client";
+import {WatKLOK} from "../../Core/Client";
 import {EmbedConstructor} from "../../Core/Utils/TypeHelper";
+import {getButtons} from "../../Core/Utils/Functions/Buttons";
 
 export class guildCreate {
     public readonly name: string = 'guildCreate';
     public readonly enable: boolean = true;
 
-    public run = (guild: Guild, f2: null, client: WatKLOK): Promise<void | number> => {
-        const Buttons = {
-            MyUrl: new ButtonBuilder().setURL(`https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji({name: '🔗'}).setLabel('Invite').setStyle(ButtonStyle.Link),
-            ServerUrl: new ButtonBuilder().setURL(cfg.Bot.DiscordServer).setEmoji({name: '🛡'}).setLabel('Help server').setStyle(ButtonStyle.Link),
-            Git: new ButtonBuilder().setURL('https://github.com/SNIPPIK/WatKLOK-BOT').setEmoji({name: "🗂"}).setLabel("GitHub").setStyle(ButtonStyle.Link)
-        };
-        const RunButt = new ActionRowBuilder().addComponents(Buttons.MyUrl, Buttons.ServerUrl);
+    public run = (guild: Guild, f2: null, client: WatKLOK): void | Promise<Message> => {
+        if (!guild.systemChannel) return;
 
-        // @ts-ignore
-        return guild.systemChannel ? guild.systemChannel.send({ embeds: [ConstructEmbed(guild)], components: [RunButt]}).then((msg: ClientMessage) => setTimeout(async () => msg.delete().catch(async (err: DiscordAPIError) => console.log(`[Discord Message]: [guildCreate]: [Delete]: ${err}`)), 60e3)).catch(async (e: DiscordAPIError) => console.log(`[Discord event]: [guildCreate]: ${e}`)) : null;
+        try {
+            // @ts-ignore
+            return guild.systemChannel.send({embeds: [ConstructEmbed(guild)], components: [getButtons(client.user.id)]})
+        } catch (e) {
+            console.log(e);
+            return;
+        }
     };
 }
 

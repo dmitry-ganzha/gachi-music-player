@@ -14,7 +14,7 @@ export type AudioFilters = Queue['audioFilters'] & {seek?: number};
  * @description Заготавливаем необходимые данные для создания потока
  */
 export async function FindResource(song: Song, req: number = 0): Promise<void> {
-    if (req > 5) return;
+    if (req > 25) return;
 
     //Получаем данные о ресурсе
     let format = await getLinkFormat(song);
@@ -24,7 +24,7 @@ export async function FindResource(song: Song, req: number = 0): Promise<void> {
     song.format = ConstFormat(format);
 
     //Проверяем можно ли скачивать с ресурса
-    const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 5, method: "GET"}});
+    const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 10, method: "GET"}});
     if (resource?.statusCode === 200) {
         song.format.work = true;
         return;
@@ -103,7 +103,8 @@ export class FFmpegStream {
     };
 
     public constructor(url: string | any, AudioFilters: AudioFilters) {
-        this.FFmpeg = new FFmpeg(CreateArguments(AudioFilters, url) as any);
+        this.FFmpeg = new FFmpeg(CreateArguments(AudioFilters, url));
+
         this.playStream = this.FFmpeg.pipe(this.opusEncoder);
         this.playStream.once('readable', () => (this.started = true));
         ['end', 'close', 'error'].map((event) => this.playStream.once(event, this.destroy));

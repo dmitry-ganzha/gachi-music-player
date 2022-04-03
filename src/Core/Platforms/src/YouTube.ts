@@ -102,7 +102,7 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
  * @param options {SearchOptions} Настройки
  * @constructor
  */
-async function SearchVideos(search: any, options: SearchOptions = {limit: 15, onlyLink: false}): Promise<string | InputTrack[]> {
+async function SearchVideos(search: string, options: SearchOptions = {limit: 15, onlyLink: false}): Promise<string | InputTrack[]> {
     const body = (await Promise.all([new httpsClient().parseBody(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}`, {
         options: {userAgent: true, cookie: true, zLibEncode: true, english: true}
     })]))[0];

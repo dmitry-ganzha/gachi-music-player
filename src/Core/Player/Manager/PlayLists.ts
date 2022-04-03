@@ -11,13 +11,13 @@ import {PushSong} from "../Queue/Create";
 /**
  * @description Добавляет музыку в очередь, после отправляет сообщение сколько было добавлено
  * @param message {ClientMessage} Сообщение с сервера
- * @param playlist {object} Сам плейлист
+ * @param playlist {InputPlaylist} Сам плейлист
  * @param VoiceChannel {VoiceChannel} Подключение к голосовому каналу
  */
 export function PlayList(message: ClientMessage, playlist: InputPlaylist, VoiceChannel: VoiceChannel): void {
-    if (!playlist.items) return message.client.Send({text: `${message.author}, Я не смог загрузить этот плейлист, Ошибка: Здесь больше 100 треков, youtube не позволит сделать мне столько запросов!`, message: message, color: "RED"});
+    if (!playlist.items) return message.client.Send({text: `${message.author}, Я не смог загрузить этот плейлист, Ошибка: Здесь больше 100 треков, youtube не позволит сделать мне столько запросов!`, message, color: "RED"});
 
-    SendMessage(message, playlist).catch(async (err: DiscordAPIError) => console.log(`[Discord Error]: [Send message]: ${err}`));
+    SendMessage(message, playlist).catch((err: DiscordAPIError) => console.log(`[Discord Error]: [Send message]: ${err}`));
     return addSongsQueue(playlist.items, message, VoiceChannel);
 }
 //====================== ====================== ====================== ======================
@@ -28,13 +28,13 @@ export function PlayList(message: ClientMessage, playlist: InputPlaylist, VoiceC
  * @param playlist {object} Сам плейлист
  */
 async function SendMessage(message: ClientMessage, playlist: InputPlaylist): Promise<NodeJS.Timeout> {
-   return message.channel.send({embeds: [PlaylistEmbed(message, playlist, Colors.BLUE)]}).then(async (msg: ClientMessage) => setTimeout(() => msg.delete().catch(() => null), 15e3));
+   return message.channel.send({embeds: [PlaylistEmbed(message, playlist, Colors.BLUE)]}).then((msg: ClientMessage) => setTimeout(() => msg.delete().catch(() => null), 15e3));
 }
 //====================== ====================== ====================== ======================
 
 /**
  * @description Добавляем музыку в очередь
- * @param playlistItems {any[]} Список музыки плейлиста
+ * @param playlistItems {InputPlaylist.items[]} Список музыки плейлиста
  * @param message {ClientMessage} Сообщение с сервера
  * @param VoiceChannel {VoiceChannel} Подключение к голосовому каналу
  */
@@ -42,7 +42,7 @@ function addSongsQueue(playlistItems: InputTrack[], message: ClientMessage, Voic
     const {player} = message.client;
     let queue = message.client.queue.get(message.guild.id)
 
-    return playlistItems.forEach((track: InputTrack) => setTimeout(async () => {
+    return playlistItems.forEach((track: InputTrack) => setTimeout(() => {
         if (!queue) {
             void player.emit('play', message, VoiceChannel, track);
             queue = message.client.queue.get(message.guild.id);

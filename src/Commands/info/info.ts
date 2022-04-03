@@ -1,13 +1,12 @@
 import {Command} from "../Constructor";
 import os from 'node:os';
-import {ButtonStyle, ActionRowBuilder, ButtonBuilder} from "discord.js";
 import pak from "../../../package.json";
-import cfg from "../../../DataBase/Config.json";
 import TSConfig from "../../../tsconfig.json";
 import {ClientMessage} from "../../Core/Client";
 import {EmbedConstructor} from "../../Core/Utils/TypeHelper";
 import {Colors} from "../../Core/Utils/Colors";
 import {ParserTimeSong} from "../../Core/Player/Manager/Functions/ParserTimeSong";
+import {getButtons} from "../../Core/Utils/Functions/Buttons";
 
 const core = os.cpus()[0];
 
@@ -23,18 +22,11 @@ export class CommandInfo extends Command {
         })
     };
     public run = (message: ClientMessage): void => {
-        const Buttons = {
-            MyUrl: new ButtonBuilder().setURL(`https://discord.com/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot+applications.commands`).setEmoji({name: '🔗'}).setLabel('Invite').setStyle(ButtonStyle.Link),
-            ServerUrl: new ButtonBuilder().setURL(cfg.Bot.DiscordServer).setEmoji({name: "🛡"}).setLabel('My server').setStyle(ButtonStyle.Link),
-            Git: new ButtonBuilder().setURL('https://github.com/SNIPPIK/WatKLOK-BOT').setEmoji({name: "🗂"}).setLabel("GitHub").setStyle(ButtonStyle.Link)
-        }
-        const RunButt = new ActionRowBuilder().addComponents(Buttons.MyUrl, Buttons.ServerUrl, Buttons.Git);
-
         return getCPUUsage((cpu: number) => {
             return message.channel.send({
                 embeds: [InfoEmbed(message, cpu.toFixed(2))],
                 // @ts-ignore
-                components: [RunButt]
+                components: [getButtons(message.client.user.id)]
             }).then((msg: ClientMessage) => Command.DeleteMessage(msg, 35e3)).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
         })
     };

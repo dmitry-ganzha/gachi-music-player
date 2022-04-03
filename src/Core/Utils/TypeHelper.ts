@@ -8,11 +8,13 @@ import {
     TextChannel,
     ThreadChannel
 } from "discord.js";
+import {ClientMessage} from "../Client";
 
 // interface for EmbedConstructor<EmbedData>
 export interface EmbedConstructor extends EmbedData {}
 //Типы каналов
 export type Channel = DMChannel | PartialDMChannel | NewsChannel | TextChannel | ThreadChannel;
+export type MessageChannel = ClientMessage["channel"];
 //Типы для ClientMessage<channel<send>>, ClientMessage<edit>
 export type sendType = string | MessagePayload | MessageOptions | {embeds?: EmbedConstructor[], components?: ActionRow<any> | ActionRowBuilder<any>};
 //Цвета, которые есть в базе

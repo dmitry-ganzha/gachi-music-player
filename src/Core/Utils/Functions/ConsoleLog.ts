@@ -1,3 +1,4 @@
-export class ConsoleLog {
-    public run = (set: string): NodeJS.Timeout => setTimeout(() => console.log(`[${(new Date).toLocaleString("ru")}] ${set}`), 25);
+
+export function ConsoleLog(set: string) {
+    return setTimeout(() => console.log(`[${(new Date).toLocaleString("ru")}] ${set}`), 25)
 }

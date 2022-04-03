@@ -19,15 +19,16 @@ export class voiceStateUpdate {
                 queue.options.stop = true;
                 return void queue.events.queue.emit('DestroyQueue', queue, queue.channels.message);
             }
-            return this.CheckToRun(voiceConnection, client, guild, queue);
+            return CheckToRun(voiceConnection, client, guild, queue);
         }
         return;
     };
-    protected CheckToRun = (voiceConnection: VoiceState[], client: WatKLOK, guild: Guild, queue: Queue): void | boolean => {
-        const PlayableVoiceChannel: VoiceConnection = getVoiceConnection(guild.id);
+}
 
-        if (voiceConnection && PlayableVoiceChannel) return voiceConnection.length <= 1 && IsDestroyStatus.has(queue.player.state.status) ?
-            void queue.events.helper.emit('StartTimerDestroyer', queue) :
-            void queue.events.helper.emit('CancelTimerDestroyer', queue);
-    };
+function CheckToRun(voiceConnection: VoiceState[], client: WatKLOK, guild: Guild, queue: Queue): void | boolean {
+    const PlayableVoiceChannel: VoiceConnection = getVoiceConnection(guild.id);
+
+    if (voiceConnection && PlayableVoiceChannel) return voiceConnection.length <= 1 && IsDestroyStatus.has(queue.player.state.status) ?
+        void queue.events.helper.emit('StartTimerDestroyer', queue) :
+        void queue.events.helper.emit('CancelTimerDestroyer', queue);
 }

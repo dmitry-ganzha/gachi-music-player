@@ -15,7 +15,7 @@ export function Disconnect(GuildID: string) {
 
 export class JoinVoiceChannel {
     public VoiceConnection: VoiceConnection;
-    protected me: Guild["me"]["voice"];
+    protected meVoice: Guild["me"]["voice"];
 
     public constructor({id, guild, type}: VoiceChannel | StageChannel) {
         this.VoiceConnection = joinVoiceChannel({
@@ -24,7 +24,7 @@ export class JoinVoiceChannel {
             adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator & DiscordGatewayAdapterCreator,
             selfDeaf: true
         });
-        this.me = guild.me.voice;
+        this.meVoice = guild.me.voice;
         this.SpeakStateChannel(guild.me, type);
         // @ts-ignore
         ["destroyed", "disconnected"].map(event => this.VoiceConnection.once(event, this.destroy));
@@ -32,12 +32,12 @@ export class JoinVoiceChannel {
 
     //Включен микрофон бота?
     public get isMute() {
-        return this.me.mute;
+        return this.meVoice.mute;
     };
     //Задаем <boolean> значение для микрофона
     public set setMute(state: boolean) {
-        if (this.me.mute === state) return;
-        Promise.all([this.me.setMute(state)]).catch(() => new Error('[JoinVoiceChannel]: [setMute]: Fail disable mute a bot'));
+        if (this.meVoice.mute === state) return;
+        Promise.all([this.meVoice.setMute(state)]).catch(() => new Error('[JoinVoiceChannel]: [setMute]: Fail disable mute a bot'));
     };
 
     public set subscribe(player: AudioPlayer) {
@@ -61,6 +61,6 @@ export class JoinVoiceChannel {
         this.VoiceConnection?.removeAllListeners();
 
         delete this.VoiceConnection;
-        delete this.me;
+        delete this.meVoice;
     };
 }

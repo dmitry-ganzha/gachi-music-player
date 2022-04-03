@@ -1,14 +1,14 @@
 import cfg from "../../../DataBase/Config.json";
 import {Colors} from "../../Core/Utils/Colors";
 import {ClientMessage, WatKLOK} from "../../Core/Client";
-import {EmbedConstructor} from "../../Core/Utils/TypeHelper";
+import {EmbedConstructor, MessageChannel} from "../../Core/Utils/TypeHelper";
 
 export class Ready {
     public readonly name: string = "ready";
     public readonly enable: boolean = false;
 
     public run = (f1: null, f2: null, client: WatKLOK): Promise<ClientMessage> | null => {
-        let channel = client.channels.cache.get(cfg.Channels.Start) as ClientMessage['channel'];
+        let channel = client.channels.cache.get(cfg.Channels.Start) as MessageChannel;
 
         if (channel && !client.shard) return channel.send({embeds: [MessageEmbed(client)]});
         return null;

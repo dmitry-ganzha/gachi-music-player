@@ -11,21 +11,27 @@ export type SendOptions = {
 type OptionsSendType =  "css" | "js" | "ts" | "cpp" | "html" | "cs";
 
 
-export class Send {
-    public run = (options: SendOptions): void => typeof options.type === 'string' ? this.SendCode(options) : this.SendNotCode(options);
+export function MessageChannelSend(options: SendOptions): void {
+    if (typeof options.type === 'string') return SendMessageCode(options);
+    return SendMessageNoCode(options)
+}
 
-    protected SendCode = (options: SendOptions): void => this.Catch(options.message.channel.send({
+function SendMessageCode(options: SendOptions): void {
+    return CatchMessage(options.message.channel.send({
         embeds: [MessageEmbed(options.color, `\`\`\`${options.type}\n${options.text}\n\`\`\``)],
     }));
-
-    protected SendNotCode = (options: SendOptions): void => this.Catch(options.message.channel.send({
+}
+function SendMessageNoCode(options: SendOptions): void {
+    return CatchMessage(options.message.channel.send({
         embeds: [MessageEmbed(options.color, options.text)]
     }));
+}
 
-    protected Catch = (type: Promise<ClientMessage>): void => {
-        type.then((msg: ClientMessage) => setTimeout(() => msg.deletable ? msg.delete().catch((err: Error) => console.log(`[Discord Error]: [Delete Message] -> ${err}`)) : null, 12e3)
-        ).catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
-    };
+function CatchMessage(type: Promise<ClientMessage>): void {
+    type.then((msg: ClientMessage) => setTimeout(() => msg.deletable ? msg.delete() : null, 12e3))
+        .catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
+
+    return;
 }
 
 function MessageEmbed(color: ColorResolvable | number = 'BLUE', description: string): EmbedConstructor {
@@ -33,6 +39,7 @@ function MessageEmbed(color: ColorResolvable | number = 'BLUE', description: str
         color: typeof color === "number" ? color : ConvertColor(color), description
     }
 }
+
 function ConvertColor(color: ColorResolvable): number | null {
     let colorOut;
     try {
