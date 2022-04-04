@@ -6,8 +6,6 @@ export type FFmpegArgs = (string | number)[] | string[];
 let FFmpegName: string;
 let sources = ['ffmpeg', 'avconv', './FFmpeg/ffmpeg', './FFmpeg/avconv', './node_modules/ffmpeg-static/ffmpeg'];
 
-//====================== ====================== ====================== ======================
-
 //Аргументы для FFmpeg'a
 export const FFmpegArguments = {
     OggOpus: ["-acodec", "libopus", "-f", "opus"],
@@ -30,7 +28,6 @@ export const FFmpegArguments = {
         AudioFade: "afade=t=in:st=0:d=1.5" //End plying afade=t=out:st=5:d=5
     }
 };
-//====================== ====================== ====================== ======================
 
 /**
  * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a если он будет найден
@@ -47,7 +44,7 @@ const FFmpegCheck = () => {
 };
 if (FFmpegName === undefined) Promise.all([FFmpegCheck()]).catch();
 
-//====================== ====================== ====================== ======================
+
 /**
  * @description Создаем FFmpeg для декодирования музыки, видео или чего-то другого.
  * Это круче вашего Lavalink
@@ -64,15 +61,15 @@ export class FFmpeg extends Duplex {
         this.Binding(['read', 'setEncoding', 'pipe', 'unpipe'], this.Input);
 
         //Если есть ошибка в <input, output>, выводим!
-        //const processError = (error: Error) => this.emit('error', error);
-        //this.Input.once('error', processError);
-        //this.Output.once('error', processError);
+        const processError = (error: Error) => this.emit('error', error);
+        this.Input.once('error', processError);
+        this.Output.once('error', processError);
     };
 
     /**
      * @description Создаем "привязанные функции" (ПФ - термин из ECMAScript 6)
      * @param methods {string[]}
-     * @param target {Readable | Writable | any}
+     * @param target {Readable | Writable}
      * @constructor
      */
     protected Binding = (methods: string[], target: Readable | Writable) => {
@@ -84,7 +81,7 @@ export class FFmpeg extends Duplex {
 
     /**
      * @description Удаляем все что не нужно
-     * @param error {any} По какой ошибке завершаем работу FFmpeg'a
+     * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
      */
     public _destroy = (error?: Error | null) => {
         if (this.Input) {
@@ -110,7 +107,6 @@ export class FFmpeg extends Duplex {
         if (error) return console.error(error);
     };
 }
-//====================== ====================== ====================== ======================
 
 /**
  * @description Запускаем FFmpeg

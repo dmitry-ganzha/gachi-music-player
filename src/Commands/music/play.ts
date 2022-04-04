@@ -149,7 +149,7 @@ class HandleInfoResource {
             this.deleteMessage(message);
             return this.collector?.stop();
         }, 10e3);
-    })
+    });
 
     //Какое перенаправление делаем в систему плейлистов или просто добавим трек?
     protected runPlayer = (video: InputTrack, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): boolean => void message.client.player.emit('play', message, voiceChannel, video);

@@ -23,6 +23,7 @@ export class QueueEvents extends TypedEmitter<EventsQueue> {
         this.removeAllListeners();
     };
 }
+//====================== ====================== ====================== ======================
 /**
  * @description Добавляем музыку в очередь
  * @param song {object}
@@ -35,6 +36,7 @@ function onPushSong(song: Song, {client, guild}: ClientMessage): number | null {
     queue.songs.push(song);
     return null;
 }
+//====================== ====================== ====================== ======================
 /**
  * @description Удаление очереди
  * @param queue {object} Очередь сервера
@@ -62,6 +64,7 @@ function onDestroyQueue(queue: Queue, message: ClientMessage, sendDelQueue: bool
 
     return DeleteQueue(message);
 }
+//====================== ====================== ====================== ======================
 /**
  * @description Завершаем воспроизведение в player
  * @param queue {Queue}
@@ -78,6 +81,7 @@ function CleanPlayer(queue: Queue): void {
     }, 7e3);
     return;
 }
+//====================== ====================== ====================== ======================
 /**
  * @description Отключаемся от голосового канала
  * @param GuildID {string} ID сервера
@@ -85,6 +89,8 @@ function CleanPlayer(queue: Queue): void {
 function LeaveVoice(GuildID: string) {
     return Disconnect(GuildID);
 }
+//====================== ====================== ====================== ======================
+
 /**
  * @description Удаляем сообщение о текущей песне
  * @param channels {Queue_Channels} Все каналы из очереди
@@ -92,6 +98,7 @@ function LeaveVoice(GuildID: string) {
 function DeleteMessage({message}: Queue_Channels): NodeJS.Timeout {
     return setTimeout(() => message?.deletable ? message?.delete().catch(() => undefined) : null, 3e3);
 }
+//====================== ====================== ====================== ======================
 /**
  * @description Отправляем сообщение, что музыка завершена
  * @param options {Queue_Options} Опции из очереди
@@ -101,6 +108,7 @@ function SendChannelToEnd({stop}: Queue_Options, message: ClientMessage): void {
     if (stop) return message.client.Send({text: `🎵 | Музыка была выключена`, message, type: 'css'});
     return message.client.Send({text: `🎵 | Музыка закончилась`, message, type: 'css'});
 }
+//====================== ====================== ====================== ======================
 /**
  * @description Удаляем очередь
  * @param message {ClientMessage} Сообщение с сервера

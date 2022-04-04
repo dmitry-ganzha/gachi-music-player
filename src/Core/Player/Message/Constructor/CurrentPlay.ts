@@ -38,7 +38,7 @@ export function CurrentPlay(client: WatKLOK, song: Song, queue: Queue): EmbedCon
         }
     };
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Создаем Embed<Fields>
  * @param song {Song} Трек
@@ -58,7 +58,7 @@ function createFields(song: Song, {player, songs, audioFilters}: Queue, client: 
     if (songs[1]) fields.push({ name: `Потом`, value: `**❯** [${client.ConvertedText(songs[1].title, 29, true)}](${songs[1].url})` });
     return fields;
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description
  * @param isLive {Song<isLive>} Текущий трек, стрим?
@@ -77,7 +77,7 @@ function MusicDuration({isLive, duration}: Song, curTime: number | string, progr
     if (progressBar) return `**❯** [${parsedTimeSong} - ${str}\n|${progress}|`;
     return `**❯** [${curTime} - ${str}`;
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Конвертируем секунды проигранные плеером
  * @param state {audioPlayer<state>} Статус плеера
@@ -97,7 +97,7 @@ function ConvertCurrentTime({state}: AudioPlayer, ProgressBar: boolean = true, f
     if (ProgressBar) return seconds;
     return ParserTimeSong(seconds);
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Вычисляем прогресс бар
  * @param currentTime {number} Текущие время

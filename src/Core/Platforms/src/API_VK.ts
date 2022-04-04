@@ -43,7 +43,7 @@ async function getTrack(url: string): Promise<null | InputTrack> {
         }
     };
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Делаем запрос к VK API (через account), получаем данные о поиске
  * @param str {string} Что ищем
@@ -82,7 +82,7 @@ async function SearchTracks(str: string, options: {limit: number} = {limit: 15})
         return resolve({items});
     });
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Делаем запрос к VK API (через account), получаем данные о плейлисте
  * @param url {string} Ссылка
@@ -126,7 +126,7 @@ async function getPlaylist(url: string, options = {limit: 50}): Promise<null | I
         image: { url: PlaylistImage?.photo_1200 ?? PlaylistImage?.photo_600 ?? PlaylistImage?.photo_300 ?? PlaylistImage?.photo_270 ?? undefined }
     };
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Делаем запрос к VK API
  * @param method {string} Метод, к примеру audio.getById (где audio метод, getById тип)
@@ -138,7 +138,7 @@ function RequestVK(method: methodType, type: requestType, options: string): Prom
         options: {zLibEncode: true}
     });
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Подготавливаем ссылку
  * @param method {string} Метод, к примеру audio.getById (где audio метод, getById тип)

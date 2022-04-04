@@ -7,7 +7,6 @@ import {Colors} from "../../Utils/Colors";
 import {NotImage} from "../Message/Constructor/Helper";
 import {PushSong} from "../Queue/Create";
 
-//====================== ====================== ====================== ======================
 /**
  * @description Добавляет музыку в очередь, после отправляет сообщение сколько было добавлено
  * @param message {ClientMessage} Сообщение с сервера
@@ -21,7 +20,6 @@ export function PlayList(message: ClientMessage, playlist: InputPlaylist, VoiceC
     return addSongsQueue(playlist.items, message, VoiceChannel);
 }
 //====================== ====================== ====================== ======================
-
 /**
  * @description Отправляем сообщение с информацией плейлиста
  * @param message {ClientMessage} Сообщение с сервера
@@ -31,7 +29,6 @@ async function SendMessage(message: ClientMessage, playlist: InputPlaylist): Pro
    return message.channel.send({embeds: [PlaylistEmbed(message, playlist, Colors.BLUE)]}).then((msg: ClientMessage) => setTimeout(() => msg.delete().catch(() => null), 15e3));
 }
 //====================== ====================== ====================== ======================
-
 /**
  * @description Добавляем музыку в очередь
  * @param playlistItems {InputPlaylist.items[]} Список музыки плейлиста
@@ -53,7 +50,6 @@ function addSongsQueue(playlistItems: InputTrack[], message: ClientMessage, Voic
     }, 2e3));
 }
 //====================== ====================== ====================== ======================
-
 /**
  * @description Создаем Embed сообщение для отправки в чат
  * @param client {WatKLOK} Бот
@@ -84,4 +80,3 @@ function PlaylistEmbed({client, author: DisAuthor}: ClientMessage, {author, imag
         }
     };
 }
-//====================== ====================== ====================== ======================

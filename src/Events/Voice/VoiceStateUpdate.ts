@@ -12,16 +12,15 @@ export class voiceStateUpdate {
     public run = ({guild}: VoiceState, newState: VoiceState, client: WatKLOK): void | boolean => {
         const queue: Queue = client.queue.get(guild.id);
 
-        if (queue) {
-            const voiceConnection: VoiceState[] = client.connections(guild);
-            if (!voiceConnection.find((fn: VoiceState) => fn.id === client.user.id)) {
-                queue.songs = [];
-                queue.options.stop = true;
-                return void queue.events.queue.emit('DestroyQueue', queue, queue.channels.message);
-            }
-            return CheckToRun(voiceConnection, client, guild, queue);
+        if (!queue) return;
+
+        const voiceConnection: VoiceState[] = client.connections(guild);
+        if (!voiceConnection.find((fn: VoiceState) => fn.id === client.user.id)) {
+            queue.songs = [];
+            queue.options.stop = true;
+            return void queue.events.queue.emit('DestroyQueue', queue, queue.channels.message);
         }
-        return;
+        return CheckToRun(voiceConnection, client, guild, queue);
     };
 }
 

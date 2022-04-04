@@ -44,7 +44,7 @@ export class Song {
         this.format = ConstFormat(track.format);
     };
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Подготавливаем время трека для системы
  * @param duration {InputTrackDuration} Время
@@ -56,7 +56,7 @@ function ConstDuration(duration: InputTrackDuration): { StringTime: string | "Li
         seconds, StringTime: seconds > 0 ? ParserTimeSong(seconds) : 'Live'
     };
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Подготавливаем цвет трека
  * @param type {string}
@@ -65,7 +65,7 @@ function ConstDuration(duration: InputTrackDuration): { StringTime: string | "Li
 function Color(type: string): number {
     return type === "YOUTUBE" ? Colors.RED : type === "SPOTIFY" ? Colors.GREEN : Colors.BLUE;
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Ищем в ссылке тип трека
  * @param url {string} Ссылка
@@ -80,7 +80,7 @@ function Type(url: string): SongType {
         return "UNKNOWN";
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Подготавливаем формат трека для FFmpeg
  * @param format {InputFormat} Исходный формат

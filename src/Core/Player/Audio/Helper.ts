@@ -9,7 +9,12 @@ import {VK, YouTube} from "../../Platforms";
 
 export type AudioFilters = Queue['audioFilters'] & {seek?: number};
 
-//====================== ====================== ====================== ======================
+//База с плеерами
+const audioPlayers: AudioPlayer[] = [];
+let AudioCycleTimer: NodeJS.Timeout | undefined;
+let TimeToFrame = -1;
+
+
 /**
  * @description Заготавливаем необходимые данные для создания потока
  */
@@ -69,11 +74,6 @@ function getFormatYouTube(url: string): Promise<InputFormat> {
 }
 
 
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
 
 /**
  * @description Подготавливаем, получаем и создаем объект схожий с discord.js {AudioResource}
@@ -102,7 +102,7 @@ export class FFmpegStream {
         return this.playStream?.readableEnded || this.playStream?.destroyed || !this.playStream;
     };
 
-    public constructor(url: string | any, AudioFilters: AudioFilters) {
+    public constructor(url: string | any, AudioFilters: AudioFilters = null) {
         this.FFmpeg = new FFmpeg(CreateArguments(AudioFilters, url));
 
         this.playStream = this.FFmpeg.pipe(this.opusEncoder);
@@ -118,7 +118,7 @@ export class FFmpegStream {
         const packet = this.playStream?.read();
         if (packet) this.playbackDuration += 20;
         return packet;
-    }
+    };
 
     /**
      * @description Чистим память!
@@ -202,66 +202,61 @@ function CreateFilters(AudioFilters: AudioFilters): FFmpegArgs  {
 
     return resSt === '' ? [] : ['-af', resp] as any;
 }
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
 
-//База с плеерами
-let audioPlayers: AudioPlayer[] = [];
-
-let AudioCycleInterval: NodeJS.Timeout | undefined;
-let nextTime = -1;
-
-//Проверяем плееры на возможность включить музыку в голосовые каналы
-function audioCycleStep() {
-    if (nextTime === -1) return;
-
-    nextTime += 20;
-    const available = audioPlayers.filter((player) => player.checkPlayable);
-
-    return prepareNextAudioFrame(available);
-}
-
-//Подготавливаем пакет с музыкой и отправляем в голосовой канал
-function prepareNextAudioFrame(players: AudioPlayer[]) {
-    const nextPlayer = players.shift();
-
-    if (!nextPlayer) {
-        if (nextTime !== -1) AudioCycleInterval = setTimeout(audioCycleStep, nextTime - Date.now());
-        return;
-    }
-
-    nextPlayer['_sendPacket']();
-
-    setImmediate(() => prepareNextAudioFrame(players));
-}
-
-function hasAudioPlayer(target: AudioPlayer) {
-    return audioPlayers.includes(target);
-}
-
-//Добавляем плеер в базу
+/**
+ * @description Добавляем плеер в базу
+ * @param player {AudioPlayer}
+ */
 export function addAudioPlayer(player: AudioPlayer): void {
-    if (hasAudioPlayer(player)) return;
+    if (audioPlayers.includes(player)) return;
     audioPlayers.push(player);
+
     if (audioPlayers.length === 1) {
-        nextTime = Date.now();
+        TimeToFrame = Date.now();
         setImmediate(audioCycleStep);
     }
-    return;
 }
 
-//Удаляем плеер из базы
+/**
+ * @description Удаляем плеер из базы
+ * @param player {AudioPlayer}
+ */
 export function deleteAudioPlayer(player: AudioPlayer) {
     const index = audioPlayers.indexOf(player);
     if (index === -1) return;
     audioPlayers.splice(index, 1);
 
     if (audioPlayers.length === 0) {
-        audioPlayers = [];
-        nextTime = -1;
-        if (typeof AudioCycleInterval !== 'undefined') clearTimeout(AudioCycleInterval);
+        TimeToFrame = -1;
+        if (typeof AudioCycleTimer !== 'undefined') clearTimeout(AudioCycleTimer);
     }
+}
+
+/**
+ * @description Проверяем плееры на возможность включить музыку в голосовые каналы
+ */
+function audioCycleStep() {
+    if (TimeToFrame === -1) return;
+
+    TimeToFrame += 20;
+    const available = audioPlayers.filter((player) => player.checkPlayable);
+
+    return prepareNextAudioFrame(available);
+}
+
+/**
+ * @description Подготавливаем пакет с музыкой и отправляем в голосовой канал
+ * @param players {AudioPlayer}
+ */
+function prepareNextAudioFrame(players: AudioPlayer[]) {
+    const nextPlayer = players.shift();
+
+    if (!nextPlayer) {
+        if (TimeToFrame !== -1) AudioCycleTimer = setTimeout(audioCycleStep, TimeToFrame - Date.now());
+        return;
+    }
+
+    nextPlayer['_sendPacket']();
+
+    setImmediate(() => prepareNextAudioFrame(players));
 }

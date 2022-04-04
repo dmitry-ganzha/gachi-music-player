@@ -19,12 +19,10 @@ export class CommandHelp extends Command {
     };
 
     public run = (message: ClientMessage): Promise<ReactionCollector | void> => {
-        const commands = message.client.commands, fakeCommands: Command[] = [];
-
-        commands.map((cmd: Command) => !cmd.isOwner ? fakeCommands.push(cmd) : null);
+        const Commands: Command[] = message.client.commands.Array;
 
         // @ts-ignore
-        let List: Command[] = fakeCommands.ArraySort(5);
+        let List: Command[] = Commands.ArraySort(5);
         let {embed, page, pages} = CommandHelp.CreateEmbedMessage(message, List);
 
         return new CollectorSortReaction()._run(embed, pages, page, message, false);

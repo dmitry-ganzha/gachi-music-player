@@ -23,7 +23,7 @@ export class MessageSystem {
 
         if (!queue.songs[0]?.isLive) {
             if (this._int) clearInterval(this._int);
-            this._int = setInterval(async () => {
+            this._int = setInterval(() => {
                 try {
                     const queue: Queue = client.queue.get(guild.id);
 
@@ -45,7 +45,7 @@ export class MessageSystem {
         delete this._int;
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Обновление сообщения on_playSong
  * @param message {object} Сообщение с сервера
@@ -63,14 +63,14 @@ function UpdateMessage(message: ClientMessage, need: boolean = false): Promise<v
         }
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Показываем ошибку
  * @param message {object} Сообщение с сервера
  * @param song {Song} Сама музыка
  * @param err {Error} Ошибка
  */
-export function WarningMessage({channel, client, guild}: ClientMessage, song: Song, err: Error = null): Promise<void | ClientMessage> | void {
+export function WarningMessage({channel, client, guild}: ClientMessage, song: Song, err: Error = null): Promise<void | ClientMessage | NodeJS.Timeout> | void {
     try {
         const queue: Queue = client.queue.get(guild.id);
         const Embed = Warning(client, song, queue, err);
@@ -81,13 +81,13 @@ export function WarningMessage({channel, client, guild}: ClientMessage, song: So
         return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`)
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Показываем что было добавлено в очередь
  * @param message {object} Сообщение с сервера
  * @param song {Song} Сама музыка
  */
-export function PushSongMessage({channel, client, guild}: ClientMessage, song: Song): Promise<void | ClientMessage> | void {
+export function PushSongMessage({channel, client, guild}: ClientMessage, song: Song): Promise<void | ClientMessage | NodeJS.Timeout> | void {
     try {
         const queue: Queue = client.queue.get(guild.id);
         const EmbedPushedSong = AddSong(client, song, queue);
@@ -98,16 +98,16 @@ export function PushSongMessage({channel, client, guild}: ClientMessage, song: S
         return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`)
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Удаляем сообщение со временем
  * @param send {ClientMessage} Сообщение
  * @param time {number} Время через сколько удаляем
  */
-function DeleteMessage(send: any, time: number = 5e3): Promise<void | ClientMessage> {
-    return send.then(async (msg: ClientMessage) => setTimeout(async () => msg.deletable ? msg.delete() : null, time));
+function DeleteMessage(send: Promise<ClientMessage>, time: number = 5e3): Promise<void | ClientMessage | NodeJS.Timeout> {
+    return send.then((msg: ClientMessage) => setTimeout(() => msg.deletable ? msg.delete() : null, time));
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Добавляем сообщение в очередь сервера
  * @param channel {Channel} Текстовый канал
@@ -117,7 +117,7 @@ function DeleteMessage(send: any, time: number = 5e3): Promise<void | ClientMess
  */
 function AddInQueueMessage(channel: Channel, embed: EmbedConstructor, component: ActionRowBuilder<any>, {channels}: Queue): Promise<ClientMessage> | void  {
     try {
-        return channel.send({embeds: [embed as any], components: [component]}).then(async (msg: any) => channels.message = msg);
+        return channel.send({embeds: [embed as any], components: [component]}).then((msg: any) => channels.message = msg);
     } catch (e) {
         return console.log(`[${(new Date).toLocaleString("ru")}] [MessageEmitter]: [Method: ${e.method ?? null}]: [on: playSong, ${e.code}]: ${e?.message}`);
     }

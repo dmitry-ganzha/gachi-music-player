@@ -14,7 +14,7 @@ export class CommandDeploy extends Command {
 
     public run = (message: ClientMessage): Promise<void> => new Promise((resolve: any) => {
         let TotalCommands: number = 0;
-        message.client.commands.map(async (cmd: Command) => {
+        message.client.commands.Array.map(async (cmd: Command) => {
             if (cmd.isOwner || !cmd.slash) return;
             TotalCommands++
             try {

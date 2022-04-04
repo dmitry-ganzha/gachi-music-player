@@ -54,7 +54,7 @@ export class Helper {
     public static isOwner = (isOwner: CommandIsOwner, AuthorID: string) => {
         if (isOwner) return !cfg.Bot.OwnerIDs.includes(AuthorID);
         return false;
-    }
+    };
     // У пользователя есть ограничения?
     public static isPermissions = (permissions: CommandPermission, message: ClientMessage): boolean => {
         let isEnablePermissions = false;

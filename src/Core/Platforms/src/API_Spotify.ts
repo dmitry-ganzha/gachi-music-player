@@ -15,7 +15,6 @@ let TokenTime: any = null;
 
 export const Spotify = {getTrack, getAlbum, getPlaylist, SearchTracks};
 
-//====================== ====================== ====================== ======================
 /**
  * @description Получаем токен
  */
@@ -36,6 +35,7 @@ async function getToken(): Promise<void> {
     TokenTime = Date.now() + result.expires_in;
     Token = result.access_token;
 }
+//====================== ====================== ====================== ======================
 /**
  * @description Создаем запрос к SPOTIFY API и обновляем токен
  * @param method {string} Ссылка api
@@ -54,7 +54,7 @@ async function RequestSpotify(method: string): Promise<SpotifyPlaylist & FailRes
         options: {zLibEncode: true}
     })
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Получаем данные о треке
  * @param url {string} Ссылка на трек
@@ -78,7 +78,7 @@ async function getTrack(url: string): Promise<InputTrack | null> {
         PrevFile: result.preview_url
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description получаем данные о плейлисте + треки
  * @param url {string} Ссылка на плейлист
@@ -117,7 +117,7 @@ async function getPlaylist(url: string, options: {limit: number} = {limit: 101})
         return null;
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Получаем данные на альбом + треки
  * @param url {string} Ссылка на альбом
@@ -156,7 +156,7 @@ async function getAlbum(url: string, options: {limit: number} = {limit: 101}): P
         return null;
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Ищем треки в базах spotify
  * @param search {string} Что ищем
@@ -195,7 +195,7 @@ async function SearchTracks(search: string, options: {limit: number} = {limit: 1
         return null;
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Получаем данные об авторе или пользователе
  * @param url {string} ссылка на автора или пользователя

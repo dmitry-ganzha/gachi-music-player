@@ -81,6 +81,7 @@ export class httpsClient {
     };
 }
 
+//====================== ====================== ====================== ======================
 /**
  * @description Получаем рандомный user-agent
  */
@@ -89,7 +90,7 @@ function UserAgent(): string {
     const MaxAgents = Math.floor(UserAgents.length - 1);
     return UserAgents[Math.floor(Math.random() * (MaxAgents - minAgents + 1)) + minAgents];
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Добавляем свои аргументы запроса
  * @param options {httpsClientOptions} Настройки запроса
@@ -110,7 +111,7 @@ function EditRequestOptions(options: httpsClientOptions): void {
         if (options.options?.english) options.request.headers = {...options.request.headers, 'accept-language': 'en-US,en-IN;q=0.9,en;q=0.8,hi;q=0.7'};
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Отправляем данные которые надо заменить в куки для работоспособности
  * @param headers {IncomingHttpHeaders} Заголовки
@@ -119,6 +120,6 @@ function EditRequestOptions(options: httpsClientOptions): void {
  */
 function EditCookie(headers: IncomingHttpHeaders, url: string): void {
     if (headers && headers['set-cookie'] && url.match(/watch/)) {
-        setImmediate(async () => uploadCookie(headers['set-cookie']));
+        setImmediate(() => uploadCookie(headers['set-cookie']));
     }
 }

@@ -18,12 +18,11 @@ function PlayerResume (message: ClientMessage): void {
 
     if (player.state.status === 'paused') {
         player.unpause();
-        return client.Send({text: `▶️ | [${duration.StringTime}] | Resume song | ${title}`, message: message, type: 'css', color});
+        return client.Send({text: `▶️ | [${duration.StringTime}] | Resume song | ${title}`, message, type: 'css', color});
     }
-    return client.Send({text: `${author}, Текущий статус плеера [\`\`${player.state.status}\`\`\`]`, message: message, color: 'RED'});
+    return client.Send({text: `${author}, Текущий статус плеера [\`\`${player.state.status}\`\`\`]`, message, color: 'RED'});
 }
 //====================== ====================== ====================== ======================
-
 /**
  * @description Приостанавливает воспроизведение музыки
  * @param message {ClientMessage} Сообщение с сервера
@@ -35,12 +34,11 @@ function PlayerPause(message: ClientMessage): void {
 
     if (player.state.status === 'playing') {
         player.pause();
-        return client.Send({text: `⏸ | [${duration.StringTime}] | Pause song | ${title}`, message: message, type: 'css', color});
+        return client.Send({text: `⏸ | [${duration.StringTime}] | Pause song | ${title}`, message, type: 'css', color});
     }
-    return client.Send({text: `${author}, Текущий статус плеера [\`\`${player.state.status}\`\`\`]`, message: message, color: 'RED'});
+    return client.Send({text: `${author}, Текущий статус плеера [\`\`${player.state.status}\`\`\`]`, message, color: 'RED'});
 }
 //====================== ====================== ====================== ======================
-
 /**
  * @description Завершает текущую музыку
  * @param message {ClientMessage} Сообщение с сервера
@@ -55,7 +53,6 @@ function PlayerEnd(message: ClientMessage): void {
     return;
 }
 //====================== ====================== ====================== ======================
-
 /**
  * @description Убираем музыку из очереди
  * @param message {ClientMessage} Сообщение с сервера
@@ -80,7 +77,6 @@ function PlayerRemove(message: ClientMessage, args: number): boolean | void {
     return client.Send({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: 'RED'});
 }
 //====================== ====================== ====================== ======================
-
 /**
  * @description Завершает текущую музыку
  * @param message {ClientMessage} Сообщение с сервера
@@ -99,7 +95,6 @@ function PlayerSeek(message: ClientMessage, seek: number): void | Promise<void> 
     }
 }
 //====================== ====================== ====================== ======================
-
 /**
  * @description Пропускает текущую музыку
  * @param message {ClientMessage} Сообщение с сервера
@@ -125,7 +120,6 @@ function PlayerSkip(message: ClientMessage, args: number): void | boolean {
     return client.Send({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: 'RED'});
 }
 //====================== ====================== ====================== ======================
-
 /**
  * @description Пропускает музыку под номером
  * @param message {ClientMessage} Сообщение с сервера
@@ -152,7 +146,6 @@ function PlayerSkipTo(message: ClientMessage, args: number): void | boolean {
     return client.Send({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: 'RED'});
 }
 //====================== ====================== ====================== ======================
-
 /**
  * @description Повтор текущей музыки
  * @param message {ClientMessage} Сообщение с сервера
@@ -170,7 +163,6 @@ function PlayerReplay(message: ClientMessage): void | Promise<void> {
     }
 }
 //====================== ====================== ====================== ======================
-
 /**
  * @description Применяем фильтры для плеера
  * @param message {ClientMessage} Сообщение с сервера

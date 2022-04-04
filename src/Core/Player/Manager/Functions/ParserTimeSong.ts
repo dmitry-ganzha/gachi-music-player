@@ -13,6 +13,8 @@ export function ParserTimeSong (duration: number): string {
 
     return (days > 0 ? `${days}:` : '') +  (hours > 0 || days > 0 ? `${hours}:` : '') + (minutes > 0 ? `${minutes}:` : '00:') + (seconds > 0 ? `${seconds}` : '00');
 }
+//====================== ====================== ====================== ======================
+
 function toStringTime(duration: number): string | number {
     return StringTime(parseInt(String(duration)));
 }

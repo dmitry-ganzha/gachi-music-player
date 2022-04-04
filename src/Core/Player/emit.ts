@@ -7,7 +7,7 @@ import {InputPlaylist, InputTrack} from "../Utils/TypeHelper";
 import {CreateQueue} from "./Queue/Create";
 
 type Events = {
-    play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack) => Promise<boolean | void | ClientMessage> | void;
+    play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack) => boolean | void | Promise<void | ClientMessage | NodeJS.Timeout>;
     pause: (message: ClientMessage) => void;
     resume: (message: ClientMessage) => void;
     skip: (message: ClientMessage, args?: number) => void;
