@@ -3,7 +3,7 @@ import cfg from "../../DataBase/Config.json";
 
 class ShardManager extends ShardingManager {
     public constructor() {
-        super('./Core/Client/Client.js', {token: cfg.Bot.token, mode: "worker", respawn: true, totalShards: "auto"});
+        super('./src/Core/Client.js', {token: cfg.Bot.token, mode: "worker", respawn: true, totalShards: "auto"});
         this.on('shardCreate', (shard: Shard) => {
             console.log(`[ShardManager]: [Create]: [ID: ${shard.id}]`);
         });
