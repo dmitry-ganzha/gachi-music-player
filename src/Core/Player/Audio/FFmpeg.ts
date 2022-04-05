@@ -107,7 +107,7 @@ export class FFmpeg extends Duplex {
         if (error) return console.error(error);
     };
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Запускаем FFmpeg
  * @param Arguments {FFmpegArgs} Указываем аргументы для запуска

@@ -156,7 +156,7 @@ export class FFmpegStream {
         return;
     };
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Создаем аргументы для FFmpeg
  * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
@@ -170,7 +170,7 @@ function CreateArguments (AudioFilters: AudioFilters, url: string): FFmpegArgs {
         ...CreateFilters(AudioFilters), ...FFmpegArguments.OggOpus, ...FFmpegArguments.Compress, ...FFmpegArguments.DecoderPreset
     ];
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Создаем фильтры для FFmpeg
  * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
@@ -202,7 +202,7 @@ function CreateFilters(AudioFilters: AudioFilters): FFmpegArgs  {
 
     return resSt === '' ? [] : ['-af', resp] as any;
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Добавляем плеер в базу
  * @param player {AudioPlayer}
@@ -216,7 +216,7 @@ export function addAudioPlayer(player: AudioPlayer): void {
         setImmediate(audioCycleStep);
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Удаляем плеер из базы
  * @param player {AudioPlayer}
@@ -231,7 +231,7 @@ export function deleteAudioPlayer(player: AudioPlayer) {
         if (typeof AudioCycleTimer !== 'undefined') clearTimeout(AudioCycleTimer);
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Проверяем плееры на возможность включить музыку в голосовые каналы
  */
@@ -243,7 +243,7 @@ function audioCycleStep() {
 
     return prepareNextAudioFrame(available);
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Подготавливаем пакет с музыкой и отправляем в голосовой канал
  * @param players {AudioPlayer}

@@ -56,7 +56,8 @@ class MultiLoader {
 }
 
 export async function FileSystemLoad (client: WatKLOK): Promise<void> {
-    if (!client.shard) console.clear();
+    const ClientShard = !!client.shard;
+    if (!ClientShard) console.clear();
 
     await Promise.all([
         new MultiLoader({
@@ -67,9 +68,9 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
 
                 if (pull.name) {
                     client.commands.set(pull.name, pull);
-                    console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Commands/${dir}/${file}]`);
+                    if (!ClientShard) console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Commands/${dir}/${file}]`);
                 } else {
-                    console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Commands/${dir}/${file}]`);
+                    if (!ClientShard) console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Commands/${dir}/${file}]`);
                 }
                 if (pull.aliases && Array.isArray(pull.aliases)) pull.aliases.forEach((alias: string) => client.aliases.set(alias, pull.name));
             }
@@ -82,9 +83,9 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
 
                 if (pull) {
                     client.on(pull.name as any, async (ev: any, ev2: any) => pull.run(ev, ev2, client));
-                    console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Events/${dir}/${file}]`);
+                    if (!ClientShard) console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Events/${dir}/${file}]`);
                 } else {
-                    console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Events/${dir}/${file}]`);
+                    if (!ClientShard) console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Events/${dir}/${file}]`);
                 }
             }
         }).readdirSync(),
@@ -96,13 +97,15 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
 
                 if (pull) {
                     pull.run(client);
-                    console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Modules/${dir}/${file}]`);
+                    if (!ClientShard) console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Modules/${dir}/${file}]`);
                 } else {
-                    console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Modules/${dir}/${file}]`);
+                    if (!ClientShard) console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Modules/${dir}/${file}]`);
                 }
             }
         }).readdirSync(),
-        (() => setImmediate(() => console.log(`----------------------------> [FileSystem Ending loading] <----------------------------`)))()
+        setImmediate(() => {
+            if (!ClientShard) console.log(`----------------------------> [FileSystem Ending loading] <----------------------------`)
+        })
     ]);
 }
 

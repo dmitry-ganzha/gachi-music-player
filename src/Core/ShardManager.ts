@@ -1,13 +1,5 @@
 import {Shard, ShardingManager} from "discord.js";
 import cfg from "../../DataBase/Config.json";
-console.log(`
-░██╗░░░░░░░██╗░█████╗░████████╗██╗░░██╗██╗░░░░░░█████╗░██╗░░██╗░░░░░░██████╗░░█████╗░████████╗
-░██║░░██╗░░██║██╔══██╗╚══██╔══╝██║░██╔╝██║░░░░░██╔══██╗██║░██╔╝░░░░░░██╔══██╗██╔══██╗╚══██╔══╝
-░╚██╗████╗██╔╝███████║░░░██║░░░█████═╝░██║░░░░░██║░░██║█████═╝░█████╗██████╦╝██║░░██║░░░██║░░░
-░░████╔═████║░██╔══██║░░░██║░░░██╔═██╗░██║░░░░░██║░░██║██╔═██╗░╚════╝██╔══██╗██║░░██║░░░██║░░░
-░░╚██╔╝░╚██╔╝░██║░░██║░░░██║░░░██║░╚██╗███████╗╚█████╔╝██║░╚██╗░░░░░░██████╦╝╚█████╔╝░░░██║░░░
-░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚══════╝░╚════╝░╚═╝░░╚═╝░░░░░░╚═════╝░░╚════╝░░░░╚═╝░░░
-`);
 
 class ShardManager extends ShardingManager {
     public constructor() {
@@ -15,8 +7,8 @@ class ShardManager extends ShardingManager {
         this.on('shardCreate', (shard: Shard) => {
             console.log(`[ShardManager]: [Create]: [ID: ${shard.id}]`);
         });
-        this.AsyncSpawn().catch((err: Error) => console.log(`[ShardManager]: [Error]: ${err}`));
+        this.Spawn().catch((err: Error) => console.log(`[ShardManager]: [Error]: ${err}`));
     };
-    protected AsyncSpawn = () => this.spawn({amount: "auto"});
+    protected Spawn = () => this.spawn({amount: "auto"});
 }
 new ShardManager();

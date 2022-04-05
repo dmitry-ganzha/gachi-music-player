@@ -272,7 +272,7 @@ export class RunPlayer extends AudioPlayer {
 
         if (queue.songs?.length === 0) return void queue.events.queue.emit('DestroyQueue', queue, message);
 
-        CreateResource(queue.songs[0]).then((stream: FFmpegStream) => {
+        CreateResource(queue.songs[0], queue.audioFilters).then((stream: FFmpegStream) => {
             client.console(`[${guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
             queue.events.message.PlaySongMessage(queue.channels.message);
             this.play(stream);

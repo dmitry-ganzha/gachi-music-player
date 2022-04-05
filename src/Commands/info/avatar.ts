@@ -25,12 +25,12 @@ export class CommandAvatar extends Command {
     };
 
     public run = async (message: ClientMessage, args: string[]): Promise<void | NodeJS.Timeout> => {
-        const mentionedUser = await CommandAvatar.getUser(args, message);
-        return CommandAvatar.SendMessage(message, mentionedUser).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
+        const mentionedUser = await this.getUser(args, message);
+        return this.SendMessage(message, mentionedUser).catch((err: Error) => console.log(`[Discord Error]: [Send message]: ${err}`));
     };
-    protected static SendMessage = (message: ClientMessage, mentionedUser: User): Promise<NodeJS.Timeout> => message.channel.send({embeds: [this.CreateEmbedMessage(mentionedUser, message)]}).then((msg: ClientMessage) => Command.DeleteMessage(msg, 2e4));
+    protected SendMessage = (message: ClientMessage, mentionedUser: User): Promise<NodeJS.Timeout> => message.channel.send({embeds: [this.CreateEmbedMessage(mentionedUser, message)]}).then((msg: ClientMessage) => Command.DeleteMessage(msg, 2e4));
 
-    protected static CreateEmbedMessage = (mentionedUser: User, message: ClientMessage): EmbedConstructor => {
+    protected CreateEmbedMessage = (mentionedUser: User, message: ClientMessage): EmbedConstructor => {
         return {
             color: mentionedUser?.accentColor ?? Colors.YELLOW,
             image: {url: mentionedUser.displayAvatarURL({size: 4096})},
@@ -44,7 +44,7 @@ export class CommandAvatar extends Command {
             timestamp: new Date()
         }
     };
-    protected static getUser = async (args: string[], message: ClientMessage): Promise<User> => {
+    protected getUser = async (args: string[], message: ClientMessage): Promise<User> => {
         let User;
         if (args.join(' ').match('!')) User = (args[0] ? await message.client.users.fetch(args.join().split('<@!')[1].split('>')[0]) : await message.client.users.fetch(message.author.id));
         else if (!isNaN(Number(args[0]))) User = await (message.client.users.fetch(args[0]));
