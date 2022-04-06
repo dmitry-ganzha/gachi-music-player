@@ -1,13 +1,10 @@
 import {ConstFormat, Song} from "../Queue/Structures/Song";
-import {Queue} from "../Queue/Structures/Queue";
 import {opus} from "prism-media";
-import {FFmpeg, FFmpegArgs, FFmpegArguments} from "./FFmpeg";
+import {FFmpeg, FFmpegArgs, FFmpegArguments, AudioFilters, CreateFilters} from "./FFmpeg";
 import {AudioPlayer} from "./AudioPlayer";
 import {httpsClient} from "../../httpsClient";
 import {InputFormat} from "../../Utils/TypeHelper";
 import {VK, YouTube} from "../../Platforms";
-
-export type AudioFilters = Queue['audioFilters'] & {seek?: number};
 
 //База с плеерами
 const audioPlayers: AudioPlayer[] = [];
@@ -165,42 +162,10 @@ export class FFmpegStream {
  */
 function CreateArguments (AudioFilters: AudioFilters, url: string): FFmpegArgs {
     return [
-        ...FFmpegArguments.Reconnect, ...FFmpegArguments.Seek, AudioFilters?.seek ?? 0,
-        '-i', url, "-vn", ...FFmpegArguments.Other,
-        ...CreateFilters(AudioFilters), ...FFmpegArguments.OggOpus, ...FFmpegArguments.Compress, ...FFmpegArguments.DecoderPreset
+        ...FFmpegArguments.Reconnect, "-vn", ...FFmpegArguments.Seek, AudioFilters?.seek ?? 0,
+        '-i', url, ...FFmpegArguments.Other,
+        "-af", CreateFilters(AudioFilters), ...FFmpegArguments.OggOpus, ...FFmpegArguments.Compress, ...FFmpegArguments.DecoderPreset
     ];
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Создаем фильтры для FFmpeg
- * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
- * @constructor
- */
-function CreateFilters(AudioFilters: AudioFilters): FFmpegArgs  {
-    if (!AudioFilters) return [];
-
-    let resp: string[] = [], resSt = '', num = 0;
-
-    if (AudioFilters._3D) resp = [...resp, FFmpegArguments.Filters._3D];
-    if (AudioFilters.speed) resp = [...resp, `${FFmpegArguments.Filters.Speed}${AudioFilters.speed}`];
-    if (AudioFilters.karaoke) resp = [...resp, FFmpegArguments.Filters.Karaoke];
-    if (AudioFilters.echo) resp = [...resp, FFmpegArguments.Filters.Echo];
-
-    if (AudioFilters.nightcore) resp = [...resp, FFmpegArguments.Filters.NightCore];
-    if (AudioFilters.Vw) resp = [...resp, FFmpegArguments.Filters.vaporwave];
-
-    if (AudioFilters.bass) resp = [...resp, `${FFmpegArguments.Filters.bassboost}${AudioFilters.bass}`];
-    if (AudioFilters.Sab_bass) resp = [...resp, FFmpegArguments.Filters.Sub_boost];
-
-    resp = [...resp, FFmpegArguments.Filters.AudioFade];
-
-    for (let i in resp) {
-        if (num === resp.length) resSt += `${resp[i]}`;
-        resSt += `${resp[i]},`;
-        num++;
-    }
-
-    return resSt === '' ? [] : ['-af', resp] as any;
 }
 //====================== ====================== ====================== ======================
 /**
@@ -260,3 +225,4 @@ function prepareNextAudioFrame(players: AudioPlayer[]) {
 
     setImmediate(() => prepareNextAudioFrame(players));
 }
+//====================== ====================== ====================== ======================

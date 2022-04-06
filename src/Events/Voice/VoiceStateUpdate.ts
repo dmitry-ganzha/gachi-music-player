@@ -2,8 +2,7 @@ import {getVoiceConnection, VoiceConnection} from "@discordjs/voice";
 import {Guild, VoiceState} from "discord.js";
 import {Queue} from "../../Core/Player/Queue/Structures/Queue";
 import {WatKLOK} from "../../Core/Client";
-
-const IsDestroyStatus: Set<string> = new Set(['playing', 'paused', 'buffering', 'autopaused']);
+import {StatusPlayerHasSkipped} from "../../Core/Player/Audio/AudioPlayer";
 
 export class voiceStateUpdate {
     public readonly name: string = 'voiceStateUpdate';
@@ -27,7 +26,7 @@ export class voiceStateUpdate {
 function CheckToRun(voiceConnection: VoiceState[], client: WatKLOK, guild: Guild, queue: Queue): void | boolean {
     const PlayableVoiceChannel: VoiceConnection = getVoiceConnection(guild.id);
 
-    if (voiceConnection && PlayableVoiceChannel) return voiceConnection.length <= 1 && IsDestroyStatus.has(queue.player.state.status) ?
+    if (voiceConnection && PlayableVoiceChannel) return voiceConnection.length <= 1 && StatusPlayerHasSkipped.has(queue.player.state.status) ?
         void queue.events.helper.emit('StartTimerDestroyer', queue) :
         void queue.events.helper.emit('CancelTimerDestroyer', queue);
 }

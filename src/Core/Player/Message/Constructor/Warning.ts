@@ -18,7 +18,7 @@ import {EmbedConstructor} from "../../../Utils/TypeHelper";
  * @param songs {Queue<songs>} Все треки
  * @param err {Error} Ошибка выданная плеером
  */
-export function Warning(client: WatKLOK, {color, author, image, title, url, duration, requester}: Song, {songs}: Queue, err: Error): EmbedConstructor {
+export function Warning(client: WatKLOK, {color, author, image, title, url, duration, requester}: Song, {songs}: Queue, err: Error | string): EmbedConstructor {
     return {
         color,
         description: `\n[${title}](${url})\n\`\`\`js\n${err}...\`\`\``,

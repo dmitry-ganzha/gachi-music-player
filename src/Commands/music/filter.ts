@@ -1,6 +1,7 @@
 import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Queue/Structures/Queue";
+import {CreateFilters, getNamesFilters} from "../../Core/Player/Audio/FFmpeg";
 
 export class CommandLoop extends Command {
     public constructor() {
@@ -58,11 +59,11 @@ export class CommandLoop extends Command {
                 queue.audioFilters.Vw = false;
                 queue.audioFilters.nightcore = false;
                 queue.audioFilters.echo = false;
-                queue.audioFilters._3D = false;
+                queue.audioFilters._3d = false;
                 queue.audioFilters.karaoke = false;
                 queue.audioFilters.speed = 0;
                 queue.audioFilters.bass = 0;
-                queue.audioFilters.Sab_bass = false;
+                queue.audioFilters.Sub_bass = false;
                 void message.client.player.emit("filter", message);
                 return message.client.Send({text: `Filter | [Off]`, ...SendArg});
             //
@@ -80,9 +81,9 @@ export class CommandLoop extends Command {
            //
            case '3d':
            case '3D':
-               queue.audioFilters._3D = !queue.audioFilters._3D;
+               queue.audioFilters._3d = !queue.audioFilters._3d;
                void message.client.player.emit("filter", message);
-               return message.client.Send({text: `Filter | [3D]: ${queue.audioFilters._3D}`, ...SendArg});
+               return message.client.Send({text: `Filter | [3D]: ${queue.audioFilters._3d}`, ...SendArg});
            //
            case 'karaoke':
                queue.audioFilters.karaoke = !queue.audioFilters.karaoke;
@@ -97,16 +98,16 @@ export class CommandLoop extends Command {
            case 'bb':
            case 'bass':
                queue.audioFilters.bass = argsNum > 10 ? 10 : argsNum < 0 ? 0 : argsNum;
-               queue.audioFilters.Sab_bass = false;
+               queue.audioFilters.Sub_bass = false;
                void message.client.player.emit("filter", message);
                return message.client.Send({text: `Filter | [BassBoost]: ${queue.audioFilters.bass}`, ...SendArg});
            //
            case 'sb':
-           case 'sabboost':
-                queue.audioFilters.Sab_bass = !queue.audioFilters.Sab_bass;
+           case 'subboost':
+                queue.audioFilters.Sub_bass = !queue.audioFilters.Sub_bass;
                 queue.audioFilters.bass = 0;
                 void message.client.player.emit("filter", message);
-                return message.client.Send({text: `Filter | [SabBoost]: ${queue.audioFilters.Sab_bass}`, ...SendArg});
+                return message.client.Send({text: `Filter | [SubBoost]: ${queue.audioFilters.Sub_bass}`, ...SendArg});
            //
            case 'vw':
            case 'vaporwave':
@@ -115,27 +116,7 @@ export class CommandLoop extends Command {
               void message.client.player.emit("filter", message);
               return message.client.Send({text: `Filter | [VaporWave]: ${queue.audioFilters.Vw}`, ...SendArg});
            //
-          default: return message.client.Send({text: `All filter command: [nightcore, 3D, karaoke, speed, bass, vaporwave]\n\nCurrent: [${CommandLoop.CreateFilters(queue.audioFilters)}]\nDisable all - !fl off`, ...SendArg});
+          default: return message.client.Send({text: `All filter command: [nightcore, 3D, karaoke, speed, bass, vaporwave]\n\nCurrent: [${getNamesFilters(queue.audioFilters)}]\nDisable all - !fl off`, ...SendArg});
         }
-    };
-    protected static CreateFilters = (AudioFilters: any) => {
-        let resp: string[] = [], resSt = '', num = 0;
-
-        if (AudioFilters._3D) resp = [...resp, '3D'];
-        if (AudioFilters.speed) resp = [...resp, `Speed=${AudioFilters.speed}`];
-        if (AudioFilters.bass) resp = [...resp, `Bassboost=${AudioFilters.bass}`];
-        if (AudioFilters.Sab_bass) resp = [...resp, `SabBoost=${AudioFilters.bass}`];
-        if (AudioFilters.nightcore) resp = [...resp, 'NightCore'];
-        if (AudioFilters.karaoke) resp = [...resp, 'Karaoke'];
-        if (AudioFilters.echo) resp = [...resp, 'Echo'];
-        if (AudioFilters.Vw) resp = [...resp, 'VaporWave'];
-
-        for (let i in resp) {
-            if (num === resp.length) resSt += `${resp[i]}`;
-            resSt += `${resp[i]}, `;
-            num++;
-        }
-
-        return resSt === '' ? 'null' : resp;
     };
 }

@@ -211,10 +211,14 @@ async function getAuthorTrack(url: string, isUser: boolean = false): Promise<Inp
 }
 
 //Проверяем надо ли обновлять токен
-function login() { return !isLoggedIn() ? getToken() : null}
+function login() {
+    return !isLoggedIn() ? getToken() : null;
+}
 
 //Вышел ли токен из строя (timeout)
-function isLoggedIn() {return Token !== undefined && TokenTime > Date.now() + 2}
+function isLoggedIn() {
+    return Token !== undefined && TokenTime > Date.now() + 2;
+}
 
 //Получаем ID трека, плейлиста, альбома
 function getID(url: string): string {

@@ -26,7 +26,8 @@ async function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
         options: {zLibEncode: true, english: true}
     })]))[0];
 
-    const data = channel[1]?.response || null as any;
+    // @ts-ignore
+    const data = channel[1]?.response ?? channel?.response ?? null as any;
     const info = data?.header?.c4TabbedHeaderRenderer, Channel = data?.metadata?.channelMetadataRenderer, avatar = info?.avatar, badges = info?.badges;
 
     return {

@@ -4,9 +4,9 @@ import {Queue} from "../../Queue/Structures/Queue";
 import {AudioPlayer} from "../../Audio/AudioPlayer";
 import {ParserTimeSong} from "../../Manager/Functions/ParserTimeSong";
 import {NotFound, NotImage, NotVer, Ver} from "./Helper";
-import {AudioFilters} from "../../Audio/Helper";
 import {WatKLOK} from "../../../Client";
 import {EmbedConstructor} from "../../../Utils/TypeHelper";
+import {AudioFilters} from "../../Audio/FFmpeg";
 
 const ProgressBarValue = true;
 

@@ -1,10 +1,11 @@
-import {addAudioPlayer, AudioFilters, deleteAudioPlayer, FFmpegStream, FindResource} from "./Helper";
+import {addAudioPlayer, deleteAudioPlayer, FFmpegStream, FindResource} from "./Helper";
 import {Queue} from "../Queue/Structures/Queue";
 import {Song} from "../Queue/Structures/Song";
 import {WarningMessage} from "../Message/MessageEmitter";
 import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 import {TypedEmitter} from "tiny-typed-emitter";
 import {ClientMessage} from "../../Client";
+import {AudioFilters} from "./FFmpeg";
 
 //Статусы плеера для пропуска музыки
 export const StatusPlayerHasSkipped: Set<string> = new Set(['playing', 'paused', 'buffering', 'autopaused']);
@@ -56,7 +57,13 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     protected _state: PlayerState = { status: "idle" };
     protected subscribers: PlayerSubscription[] = [];
 
-    protected set setCurrentTime(time: number) { this.state.resource.playbackDuration = time; };
+    public get CurrentTime() {
+        if (this.state.resource?.playbackDuration <= 0) return 0;
+        return parseInt((this.state.resource?.playbackDuration / 1000).toFixed(0));
+    };
+    protected set CurrentTime(time: number) {
+        this.state.resource.playbackDuration = time * 1e3;
+    };
     protected get VoiceChannels() { return this.subscribers.filter(({ connection }) => connection.state.status === "ready").map(({ connection }) => connection); };
     /**
      * @description Проверка играет ли сейчас плеер
@@ -257,8 +264,8 @@ export class RunPlayer extends AudioPlayer {
         const queue: Queue = client.queue.get(guild.id);
 
         CreateResource(queue.songs[0], queue.audioFilters, seek).then((stream: FFmpegStream) => {
-            if (seek) this.setCurrentTime = seek * 1000;
             this.play(stream);
+            if (seek) this.CurrentTime = seek;
         });
     };
 
@@ -291,23 +298,23 @@ export class RunPlayer extends AudioPlayer {
 
         setTimeout(() => {
             isRemoveSong(queue);
-            if (queue.options.random) Shuffle(message, queue);
+            if (queue.options.random) client.queue.swap(0, Math.floor(Math.random() * queue.songs.length), "songs", guild.id);
             return this.playStream(message);
-        }, 500);
+        }, 350);
     };
 
     /**
      * @description Когда плеер выдает ошибку, он возвратит эту функцию
-     * @param err {any} Ошибка
+     * @param err {Error | string} Ошибка
      * @param message {ClientMessage} Сообщение с сервера
      */
-    protected onErrorPlayer = (err: any, message: ClientMessage): void => {
+    protected onErrorPlayer = (err: Error | string, message: ClientMessage): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         WarningMessage(message, queue.songs[0], err);
 
         if (queue.songs.length === 1) void queue.events.queue.emit("DestroyQueue", queue, message);
-        if (queue.songs) queue.player.stop();
+        if (queue.songs) this.stop();
 
         return;
     };
@@ -338,18 +345,5 @@ function isRemoveSong({options, songs}: Queue): null {
     } else songs.shift();
 
     return null;
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Перетасовка музыки в очереди
- * @param message {ClientMessage} Сообщение с сервера
- * @param queue {Queue} Очередь сервера
- */
-function Shuffle(message: ClientMessage, {songs}: Queue): void {
-    const set: number = Math.floor(Math.random() * songs.length);
-    const LocalQueue2: Song = songs[set];
-
-    songs[set] = songs[0];
-    songs[0] = LocalQueue2;
 }
 //====================== ====================== ====================== ======================

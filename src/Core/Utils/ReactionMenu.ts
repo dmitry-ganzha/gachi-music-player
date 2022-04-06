@@ -13,7 +13,7 @@ export class CollectorSortReaction {
      * @param message {ClientMessage} Сообщение с сервера
      * @param EnableQueue {boolean} Добавляем сколько музыки есть в очереди
      */
-    public _run = (embed: EmbedConstructor | string, pages: any[], page: number, message: ClientMessage, EnableQueue: boolean): Promise<ReactionCollector> => message.channel.send(typeof embed === "string" ? embed : {embeds: [embed]}).then(async (msg: ClientMessage) => {
+    public _run = (embed: EmbedConstructor | string, pages: string[], page: number, message: ClientMessage, EnableQueue: boolean): Promise<ReactionCollector> => message.channel.send(typeof embed === "string" ? embed : {embeds: [embed]}).then(async (msg: ClientMessage) => {
         if (!msg.deletable) return null;
         let user: User = message.author, queue: Queue = message.client.queue.get(message.guild.id);
 

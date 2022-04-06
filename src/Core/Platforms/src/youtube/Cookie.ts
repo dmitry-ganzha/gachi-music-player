@@ -55,13 +55,8 @@ function ParsingCookieToJson(headCookie: string[] | string) {
     return Json;
 }
 function ParsingCookieToString(JsonCookie: object) {
-    let result = '', num = 1;
+    let result = [];
 
-    for (const [key, value] of Object.entries(JsonCookie)) {
-        if (num === Object.keys(JsonCookie).length) result += `${key}=${value}`;
-        else result += `${key}=${value}; `;
-
-        num++;
-    }
-    return result;
+    for (const [key, value] of Object.entries(JsonCookie)) result.push(`${key}=${value}`);
+    return result.join("; ");
 }

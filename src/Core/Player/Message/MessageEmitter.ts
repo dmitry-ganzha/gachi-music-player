@@ -68,9 +68,9 @@ function UpdateMessage(message: ClientMessage, need: boolean = false): Promise<v
  * @description Показываем ошибку
  * @param message {object} Сообщение с сервера
  * @param song {Song} Сама музыка
- * @param err {Error} Ошибка
+ * @param err {Error, string} Ошибка
  */
-export function WarningMessage({channel, client, guild}: ClientMessage, song: Song, err: Error = null): Promise<void | ClientMessage | NodeJS.Timeout> | void {
+export function WarningMessage({channel, client, guild}: ClientMessage, song: Song, err: Error | string = null): Promise<void | ClientMessage | NodeJS.Timeout> | void {
     try {
         const queue: Queue = client.queue.get(guild.id);
         const Embed = Warning(client, song, queue, err);

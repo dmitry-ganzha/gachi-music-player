@@ -1,7 +1,9 @@
 import {spawn, ChildProcessWithoutNullStreams, spawnSync} from "child_process";
 import { Duplex, Readable, Writable } from 'stream';
+import {Queue} from "../Queue/Structures/Queue";
 
 export type FFmpegArgs = (string | number)[] | string[];
+export type AudioFilters = Queue['audioFilters'] & {seek?: number};
 
 let FFmpegName: string;
 let sources = ['ffmpeg', 'avconv', './FFmpeg/ffmpeg', './FFmpeg/avconv', './node_modules/ffmpeg-static/ffmpeg'];
@@ -15,19 +17,33 @@ export const FFmpegArguments = {
     DecoderPreset: ["-preset", "ultrafast", "-tune", "fastdecode", "-ar", 48e3, "-ac", 2],
     Other: ["-analyzeduration", 0, "-loglevel", 1],
     Filters: {
-        NightCore: "asetrate=48000*1.25,aresample=48000,bass=g=5",
-        Karaoke: "stereotools=mlev=0.1",
-        Echo: "aecho=0.8:0.9:1000:0.3",
-        _3D: "apulsator=hz=0.125",
-        Speed: "atempo=", // + number
-        bassboost: "bass=g=", // + number
-        Sub_boost: "asubboost",
+        nightcore: "asetrate=48000*1.25,aresample=48000,bass=g=5",
+        karaoke: "stereotools=mlev=0.1",
+        echo: "aecho=0.8:0.9:1000:0.3",
+        _3d: "apulsator=hz=0.125",
+        speed: "atempo=", // + number
+        bass: "bass=g=", // + number
+        Sub_bass: "asubboost",
         vibro: "vibrato=f=6.5",
         phaser: "aphaser=in_gain=0.4",
-        vaporwave : "asetrate=48000*0.8,aresample=48000,atempo=1.1",
+        Vw : "asetrate=48000*0.8,aresample=48000,atempo=1.1", //vaporwave
         AudioFade: "afade=t=in:st=0:d=1.5" //End plying afade=t=out:st=5:d=5
     }
 };
+
+export interface FFmpegFilters {
+    nightcore?: boolean;
+    karaoke?: boolean;
+    echo?: boolean;
+    _3d?: boolean;
+    speed?: number;
+    bass?: number;
+    Sub_bass?: boolean;
+    vibro?: boolean;
+    phaser?: boolean;
+    Vw?: boolean;
+    AudioFade?: boolean
+}
 
 /**
  * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a если он будет найден
@@ -73,10 +89,8 @@ export class FFmpeg extends Duplex {
      * @constructor
      */
     protected Binding = (methods: string[], target: Readable | Writable) => {
-        for (const method of methods) {
-            // @ts-ignore
-            this[method] = target[method].bind(target);
-        }
+        // @ts-ignore
+        for (const method of methods) this[method] = target[method].bind(target);
     };
 
     /**
@@ -117,3 +131,46 @@ function SpawnFFmpeg(Arguments: FFmpegArgs): any {
     const Args = [...Arguments, 'pipe:1'];
     return spawn(FFmpegName, Args as any, { shell: false, windowsHide: true });
 }
+//====================== ====================== ====================== ======================
+/**
+ * @description Создаем фильтры для FFmpeg
+ * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
+ * @constructor
+ */
+export function CreateFilters(AudioFilters: AudioFilters): string {
+    if (!AudioFilters) return null;
+    let response: string[] = [];
+
+    Object.entries(AudioFilters).forEach(([key, value]) => {
+        if (!value || value <= 0) return;
+
+        // @ts-ignore
+        let FilterKey = FFmpegArguments.Filters[key];
+        if (!FilterKey) return;
+
+        // @ts-ignore
+        if (typeof value === 'number') response.push(`${FilterKey}${AudioFilters[key]}`);
+        else response.push(FilterKey);
+    });
+    response.push(FFmpegArguments.Filters.AudioFade);
+
+    return response.join(',');
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Получение всех включенных фильтров
+ * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
+ */
+export function getNamesFilters(AudioFilters: AudioFilters): string {
+    if (!AudioFilters) return null;
+    let response: string[] = [];
+
+    Object.entries(AudioFilters).forEach(([key, value]) => {
+        if (!value || value <= 0) return;
+
+        response.push(key);
+    });
+
+    return response.join(', ');
+}
+//====================== ====================== ====================== ======================

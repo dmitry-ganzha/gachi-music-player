@@ -170,7 +170,7 @@ function PlayerReplay(message: ClientMessage): void | Promise<void> {
 function PlayerFilter(message: ClientMessage): void | Promise<void> {
     const {client, guild, author} = message;
     const {player}: Queue = client.queue.get(guild.id);
-    const seek: number = player.state.resource?.playbackDuration ? parseInt((player.state.resource?.playbackDuration / 1000).toFixed(0)) : 0;
+    const seek: number = player.CurrentTime;
 
     try {
         return player.seek(message, seek);

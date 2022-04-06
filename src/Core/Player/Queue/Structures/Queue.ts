@@ -6,6 +6,7 @@ import {Song} from "./Song";
 import {QueueEvents} from "../QueueEvent";
 import {JoinVoiceChannel} from "../../Voice/VoiceManager";
 import {ClientMessage} from "../../../Client";
+import {FFmpegFilters} from "../../Audio/FFmpeg";
 
 export type LoopType = "song" | "songs" | "off";
 
@@ -22,15 +23,15 @@ export class Queue {
         loop: "off",
         stop: false,
     };
-    public audioFilters: {bass: number, speed: number, nightcore: boolean, karaoke: boolean, echo: boolean, _3D: boolean, Vw: boolean, Sab_bass: boolean} = {
+    public audioFilters: FFmpegFilters = {
         bass: 0,
         speed: 0,
         nightcore: false,
         karaoke: false,
         echo: false,
-        _3D: false,
+        _3d: false,
         Vw: false,
-        Sab_bass: false,
+        Sub_bass: false,
     }
     public songs: Song[] = [];
 
