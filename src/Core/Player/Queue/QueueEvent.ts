@@ -5,7 +5,7 @@ import {Disconnect} from "../Voice/VoiceManager";
 import {ClientMessage} from "../../Client";
 
 type EventsQueue = {
-    DestroyQueue: (queue: Queue, message: ClientMessage, sendDelQueue?: boolean) => NodeJS.Timeout,
+    DestroyQueue: (queue: Queue, message: ClientMessage, sendDelQueue?: boolean) => NodeJS.Immediate,
     pushSong: (song: Song, message: ClientMessage) => number | null
 };
 export type Queue_Channels = Queue["channels"];
@@ -43,7 +43,7 @@ function onPushSong(song: Song, {client, guild}: ClientMessage): number | null {
  * @param message {object} Сообщение с сервера
  * @param sendDelQueue {boolean} Отправить сообщение об удалении очереди
  */
-function onDestroyQueue(queue: Queue, message: ClientMessage, sendDelQueue: boolean = true): NodeJS.Timeout {
+function onDestroyQueue(queue: Queue, message: ClientMessage, sendDelQueue: boolean = true): NodeJS.Immediate {
     if (!queue) return null;
 
     DeleteMessage(queue.channels);
@@ -113,9 +113,9 @@ function SendChannelToEnd({stop}: Queue_Options, message: ClientMessage): void {
  * @description Удаляем очередь
  * @param message {ClientMessage} Сообщение с сервера
  */
-function DeleteQueue(message: ClientMessage): NodeJS.Timeout {
-    return setTimeout(() => {
+function DeleteQueue(message: ClientMessage): NodeJS.Immediate {
+    return setImmediate(() => {
         message.client.console(`[${message.guild.id}]: [Queue]: [Method: Delete]`);
         return message.client.queue.delete(message.guild.id);
-    }, 1);
+    });
 }

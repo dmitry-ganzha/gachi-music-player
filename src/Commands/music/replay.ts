@@ -13,7 +13,7 @@ export class CommandReplay extends Command {
         })
     };
 
-    public run = (message: ClientMessage): void | boolean => {
+    public run = (message: ClientMessage): void => {
         const queue = message.client.queue.get(message.guild.id);
 
         if (!message.member.voice.channel || !message.member.voice) return message.client.Send({

@@ -57,6 +57,9 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     protected _state: PlayerState = { status: "idle" };
     protected subscribers: PlayerSubscription[] = [];
 
+    /**
+     * @description Текущее время плеера в мс
+     */
     public get CurrentTime() {
         if (this.state.resource?.playbackDuration <= 0) return 0;
         return parseInt((this.state.resource?.playbackDuration / 1000).toFixed(0));
@@ -64,7 +67,12 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     protected set CurrentTime(time: number) {
         this.state.resource.playbackDuration = time * 1e3;
     };
+
+    /**
+     * @description Голосовые каналы в которых можно включить музыку
+     */
     protected get VoiceChannels() { return this.subscribers.filter(({ connection }) => connection.state.status === "ready").map(({ connection }) => connection); };
+
     /**
      * @description Проверка играет ли сейчас плеер
      */
@@ -102,8 +110,8 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (OldState.status !== newState.status || isNewResources) {
             //Перед сменой статуса плеера отправляем пустой пакет. Необходим для исправления кривизны потока!
             this._playPacket(SILENCE_FRAME, this.VoiceChannels);
-            if (isNewResources) void this.emit(newState.status, OldState, this._state);
-            else void this.emit(newState.status, OldState, this._state);
+            if (isNewResources) this.emit(newState.status, OldState, this._state);
+            else this.emit(newState.status, OldState, this._state);
         }
     };
 
@@ -115,12 +123,12 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (!resource) return void this.emit('error', 'Error: AudioResource has not found');
         if (resource?.ended) return void this.emit('error', `[AudioPlayer]: [Message: Fail to load a ended stream]`);
         if (!resource?.readable) {
-            setTimeout(() => this.play, 25);
+            setTimeout(this.play, 25);
             return;
         }
 
         const onStreamError = (error: Error) => {
-            if (this.state.status !== "idle") void this.emit('error', error);
+            if (this.state.status !== "idle") this.emit('error', error);
             if (this.state.status !== "idle" && this.state.resource === resource) this.state = { status: "idle" };
         };
 
@@ -151,7 +159,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     /**
      * @description Продолжаем отправлять пакеты в голосовой канал
      */
-    public unpause = (): boolean => {
+    public resume = (): boolean => {
         if (this.state.status !== "paused") return false;
         this.state = { ...this.state, status: "playing" };
         return true;
@@ -202,7 +210,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      */
     protected _sendPacket = (): void => {
         //Если статус (idle или buffering) прекратить выполнение функции
-        if (this.state.status === "idle" || this.state.status === "buffering") return;
+        if (this.state.status === "idle" || this.state.status === "buffering" || this.state.status === "paused") return;
 
         //Голосовые каналы к которым подключен плеер
         const Receivers = this.VoiceChannels;
@@ -211,7 +219,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (this.state.status === "autoPaused" && Receivers.length > 0) this.state = { ...this.state, status: "playing" };
 
         //Не читать пакеты при статусе плеера (paused | autoPaused)
-        if (this.state.status === "paused" || this.state.status === "autoPaused") return;
+        if (this.state.status === "autoPaused") return;
 
         //Если некуда проигрывать музыку ставить плеер на паузу
         if (Receivers.length === 0) {
@@ -313,7 +321,7 @@ export class RunPlayer extends AudioPlayer {
 
         WarningMessage(message, queue.songs[0], err);
 
-        if (queue.songs.length === 1) void queue.events.queue.emit("DestroyQueue", queue, message);
+        if (queue.songs.length === 1) queue.events.queue.emit("DestroyQueue", queue, message);
         if (queue.songs) this.stop();
 
         return;

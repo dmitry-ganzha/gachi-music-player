@@ -26,7 +26,7 @@ export class CommandDeploy extends Command {
             const channel: TextChannel = message.client.channels.cache.get(GuildChannel.id) as any;
 
             // @ts-ignore
-            return message.client.channels.cache.get(channel.id).createInvite().then(invite =>  message.client.Send({text: `${message.author}, ${invite.url}`, message}));
+            return message.client.channels.cache.get(channel.id).createInvite().then(invite => message.client.Send({text: `${message.author}, ${invite.url}`, message}));
         }
         return message.client.Send({text: `${message.author}, Я не нашел сервер!`, message});
     };

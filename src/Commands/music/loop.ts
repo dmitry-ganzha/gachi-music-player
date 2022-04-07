@@ -57,12 +57,7 @@ export class CommandLoop extends Command {
             case '1':
             case 'song':
                 queue.options.loop = "song";
-                return message.client.Send({
-                    text: `🔂 | Повтор  | ${queue.songs[0].title}`,
-                    message,
-                    type: 'css',
-                    color: queue.songs[0].color
-                });
+                return message.client.Send({ text: `🔂 | Повтор  | ${queue.songs[0].title}`, message, type: 'css', color: queue.songs[0].color });
             default:
                 queue.options.loop = queue.options.loop !== "songs" ? "songs" : "off";
 

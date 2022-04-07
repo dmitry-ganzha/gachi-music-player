@@ -69,7 +69,7 @@ export class httpsClient {
      * @param options {httpsClientOptions} Настройки запроса
      */
     public parseJson = async (url: string, options?: httpsClientOptions) => {
-        const body = (await Promise.all([this.parseBody(url, options)]))[0]; //await this.parseBody(url, options);
+        const body = (await Promise.all([this.parseBody(url, options)]))[0];
         if (!body) return null;
 
         try {

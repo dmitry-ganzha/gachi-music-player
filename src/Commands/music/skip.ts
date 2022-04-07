@@ -19,7 +19,7 @@ export class CommandSkip extends Command {
         })
     };
 
-    public run = (message: ClientMessage, args: string[]): void | boolean => {
+    public run = (message: ClientMessage, args: string[]): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
         const argsNum = parseInt(args[0]);
 
@@ -44,11 +44,7 @@ export class CommandSkip extends Command {
         try {
             return void message.client.player.emit('skip', message, args && args[0] && !isNaN(argsNum) ? argsNum : null);
         } catch {
-            return message.client.Send({
-                text: `${message.author}, Ошибка... попробуй еще раз!!!`,
-                message,
-                color: 'RED'
-            });
+            return message.client.Send({ text: `${message.author}, Ошибка... попробуй еще раз!!!`, message, color: 'RED' });
         }
     };
 }

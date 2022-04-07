@@ -17,7 +17,7 @@ function PlayerResume (message: ClientMessage): void {
     const {duration, title, color}: Song = songs[0];
 
     if (player.state.status === 'paused') {
-        player.unpause();
+        player.resume();
         return client.Send({text: `▶️ | [${duration.StringTime}] | Resume song | ${title}`, message, type: 'css', color});
     }
     return client.Send({text: `${author}, Текущий статус плеера [\`\`${player.state.status}\`\`\`]`, message, color: 'RED'});

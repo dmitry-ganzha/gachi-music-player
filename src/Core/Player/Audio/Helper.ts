@@ -82,7 +82,7 @@ export class FFmpegStream {
     public silenceRemaining = -1;
     public playStream: opus.OggDemuxer;
     protected FFmpeg: FFmpeg;
-    protected opusEncoder: opus.OggDemuxer = new opus.OggDemuxer({ destroy: () => this.destroy().catch(() => undefined) });
+    protected opusEncoder = new opus.OggDemuxer({ destroy: () => this.destroy().catch(() => undefined) });
 
     //Для проверки, читабельный ли стрим
     public get readable() {
@@ -109,7 +109,7 @@ export class FFmpegStream {
     };
 
     /**
-     * @description Использует Discord.js player
+     * @description Получаем пакет и проверяем не пустой ли он если не нустой к таймеру добовляем 20 мс
      */
     public read = (): Buffer | null => {
         const packet = this.playStream?.read();

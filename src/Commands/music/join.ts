@@ -38,10 +38,7 @@ export class CommandJoin extends Command {
 
         if (queue) {
             const connection = new JoinVoiceChannel(voiceChannel);
-
-            queue.channels.voice = voiceChannel;
-            queue.channels.connection = connection;
-            queue.channels.message = message;
+            queue.channels = {message, voice: voiceChannel, connection};
         }
         return;
     };

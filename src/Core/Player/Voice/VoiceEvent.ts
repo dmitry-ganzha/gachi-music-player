@@ -30,7 +30,7 @@ export class VoiceEvent extends TypedEmitter<Events> {
         if (!this.Timer) this.Timer = setTimeout(() => {
             queue.songs = [];
             options.stop = true;
-            return void events.queue.emit('DestroyQueue', queue, channels.message, false);
+            events.queue.emit('DestroyQueue', queue, channels.message, false);
         }, 2e4);
     };
     /**
@@ -42,7 +42,7 @@ export class VoiceEvent extends TypedEmitter<Events> {
             this.state = false;
             clearTimeout(this.Timer);
             this.Timer = null;
-            return player.unpause();
+            return player.resume();
         }
     };
 

@@ -21,7 +21,7 @@ export class CommandSeek extends Command {
         });
     };
 
-    public run = (message: ClientMessage, args: string[]): void | boolean => {
+    public run = (message: ClientMessage, args: string[]): void => {
         const queue: Queue = message.client.queue.get(message.guild.id), choiceDur: any[] = args.join(" ").split(":");
         let optDur: number;
 
