@@ -114,7 +114,7 @@ function SendChannelToEnd({stop}: Queue_Options, message: ClientMessage): void {
  * @param message {ClientMessage} Сообщение с сервера
  */
 function DeleteQueue(message: ClientMessage): NodeJS.Timeout {
-    return setTimeout(async () => {
+    return setTimeout(() => {
         message.client.console(`[${message.guild.id}]: [Queue]: [Method: Delete]`);
         return message.client.queue.delete(message.guild.id);
     }, 1);

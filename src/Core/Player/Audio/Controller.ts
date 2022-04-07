@@ -82,7 +82,7 @@ function PlayerRemove(message: ClientMessage, args: number): boolean | void {
  * @param message {ClientMessage} Сообщение с сервера
  * @param seek {number} музыка будет играть с нужной секунды (не работает без ffmpeg)
  */
-function PlayerSeek(message: ClientMessage, seek: number): void | Promise<void> {
+function PlayerSeek(message: ClientMessage, seek: number): void {
     const {client, guild, author} = message;
     const {player, songs}: Queue = client.queue.get(guild.id);
     const {title, color}: Song = songs[0];
@@ -150,7 +150,7 @@ function PlayerSkipTo(message: ClientMessage, args: number): void | boolean {
  * @description Повтор текущей музыки
  * @param message {ClientMessage} Сообщение с сервера
  */
-function PlayerReplay(message: ClientMessage): void | Promise<void> {
+function PlayerReplay(message: ClientMessage): void {
     const {client, guild, author} = message;
     const {player, songs}: Queue = client.queue.get(guild.id);
     const {title, color, duration}: Song = songs[0];
@@ -167,7 +167,7 @@ function PlayerReplay(message: ClientMessage): void | Promise<void> {
  * @description Применяем фильтры для плеера
  * @param message {ClientMessage} Сообщение с сервера
  */
-function PlayerFilter(message: ClientMessage): void | Promise<void> {
+function PlayerFilter(message: ClientMessage): void {
     const {client, guild, author} = message;
     const {player}: Queue = client.queue.get(guild.id);
     const seek: number = player.CurrentTime;

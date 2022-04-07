@@ -30,6 +30,7 @@ export class JoinVoiceChannel {
         ["destroyed", "disconnected"].map(event => this.VoiceConnection.once(event, this.destroy));
     };
 
+    /*
     //Включен микрофон бота?
     public get isMute() {
         return this.meVoice.mute;
@@ -39,6 +40,8 @@ export class JoinVoiceChannel {
         if (this.meVoice.mute === state) return;
         Promise.all([this.meVoice.setMute(state)]).catch(() => new Error('[JoinVoiceChannel]: [setMute]: Fail disable mute a bot'));
     };
+
+     */
 
     public set subscribe(player: AudioPlayer) {
         if (!this.VoiceConnection) return;

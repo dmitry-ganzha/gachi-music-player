@@ -43,7 +43,7 @@ export class MessageSystem {
     public destroy = () => {
         clearInterval(this._int);
         delete this._int;
-    }
+    };
 }
 //====================== ====================== ====================== ======================
 /**

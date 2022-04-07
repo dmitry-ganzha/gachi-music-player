@@ -1,7 +1,7 @@
 import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Queue/Structures/Queue";
-import {CreateFilters, getNamesFilters} from "../../Core/Player/Audio/FFmpeg";
+import {getNamesFilters} from "../../Core/Player/Audio/FFmpeg";
 
 export class CommandLoop extends Command {
     public constructor() {
@@ -13,7 +13,7 @@ export class CommandLoop extends Command {
             options: [
                 {
                     name: "name",
-                    description: "Filters - 3D, karaoke, nightcore, speed, bassboost",
+                    description: "Filters - 3D, karaoke, nightcore, speed, bassboost, sub-boost, vaporwave",
                     type: "STRING"
                 }
             ],
@@ -59,7 +59,7 @@ export class CommandLoop extends Command {
                 queue.audioFilters.Vw = false;
                 queue.audioFilters.nightcore = false;
                 queue.audioFilters.echo = false;
-                queue.audioFilters._3d = false;
+                queue.audioFilters["3d"] = false;
                 queue.audioFilters.karaoke = false;
                 queue.audioFilters.speed = 0;
                 queue.audioFilters.bass = 0;
@@ -81,9 +81,9 @@ export class CommandLoop extends Command {
            //
            case '3d':
            case '3D':
-               queue.audioFilters._3d = !queue.audioFilters._3d;
+               queue.audioFilters["3d"] = !queue.audioFilters["3d"];
                void message.client.player.emit("filter", message);
-               return message.client.Send({text: `Filter | [3D]: ${queue.audioFilters._3d}`, ...SendArg});
+               return message.client.Send({text: `Filter | [3D]: ${queue.audioFilters["3d"]}`, ...SendArg});
            //
            case 'karaoke':
                queue.audioFilters.karaoke = !queue.audioFilters.karaoke;
@@ -116,7 +116,7 @@ export class CommandLoop extends Command {
               void message.client.player.emit("filter", message);
               return message.client.Send({text: `Filter | [VaporWave]: ${queue.audioFilters.Vw}`, ...SendArg});
            //
-          default: return message.client.Send({text: `All filter command: [nightcore, 3D, karaoke, speed, bass, vaporwave]\n\nCurrent: [${getNamesFilters(queue.audioFilters)}]\nDisable all - !fl off`, ...SendArg});
+          default: return message.client.Send({text: `All filter command: [nightcore, 3D, karaoke, speed, bass, vaporwave, sub-boost]\n\nCurrent: [${getNamesFilters(queue.audioFilters)}]\nDisable all - !fl off`, ...SendArg});
         }
     };
 }

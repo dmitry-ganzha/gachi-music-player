@@ -29,7 +29,7 @@ export class Queue {
         nightcore: false,
         karaoke: false,
         echo: false,
-        _3d: false,
+        "3d": false,
         Vw: false,
         Sub_bass: false,
     }

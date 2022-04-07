@@ -115,7 +115,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (!resource) return void this.emit('error', 'Error: AudioResource has not found');
         if (resource?.ended) return void this.emit('error', `[AudioPlayer]: [Message: Fail to load a ended stream]`);
         if (!resource?.readable) {
-            setTimeout(() => this.play, 50);
+            setTimeout(() => this.play, 25);
             return;
         }
 
@@ -177,7 +177,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (!existingSubscription) {
             const subscription = new PlayerSubscription(connection, this as any);
             this.subscribers.push(subscription);
-            setImmediate(() => void this.emit('subscribe', subscription));
+            setImmediate(() => this.emit('subscribe', subscription));
             return subscription;
         }
         return existingSubscription;
@@ -192,7 +192,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (exists) {
             this.subscribers.splice(index, 1);
             subscription.connection.setSpeaking(false);
-            void this.emit('unsubscribe', subscription);
+            this.emit('unsubscribe', subscription);
         }
         return exists;
     };
@@ -273,7 +273,7 @@ export class RunPlayer extends AudioPlayer {
      * @description Включаем музыку
      * @param message {ClientMessage} Сообщение с сервера
      */
-    public playStream = (message: ClientMessage): boolean | void => {
+    public playStream = (message: ClientMessage): void => {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 

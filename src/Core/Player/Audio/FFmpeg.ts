@@ -20,7 +20,7 @@ export const FFmpegArguments = {
         nightcore: "asetrate=48000*1.25,aresample=48000,bass=g=5",
         karaoke: "stereotools=mlev=0.1",
         echo: "aecho=0.8:0.9:1000:0.3",
-        _3d: "apulsator=hz=0.125",
+        "3d": "apulsator=hz=0.125",
         speed: "atempo=", // + number
         bass: "bass=g=", // + number
         Sub_bass: "asubboost",
@@ -35,7 +35,7 @@ export interface FFmpegFilters {
     nightcore?: boolean;
     karaoke?: boolean;
     echo?: boolean;
-    _3d?: boolean;
+    "3d"?: boolean;
     speed?: number;
     bass?: number;
     Sub_bass?: boolean;
