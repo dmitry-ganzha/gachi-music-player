@@ -27,7 +27,7 @@ export function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel, 
  * @param VoiceChannel {VoiceChannel} Подключение к голосовому каналу
  * @param song {Song} Сам трек
  */
-function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChannel, song: Song): boolean | void {
+function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChannel, song: Song): void {
     const {client, guild} = message;
 
     client.console(`[${guild.id}]: [Queue]: [Method: Set]`);
@@ -50,8 +50,7 @@ function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChannel, so
  * @param song {Song} Сам трек
  * @param sendMessage {boolean} Отправить сообщение?
  */
-export function PushSong(queue: Queue, song: Song, sendMessage: boolean = true): Promise<void | ClientMessage | NodeJS.Timeout> | void {
+export function PushSong(queue: Queue, song: Song, sendMessage: boolean = true): void {
     queue.songs.push(song);
-    if (sendMessage) return PushSongMessage(queue.channels.message, song);
-    return;
+    if (sendMessage) PushSongMessage(queue.channels.message, song);
 }

@@ -14,7 +14,11 @@ import {PushSong} from "../Queue/Create";
  * @param VoiceChannel {VoiceChannel} Подключение к голосовому каналу
  */
 export function PlayList(message: ClientMessage, playlist: InputPlaylist, VoiceChannel: VoiceChannel): void {
-    if (!playlist.items) return message.client.Send({text: `${message.author}, Я не смог загрузить этот плейлист, Ошибка: Здесь больше 100 треков, youtube не позволит сделать мне столько запросов!`, message, color: "RED"});
+    if (!playlist.items) return message.client.Send({
+        text: `${message.author}, Я не смог загрузить этот плейлист, Ошибка: Здесь больше 100 треков, youtube не позволит сделать мне столько запросов!`,
+        message,
+        color: "RED"
+    });
 
     SendMessage(message, playlist).catch((err: DiscordAPIError) => console.log(`[Discord Error]: [Send message]: ${err}`));
     return addSongsQueue(playlist.items, message, VoiceChannel);
@@ -26,7 +30,7 @@ export function PlayList(message: ClientMessage, playlist: InputPlaylist, VoiceC
  * @param playlist {object} Сам плейлист
  */
 async function SendMessage(message: ClientMessage, playlist: InputPlaylist): Promise<NodeJS.Timeout> {
-   return message.channel.send({embeds: [PlaylistEmbed(message, playlist, Colors.BLUE)]}).then((msg: ClientMessage) => setTimeout(() => msg.delete().catch(() => null), 15e3));
+    return message.channel.send({embeds: [PlaylistEmbed(message, playlist, Colors.BLUE)]}).then((msg: ClientMessage) => setTimeout(() => msg.delete().catch(() => null), 15e3));
 }
 //====================== ====================== ====================== ======================
 /**

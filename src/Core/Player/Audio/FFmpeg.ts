@@ -3,7 +3,7 @@ import { Duplex, Readable, Writable } from 'stream';
 import {Queue} from "../Queue/Structures/Queue";
 
 export type FFmpegArgs = (string | number)[] | string[];
-export type AudioFilters = Queue['audioFilters'] & {seek?: number};
+export type AudioFilters = Queue['audioFilters'];
 
 let FFmpegName: string;
 let sources = ['ffmpeg', 'avconv', './FFmpeg/ffmpeg', './FFmpeg/avconv', './node_modules/ffmpeg-static/ffmpeg'];
@@ -14,7 +14,7 @@ export const FFmpegArguments = {
     Seek: ["-ss"], // + number
     Reconnect: ["-reconnect", 1, "-reconnect_delay_max", 125, "-reconnect_streamed", 1],
     Compress: ["-compression_level", 10],
-    DecoderPreset: ["-preset", "ultrafast", "-tune", "fastdecode", "-ar", 48e3, "-ac", 2],
+    DecoderPreset: ["-preset", "medium", "-tune", "fastdecode", "-ar", 48e3, "-ac", 2],
     Other: ["-analyzeduration", 0, "-loglevel", 1],
     Filters: {
         nightcore: "asetrate=48000*1.25,aresample=48000,bass=g=5",
@@ -72,7 +72,7 @@ export class FFmpeg extends Duplex {
 
     public constructor(args: FFmpegArgs) {
         super({highWaterMark: 12, autoDestroy: true});
-        this.process = SpawnFFmpeg(args);
+        this.process = this.SpawnFFmpeg(args);
         this.Binding(['write', 'end'], this.Output);
         this.Binding(['read', 'setEncoding', 'pipe', 'unpipe'], this.Input);
 
@@ -88,11 +88,8 @@ export class FFmpeg extends Duplex {
      * @param target {Readable | Writable}
      * @constructor
      */
-    protected Binding = (methods: string[], target: Readable | Writable) => {
-        // @ts-ignore
-        for (const method of methods) this[method] = target[method].bind(target);
-    };
-
+    // @ts-ignore
+    protected Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
     /**
      * @description Удаляем все что не нужно
      * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
@@ -120,16 +117,15 @@ export class FFmpeg extends Duplex {
 
         if (error) return console.error(error);
     };
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Запускаем FFmpeg
- * @param Arguments {FFmpegArgs} Указываем аргументы для запуска
- * @constructor
- */
-function SpawnFFmpeg(Arguments: FFmpegArgs): any {
-    const Args = [...Arguments, 'pipe:1'];
-    return spawn(FFmpegName, Args as any, { shell: false, windowsHide: true });
+
+    /**
+     * @description Запускаем FFmpeg
+     * @param Arguments {FFmpegArgs} Указываем аргументы для запуска
+     */
+    protected SpawnFFmpeg = (Arguments: FFmpegArgs): any => {
+        const Args = [...Arguments, 'pipe:1'];
+        return spawn(FFmpegName, Args as any, { shell: false, windowsHide: true });
+    };
 }
 //====================== ====================== ====================== ======================
 /**

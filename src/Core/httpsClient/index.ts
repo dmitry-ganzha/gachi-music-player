@@ -36,7 +36,7 @@ export class httpsClient {
      * @param url {string} Ссылка
      * @param options {httpsClientOptions} Настройки запроса
      */
-    public parseBody = (url: string, options?: httpsClientOptions): Promise<string> => new Promise(async (resolve) => {
+    public parseBody = (url: string, options?: httpsClientOptions): Promise<string> => new Promise<string>(async (resolve) => {
         const req = (await Promise.all([this.Request(url, options)]))[0];
 
         if (!req.body) return resolve(null);
@@ -68,17 +68,17 @@ export class httpsClient {
      * @param url {string} Ссылка
      * @param options {httpsClientOptions} Настройки запроса
      */
-    public parseJson = async (url: string, options?: httpsClientOptions) => {
+    public parseJson = (url: string, options?: httpsClientOptions): Promise<any> => new Promise<any>(async (resolve) => {
         const body = (await Promise.all([this.parseBody(url, options)]))[0];
         if (!body) return null;
 
         try {
-            return JSON.parse(body);
+            return resolve(JSON.parse(body));
         } catch (e) {
             console.log(`Invalid json response body at ${url} reason: ${e.message}`);
             return null;
         }
-    };
+    });
 }
 
 //====================== ====================== ====================== ======================

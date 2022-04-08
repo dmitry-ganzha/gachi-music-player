@@ -110,8 +110,8 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (OldState.status !== newState.status || isNewResources) {
             //Перед сменой статуса плеера отправляем пустой пакет. Необходим для исправления кривизны потока!
             this._playPacket(SILENCE_FRAME, this.VoiceChannels);
-            if (isNewResources) this.emit(newState.status, OldState, this._state);
-            else this.emit(newState.status, OldState, this._state);
+            if (isNewResources) void this.emit(newState.status, OldState, this._state);
+            else void this.emit(newState.status, OldState, this._state);
         }
     };
 
@@ -128,7 +128,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         }
 
         const onStreamError = (error: Error) => {
-            if (this.state.status !== "idle") this.emit('error', error);
+            if (this.state.status !== "idle") void this.emit('error', error);
             if (this.state.status !== "idle" && this.state.resource === resource) this.state = { status: "idle" };
         };
 
@@ -185,7 +185,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (!existingSubscription) {
             const subscription = new PlayerSubscription(connection, this as any);
             this.subscribers.push(subscription);
-            setImmediate(() => this.emit('subscribe', subscription));
+            setImmediate(() => void this.emit('subscribe', subscription));
             return subscription;
         }
         return existingSubscription;
@@ -200,7 +200,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (exists) {
             this.subscribers.splice(index, 1);
             subscription.connection.setSpeaking(false);
-            this.emit('unsubscribe', subscription);
+            void this.emit('unsubscribe', subscription);
         }
         return exists;
     };
@@ -264,17 +264,19 @@ export class RunPlayer extends AudioPlayer {
     };
     /**
      * @description Включаем музыку с пропуском
-     * @param message
+     * @param message {ClientMessage} Сообщение с сервера
      * @param seek {number} Пропуск музыки до 00:00:00
      */
     public seek = (message: ClientMessage, seek: number = 0): void => {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
-        CreateResource(queue.songs[0], queue.audioFilters, seek).then((stream: FFmpegStream) => {
-            this.play(stream);
-            if (seek) this.CurrentTime = seek;
-        });
+        setImmediate(() =>
+            CreateResource(queue.songs[0], queue.audioFilters, seek).then((stream: FFmpegStream) => {
+                this.play(stream);
+                if (seek) this.CurrentTime = seek;
+            })
+        );
     };
 
     /**
@@ -287,11 +289,13 @@ export class RunPlayer extends AudioPlayer {
 
         if (queue.songs?.length === 0) return void queue.events.queue.emit('DestroyQueue', queue, message);
 
-        CreateResource(queue.songs[0], queue.audioFilters).then((stream: FFmpegStream) => {
-            client.console(`[${guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
-            queue.events.message.PlaySongMessage(queue.channels.message);
-            this.play(stream);
-        });
+        setImmediate(() =>
+            CreateResource(queue.songs[0], queue.audioFilters).then((stream: FFmpegStream) => {
+                client.console(`[${guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
+                queue.events.message.PlaySongMessage(queue.channels.message);
+                this.play(stream);
+            })
+        );
     };
 
     /**
@@ -304,11 +308,12 @@ export class RunPlayer extends AudioPlayer {
 
         if (!queue || queue?.songs?.length <= 0) return null;
 
-        setTimeout(() => {
+        setImmediate(() => {
             isRemoveSong(queue);
             if (queue.options.random) client.queue.swap(0, Math.floor(Math.random() * queue.songs.length), "songs", guild.id);
+
             return this.playStream(message);
-        }, 350);
+        });
     };
 
     /**
@@ -321,7 +326,7 @@ export class RunPlayer extends AudioPlayer {
 
         WarningMessage(message, queue.songs[0], err);
 
-        if (queue.songs.length === 1) queue.events.queue.emit("DestroyQueue", queue, message);
+        if (queue.songs.length === 1) void queue.events.queue.emit("DestroyQueue", queue, message);
         if (queue.songs) this.stop();
 
         return;
@@ -330,15 +335,15 @@ export class RunPlayer extends AudioPlayer {
 //====================== ====================== ====================== ======================
 /**
  * @description Создаем Opus поток
- * @param song
- * @param audioFilters
+ * @param song {Song} Трек
+ * @param audioFilters {AudioFilters} Аудио фильтры которые включил пользователь
  * @param seek {number} Пропуск музыки до 00:00:00
  */
 async function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0): Promise<FFmpegStream> {
     if (!song.format?.url) await Promise.all([FindResource(song)]);
 
     if (song.isLive) return new FFmpegStream(song.format.url);
-    return new FFmpegStream(song.format.url, {...audioFilters, seek});
+    return new FFmpegStream(song.format.url, audioFilters, seek);
 }
 //====================== ====================== ====================== ======================
 /**

@@ -51,7 +51,7 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
             userAgent: true, cookie: true, zLibEncode: true, english: true
         }
     })]))[0];
-    //if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw new Error('Google понял что я бот! Это может занять много времени!');
+    if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw new Error('Google понял что я бот! Это может занять много времени!');
 
     const VideoRes = JSON.parse(body.split('var ytInitialPlayerResponse = ')?.[1]?.split(';</script>')[0].split(/;\s*(var|const|let)\s/)[0]);
     if (!VideoRes) throw new Error('Данные на странице не были найдены');
@@ -106,7 +106,7 @@ async function SearchVideos(search: string, options: SearchOptions = {limit: 15,
         options: {userAgent: true, cookie: true, zLibEncode: true, english: true}
     })]))[0];
 
-    //if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw new Error('Google понял что я бот! Это может занять много времени!');
+    if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw new Error('Google понял что я бот! Это может занять много времени!');
 
     const details = JSON.parse((body.split("var ytInitialData = ")[1].split("}};")[0] + '}}').split(';</script><script')[0]).contents.twoColumnSearchResultsRenderer.primaryContents.sectionListRenderer.contents[0].itemSectionRenderer.contents
 
@@ -159,7 +159,7 @@ async function getPlaylist(url: string): Promise<InputPlaylist> {
         options: {userAgent: true, cookie: true, zLibEncode: true, english: true}
     })]))[0];
 
-    //if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw new Error('Google понял что я бот! Это может занять много времени!');
+    if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw new Error('Google понял что я бот! Это может занять много времени!');
 
     const parsed = JSON.parse(`${body.split('{"playlistVideoListRenderer":{"contents":')[1].split('}],"playlistId"')[0]}}]`);
     const playlistDetails = JSON.parse(body.split('{"playlistSidebarRenderer":')[1].split("}};</script>")[0]).items;

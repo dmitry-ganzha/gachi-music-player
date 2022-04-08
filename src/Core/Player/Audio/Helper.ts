@@ -99,8 +99,8 @@ export class FFmpegStream {
         return this.playStream?.readableEnded || this.playStream?.destroyed || !this.playStream;
     };
 
-    public constructor(url: string | any, AudioFilters: AudioFilters = null) {
-        this.FFmpeg = new FFmpeg(CreateArguments(AudioFilters, url));
+    public constructor(url: string | any, AudioFilters: AudioFilters = null, seek: number = 0) {
+        this.FFmpeg = new FFmpeg(CreateArguments(url, AudioFilters, seek));
 
         this.playStream = this.FFmpeg.pipe(this.opusEncoder);
         this.playStream.once('readable', () => (this.started = true));
@@ -158,11 +158,12 @@ export class FFmpegStream {
  * @description Создаем аргументы для FFmpeg
  * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
  * @param url {string} Ссылка
+ * @param seek {number} Пропуск музыки до 00:00:00
  * @constructor
  */
-function CreateArguments (AudioFilters: AudioFilters, url: string): FFmpegArgs {
+function CreateArguments (url: string, AudioFilters: AudioFilters, seek: number): FFmpegArgs {
     return [
-        ...FFmpegArguments.Reconnect, "-vn", ...FFmpegArguments.Seek, AudioFilters?.seek ?? 0,
+        ...FFmpegArguments.Reconnect, "-vn", ...FFmpegArguments.Seek, seek ?? 0,
         '-i', url, ...FFmpegArguments.Other,
         "-af", CreateFilters(AudioFilters), ...FFmpegArguments.OggOpus, ...FFmpegArguments.Compress, ...FFmpegArguments.DecoderPreset
     ];

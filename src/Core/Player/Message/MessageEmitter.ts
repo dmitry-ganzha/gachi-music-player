@@ -32,7 +32,7 @@ export class MessageSystem {
 
                     return UpdateMessage(queue.channels.message, true);
                 } catch {
-                    return clearInterval(this._int)
+                    return clearInterval(this._int);
                 }
             }, 12e3);
         }
