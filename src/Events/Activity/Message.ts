@@ -3,7 +3,7 @@ import {Command} from "../../Commands/Constructor";
 import {Colors} from "../../Core/Utils/Colors";
 import cfg from '../../../DataBase/Config.json';
 import {ClientMessage} from "../../Core/Client";
-import {ParserTimeSong} from "../../Core/Player/Manager/Functions/ParserTimeSong";
+import {ParserTimeSong} from "../../Core/Player/Manager/Duration/ParserTimeSong";
 import {Channel, EmbedConstructor} from "../../Core/Utils/TypeHelper";
 
 type CommandPermission = Command['permissions'];

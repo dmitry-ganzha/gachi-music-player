@@ -1,7 +1,7 @@
 import {ApplicationCommand, CommandInteractionOption, GuildResolvable, Interaction} from "discord.js";
 import {CoolDownBase, Helper} from './Message';
 import {WatKLOK} from "../../Core/Client";
-import {ParserTimeSong} from "../../Core/Player/Manager/Functions/ParserTimeSong";
+import {ParserTimeSong} from "../../Core/Player/Manager/Duration/ParserTimeSong";
 
 const CustomID = new Set(['skip', 'resume', 'pause', 'replay']);
 

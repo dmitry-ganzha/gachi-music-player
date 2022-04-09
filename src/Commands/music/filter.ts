@@ -1,7 +1,7 @@
 import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
-import {Queue} from "../../Core/Player/Queue/Structures/Queue";
-import {getNamesFilters} from "../../Core/Player/Audio/FFmpeg";
+import {Queue} from "../../Core/Player/Structures/Queue/Queue";
+import {getEnableFilters} from "../../Core/Player/FFmpeg";
 
 export class CommandLoop extends Command {
     public constructor() {
@@ -116,7 +116,7 @@ export class CommandLoop extends Command {
               void message.client.player.emit("filter", message);
               return message.client.Send({text: `Filter | [VaporWave]: ${queue.audioFilters.Vw}`, ...SendArg});
            //
-          default: return message.client.Send({text: `All filter command: [nightcore, 3D, karaoke, speed, bass, vaporwave, sub-boost]\n\nCurrent: [${getNamesFilters(queue.audioFilters)}]\nDisable all - !fl off`, ...SendArg});
+          default: return message.client.Send({text: `All filter command: [nightcore, 3D, karaoke, speed, bass, vaporwave, sub-boost]\n\nCurrent: [${getEnableFilters(queue.audioFilters)}]\nDisable all - !fl off`, ...SendArg});
         }
     };
 }

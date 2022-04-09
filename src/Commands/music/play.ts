@@ -2,9 +2,9 @@ import {Command} from "../Constructor";
 import {MessageCollector, MessageReaction, ReactionCollector, StageChannel, User, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
 import {Spotify, VK, YouTube} from "../../Core/Platforms";
-import {Queue} from "../../Core/Player/Queue/Structures/Queue";
+import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {InputPlaylist, InputTrack} from "../../Core/Utils/TypeHelper";
-import {ParserTimeSong} from "../../Core/Player/Manager/Functions/ParserTimeSong";
+import {ParserTimeSong} from "../../Core/Player/Manager/Duration/ParserTimeSong";
 
 const youtubeStr = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi;
 const spotifySrt = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;

@@ -1,9 +1,9 @@
 import {ClientMessage} from "../../Client";
 import {InputTrack} from "../../Utils/TypeHelper";
-import {Queue} from "./Structures/Queue";
-import {Song} from "./Structures/Song";
+import {Queue} from "../Structures/Queue/Queue";
+import {Song} from "../Structures/Queue/Song";
 import {JoinVoiceChannel} from "../Voice/VoiceManager";
-import {PushSongMessage} from "../Message/MessageEmitter";
+import {PushSongMessage} from "../Manager/MessageEmitter";
 import {VoiceChannel} from "discord.js";
 
 //====================== ====================== ====================== ======================

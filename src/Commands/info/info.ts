@@ -5,7 +5,7 @@ import TSConfig from "../../../tsconfig.json";
 import {ClientMessage} from "../../Core/Client";
 import {EmbedConstructor} from "../../Core/Utils/TypeHelper";
 import {Colors} from "../../Core/Utils/Colors";
-import {ParserTimeSong} from "../../Core/Player/Manager/Functions/ParserTimeSong";
+import {ParserTimeSong} from "../../Core/Player/Manager/Duration/ParserTimeSong";
 import {getButtons} from "../../Core/Utils/Functions/Buttons";
 
 const core = os.cpus()[0];

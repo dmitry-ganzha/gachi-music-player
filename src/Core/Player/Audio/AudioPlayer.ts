@@ -1,11 +1,13 @@
-import {addAudioPlayer, deleteAudioPlayer, FFmpegStream, FindResource} from "./Helper";
-import {Queue} from "../Queue/Structures/Queue";
-import {Song} from "../Queue/Structures/Song";
-import {WarningMessage} from "../Message/MessageEmitter";
-import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
+import {FindResource} from "./Helper";
+import {Queue} from "../Structures/Queue/Queue";
+import {Song} from "../Structures/Queue/Song";
+import {WarningMessage} from "../Manager/MessageEmitter";
 import {TypedEmitter} from "tiny-typed-emitter";
 import {ClientMessage} from "../../Client";
-import {AudioFilters} from "./FFmpeg";
+import {AudioFilters} from "../FFmpeg";
+import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
+import {FFmpegStream} from "../FFmpeg/FFmpegStream";
+import {addAudioPlayer, deleteAudioPlayer} from "../Manager/PlayersData";
 
 //Статусы плеера для пропуска музыки
 export const StatusPlayerHasSkipped: Set<string> = new Set(['playing', 'paused', 'buffering', 'autopaused']);
@@ -119,7 +121,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @description Что будет отправлять в голосовой канал
      * @param resource {FFmpegStream} Поток
      */
-    public play = (resource: FFmpegStream): void => {
+    protected play = (resource: FFmpegStream): void => {
         if (!resource) return void this.emit('error', 'Error: AudioResource has not found');
         if (resource?.ended) return void this.emit('error', `[AudioPlayer]: [Message: Fail to load a ended stream]`);
         if (!resource?.readable) {

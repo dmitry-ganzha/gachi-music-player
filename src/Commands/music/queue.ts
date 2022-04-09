@@ -1,9 +1,9 @@
 import {Command} from "../Constructor";
 import {ReactionCollector} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
-import {Queue} from "../../Core/Player/Queue/Structures/Queue";
+import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {CollectorSortReaction} from "../../Core/Utils/ReactionMenu";
-import {FullTimeSongs} from "../../Core/Player/Manager/Functions/FullTimeSongs";
+import {FullTimeSongs} from "../../Core/Player/Manager/Duration/FullTimeSongs";
 
 export class CommandQueue extends Command {
     public constructor() {

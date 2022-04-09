@@ -1,9 +1,10 @@
 import { TypedEmitter } from 'tiny-typed-emitter';
-import {Queue} from "../Queue/Structures/Queue";
+import {Queue} from "../Structures/Queue/Queue";
+import {AudioPlayer} from "../Audio/AudioPlayer";
 
 type Events = {
     StartTimerDestroyer: (queue: Queue) => void,
-    CancelTimerDestroyer: (queue: Queue) => boolean | void
+    CancelTimerDestroyer: (player: AudioPlayer) => boolean | void
 };
 
 export class VoiceEvent extends TypedEmitter<Events> {
@@ -27,17 +28,20 @@ export class VoiceEvent extends TypedEmitter<Events> {
 
         player.pause();
         this.state = true;
-        if (!this.Timer) this.Timer = setTimeout(() => {
-            queue.songs = [];
-            options.stop = true;
-            events.queue.emit('DestroyQueue', queue, channels.message, false);
-        }, 2e4);
+
+        if (!this.Timer) {
+            this.Timer = setTimeout(() => {
+                queue.songs = [];
+                options.stop = true;
+                events.queue.emit('DestroyQueue', queue, channels.message, false);
+            }, 2e4);
+        }
     };
     /**
      * @description Удаляем таймер который удаляет очередь
-     * @param queue {object} Очередь сервера
+     * @param player {AudioPlayer} Преер
      */
-    protected onCancelTimerDestroyer = ({player}: Queue): boolean | void => {
+    protected onCancelTimerDestroyer = (player: AudioPlayer): boolean | void => {
         if (this.state === true) {
             this.state = false;
             clearTimeout(this.Timer);

@@ -1,7 +1,7 @@
 import {Command} from "../Constructor";
-import {Queue} from "../../Core/Player/Queue/Structures/Queue";
+import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {ClientMessage} from "../../Core/Client";
-import {Song} from "../../Core/Player/Queue/Structures/Song";
+import {Song} from "../../Core/Player/Structures/Queue/Song";
 
 export class CommandShuffle extends Command {
     public constructor() {

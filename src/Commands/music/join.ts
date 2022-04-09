@@ -1,7 +1,7 @@
 import {Command} from "../Constructor";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
-import {Queue} from "../../Core/Player/Queue/Structures/Queue";
+import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {JoinVoiceChannel} from "../../Core/Player/Voice/VoiceManager";
 
 export class CommandJoin extends Command {
@@ -40,6 +40,8 @@ export class CommandJoin extends Command {
             const connection = new JoinVoiceChannel(voiceChannel);
             queue.channels = {message, voice: voiceChannel, connection};
         }
+
+        new JoinVoiceChannel(voiceChannel)
         return;
     };
 }

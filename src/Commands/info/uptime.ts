@@ -1,6 +1,6 @@
 import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
-import {ParserTimeSong} from "../../Core/Player/Manager/Functions/ParserTimeSong";
+import {ParserTimeSong} from "../../Core/Player/Manager/Duration/ParserTimeSong";
 
 export class CommandUptime extends Command {
     public constructor() {

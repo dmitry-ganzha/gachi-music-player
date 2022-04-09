@@ -1,6 +1,6 @@
 import {TypedEmitter} from "tiny-typed-emitter";
-import {Song} from "./Structures/Song";
-import {Queue} from "./Structures/Queue";
+import {Song} from "../Structures/Queue/Song";
+import {Queue} from "../Structures/Queue/Queue";
 import {Disconnect} from "../Voice/VoiceManager";
 import {ClientMessage} from "../../Client";
 

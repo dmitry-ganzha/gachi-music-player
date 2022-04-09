@@ -1,6 +1,6 @@
 import {TypedEmitter} from 'tiny-typed-emitter';
 import {Controller} from "./Audio/Controller";
-import {PlayList} from "./Manager/PlayLists";
+import {PlayList} from "./Manager/addPlaylist";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../Client";
 import {InputPlaylist, InputTrack} from "../Utils/TypeHelper";

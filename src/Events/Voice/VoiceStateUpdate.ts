@@ -1,6 +1,6 @@
 import {getVoiceConnection, VoiceConnection} from "@discordjs/voice";
 import {Guild, VoiceState} from "discord.js";
-import {Queue} from "../../Core/Player/Queue/Structures/Queue";
+import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {WatKLOK} from "../../Core/Client";
 import {StatusPlayerHasSkipped} from "../../Core/Player/Audio/AudioPlayer";
 
@@ -28,5 +28,5 @@ function CheckToRun(voiceConnection: VoiceState[], client: WatKLOK, guild: Guild
 
     if (voiceConnection && PlayableVoiceChannel) return voiceConnection.length <= 1 && StatusPlayerHasSkipped.has(queue.player.state.status) ?
         void queue.events.helper.emit('StartTimerDestroyer', queue) :
-        void queue.events.helper.emit('CancelTimerDestroyer', queue);
+        void queue.events.helper.emit('CancelTimerDestroyer', queue.player);
 }

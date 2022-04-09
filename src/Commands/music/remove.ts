@@ -1,6 +1,6 @@
 import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
-import {Queue} from "../../Core/Player/Queue/Structures/Queue";
+import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 
 export class CommandRemove extends Command {
     public constructor() {

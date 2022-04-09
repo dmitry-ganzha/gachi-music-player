@@ -1,8 +1,8 @@
 import {MessageReaction, ReactionCollector, User} from "discord.js";
 import {EmbedConstructor} from "./TypeHelper";
 import {ClientMessage} from "../Client";
-import {Queue} from "../Player/Queue/Structures/Queue";
-import {FullTimeSongs} from "../Player/Manager/Functions/FullTimeSongs";
+import {Queue} from "../Player/Structures/Queue/Queue";
+import {FullTimeSongs} from "../Player/Manager/Duration/FullTimeSongs";
 
 export class CollectorSortReaction {
     /**
