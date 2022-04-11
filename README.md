@@ -7,7 +7,7 @@
 - [Все команды](./src/Commands)
 
 ## Поддерживаемые платформы
-- [YouTube](https://www.youtube.com/) (Видео, плейлисты, поиск, стримы)
+- [YouTube](https://www.youtube.com/) (видео, плейлисты, поиск, стримы)
 - [Spotify](https://open.spotify.com/) (треки, плейлисты, альбомы, поиск)
 - [VK](https://vk.com/) (треки, плейлисты, поиск)
 - [SoundCloud](https://soundcloud.com/) (треки, плейлисты, поиск, альбомы)
