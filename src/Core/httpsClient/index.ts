@@ -28,8 +28,8 @@ export class httpsClient {
      * @param options {httpsClientOptions} Настройки запроса
      */
     public Request = (url: string, options?: httpsClientOptions): Promise<ResponseData> => {
-        EditRequestOptions(options);
-        return request(url, options.request);
+        if (options) EditRequestOptions(options);
+        return request(url, options?.request);
     };
     /**
      * @description Получаем страницу в формате string

@@ -14,6 +14,7 @@ export class CommandInfo extends Command {
     public constructor() {
         super({
             name: 'info',
+            description: "11321",
             aliases: ['information'],
 
             slash: true,

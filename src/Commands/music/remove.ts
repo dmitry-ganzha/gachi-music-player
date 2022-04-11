@@ -1,6 +1,7 @@
 import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
+import {ApplicationCommandOptionType} from "discord.js";
 
 export class CommandRemove extends Command {
     public constructor() {
@@ -14,7 +15,7 @@ export class CommandRemove extends Command {
                     name: "value",
                     description: "Remove song in value",
                     required: true,
-                    type: "STRING"
+                    type: ApplicationCommandOptionType.String
                 }
             ],
             enable: true,

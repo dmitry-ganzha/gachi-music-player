@@ -1,5 +1,5 @@
 import {Command} from "../Constructor";
-import {User} from "discord.js";
+import {ApplicationCommandOptionType, User} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
 import {EmbedConstructor} from "../../Core/Utils/TypeHelper";
 import {Colors} from "../../Core/Utils/Colors";
@@ -15,7 +15,7 @@ export class CommandAvatar extends Command {
                 {
                     name: "user",
                     description: "Какой пользователь!",
-                    type: "USER"
+                    type: ApplicationCommandOptionType.User
                 }
             ],
 
@@ -45,6 +45,7 @@ export class CommandAvatar extends Command {
         }
     };
     protected getUser = async (args: string[], message: ClientMessage): Promise<User> => {
+        if (!args) return message.author;
         let User;
         if (args.join(' ').match('!')) User = (args[0] ? await message.client.users.fetch(args.join().split('<@!')[1].split('>')[0]) : await message.client.users.fetch(message.author.id));
         else if (!isNaN(Number(args[0]))) User = await (message.client.users.fetch(args[0]));

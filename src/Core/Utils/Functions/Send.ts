@@ -1,5 +1,5 @@
 import {Colors} from "../Colors";
-import {ClientMessage} from "../../Client";
+import {ClientInteraction, ClientMessage} from "../../Client";
 import {ColorResolvable, EmbedConstructor} from "../TypeHelper";
 
 export type SendOptions = {

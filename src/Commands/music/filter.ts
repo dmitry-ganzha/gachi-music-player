@@ -2,6 +2,7 @@ import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {getEnableFilters} from "../../Core/Player/FFmpeg";
+import {ApplicationCommandOptionType} from "discord.js";
 
 export class CommandLoop extends Command {
     public constructor() {
@@ -14,7 +15,7 @@ export class CommandLoop extends Command {
                 {
                     name: "name",
                     description: "Filters - 3D, karaoke, nightcore, speed, bassboost, sub-boost, vaporwave",
-                    type: "STRING"
+                    type: ApplicationCommandOptionType.String
                 }
             ],
             slash: true,

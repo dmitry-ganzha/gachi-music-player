@@ -1,6 +1,7 @@
 import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
+import {ApplicationCommandOptionType} from "discord.js";
 
 export class CommandLoop extends Command {
     public constructor() {
@@ -13,7 +14,7 @@ export class CommandLoop extends Command {
                 {
                     name: "type",
                     description: "Type - (song, on, off)",
-                    type: "STRING"
+                    type: ApplicationCommandOptionType.String
                 }
             ],
             slash: true,

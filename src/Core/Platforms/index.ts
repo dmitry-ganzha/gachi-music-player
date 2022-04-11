@@ -1,5 +1,6 @@
-import {Spotify} from "./src/API_Spotify";
-import {VK} from "./src/API_VK";
+import {Spotify} from "./src/API/Spotify";
+import {VK} from "./src/API/VK";
 import {YouTube} from "./src/YouTube";
+import {SoundCloud} from "./src/API/SoundCloud";
 
-export {VK, Spotify, YouTube};
+export {VK, Spotify, YouTube, SoundCloud};

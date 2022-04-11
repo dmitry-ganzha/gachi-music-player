@@ -5,10 +5,9 @@ const NotVer = 'https://cdn.discordapp.com/attachments/646399394517614622/858791
 const NotFound = 'https://cdn.discordapp.com/attachments/860113484493881365/916587315378388992/UntitledNotFound.png';
 const NotImage = "https://cdn.discordapp.com/attachments/860113484493881365/940926476746883082/MusciNote.png";
 const Button = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId("skip").setEmoji({name: "⏭"}).setLabel("Skip").setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId("pause").setEmoji({name: "⏸"}).setLabel("Pause").setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId("resume").setEmoji({name: "▶️"}).setLabel("Resume").setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId("replay").setEmoji({name: "🔄"}).setLabel("Replay").setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId("resume_pause").setEmoji({name: "⏯"}).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId("skip").setEmoji({name: "⏭"}).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId("replay").setEmoji({name: "🔄"}).setStyle(ButtonStyle.Secondary)
 )
 
 

@@ -1,6 +1,7 @@
 import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
+import {ApplicationCommandOptionType} from "discord.js";
 
 export class CommandSkip extends Command {
     public constructor() {
@@ -12,7 +13,7 @@ export class CommandSkip extends Command {
             options: [{
                 name: "value",
                 description: "Skip before the song or skip current song",
-                type: "STRING"
+                type: ApplicationCommandOptionType.String
             }],
             enable: true,
             slash: true

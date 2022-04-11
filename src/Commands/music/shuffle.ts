@@ -2,6 +2,7 @@ import {Command} from "../Constructor";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {ClientMessage} from "../../Core/Client";
 import {Song} from "../../Core/Player/Structures/Queue/Song";
+import {ApplicationCommandOptionType} from "discord.js";
 
 export class CommandShuffle extends Command {
     public constructor() {
@@ -14,7 +15,7 @@ export class CommandShuffle extends Command {
                 name: "value",
                 description: "Shuffle queue songs",
                 required: true,
-                type: "STRING"
+                type: ApplicationCommandOptionType.String
             }],
             enable: true,
             slash: true

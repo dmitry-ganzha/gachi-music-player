@@ -1,13 +1,22 @@
 import {Command} from "../Constructor";
-import {MessageCollector, MessageReaction, ReactionCollector, StageChannel, User, VoiceChannel} from "discord.js";
+import {
+    ApplicationCommandOptionType,
+    MessageCollector,
+    MessageReaction,
+    ReactionCollector,
+    StageChannel,
+    User,
+    VoiceChannel
+} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
-import {Spotify, VK, YouTube} from "../../Core/Platforms";
+import {SoundCloud, Spotify, VK, YouTube} from "../../Core/Platforms";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {InputPlaylist, InputTrack} from "../../Core/Utils/TypeHelper";
 import {ParserTimeSong} from "../../Core/Player/Manager/Duration/ParserTimeSong";
 
 const youtubeStr = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi;
 const spotifySrt = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;
+const SoundCloudSrt = /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/(.*)$/;
 
 export class CommandPlay extends Command {
     public constructor() {
@@ -22,13 +31,13 @@ export class CommandPlay extends Command {
                     name: "song-or-type",
                     description: "Song (url, name) - (YouTube, Spotify, VK) or search type - (yt, sp, vk)",
                     required: true,
-                    type: "STRING"
+                    type: ApplicationCommandOptionType.String
                 },
                 {
                     name: "search",
                     description: "Name song. (YouTube, Spotify, VK)",
                     required: false,
-                    type: "STRING"
+                    type: ApplicationCommandOptionType.String
                 }
             ],
             enable: true,
@@ -71,6 +80,7 @@ export class CommandPlay extends Command {
         if (search.match(youtubeStr)) return this.PlayYouTube(message, search, voiceChannel);
         else if (search.match(spotifySrt)) return this.PlaySpotify(message, search, voiceChannel);
         else if (search.match(/vk.com/)) return this.PlayVK(message, search, voiceChannel);
+        else if (search.match(SoundCloudSrt)) return this.PlaySoundCloud(message, search, voiceChannel);
         const SplitSearch = search.split(' ');
         const SearchType = SplitSearch[0].toLowerCase();
 
@@ -80,6 +90,9 @@ export class CommandPlay extends Command {
         } else if (SearchType === 'vk') {
             delete SplitSearch[0];
             return new HandleInfoResource().VK_SearchTracks(SplitSearch.join(' '), message, voiceChannel);
+        } else if (SearchType === 'sc') {
+            delete SplitSearch[0];
+            return new HandleInfoResource().SC_SearchTracks(SplitSearch.join(' '), message, voiceChannel);
         }
 
         return new HandleInfoResource().YT_SearchVideos(message, voiceChannel, search);
@@ -91,22 +104,27 @@ export class CommandPlay extends Command {
         return new HandleInfoResource().YT_getVideo(search, message, voiceChannel);
     };
     //Для системы spotify
-    protected static PlaySpotify = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): Promise<void| boolean> => {
+    protected static PlaySpotify = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => {
         if (search.match(/playlist/)) return new HandleInfoResource().SP_getPlaylist(search, message, voiceChannel);
         if (search.match(/album/)) return new HandleInfoResource().SP_getAlbum(search, message, voiceChannel);
         return new HandleInfoResource().SP_getTrack(search, message, voiceChannel);
     };
     //Для системы VK
-    protected static PlayVK = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): Promise<void| boolean> => {
+    protected static PlayVK = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => {
         if (search.match(/playlist/)) return new HandleInfoResource().VK_getPlaylist(search, message, voiceChannel);
         return new HandleInfoResource().VK_getTrack(search, message, voiceChannel);
+    };
+    //Для системы SoundCloud
+    protected static PlaySoundCloud = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => {
+        if (search.match(/sets/) || search.match(/albums/)) return new HandleInfoResource().SC_getPlaylist(search, message, voiceChannel);
+        return new HandleInfoResource().SC_getTrack(search, message, voiceChannel);
     };
 }
 
 class HandleInfoResource {
     //Для поиска музыки
     protected collector: MessageCollector = null;
-    protected type: "yt" | "sp" | "vk" = null;
+    protected type: "yt" | "sp" | "vk" | "sc" = null;
 
     //YouTube (youtube.com) взаимодействие с youtube
     public YT_getVideo = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => YouTube.getVideo(search).then((video: InputTrack) => !video ? message.client.Send({text: `${message.author}, Хм, YouTube не хочет делится данными! Существует ли это видео вообще!`, message: message, color: 'RED'}) : this.runPlayer(video, message, voiceChannel));
@@ -131,6 +149,14 @@ class HandleInfoResource {
     public VK_SearchTracks = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | MessageCollector> => {
         this.type = "vk";
         return VK.SearchTracks(search).then((result) => this.SendMessage(message, result?.items, voiceChannel, this.ArraySort(result?.items, message), result?.items?.length));
+    };
+
+    //SoundCloud (soundcloud.com) взаимодействие с SoundCloud
+    public SC_getTrack = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => SoundCloud.getTrack(search).then((track: InputTrack) => !track ? message.client.Send({text: `Хм, SoundCloud не хочет делится данными! Существует ли это трек вообще!`, message: message, color: 'RED'}) : this.runPlayer(track, message, voiceChannel));
+    public SC_getPlaylist = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | boolean> => SoundCloud.getPlaylist(search).then((playlist: InputPlaylist) => !playlist ? message.client.Send({text: `${message.author}, Хм, SoundCloud не хочет делится данными! Существует ли это плейлист вообще!`, message: message, color: 'RED'}) : this.runPlaylistSystem(message, playlist, voiceChannel));
+    public SC_SearchTracks = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): Promise<void | MessageCollector> => {
+        this.type = "sc";
+        return SoundCloud.SearchTracks(search).then((result) => this.SendMessage(message, result, voiceChannel, this.ArraySort(result, message), result?.length));
     };
 
     //Создаем сборщик для выбора плейлиста или трека
@@ -177,6 +203,7 @@ class HandleInfoResource {
     protected pushSong = (results: any[], m: ClientMessage, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) => {
         if (this.type === "sp") return this.SP_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
         else if (this.type === "vk") return this.VK_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
+        else if (this.type === "sc") return this.SC_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
         return this.YT_getVideo(results[parseInt(m.content) - 1].url, message, voiceChannel);
     };
     //Удаляем сообщение
@@ -186,7 +213,14 @@ class HandleInfoResource {
     //Создаем коллектор (discord.js) для обработки сообщений от пользователя
     protected MessageCollector = (msg: ClientMessage, message: ClientMessage, num: any): any => this.collector = msg.channel.createMessageCollector({filter: (m: any) => !isNaN(m.content) && m.content <= num && m.content > 0 && m.author.id === message.author.id, max: 1});
     //Тип поиска
-    protected isType = () => this.type === "sp" ? "SPOTIFY" : this.type === "yt" ? "YOUTUBE" : this.type === "vk" ? "VK" : undefined;
+    protected isType = () => {
+        if (this.type === "sp") return  "SPOTIFY";
+        else if (this.type === "yt") return "YOUTUBE"
+        else if (this.type === "vk") return "VK";
+        else if (this.type === "sc") return "SOUNDCLOUD";
+
+        return "UNKNOWN";
+    }
     //Конвертируем время в 00:00
     protected ConvertTimeSearch = (duration: string) => {
         if (this.type === 'yt') return duration;

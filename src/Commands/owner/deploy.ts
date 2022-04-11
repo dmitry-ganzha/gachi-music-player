@@ -1,4 +1,4 @@
-import {Command} from "../Constructor";
+import {Command, TypeSlashCommand} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
 
 export class CommandDeploy extends Command {
@@ -12,17 +12,22 @@ export class CommandDeploy extends Command {
         })
     };
 
-    public run = (message: ClientMessage): Promise<void> => new Promise((resolve: any) => {
+    public run = (message: ClientMessage): void => {
         let TotalCommands: number = 0;
-        message.client.commands.Array.map(async (cmd: Command) => {
-            if (cmd.isOwner || !cmd.slash) return;
+        message.client.commands.forEach((cmd: Command) => {
+            if (cmd.isOwner || !cmd.slash) return null;
             TotalCommands++
-            try {
-                await message.client.application.commands.set(cmd as any);
-            } catch {
-                await message.client.application.commands.create(cmd as any);
+
+            let CommandSlash: TypeSlashCommand = {
+                name: cmd.name,
+                description: cmd.description
             }
+
+            if (cmd.options.length > 0) CommandSlash = {...CommandSlash, options: cmd.options};
+
+            message.client.application.commands.create(CommandSlash as any);
         });
-        return resolve(message.client.Send({ text: `${message.author}, [${TotalCommands}] команд загружено`, message }));
-    });
+
+        return message.client.Send({ text: `${message.author}, [${TotalCommands}] команд загружено`, message });
+    }
 }

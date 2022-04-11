@@ -1,5 +1,5 @@
 import {ApplicationCommandOptionType, PermissionResolvable} from "discord.js";
-import {ClientMessage} from "../Core/Client";
+import {ClientInteraction, ClientMessage} from "../Core/Client";
 
 export class Command {
     public readonly name: string;
@@ -12,7 +12,7 @@ export class Command {
     public readonly enable: boolean;
     public readonly CoolDown: number
     public type: string;
-    public run: (message: ClientMessage, args?: string[]) => Promise<void | any> | void | any;
+    public run: (message: ClientMessage | ClientInteraction, args?: string[]) => Promise<void | any> | void | any;
 
     public constructor(
         {
@@ -50,4 +50,11 @@ interface InteractiveOptions {
     description: string,
     required?: boolean,
     type: ApplicationCommandOptionType | string
+}
+
+export interface TypeSlashCommand {
+    name: string,
+    description: string,
+    options?: InteractiveOptions[],
+    type?: any
 }

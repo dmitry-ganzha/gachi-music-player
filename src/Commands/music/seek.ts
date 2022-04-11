@@ -1,6 +1,7 @@
 import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
+import {ApplicationCommandOptionType} from "discord.js";
 
 export class CommandSeek extends Command {
     public constructor() {
@@ -13,7 +14,7 @@ export class CommandSeek extends Command {
                 name: "value",
                 description: "Seek time this song",
                 required: true,
-                type: "STRING"
+                type: ApplicationCommandOptionType.String
             }],
             enable: true,
             slash: true,

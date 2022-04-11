@@ -57,7 +57,7 @@ function UpdateMessage(message: ClientMessage, need: boolean = false): Promise<v
         const CurrentPlayEmbed = CurrentPlay(message.client, queue.songs[0], queue);
 
         try {
-           return message.edit({embeds: [CurrentPlayEmbed]}).then((msg) => queue.channels.message = msg);
+           return message.edit({embeds: [CurrentPlayEmbed]}).then((msg) => queue?.channels?.message ? queue.channels.message = msg : null);
         } catch (e) {
             return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: update, ${e.code}]: ${e?.message}`);
         }

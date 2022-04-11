@@ -10,7 +10,7 @@ import {
 import {ClientMessage} from "../../../Client";
 import {Colors} from "../../../Utils/Colors";
 
-type SongType = "SPOTIFY" | "YOUTUBE" | "VK" | "UNKNOWN";
+type SongType = "SPOTIFY" | "YOUTUBE" | "VK" | "SOUNDCLOUD" | "UNKNOWN";
 
 export class Song {
     public id: string | number;
@@ -63,7 +63,10 @@ function ConstDuration(duration: InputTrackDuration): { StringTime: string | "Li
  * @constructor
  */
 function Color(type: string): number {
-    return type === "YOUTUBE" ? Colors.RED : type === "SPOTIFY" ? Colors.GREEN : Colors.BLUE;
+    if (type === "YOUTUBE") return Colors.RED;
+    else if (type === "SPOTIFY") return Colors.GREEN;
+    else if (type === 'SOUNDCLOUD') return Colors.ORANGE;
+    return Colors.BLUE;
 }
 //====================== ====================== ====================== ======================
 /**

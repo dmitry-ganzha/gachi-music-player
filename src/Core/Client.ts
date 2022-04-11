@@ -1,4 +1,13 @@
-import { ActivityType, Client, IntentsBitField, Message, MessageEditOptions } from "discord.js";
+import {
+    ActivityType,
+    Client,
+    GuildMember,
+    IntentsBitField,
+    Interaction,
+    Message,
+    MessageEditOptions,
+    User
+} from "discord.js";
 import {FileSystemLoad} from "./FileSystem";
 import {Channel, MessageChannel, sendType} from "./Utils/TypeHelper";
 import {MessageChannelSend} from "./Utils/Functions/Send";
@@ -34,7 +43,7 @@ export class WatKLOK extends Client {
             },
             presence: {
                 activities: [{
-                    name: "music on youtube, spotify, vk",
+                    name: "music on youtube, spotify, vk, soundcloud",
                     type: ActivityType.Listening
                 }]
             }
@@ -51,6 +60,18 @@ export class ClientMessage extends Message {
     channel: {
         send(options: sendType): Promise<ClientMessage>
     } & Channel
+}
+
+export class ClientInteraction extends Interaction {
+    member: GuildMember;
+    customId: string;
+    commandName: string;
+    commandId: string;
+    author: User;
+
+    delete: () => void;
+    deferReply: () => Promise<void>
+    deleteReply: () => Promise<void>
 }
 
 const client = new WatKLOK();

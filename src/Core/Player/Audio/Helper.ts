@@ -1,7 +1,7 @@
 import {ConstFormat, Song} from "../Structures/Queue/Song";
 import {httpsClient} from "../../httpsClient";
 import {InputFormat} from "../../Utils/TypeHelper";
-import {VK, YouTube} from "../../Platforms";
+import {SoundCloud, VK, YouTube} from "../../Platforms";
 
 /**
  * @description Заготавливаем необходимые данные для создания потока
@@ -35,6 +35,7 @@ async function getLinkFormat({type, url, title, author}: Song): Promise<InputFor
     try {
         if (type === "SPOTIFY") return FindTrack(`${author.title} - ${title}`);
         else if (type === "VK") return (await VK.getTrack(url))?.format;
+        else if (type === "SOUNDCLOUD") return (await SoundCloud.getTrack(url))?.format;
         return getFormatYouTube(url);
     } catch {
         console.log('[FindResource]: [Fail to found format!]');
