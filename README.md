@@ -8,8 +8,9 @@
 
 ## Поддерживаемые платформы
 - [YouTube](https://www.youtube.com/) (Видео, плейлисты, поиск, стримы)
-- [Spotify](https://open.spotify.com/) (Треки, плейлисты, альбомы, поиск)
-- [VK](https://vk.com/) (Треки, плейлисты, поиск)
+- [Spotify](https://open.spotify.com/) (треки, плейлисты, альбомы, поиск)
+- [VK](https://vk.com/) (треки, плейлисты, поиск)
+- [SoundCloud](https://soundcloud.com/) (треки, плейлисты, поиск, альбомы)
 - [RuTube](https://rutube.ru/) (W.I.P)
 
 ## Требования к хостингу
@@ -37,11 +38,11 @@
 
 ## Настройки
 1. Cookie.json для прослушивания видео на youtube без ограничений (Авто-обновление)
-    ```json5
+    ```json
     { "Cookie": "КУКИ" }
    ```
 2. Config.json
-    ```json5
+    ```json 
     {
       "Channels": {
         "Start": "", //Канал на который будет отправлятся сообщение о запуске
