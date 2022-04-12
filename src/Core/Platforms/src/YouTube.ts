@@ -33,7 +33,7 @@ async function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
     return {
         id, title: Channel?.title ?? name ?? "Not found",
         url: `${DefaultLinkYouTube}/channel/${id}`,
-        image: avatar?.thumbnails[2] ?? avatar?.thumbnails[1] ?? avatar?.thumbnails[0] ?? null,
+        image: avatar?.thumbnails.pop() ?? null,
         isVerified: !!badges?.find((badge: any) => VerAuthor.has(badge?.metadataBadgeRenderer?.tooltip))
     }
 }
@@ -77,7 +77,7 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
         }
     } else format = [{url: LiveData.url, work: true}];
 
-    if (options?.onlyFormats) return format[0];
+    if (options?.onlyFormats) return format.pop();
 
     const authorVideo = (await Promise.all([getChannel({id: videoDetails.channelId, name: videoDetails.author})]))[0];
     const VideoData: InputTrack = {
@@ -85,13 +85,13 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
         url: `${DefaultLinkYouTube}/watch?v=${VideoID}`,
         title: videoDetails.title,
         duration: {seconds: videoDetails.lengthSeconds},
-        image: videoDetails.thumbnail.thumbnails[videoDetails.thumbnail.thumbnails.length - 1],
+        image: videoDetails.thumbnail.thumbnails.pop(),
         author: authorVideo,
         isLive: videoDetails.isLiveContent,
         isPrivate: videoDetails.isPrivate,
     };
 
-    return {...VideoData, format: format[format.length - 1]};
+    return {...VideoData, format: format.pop()};
 }
 //====================== ====================== ====================== ======================
 /**
@@ -142,7 +142,7 @@ function parsingVideos(details: any[], {limit}: SearchOptions, FakeBase: InputTr
             duration: {
                 seconds: video.lengthText ? video.lengthText.simpleText : null
             },
-            image: video.thumbnail.thumbnails[video.thumbnail.thumbnails.length - 1]
+            image: video.thumbnail.thumbnails.pop()
         });
     }
     return FakeBase;
@@ -173,7 +173,7 @@ async function getPlaylist(url: string): Promise<InputPlaylist> {
         items: (await Promise.all([_parsingVideos(parsed)]))[0],
         author: channel === null ? null : (await Promise.all([getChannel({id: channel.navigationEndpoint.browseEndpoint.browseId, name: channel.text})]))[0],
         image: {
-            url: (playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer?.thumbnail.thumbnails.length ? playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer.thumbnail.thumbnails[playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer.thumbnail.thumbnails.length - 1].url : null)?.split('?sqp=')[0]
+            url: playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer?.thumbnail.thumbnails?.pop().url?.split('?sqp=')[0]
         }
     }
 }
@@ -194,9 +194,9 @@ function _parsingVideos(parsed: any[], finder: InputTrack[] = []): InputTrack[] 
                 seconds: video.lengthSeconds ?? 0
             },
             image: {
-                url: video.thumbnail.thumbnails[video.thumbnail.thumbnails.length - 1].url,
-                height: video.thumbnail.thumbnails[video.thumbnail.thumbnails.length - 1].height,
-                width: video.thumbnail.thumbnails[video.thumbnail.thumbnails.length - 1].width
+                url: video.thumbnail.thumbnails.pop().url,
+                height: video.thumbnail.thumbnails.pop().height,
+                width: video.thumbnail.thumbnails.pop().width
             },
             author: {
                 id: video.shortBylineText.runs[0].navigationEndpoint.browseEndpoint.browseId || undefined,

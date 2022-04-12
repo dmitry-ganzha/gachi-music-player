@@ -29,13 +29,13 @@ export class CommandPlay extends Command {
             options: [
                 {
                     name: "song-or-type",
-                    description: "Song (url, name) - (YouTube, Spotify, VK) or search type - (yt, sp, vk)",
+                    description: "Song (url, name) - (YouTube, Spotify, VK, Soundcloud) or search type - (yt, sp, vk, sc)",
                     required: true,
                     type: ApplicationCommandOptionType.String
                 },
                 {
                     name: "search",
-                    description: "Name song. (YouTube, Spotify, VK)",
+                    description: "Name song. (YouTube, Spotify, VK, Soundcloud)",
                     required: false,
                     type: ApplicationCommandOptionType.String
                 }

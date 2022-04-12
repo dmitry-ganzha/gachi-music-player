@@ -11,7 +11,7 @@ export class FFmpegStream {
     public silenceRemaining = -1;
     public playStream: opus.OggDemuxer;
     protected FFmpeg: FFmpeg;
-    protected opusEncoder = new opus.OggDemuxer({ destroy: () => this.destroy().catch(() => undefined) });
+    protected opusEncoder = new opus.OggDemuxer({ destroy: () => this.destroy() });
 
     //Для проверки, читабельный ли стрим
     public get readable() {
@@ -49,7 +49,7 @@ export class FFmpegStream {
     /**
      * @description Чистим память!
      */
-    public destroy = async (): Promise<void> => {
+    public destroy = (): void => {
         if (this.FFmpeg) {
             this.FFmpeg.destroy();
             delete this.FFmpeg;

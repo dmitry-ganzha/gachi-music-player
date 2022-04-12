@@ -97,7 +97,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const OldState = this._state; //Старая статистика плеера
         const newResource = newState?.resource; //Новый поток. Есть ли он?
 
-        if (OldState.status !== "idle" && OldState.resource !== newResource) setImmediate(() => OldState.resource.destroy().catch(() => undefined));
+        if (OldState.status !== "idle" && OldState.resource !== newResource) setImmediate(() => OldState.resource.destroy());
 
         //Удаляем плеер если статус "idle"
         if (newState.status === "idle") {
@@ -345,6 +345,7 @@ async function CreateResource(song: Song, audioFilters: AudioFilters = null, see
     if (!song.format?.url) await Promise.all([FindResource(song)]);
 
     if (song.isLive) return new FFmpegStream(song.format.url);
+
     return new FFmpegStream(song.format.url, audioFilters, seek);
 }
 //====================== ====================== ====================== ======================

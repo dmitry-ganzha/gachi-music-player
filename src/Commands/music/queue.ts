@@ -4,6 +4,7 @@ import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {CollectorSortReaction} from "../../Core/Utils/ReactionMenu";
 import {FullTimeSongs} from "../../Core/Player/Manager/Duration/FullTimeSongs";
+import {Song} from "../../Core/Player/Structures/Queue/Song";
 
 export class CommandQueue extends Command {
     public constructor() {
@@ -29,7 +30,7 @@ export class CommandQueue extends Command {
         // @ts-ignore
         let pages: string[] = [], page = 1, num = 1, newSongs = queue.songs.ArraySort(10);
 
-        newSongs.forEach((s: any[]) => {
+        newSongs.forEach((s: Song[]) => {
             let i = s.map((video: any) => (
                 `[${num++}]  [${video.duration.StringTime}] [${message.client.ConvertedText(video.title, 80, true).replace(/[\s",']/g, ' ')}]`
             )).join(`\n`);

@@ -31,20 +31,6 @@ export const FFmpegArguments = {
     }
 };
 
-export interface FFmpegFilters {
-    nightcore?: boolean;
-    karaoke?: boolean;
-    echo?: boolean;
-    "3d"?: boolean;
-    speed?: number;
-    bass?: number;
-    Sub_bass?: boolean;
-    vibro?: boolean;
-    phaser?: boolean;
-    Vw?: boolean;
-    AudioFade?: boolean
-}
-
 /**
  * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a если он будет найден
  */
@@ -169,3 +155,17 @@ export function getEnableFilters(AudioFilters: AudioFilters): string {
     return response.join(', ');
 }
 //====================== ====================== ====================== ======================
+
+export interface FFmpegFilters {
+    nightcore?: boolean;
+    karaoke?: boolean;
+    echo?: boolean;
+    "3d"?: boolean;
+    speed?: number;
+    bass?: number;
+    Sub_bass?: boolean;
+    vibro?: boolean;
+    phaser?: boolean;
+    Vw?: boolean;
+    AudioFade?: boolean
+}

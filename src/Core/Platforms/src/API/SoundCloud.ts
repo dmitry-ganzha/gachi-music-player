@@ -5,6 +5,10 @@ const APiLink = "https://api-v2.soundcloud.com";
 const clientID = '';
 export const SoundCloud = {getTrack, getPlaylist, SearchTracks};
 
+/**
+ * @description Получаем трек
+ * @param url {string} Ссылка на трек
+ */
 async function getTrack(url: string): Promise<InputTrack> {
     const ClientID = await getClientID();
     const result = await new httpsClient().parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
@@ -31,6 +35,10 @@ async function getTrack(url: string): Promise<InputTrack> {
     }
 }
 
+/**
+ * @description Получаем плейлист
+ * @param url {string} Ссылка на плейлист
+ */
 async function getPlaylist(url: string): Promise<InputPlaylist> {
     const ClientID = await getClientID()
     const result = await new httpsClient().parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
@@ -64,6 +72,12 @@ async function getPlaylist(url: string): Promise<InputPlaylist> {
     }
 }
 
+/**
+ * @description Ищем треки в soundcloud
+ * @param search {string} Что ищем
+ * @param options {limit: number} Кол-во выдаваемых треков
+ * @constructor
+ */
 async function SearchTracks(search: string, options = {limit: 15}) {
     const result = await new httpsClient().parseJson(`${APiLink}/search/tracks?q=${search}&client_id=${await getClientID()}&limit=${options.limit}`);
     const Items: InputTrack[] = [];
@@ -80,6 +94,9 @@ async function SearchTracks(search: string, options = {limit: 15}) {
     return Items;
 }
 
+/**
+ * @description Получаем без регистрации ClientID
+ */
 async function getClientID() {
     if (clientID) return clientID;
 
@@ -91,11 +108,16 @@ async function getClientID() {
             urls.push(r.split('"')[0]);
         }
     });
-    const body2 = await new httpsClient().parseBody(urls[urls.length - 1]);
+    const body2 = await new httpsClient().parseBody(urls.pop());
     return body2.split(',client_id:"')[1].split('"')[0];
 }
 
 
+/**
+ * @description Пример данных на выходе
+ * @param result {any} Данные полученные от soundcloud
+ * @constructor
+ */
 function CreateInfoTrack(result: any): InputTrack {
     return {
         id: result.id,
@@ -119,6 +141,11 @@ function CreateInfoTrack(result: any): InputTrack {
     }
 }
 
+/**
+ * @description Проходим все этапы для получения ссылки на поток трека
+ * @param formats
+ * @param ClientID
+ */
 async function getFormat(formats: SoundCloudFormat[], ClientID: string) {
     const FilterFormats = formats.filter((d) => d.format.protocol === "progressive").pop() ?? formats[0];
     const EndFormat = await new httpsClient().parseJson(`${FilterFormats.url}?client_id=${ClientID}`);
@@ -129,6 +156,11 @@ async function getFormat(formats: SoundCloudFormat[], ClientID: string) {
     }
 }
 
+/**
+ * @description Получаем картинку в исходном качестве
+ * @param image {string} Ссылка на картинку
+ * @constructor
+ */
 function ParseImageToFull(image: string) {
     if (!image) return image;
 

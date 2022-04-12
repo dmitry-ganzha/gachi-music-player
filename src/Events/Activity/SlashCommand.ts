@@ -49,6 +49,7 @@ function PlayerButtons(client: WatKLOK, interaction: ClientInteraction) {
         if (queue.player.state.status === "paused") return getCommand(client, 'resume').run(interaction, []);
         else if (queue.player.state.status === "playing") return getCommand(client, 'pause').run(interaction, []);
     }
+    else if (type === 'skip') return getCommand(client, 'skip').run(interaction, []);
     else if (type === 'replay') return getCommand(client, 'replay').run(interaction, []);
 }
 
