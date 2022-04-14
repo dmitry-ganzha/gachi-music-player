@@ -1,8 +1,8 @@
-import {getVoiceConnection, VoiceConnection} from "@discordjs/voice";
 import {Guild, VoiceState} from "discord.js";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {WatKLOK} from "../../Core/Client";
 import {StatusPlayerHasSkipped} from "../../Core/Player/Audio/AudioPlayer";
+import {getVoiceConnection, VoiceConnection} from "@discordjs/voice";
 
 export class voiceStateUpdate {
     public readonly name: string = 'voiceStateUpdate';

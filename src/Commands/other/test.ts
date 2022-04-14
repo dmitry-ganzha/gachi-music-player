@@ -11,6 +11,6 @@ export class CommandTest extends Command {
             slash: false
         })
     };
-    public run = (message: ClientMessage, args: string[]) => {
+    public run = async (message: ClientMessage, args: string[]) => {
     };
 }

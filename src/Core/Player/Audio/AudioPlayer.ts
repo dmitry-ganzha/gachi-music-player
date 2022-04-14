@@ -73,7 +73,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     /**
      * @description Голосовые каналы в которых можно включить музыку
      */
-    protected get VoiceChannels() { return this.subscribers.filter(({ connection }) => connection.state.status === "ready").map(({ connection }) => connection); };
+    protected get VoiceChannels() { return this.subscribers.filter(( {connection} ) => connection.state.status === "ready").map(({connection}) => connection) };
 
     /**
      * @description Проверка играет ли сейчас плеер
@@ -112,6 +112,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (OldState.status !== newState.status || isNewResources) {
             //Перед сменой статуса плеера отправляем пустой пакет. Необходим для исправления кривизны потока!
             this._playPacket(SILENCE_FRAME, this.VoiceChannels);
+
             if (isNewResources) void this.emit(newState.status, OldState, this._state);
             else void this.emit(newState.status, OldState, this._state);
         }
@@ -124,10 +125,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     protected play = (resource: FFmpegStream): void => {
         if (!resource) return void this.emit('error', 'Error: AudioResource has not found');
         if (resource?.ended) return void this.emit('error', `[AudioPlayer]: [Message: Fail to load a ended stream]`);
-        if (!resource?.readable) {
-            setTimeout(this.play, 25);
-            return;
-        }
+        if (!resource?.readable) return void setTimeout(this.play, 25);
 
         const onStreamError = (error: Error) => {
             if (this.state.status !== "idle") void this.emit('error', error);
@@ -144,7 +142,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
             };
 
             resource.playStream.once('readable', onReadableCallback);
-            void ['end', 'close', 'finish'].map((event: string) => resource.playStream.once(event, onFailureCallback));
+            ['end', 'close', 'finish'].map((event: string) => resource.playStream.once(event, onFailureCallback));
             this.state = { status: "buffering", resource, onReadableCallback, onFailureCallback, onStreamError };
         }
     };
@@ -224,10 +222,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (this.state.status === "autoPaused") return;
 
         //Если некуда проигрывать музыку ставить плеер на паузу
-        if (Receivers.length === 0) {
-            this.state = {...this.state, status: "autoPaused"};
-            return;
-        }
+        if (Receivers.length === 0) return void (this.state = { ...this.state, status: "autoPaused" });
 
         //Отправка музыкального пакета
         if (this.state.status === "playing") {
@@ -242,12 +237,15 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     };
 
     //Перестаем передавать пакеты во все доступные каналы
-    protected _signalStopSpeaking = () => this.subscribers.forEach(({ connection }) => connection.setSpeaking(false));
+    protected _signalStopSpeaking = () => this.subscribers.forEach(( connection ) => connection.connection.setSpeaking(false));
     //Отправляем пакет во все доступные каналы
     protected _playPacket = (packet: Buffer, receivers: VoiceConnection[]) => receivers.forEach((connection) => connection.playOpusPacket(packet));
 
     public destroy = () => {
-        if (this.subscribers) delete this.subscribers;
+        if (this.subscribers) {
+            this.subscribers.forEach((connection) => connection.connection.destroy());
+            delete this.subscribers;
+        }
         if (this._state) delete this._state;
 
         this.removeAllListeners();

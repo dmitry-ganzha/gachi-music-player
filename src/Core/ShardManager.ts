@@ -7,8 +7,8 @@ class ShardManager extends ShardingManager {
         this.on('shardCreate', (shard: Shard) => {
             console.log(`[ShardManager]: [Create]: [ID: ${shard.id}]`);
         });
-        this.Spawn().catch((err: Error) => console.log(`[ShardManager]: [Error]: ${err}`));
+
+        this.spawn({amount: 1, delay: -1}).catch((err: Error) => console.log(`[ShardManager]: [Error]: ${err}`));
     };
-    protected Spawn = () => this.spawn({amount: "auto"});
 }
 new ShardManager();

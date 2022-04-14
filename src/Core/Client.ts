@@ -88,8 +88,7 @@ client.login(client.cfg.Bot.token).then(() => {
                 const channel = client.channels.cache.get(client.cfg.Channels.SendErrors) as MessageChannel
                 if (channel) return channel.send(`${err.toString()}`);
                 return null;
-            } catch {/* Continue */
-            }
+            } catch {/* Continue */}
         });
     }
 });

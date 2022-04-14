@@ -3,7 +3,7 @@ import {CoolDownBase, Helper} from './Message';
 import {ClientInteraction, WatKLOK} from "../../Core/Client";
 import {ParserTimeSong} from "../../Core/Player/Manager/Duration/ParserTimeSong";
 
-const CustomID = new Set(['skip', 'resume_pause', 'replay']);
+const CustomID = new Set(['skip', 'resume_pause', 'replay', 'last']);
 
 
 export class SlashCommandN {
@@ -51,6 +51,13 @@ function PlayerButtons(client: WatKLOK, interaction: ClientInteraction) {
     }
     else if (type === 'skip') return getCommand(client, 'skip').run(interaction, []);
     else if (type === 'replay') return getCommand(client, 'replay').run(interaction, []);
+    else if (type === 'last') {
+        if (!queue || !queue?.songs) return;
+        if (queue.songs.length === 1) return queue.player.stop();
+
+        client.queue.swap(0, queue.songs.length - 1, "songs", interaction.guildId);
+        queue.player.stop();
+    }
 }
 
 // Запускаем команду, выбранную пользователем
