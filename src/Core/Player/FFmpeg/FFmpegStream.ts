@@ -1,6 +1,6 @@
 import {opus} from "prism-media";
 import {CreateFilters, FFmpegArgs, FFmpegArguments} from "./index";
-import {FFmpeg, AudioFilters} from '.';
+import {FFmpeg, AudioFilters} from './index';
 /**
  * @description Подготавливаем, получаем и создаем объект схожий с discord.js {AudioResource}
  */
@@ -38,7 +38,7 @@ export class FFmpegStream {
     };
 
     /**
-     * @description Получаем пакет и проверяем не пустой ли он если не нустой к таймеру добовляем 20 мс
+     * @description Получаем пакет и проверяем не пустой ли он если не пустой к таймеру добавляем 20 мс
      */
     public read = (): Buffer | null => {
         const packet = this.playStream?.read();

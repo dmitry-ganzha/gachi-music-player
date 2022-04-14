@@ -3,7 +3,7 @@ import {InputTrack} from "../../Utils/TypeHelper";
 import {Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
 import {JoinVoiceChannel} from "../Voice/VoiceManager";
-import {PushSongMessage} from "../Manager/MessageEmitter";
+import {PushSongMessage} from "../Manager/Message";
 import {VoiceChannel} from "discord.js";
 
 //====================== ====================== ====================== ======================

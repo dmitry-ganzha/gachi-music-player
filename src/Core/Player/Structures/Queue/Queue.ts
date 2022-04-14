@@ -1,5 +1,5 @@
 import {StageChannel, VoiceChannel} from "discord.js";
-import {MessageSystem} from "../../Manager/MessageEmitter";
+import {MessageSystem} from "../../Manager/Message";
 import {RunPlayer} from "../../Audio/AudioPlayer";
 import {VoiceEvent} from "../../Voice/VoiceEvent";
 import {Song} from "./Song";

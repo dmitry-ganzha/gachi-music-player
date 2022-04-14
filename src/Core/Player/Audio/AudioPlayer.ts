@@ -1,17 +1,17 @@
 import {FindResource} from "./Helper";
 import {Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
-import {WarningMessage} from "../Manager/MessageEmitter";
+import {WarningMessage} from "../Manager/Message";
 import {TypedEmitter} from "tiny-typed-emitter";
 import {ClientMessage} from "../../Client";
 import {AudioFilters} from "../FFmpeg";
-import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 import {FFmpegStream} from "../FFmpeg/FFmpegStream";
-import {addAudioPlayer, deleteAudioPlayer} from "../Manager/PlayersData";
+import {addAudioPlayer, deleteAudioPlayer} from "../Manager/DataStore";
+import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 
 //Статусы плеера для пропуска музыки
-export const StatusPlayerHasSkipped: Set<string> = new Set(['playing', 'paused', 'buffering', 'autopaused']);
-const SILENCE_FRAME = Buffer.from([0xf8, 0xff, 0xfe]);
+export const StatusPlayerHasSkipped: Set<string> = new Set(['playing', 'paused', 'buffering', 'autoPaused']);
+const SILENCE_FRAME = Buffer.from([0xf8, 0xfe]); //0xf8, 0xff, 0xfe (original)
 
 interface PlayerStateIdle {
     status: "idle",
@@ -342,7 +342,7 @@ export class RunPlayer extends AudioPlayer {
  * @param seek {number} Пропуск музыки до 00:00:00
  */
 async function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0): Promise<FFmpegStream> {
-    if (!song.format?.url) await Promise.all([FindResource(song)]);
+    if (!song.format?.url) await FindResource(song);
 
     if (song.isLive) return new FFmpegStream(song.format.url);
 

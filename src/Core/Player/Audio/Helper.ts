@@ -7,11 +7,11 @@ import {SoundCloud, VK, YouTube} from "../../Platforms";
  * @description Заготавливаем необходимые данные для создания потока
  */
 export async function FindResource(song: Song, req: number = 0): Promise<void> {
-    if (req > 25) return;
+    if (req > 40) return;
 
     //Получаем данные о ресурсе
     let format = await getLinkFormat(song);
-    if (!format) return FindResource(song, req++);
+    if (!format || !format?.url) return FindResource(song, req++);
 
     //Подгоняем под общую сетку
     song.format = ConstFormat(format);

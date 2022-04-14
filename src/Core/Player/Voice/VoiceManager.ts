@@ -1,6 +1,11 @@
 import {Guild, InternalDiscordGatewayAdapterCreator, StageChannel, VoiceChannel, ChannelType} from "discord.js";
 import {AudioPlayer} from "../Audio/AudioPlayer";
-import {DiscordGatewayAdapterCreator, getVoiceConnection, joinVoiceChannel, VoiceConnection} from "@discordjs/voice";
+import {
+    DiscordGatewayAdapterCreator,
+    getVoiceConnection,
+    joinVoiceChannel,
+    VoiceConnection
+} from "@discordjs/voice";
 
 /**
  * @description Отключение от голосового канала
@@ -19,11 +24,12 @@ export class JoinVoiceChannel {
 
     public constructor({id, guild, type}: VoiceChannel | StageChannel) {
         this.VoiceConnection = joinVoiceChannel({
+            selfDeaf: true,
+            selfMute: false,
             channelId: id,
             guildId: guild.id,
             adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator & DiscordGatewayAdapterCreator,
-            selfDeaf: true
-        });
+        })
         this.meVoice = guild.me.voice;
         this.SpeakStateChannel(guild.me, type);
         // @ts-ignore
