@@ -23,19 +23,19 @@ export class CommandPlay extends Command {
         super({
             name: "play",
             aliases: ["p", "playing", "з"],
-            description: 'Воспроизведение плейлиста по URL или по названию музыки',
+            description: 'Включение музыки по ссылке или названию!',
 
             permissions: {client: ['Speak', 'Connect'], user: []},
             options: [
                 {
-                    name: "song-or-type",
-                    description: "Song (url, name) - (YouTube, Spotify, VK, Soundcloud) or search type - (yt, sp, vk, sc)",
+                    name: "Url-Name-Type",
+                    description: "Укажи что нужно, ссылку, название или тип поиска и название",
                     required: true,
                     type: ApplicationCommandOptionType.String
                 },
                 {
                     name: "search",
-                    description: "Name song. (YouTube, Spotify, VK, Soundcloud)",
+                    description: "Прошлый аргумент, тип? Если да, тут название трека!",
                     required: false,
                     type: ApplicationCommandOptionType.String
                 }

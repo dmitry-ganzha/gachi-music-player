@@ -119,20 +119,21 @@ export class FFmpeg extends Duplex {
  * @constructor
  */
 export function CreateFilters(AudioFilters: AudioFilters): string {
-    if (!AudioFilters) return null;
     let response: string[] = [];
 
-    Object.entries(AudioFilters).forEach(([key, value]) => {
-        if (!value || value <= 0) return;
+    if (AudioFilters) {
+        Object.entries(AudioFilters).forEach(([key, value]) => {
+            if (!value || value <= 0) return;
 
-        // @ts-ignore
-        let FilterKey = FFmpegArguments.Filters[key];
-        if (!FilterKey) return;
+            // @ts-ignore
+            let FilterKey = FFmpegArguments.Filters[key];
+            if (!FilterKey) return;
 
-        // @ts-ignore
-        if (typeof value === 'number') response.push(`${FilterKey}${AudioFilters[key]}`);
-        else response.push(FilterKey);
-    });
+            // @ts-ignore
+            if (typeof value === 'number') response.push(`${FilterKey}${AudioFilters[key]}`);
+            else response.push(FilterKey);
+        });
+    }
     response.push(FFmpegArguments.Filters.AudioFade);
 
     return response.join(',');

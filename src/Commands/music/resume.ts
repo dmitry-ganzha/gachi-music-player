@@ -7,7 +7,7 @@ export class CommandResume extends Command {
         super({
             name: "resume",
             aliases: [],
-            description: "Возобновление воспроизведения музыки",
+            description: "Возобновить воспроизведение текущего трека?!",
 
             enable: true,
             slash: true

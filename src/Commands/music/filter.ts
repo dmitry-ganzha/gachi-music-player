@@ -9,7 +9,7 @@ export class CommandLoop extends Command {
         super({
             name: "filter",
             aliases: ["fl"],
-            description: 'Включение фильтров на музыку',
+            description: 'Включение фильтров для музыки!',
 
             options: [
                 {

@@ -8,11 +8,11 @@ export class CommandSkip extends Command {
         super({
             name: "skip",
             aliases: ['s'],
-            description: "Пропуск музыки",
+            description: "Пропуск текущей музыки!",
 
             options: [{
                 name: "value",
-                description: "Skip before the song or skip current song",
+                description: "Укажите какую музыку пропускаем!",
                 type: ApplicationCommandOptionType.String
             }],
             enable: true,

@@ -12,8 +12,10 @@ export class FFmpegStream {
     public playStream: opus.OggDemuxer;
     protected FFmpeg: FFmpeg;
     protected opusEncoder = new opus.OggDemuxer({ destroy: () => this.destroy() });
-
-    //Для проверки, читабельный ли стрим
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Для проверки, читабельный ли стрим
+     */
     public get readable() {
         if (this.silenceRemaining === 0) return false;
         const read = this.playStream.readable;
@@ -23,11 +25,14 @@ export class FFmpegStream {
         }
         return read;
     };
-    //Для проверки, закончился ли стрим ресурса
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Для проверки, закончился ли стрим ресурса
+     */
     public get ended() {
         return this.playStream?.readableEnded || this.playStream?.destroyed || !this.playStream;
     };
-
+    //====================== ====================== ====================== ======================
     public constructor(url: string | any, AudioFilters: AudioFilters = null, seek: number = 0) {
         this.FFmpeg = new FFmpeg(CreateArguments(url, AudioFilters, seek));
 
@@ -36,7 +41,7 @@ export class FFmpegStream {
         ['end', 'close', 'error'].map((event) => this.playStream.once(event, this.destroy));
         return;
     };
-
+    //====================== ====================== ====================== ======================
     /**
      * @description Получаем пакет и проверяем не пустой ли он если не пустой к таймеру добавляем 20 мс
      */
@@ -45,7 +50,7 @@ export class FFmpegStream {
         if (packet) this.playbackDuration += 20;
         return packet;
     };
-
+    //====================== ====================== ====================== ======================
     /**
      * @description Чистим память!
      */
@@ -60,26 +65,16 @@ export class FFmpegStream {
         delete this.started;
         delete this.silenceRemaining;
 
-        setTimeout(() => {
-            //Cleanup playStream
-            if (this.playStream) {
-                this.playStream.removeAllListeners();
-                this.playStream.destroy();
-                this.playStream.read();
-                delete this.playStream;
+        [this.playStream, this.opusEncoder].forEach((Stream) => {
+            if (!Stream.destroyed) {
+                Stream.removeAllListeners();
+                Stream.destroy();
+                Stream.read();
             }
-
-            //Cleanup opusEncoder
-            if (this.opusEncoder) {
-                this.opusEncoder.removeAllListeners();
-                this.opusEncoder.destroy();
-                this.opusEncoder.read();
-                delete this.opusEncoder;
-            }
-            delete this.silencePaddingFrames;
-        }, 125);
-
-        return;
+        });
+        delete this.silencePaddingFrames;
+        delete this.opusEncoder;
+        delete this.playStream;
     };
 }
 //====================== ====================== ====================== ======================

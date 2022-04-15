@@ -8,7 +8,7 @@ export class CommandRemove extends Command {
         super({
             name: "remove",
             aliases: [],
-            description: 'Пропуск конкретной музыки',
+            description: 'Эта команда удаляет из очереди музыку!',
 
             options: [
                 {

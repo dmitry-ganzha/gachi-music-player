@@ -8,7 +8,7 @@ export class CommandStop extends Command {
         super({
             name: "stop",
             aliases: ["leave", "disconnect", "discon"],
-            description: "Выключение музыки",
+            description: "Завершаем воспроизведение музыки!",
 
             enable: true,
             slash: true

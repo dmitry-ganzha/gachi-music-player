@@ -7,7 +7,7 @@ export class CommandPing extends Command {
     public constructor() {
         super({
             name: "ping",
-            description: "Проверка отклика сообщения",
+            description: "Пинг. Отклик сообщения!",
 
             slash: true,
             enable: true

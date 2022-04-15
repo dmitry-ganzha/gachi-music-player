@@ -64,7 +64,7 @@ function PlayerButtons(client: WatKLOK, interaction: ClientInteraction) {
 function RunCommand(client: WatKLOK, interaction: ClientInteraction) {
     let cmd = getCommand(client, interaction.commandName);
 
-    if (cmd) return cmd.run(interaction, ParseArg(interaction));
+    if (cmd) return cmd.run(interaction, ParseArg(interaction?.options));
     return DeleteCommandInInteraction(client, interaction);
 }
 
@@ -76,7 +76,7 @@ function getCommand(client: WatKLOK, name: string) {
 
 //Парсим аргументы выданные дискордом
 function ParseArg(options: any) {
-    return options?._hoistedOptions?.map((f: CommandInteractionOption) => f.value) || ''
+    return options?._hoistedOptions?.map((f: CommandInteractionOption) => f.value) || [""];
 }
 
 // Удаляем через 200 мс взаимодействие

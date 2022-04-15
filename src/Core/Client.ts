@@ -68,6 +68,9 @@ export class ClientInteraction extends Interaction {
     commandName: string;
     commandId: string;
     author: User;
+    options?: {
+        _hoistedOptions: any[]
+    }
 
     delete: () => void;
     deferReply: () => Promise<void>

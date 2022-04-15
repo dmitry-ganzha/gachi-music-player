@@ -6,7 +6,7 @@ export class CommandReplay extends Command {
         super({
             name: "replay",
             aliases: ['repl'],
-            description: "Повтор текущей музыки",
+            description: "Повторить текущий трек?",
 
             enable: true,
             slash: true

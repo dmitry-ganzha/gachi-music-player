@@ -1,6 +1,6 @@
 import {StageChannel, VoiceChannel} from "discord.js";
 import {MessageSystem} from "../../Manager/Message";
-import {RunPlayer} from "../../Audio/AudioPlayer";
+import {AudioPlayer} from "../../Audio/AudioPlayer";
 import {VoiceEvent} from "../../Voice/VoiceEvent";
 import {Song} from "./Song";
 import {QueueEvents} from "../../Queue/QueueEvent";
@@ -11,7 +11,7 @@ import {FFmpegFilters} from "../../FFmpeg";
 export type LoopType = "song" | "songs" | "off";
 
 export class Queue {
-    public player: RunPlayer;
+    public player: AudioPlayer;
     public events: { message: MessageSystem, queue: QueueEvents, helper: VoiceEvent } = {
         message: new MessageSystem(),
         queue: new QueueEvents(),
@@ -36,7 +36,7 @@ export class Queue {
     public songs: Song[] = [];
 
     public constructor(message: ClientMessage, voice: VoiceChannel) {
-        this.player = new RunPlayer(message);
+        this.player = new AudioPlayer(message);
         this.channels = { message, voice, connection: null};
     };
 }

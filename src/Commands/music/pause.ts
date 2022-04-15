@@ -6,7 +6,7 @@ export class CommandPause extends Command {
     public constructor() {
         super({
             name: "pause",
-            description: "Приостановка воспроизведения музыки",
+            description: "Приостановить воспроизведение текущего трека?!",
 
             enable: true,
             slash: true

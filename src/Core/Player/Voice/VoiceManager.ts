@@ -33,7 +33,7 @@ export class JoinVoiceChannel {
         this.meVoice = guild.me.voice;
         this.SpeakStateChannel(guild.me, type);
         // @ts-ignore
-        ["destroyed", "disconnected"].map(event => this.VoiceConnection.once(event, this.destroy));
+        ["destroyed", "disconnected"].map((event) => this.VoiceConnection.once(event, this.destroy));
     };
 
     /*
@@ -64,10 +64,10 @@ export class JoinVoiceChannel {
     };
 
     protected destroy = () => {
-        try {
+        if (this.VoiceConnection.state.status !== "destroyed") {
             this.VoiceConnection?.destroy();
-        } catch {/* Continue */}
-        this.VoiceConnection?.removeAllListeners();
+            this.VoiceConnection?.removeAllListeners();
+        }
 
         delete this.VoiceConnection;
         delete this.meVoice;

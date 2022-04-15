@@ -10,7 +10,7 @@ export class CommandHelp extends Command {
         super({
             name: 'help',
             aliases: ["h"],
-            description: 'Все мои команды',
+            description: 'Можешь глянуть все мои команды!',
 
             slash: true,
             enable: true,

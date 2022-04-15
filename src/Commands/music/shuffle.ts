@@ -9,7 +9,7 @@ export class CommandShuffle extends Command {
         super({
             name: "shuffle",
             aliases: [],
-            description: "Перетасовка музыки",
+            description: "Перетасовка музыки в очереди текущего сервера!",
 
             options: [{
                 name: "value",

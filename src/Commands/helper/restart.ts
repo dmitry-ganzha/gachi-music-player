@@ -9,7 +9,7 @@ export class CommandRestart extends Command {
         super({
             name: 'restart',
             aliases: ["res"],
-            description: 'Перезапуск плеера, очередь этого сервера будет потеряна',
+            description: 'Перезапуск плеера, очередь этого сервера будет потеряна!',
 
             enable: true,
         })

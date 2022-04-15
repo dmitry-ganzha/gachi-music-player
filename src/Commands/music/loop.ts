@@ -8,7 +8,7 @@ export class CommandLoop extends Command {
         super({
             name: "loop",
             aliases: ["repeat", "rept"],
-            description: 'Включение и выключение повтора',
+            description: 'Включение повтора и выключение повтора музыки!',
 
             options: [
                 {

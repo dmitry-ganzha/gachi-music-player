@@ -9,7 +9,7 @@ export class CommandPackage extends Command {
         super({
             name: 'package',
             aliases: ['pack'],
-            description: 'Все используемые пакеты',
+            description: 'Все пакеты которые я использую!',
 
             enable: true
         })

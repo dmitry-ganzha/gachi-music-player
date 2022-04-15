@@ -11,7 +11,7 @@ export class CommandQueue extends Command {
         super({
             name: "queue",
             aliases: ["queue", "list", "musiclist"],
-            description: "Плейлист сервера",
+            description: "Показать всю музыку добавленную в очередь этого сервера?",
 
             enable: true,
             slash: true

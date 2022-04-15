@@ -6,7 +6,7 @@ export class CommandUptime extends Command {
     public constructor() {
         super({
             name: 'uptime',
-            description: 'Мое время работы без перезагрузок',
+            description: 'Время без рестартов!',
 
             slash: true,
             enable: true

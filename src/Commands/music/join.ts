@@ -9,7 +9,7 @@ export class CommandJoin extends Command {
         super({
             name: "join",
             aliases: ["summon", "j"],
-            description: 'Подключение к голосовому каналу',
+            description: 'Подключение к вашему голосовому каналу!',
 
             permissions: {
                 user: null,

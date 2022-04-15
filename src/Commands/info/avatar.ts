@@ -9,7 +9,7 @@ export class CommandAvatar extends Command {
         super({
             name: 'avatar',
             aliases: ["av", "avt"],
-            description: 'Аватар пользователя',
+            description: 'Эта команда показывает ваш или чей-то аватар!',
 
             options: [
                 {

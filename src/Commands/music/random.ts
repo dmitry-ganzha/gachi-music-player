@@ -5,9 +5,9 @@ import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 export class CommandRandom extends Command {
     public constructor() {
         super({
-            name: 'randommusic',
+            name: 'random',
             aliases: ["rm"],
-            description: 'Рандомная музыка',
+            description: 'После каждой проигранной музыки будет выбрана случайная музыка!',
 
             enable: true,
             slash: true

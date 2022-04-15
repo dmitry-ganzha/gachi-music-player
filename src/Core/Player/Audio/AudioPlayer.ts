@@ -11,46 +11,7 @@ import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 
 //Статусы плеера для пропуска музыки
 export const StatusPlayerHasSkipped: Set<string> = new Set(['playing', 'paused', 'buffering', 'autoPaused']);
-const SILENCE_FRAME = Buffer.from([0xf8, 0xfe]); //0xf8, 0xff, 0xfe (original)
-
-interface PlayerStateIdle {
-    status: "idle",
-    resource?: FFmpegStream
-}
-interface PlayerStatePlaying {
-    status: "playing";
-    resource: FFmpegStream;
-
-    onStreamError: (error: any) => void;
-}
-interface PlayerStatePaused {
-    status: "paused" | "autoPaused";
-    resource: FFmpegStream;
-
-    onStreamError: (error: any) => void;
-}
-interface PlayerStateBuffering {
-    status: "buffering";
-    resource: FFmpegStream;
-
-    onReadableCallback: () => void;
-    onFailureCallback: () => void;
-    onStreamError: (error: any) => void;
-}
-
-type PlayerState = PlayerStateBuffering | PlayerStateIdle | PlayerStatePaused | PlayerStatePlaying;
-
-type PlayerEvents = {
-    error: (error: any) => void;
-    subscribe: (subscription: PlayerSubscription) => void;
-    unsubscribe: (subscription: PlayerSubscription) => void;
-
-    idle: (oldState: PlayerState, newState: PlayerState) => void;
-    paused: (oldState: PlayerState, newState: PlayerState) => void;
-    buffering: (oldState: PlayerState, newState: PlayerState) => void;
-    autoPaused: (oldState: PlayerState, newState: PlayerState) => void;
-    playing: (oldState: PlayerState, newState: PlayerState) => void;
-}
+const EmptyFrame = Buffer.from([0xf8, 0xfe]); //0xf8, 0xff, 0xfe (original from discord.js)
 
 /**
  * @description Плеер!)
@@ -58,7 +19,7 @@ type PlayerEvents = {
 export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     protected _state: PlayerState = { status: "idle" };
     protected subscribers: PlayerSubscription[] = [];
-
+    //====================== ====================== ====================== ======================
     /**
      * @description Текущее время плеера в мс
      */
@@ -69,12 +30,14 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     protected set CurrentTime(time: number) {
         this.state.resource.playbackDuration = time * 1e3;
     };
-
+    //====================== ====================== ====================== ======================
     /**
      * @description Голосовые каналы в которых можно включить музыку
      */
-    protected get VoiceChannels() { return this.subscribers.filter(( {connection} ) => connection.state.status === "ready").map(({connection}) => connection) };
-
+    protected get VoiceChannels() {
+        return this.subscribers.filter(( {connection} ) => connection.state.status === "ready").map(({connection}) => connection);
+    };
+    //====================== ====================== ====================== ======================
     /**
      * @description Проверка играет ли сейчас плеер
      */
@@ -88,7 +51,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         }
         return true;
     };
-
+    //====================== ====================== ====================== ======================
     /**
      * @description С помощью этого можно полностью перенастроить плеер! *Лучше не трогать, если не знаешь что делать*. Параметр set has protected
      */
@@ -111,13 +74,82 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
         if (OldState.status !== newState.status || isNewResources) {
             //Перед сменой статуса плеера отправляем пустой пакет. Необходим для исправления кривизны потока!
-            this._playPacket(SILENCE_FRAME, this.VoiceChannels);
+            this._playPacket(EmptyFrame, this.VoiceChannels);
 
             if (isNewResources) void this.emit(newState.status, OldState, this._state);
             else void this.emit(newState.status, OldState, this._state);
         }
     };
+    //====================== ====================== ====================== ======================
+    public constructor(msg: ClientMessage) {
+        super();
+        this.on("idle", () => this.onIdlePlayer(msg));
+        this.on("error", (err: any) => this.onErrorPlayer(err, msg));
+        this.setMaxListeners(2);
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Включаем музыку с пропуском
+     * @param message {ClientMessage} Сообщение с сервера
+     * @param seek {number} Пропуск музыки до 00:00:00
+     */
+    public seek = (message: ClientMessage, seek: number = 0): void => {
+        const {client, guild} = message;
+        const queue: Queue = client.queue.get(guild.id);
 
+        setImmediate(() =>
+            CreateResource(queue.songs[0], queue.audioFilters, seek).then((stream: FFmpegStream) => {
+                this.play(stream);
+                if (seek) this.CurrentTime = seek;
+            })
+        );
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Включаем музыку
+     * @param message {ClientMessage} Сообщение с сервера
+     */
+    public playStream = (message: ClientMessage): void => {
+        const {client, guild} = message;
+        const queue: Queue = client.queue.get(guild.id);
+
+        if (queue.songs?.length === 0) return void queue.events.queue.emit('DestroyQueue', queue, message);
+
+        setImmediate(() =>
+            CreateResource(queue.songs[0], queue.audioFilters).then((stream: FFmpegStream) => {
+                client.console(`[${guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
+                queue.events.message.PlaySongMessage(queue.channels.message);
+                this.play(stream);
+            })
+        );
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Приостанавливаем отправку пакетов в голосовой канал
+     */
+    public pause = (): boolean => {
+        if (this.state.status !== "playing") return;
+        this.state = { ...this.state, status: "paused" };
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Продолжаем отправлять пакеты в голосовой канал
+     */
+    public resume = (): boolean => {
+        if (this.state.status !== "paused") return;
+        this.state = { ...this.state, status: "playing" };
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Пропускаем текущий трек
+     * @param force {boolean}
+     */
+    public stop = (force: boolean = false): boolean => {
+        if (this.state.status === "idle") return;
+        if (force || this.state.resource.silencePaddingFrames === 0) this.state = { status: "idle" };
+        else if (this.state.resource.silenceRemaining === -1) this.state.resource.silenceRemaining = this.state.resource.silencePaddingFrames;
+    };
+    //====================== ====================== ====================== ======================
     /**
      * @description Что будет отправлять в голосовой канал
      * @param resource {FFmpegStream} Поток
@@ -146,65 +178,39 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
             this.state = { status: "buffering", resource, onReadableCallback, onFailureCallback, onStreamError };
         }
     };
-
-    /**
-     * @description Приостанавливаем отправку пакетов в голосовой канал
-     */
-    public pause = (): boolean => {
-        if (this.state.status !== "playing") return false;
-        this.state = { ...this.state, status: "paused" };
-        return true;
-    };
-
-    /**
-     * @description Продолжаем отправлять пакеты в голосовой канал
-     */
-    public resume = (): boolean => {
-        if (this.state.status !== "paused") return false;
-        this.state = { ...this.state, status: "playing" };
-        return true;
-    };
-
-    /**
-     * @description Пропускаем текущий трек
-     * @param force {boolean}
-     */
-    public stop = (force: boolean = false): boolean => {
-        if (this.state.status === "idle") return false;
-        if (force || this.state.resource.silencePaddingFrames === 0) this.state = { status: "idle" };
-        else if (this.state.resource.silenceRemaining === -1) this.state.resource.silenceRemaining = this.state.resource.silencePaddingFrames;
-        return true;
-    };
+    //====================== ====================== ====================== ======================
 
     /**
      * @description Убираем из <this.subscribers> голосовой канал
      * @param connection {VoiceConnection} Голосовой канал на котором будет играть музыка
      */
     protected subscribe = (connection: VoiceConnection) => {
-        const existingSubscription = this.subscribers.find((subscription) => subscription.connection === connection);
-        if (!existingSubscription) {
-            const subscription = new PlayerSubscription(connection, this as any);
-            this.subscribers.push(subscription);
-            setImmediate(() => void this.emit('subscribe', subscription));
-            return subscription;
+        const FindVoiceChannel = this.subscribers.find((sub) => sub.connection === connection);
+
+        if (!FindVoiceChannel) {
+            const PlayerSub = new PlayerSubscription(connection, this as any);
+            this.subscribers.push(PlayerSub);
+            //return PlayerSub;
         }
-        return existingSubscription;
+       //return FindVoiceChannel;
     };
+    //====================== ====================== ====================== ======================
     /**
      * @description Убираем из <this.subscribers> голосовой канал
      * @param subscription {PlayerSubscription} Голосовой канал на котором больше не будет играть музыка
      */
     protected unsubscribe = (subscription: PlayerSubscription) => {
         const index = this.subscribers.indexOf(subscription);
-        const exists = index !== -1;
-        if (exists) {
+        const FindInIndex = index !== -1;
+
+        if (FindInIndex) {
             this.subscribers.splice(index, 1);
             subscription.connection.setSpeaking(false);
-            void this.emit('unsubscribe', subscription);
         }
-        return exists;
-    };
 
+        //return FindInIndex;
+    };
+    //====================== ====================== ====================== ======================
     /**
      * @description Проверка перед отправкой пакета в голосовой канал
      */
@@ -235,69 +241,19 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
             }
         }
     };
-
-    //Перестаем передавать пакеты во все доступные каналы
-    protected _signalStopSpeaking = () => this.subscribers.forEach(( connection ) => connection.connection.setSpeaking(false));
-    //Отправляем пакет во все доступные каналы
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Перестаем передавать пакеты во все доступные каналы
+     */
+    protected _signalStopSpeaking = () => this.subscribers.forEach(({connection} ) => connection.setSpeaking(false));
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Отправляем пакет во все доступные каналы
+     * @param packet {Buffer} Сам пакет
+     * @param receivers {VoiceConnection[]} В какие каналы отправить пакет
+     */
     protected _playPacket = (packet: Buffer, receivers: VoiceConnection[]) => receivers.forEach((connection) => connection.playOpusPacket(packet));
-
-    public destroy = () => {
-        if (this.subscribers) {
-            this.subscribers.forEach((connection) => connection.connection.destroy());
-            delete this.subscribers;
-        }
-        if (this._state) delete this._state;
-
-        this.removeAllListeners();
-    };
-}
-
-/**
- * @description Настраиваем AudioPlayer
- */
-export class RunPlayer extends AudioPlayer {
-    public constructor(msg: ClientMessage) {
-        super();
-        this.on("idle", () => this.onIdlePlayer(msg));
-        this.on("error", (err: any) => this.onErrorPlayer(err, msg));
-        this.setMaxListeners(2);
-    };
-    /**
-     * @description Включаем музыку с пропуском
-     * @param message {ClientMessage} Сообщение с сервера
-     * @param seek {number} Пропуск музыки до 00:00:00
-     */
-    public seek = (message: ClientMessage, seek: number = 0): void => {
-        const {client, guild} = message;
-        const queue: Queue = client.queue.get(guild.id);
-
-        setImmediate(() =>
-            CreateResource(queue.songs[0], queue.audioFilters, seek).then((stream: FFmpegStream) => {
-                this.play(stream);
-                if (seek) this.CurrentTime = seek;
-            })
-        );
-    };
-
-    /**
-     * @description Включаем музыку
-     * @param message {ClientMessage} Сообщение с сервера
-     */
-    public playStream = (message: ClientMessage): void => {
-        const {client, guild} = message;
-        const queue: Queue = client.queue.get(guild.id);
-
-        if (queue.songs?.length === 0) return void queue.events.queue.emit('DestroyQueue', queue, message);
-
-        setImmediate(() =>
-            CreateResource(queue.songs[0], queue.audioFilters).then((stream: FFmpegStream) => {
-                client.console(`[${guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
-                queue.events.message.PlaySongMessage(queue.channels.message);
-                this.play(stream);
-            })
-        );
-    };
-
+    //====================== ====================== ====================== ======================
     /**
      * @description Когда плеер завершит песню, он возвратит эту функцию
      * @param message {ClientMessage} Сообщение с сервера
@@ -315,7 +271,7 @@ export class RunPlayer extends AudioPlayer {
             return this.playStream(message);
         });
     };
-
+    //====================== ====================== ====================== ======================
     /**
      * @description Когда плеер выдает ошибку, он возвратит эту функцию
      * @param err {Error | string} Ошибка
@@ -328,8 +284,19 @@ export class RunPlayer extends AudioPlayer {
 
         if (queue.songs.length === 1) void queue.events.queue.emit("DestroyQueue", queue, message);
         if (queue.songs) this.stop();
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Уничтожаем все что внутри плеера
+     */
+    public destroy = () => {
+        if (this.subscribers) {
+            this.subscribers.forEach(({connection}) => connection.destroy());
+            delete this.subscribers;
+        }
+        if (this._state) delete this._state;
 
-        return;
+        this.removeAllListeners();
     };
 }
 //====================== ====================== ====================== ======================
@@ -351,13 +318,72 @@ async function CreateResource(song: Song, audioFilters: AudioFilters = null, see
  * @description Повтор музыки
  * @param queue {Queue} Очередь сервера
  */
-function isRemoveSong({options, songs}: Queue): null {
-    if (options.loop === "song") return null;
+function isRemoveSong({options, songs}: Queue): void {
+    if (options.loop === "song") return;
     else if (options.loop === "songs") {
         const repeat = songs.shift();
         songs.push(repeat);
     } else songs.shift();
-
-    return null;
 }
 //====================== ====================== ====================== ======================
+
+/**
+ * @description Все статусы
+ */
+type PlayerState = PlayerStateBuffering | PlayerStateIdle | PlayerStatePaused | PlayerStatePlaying;
+
+/**
+ * @description Статус в котором плеер простаивает
+ */
+interface PlayerStateIdle {
+    status: "idle",
+    resource?: FFmpegStream
+}
+
+/**
+ * @description Статус в котором плеер играет музыку
+ */
+interface PlayerStatePlaying {
+    status: "playing";
+    resource: FFmpegStream;
+
+    onStreamError: (error: any) => void;
+}
+
+/**
+ * @description Статус в котором плеер стоит на паузе или плеер сам решил поставить паузу поскольку нет голосовых каналов
+ */
+interface PlayerStatePaused {
+    status: "paused" | "autoPaused";
+    resource: FFmpegStream;
+
+    onStreamError: (error: any) => void;
+}
+
+/**
+ * @description Статус при котором плеер готовится к отправке пакетов
+ */
+interface PlayerStateBuffering {
+    status: "buffering";
+    resource: FFmpegStream;
+
+    onReadableCallback: () => void;
+    onFailureCallback: () => void;
+    onStreamError: (error: any) => void;
+}
+
+/**
+ * @description Ивенты плеера
+ */
+type PlayerEvents = {
+    //subscribe: (subscription: PlayerSubscription) => void;
+    //unsubscribe: (subscription: PlayerSubscription) => void;
+
+    //Отслеживаемые ивенты
+    idle: (oldState: PlayerState, newState: PlayerState) => void;
+    paused: (oldState: PlayerState, newState: PlayerState) => void;
+    buffering: (oldState: PlayerState, newState: PlayerState) => void;
+    autoPaused: (oldState: PlayerState, newState: PlayerState) => void;
+    playing: (oldState: PlayerState, newState: PlayerState) => void;
+    error: (error: any) => void;
+}

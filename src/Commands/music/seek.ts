@@ -8,11 +8,11 @@ export class CommandSeek extends Command {
         super({
             name: "seek",
             aliases: ['begin', 'sek', 'beg'],
-            description: "Пропуск времени в музыке",
+            description: "Пропуск времени в текущем треке!",
 
             options: [{
                 name: "value",
-                description: "Seek time this song",
+                description: "Пример - 00:00",
                 required: true,
                 type: ApplicationCommandOptionType.String
             }],
