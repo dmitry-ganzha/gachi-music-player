@@ -65,16 +65,18 @@ export class FFmpegStream {
         delete this.started;
         delete this.silenceRemaining;
 
-        [this.playStream, this.opusEncoder].forEach((Stream) => {
-            if (!Stream.destroyed) {
-                Stream.removeAllListeners();
-                Stream.destroy();
-                Stream.read();
-            }
-        });
-        delete this.silencePaddingFrames;
-        delete this.opusEncoder;
-        delete this.playStream;
+        setTimeout(() => {
+            [this.playStream, this.opusEncoder].forEach((Stream) => {
+                if (!Stream?.destroyed) {
+                    Stream.removeAllListeners();
+                    Stream.destroy();
+                    Stream.read();
+                }
+            });
+            delete this.silencePaddingFrames;
+            delete this.opusEncoder;
+            delete this.playStream;
+        }, 125);
     };
 }
 //====================== ====================== ====================== ======================

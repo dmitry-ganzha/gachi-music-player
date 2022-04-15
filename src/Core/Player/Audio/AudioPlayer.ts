@@ -11,7 +11,7 @@ import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 
 //Статусы плеера для пропуска музыки
 export const StatusPlayerHasSkipped: Set<string> = new Set(['playing', 'paused', 'buffering', 'autoPaused']);
-const EmptyFrame = Buffer.from([0xf8, 0xfe]); //0xf8, 0xff, 0xfe (original from discord.js)
+const EmptyFrame = Buffer.from([0xf8, 0xff, 0xfe]);
 
 /**
  * @description Плеер!)

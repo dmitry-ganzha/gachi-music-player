@@ -28,7 +28,7 @@ export class CommandPlay extends Command {
             permissions: {client: ['Speak', 'Connect'], user: []},
             options: [
                 {
-                    name: "Url-Name-Type",
+                    name: "url-name-type",
                     description: "Укажи что нужно, ссылку, название или тип поиска и название",
                     required: true,
                     type: ApplicationCommandOptionType.String
