@@ -13,9 +13,7 @@ import {
  */
 export function Disconnect(GuildID: string) {
     const connection: VoiceConnection | null = getVoiceConnection(GuildID);
-    if (connection) return connection.destroy();
-    return null;
-
+    if (connection) connection.disconnect();
 }
 
 export class JoinVoiceChannel {
@@ -64,11 +62,6 @@ export class JoinVoiceChannel {
     };
 
     protected destroy = () => {
-        if (this.VoiceConnection.state.status !== "destroyed") {
-            this.VoiceConnection?.destroy();
-            this.VoiceConnection?.removeAllListeners();
-        }
-
         delete this.VoiceConnection;
         delete this.meVoice;
     };

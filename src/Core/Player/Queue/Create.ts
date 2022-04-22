@@ -41,7 +41,7 @@ function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChannel, so
     connection.subscribe = queue.player;
     queue.channels.connection = connection;
 
-    return queue.player.playStream(message);
+    return queue.player.PlayCallback(message);
 }
 //====================== ====================== ====================== ======================
 /**

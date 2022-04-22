@@ -24,29 +24,27 @@ export class VoiceEvent extends TypedEmitter<Events> {
     protected onStartTimerDestroyer = (queue: Queue): void => {
         if (!queue) return null;
 
-        const {player, options, events, channels} = queue;
+        const {player, events, channels} = queue;
+
+        if (!this.Timer) this.Timer = setTimeout(() => events.queue.emit('DestroyQueue', queue, channels.message, false), 15e3);
 
         player.pause();
         this.state = true;
-
-        if (!this.Timer) {
-            this.Timer = setTimeout(() => {
-                queue.songs = [];
-                options.stop = true;
-                events.queue.emit('DestroyQueue', queue, channels.message, false);
-            }, 2e4);
-        }
     };
     /**
      * @description Удаляем таймер который удаляет очередь
-     * @param player {AudioPlayer} Преер
+     * @param player {AudioPlayer} Плеер
      */
     protected onCancelTimerDestroyer = (player: AudioPlayer): boolean | void => {
-        if (this.state === true) {
+        if (this.state) {
             this.state = false;
-            clearTimeout(this.Timer);
-            this.Timer = null;
-            return player.resume();
+
+            if (this.Timer) {
+                clearTimeout(this.Timer);
+                this.Timer = null;
+            }
+
+            player.resume();
         }
     };
 

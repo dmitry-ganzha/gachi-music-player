@@ -1,14 +1,18 @@
 import { BrotliDecompress, Deflate, Gunzip, createGunzip, createBrotliDecompress, createDeflate } from 'node:zlib';
-import {request} from "undici";
 import {IncomingMessage} from "http";
-import {RequestOptions, ResponseData} from "undici/types/dispatcher";
 import {getCookies, uploadCookie} from "../Platforms/src/youtube/Cookie";
 import UserAgents from "./UserAgents.json";
+import {request, Dispatcher} from "undici";
+import {RequestOptions} from "undici/types/dispatcher";
+import BodyReadable from "undici/types/readable";
 
 // @ts-ignore
 interface ReqOptions extends RequestOptions {
-    path?: string
+    path?: string,
+    body?: string
 }
+type ZlibDecoder =  BrotliDecompress | Gunzip | Deflate;
+type DefaultDecoder = BodyReadable & Dispatcher.BodyMixin;
 
 interface httpsClientOptions {
     request?: ReqOptions;
@@ -19,7 +23,7 @@ interface httpsClientOptions {
         english?: boolean;
     }
 }
-type IncomingHttpHeaders = IncomingMessage['headers'];
+type IncomingHeaders = IncomingMessage['headers'];
 
 export class httpsClient {
     /**
@@ -27,42 +31,32 @@ export class httpsClient {
      * @param url {string} Ссылка
      * @param options {httpsClientOptions} Настройки запроса
      */
-    public Request = (url: string, options?: httpsClientOptions): Promise<ResponseData> => {
+    public Request = async (url: string, options?: httpsClientOptions) => {
         if (options) EditRequestOptions(options);
-        return request(url, options?.request);
+        return request(url, options?.request)
     };
     /**
      * @description Получаем страницу в формате string
      * @param url {string} Ссылка
      * @param options {httpsClientOptions} Настройки запроса
      */
-    public parseBody = (url: string, options?: httpsClientOptions): Promise<string> => new Promise<string>(async (resolve) => {
-        const req = (await Promise.all([this.Request(url, options)]))[0];
-
-        if (!req.body) return resolve(null);
-        const data: string[] = [];
-
+    public parseBody = (url: string, options?: httpsClientOptions): Promise<string> => this.Request(url, options).then((res) => {
         let decoder: BrotliDecompress | Gunzip | Deflate | null = null;
-        const encoding = req.headers['content-encoding'];
+        const encoding = res.headers['content-encoding'];
 
         if (encoding === 'gzip') decoder = createGunzip();
         else if (encoding === 'br') decoder = createBrotliDecompress();
         else if (encoding === 'deflate') decoder = createDeflate();
 
-        setImmediate(() => EditCookie(req.headers, url));
+        setImmediate(() => EditCookie(res.headers, url));
 
         if (decoder) {
-            req.body.pipe(decoder);
-            decoder.setEncoding('utf-8');
-            decoder.on('data', (c) => data.push(c));
-            decoder.once('end', () => resolve(data.join('')));
-        } else {
-            req.body.setEncoding('utf-8');
-            req.body.on('data', (c) => data.push(c));
-            req.body.once('end', () => resolve(data.join('')));
+            res.body.pipe(decoder);
+            return DecodePage(decoder);
         }
-    });
 
+        return DecodePage(res.body);
+    });
     /**
      * @description Получаем со страницы JSON (Работает только тогда когда все страница JSON)
      * @param url {string} Ссылка
@@ -80,7 +74,6 @@ export class httpsClient {
         }
     });
 }
-
 //====================== ====================== ====================== ======================
 /**
  * @description Получаем рандомный user-agent
@@ -103,9 +96,7 @@ function EditRequestOptions(options: httpsClientOptions): void {
         if (options.options?.cookie) {
             const cookie = getCookies();
 
-            if (cookie) {
-                options.request.headers = {...options.request.headers, 'cookie': cookie};
-            }
+            if (cookie) options.request.headers = {...options.request.headers, 'cookie': cookie};
         }
         if (options.options?.zLibEncode) options.request.headers = {...options.request.headers, 'accept-encoding': 'gzip, deflate, br'};
         if (options.options?.english) options.request.headers = {...options.request.headers, 'accept-language': 'en-US,en-IN;q=0.9,en;q=0.8,hi;q=0.7'};
@@ -118,8 +109,23 @@ function EditRequestOptions(options: httpsClientOptions): void {
  * @param url {string} Ссылка
  * @constructor
  */
-function EditCookie(headers: IncomingHttpHeaders, url: string): void {
+function EditCookie(headers: IncomingHeaders, url: string): void {
     if (headers && headers['set-cookie'] && url.match(/watch/)) {
         setImmediate(() => uploadCookie(headers['set-cookie']));
     }
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Начинаем декодирование
+ * @param decoder {ZlibDecoder | DefaultDecoder} Тип, из чего выгружаем данные
+ * @constructor
+ */
+function DecodePage(decoder: ZlibDecoder | DefaultDecoder): Promise<string> {
+    let data: string[] = [];
+
+    return new Promise((resolve) => {
+        decoder.setEncoding('utf-8');
+        decoder.on('data', (c) => data.push(c));
+        decoder.once('end', () => resolve(data.join('')));
+    });
 }

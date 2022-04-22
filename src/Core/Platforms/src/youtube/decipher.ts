@@ -12,6 +12,8 @@ export interface YouTubeFormat {
     sp?: string;
     s?: string;
     work?: boolean;
+    duration?: number;
+    targetDurationSec?: number;
 }
 
 // @ts-ignore

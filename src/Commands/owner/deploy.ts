@@ -25,7 +25,7 @@ export class CommandDeploy extends Command {
 
             if (cmd.options.length > 0) CommandSlash = {...CommandSlash, options: cmd.options};
 
-            message.client.application.commands.create(CommandSlash as any);
+            message.client.application.commands.create(CommandSlash as any).catch((err) => console.log(`[Command: ${cmd.name}]: ${err}`));
         });
 
         return message.client.Send({ text: `${message.author}, [${TotalCommands}] команд загружено`, message });

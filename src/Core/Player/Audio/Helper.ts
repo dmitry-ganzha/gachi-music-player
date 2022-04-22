@@ -7,24 +7,31 @@ import {SoundCloud, VK, YouTube} from "../../Platforms";
  * @description Заготавливаем необходимые данные для создания потока
  */
 export async function FindResource(song: Song, req: number = 0): Promise<void> {
-    if (req > 40) return;
+    if (!song.format?.url) {
+        if (req > 40) {
+            song.format.work = false;
+            return;
+        }
 
-    //Получаем данные о ресурсе
-    let format = await getLinkFormat(song);
-    if (!format || !format?.url) return FindResource(song, req++);
+        let format = await getLinkFormat(song);
+        if (!format || !format?.url) return FindResource(song, req++);
 
-    //Подгоняем под общую сетку
-    song.format = ConstFormat(format);
+        //Подгоняем под общую сетку
+        song.format = ConstFormat(format);
 
-    //Проверяем можно ли скачивать с ресурса
-    const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 10, method: "GET"}});
-    if (resource?.statusCode === 200) {
-        song.format.work = true;
-        return;
+        //Проверяем можно ли скачивать с ресурса
+        const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 10, method: "GET"}});
+        if (resource?.statusCode === 200) {
+            song.format.work = true;
+            return;
+        }
+        //Если этот формат невозможно включить прогоняем по новой
+        if (resource?.statusCode >= 400 && resource?.statusCode <= 500) return FindResource(song, req++);
+    } else {
+        const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 10, method: "GET"}});
+
+        song.format.work = resource?.statusCode === 200;
     }
-    //Если этот формат невозможно включить прогоняем по новой
-    if (resource?.statusCode >= 400 && resource?.statusCode <= 500) return FindResource(song, req++);
-    return;
 }
 
 /**
@@ -59,5 +66,5 @@ async function FindTrack(nameSong: string): Promise<InputFormat> {
  * @param url {string} Ссылка
  */
 function getFormatYouTube(url: string): Promise<InputFormat> {
-    return YouTube.getVideo(url, {onlyFormats: true});
+    return YouTube.getVideo(url, {onlyFormats: true}) as Promise<InputFormat>;
 }

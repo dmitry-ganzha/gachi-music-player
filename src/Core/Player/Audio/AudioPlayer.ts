@@ -73,7 +73,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         this._state = newState; //Обновляем статистику плеера
 
         if (OldState.status !== newState.status || isNewResources) {
-            //Перед сменой статуса плеера отправляем пустой пакет. Необходим для исправления кривизны потока!
+            //Перед сменой статуса плеера отправляем пустой пакет. Необходим, так мы правим повышение задержки гс!
             this._playPacket(EmptyFrame, this.VoiceChannels);
 
             if (isNewResources) void this.emit(newState.status, OldState, this._state);
@@ -109,7 +109,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @description Включаем музыку
      * @param message {ClientMessage} Сообщение с сервера
      */
-    public playStream = (message: ClientMessage): void => {
+    public PlayCallback = (message: ClientMessage): void => {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
@@ -119,7 +119,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
             CreateResource(queue.songs[0], queue.audioFilters).then((stream: FFmpegStream) => {
                 client.console(`[${guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
                 queue.events.message.PlaySongMessage(queue.channels.message);
-                this.play(stream);
+                return this.play(stream);
             })
         );
     };
@@ -127,7 +127,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     /**
      * @description Приостанавливаем отправку пакетов в голосовой канал
      */
-    public pause = (): boolean => {
+    public pause = (): void => {
         if (this.state.status !== "playing") return;
         this.state = { ...this.state, status: "paused" };
     };
@@ -135,7 +135,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     /**
      * @description Продолжаем отправлять пакеты в голосовой канал
      */
-    public resume = (): boolean => {
+    public resume = (): void => {
         if (this.state.status !== "paused") return;
         this.state = { ...this.state, status: "playing" };
     };
@@ -144,7 +144,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @description Пропускаем текущий трек
      * @param force {boolean}
      */
-    public stop = (force: boolean = false): boolean => {
+    public stop = (force: boolean = false): void => {
         if (this.state.status === "idle") return;
         if (force || this.state.resource.silencePaddingFrames === 0) this.state = { status: "idle" };
         else if (this.state.resource.silenceRemaining === -1) this.state.resource.silenceRemaining = this.state.resource.silencePaddingFrames;
@@ -184,22 +184,20 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @description Убираем из <this.subscribers> голосовой канал
      * @param connection {VoiceConnection} Голосовой канал на котором будет играть музыка
      */
-    protected subscribe = (connection: VoiceConnection) => {
+    protected subscribe = (connection: VoiceConnection): void => {
         const FindVoiceChannel = this.subscribers.find((sub) => sub.connection === connection);
 
         if (!FindVoiceChannel) {
             const PlayerSub = new PlayerSubscription(connection, this as any);
             this.subscribers.push(PlayerSub);
-            //return PlayerSub;
         }
-       //return FindVoiceChannel;
     };
     //====================== ====================== ====================== ======================
     /**
      * @description Убираем из <this.subscribers> голосовой канал
      * @param subscription {PlayerSubscription} Голосовой канал на котором больше не будет играть музыка
      */
-    protected unsubscribe = (subscription: PlayerSubscription) => {
+    protected unsubscribe = (subscription: PlayerSubscription): void => {
         const index = this.subscribers.indexOf(subscription);
         const FindInIndex = index !== -1;
 
@@ -207,8 +205,6 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
             this.subscribers.splice(index, 1);
             subscription.connection.setSpeaking(false);
         }
-
-        //return FindInIndex;
     };
     //====================== ====================== ====================== ======================
     /**
@@ -245,14 +241,14 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     /**
      * @description Перестаем передавать пакеты во все доступные каналы
      */
-    protected _signalStopSpeaking = () => this.subscribers.forEach(({connection} ) => connection.setSpeaking(false));
+    protected _signalStopSpeaking = (): void => this.subscribers.forEach(({connection} ) => connection.setSpeaking(false));
     //====================== ====================== ====================== ======================
     /**
      * @description Отправляем пакет во все доступные каналы
      * @param packet {Buffer} Сам пакет
      * @param receivers {VoiceConnection[]} В какие каналы отправить пакет
      */
-    protected _playPacket = (packet: Buffer, receivers: VoiceConnection[]) => receivers.forEach((connection) => connection.playOpusPacket(packet));
+    protected _playPacket = (packet: Buffer, receivers: VoiceConnection[]): void => receivers.forEach((connection) => connection.playOpusPacket(packet));
     //====================== ====================== ====================== ======================
     /**
      * @description Когда плеер завершит песню, он возвратит эту функцию
@@ -265,10 +261,12 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (!queue || queue?.songs?.length <= 0) return null;
 
         setImmediate(() => {
-            isRemoveSong(queue);
-            if (queue.options.random) client.queue.swap(0, Math.floor(Math.random() * queue.songs.length), "songs", guild.id);
+            setTimeout(() => {
+                isRemoveSong(queue);
+                if (queue.options.random) client.queue.swap(0, Math.floor(Math.random() * queue.songs.length), "songs", guild.id);
 
-            return this.playStream(message);
+                return this.PlayCallback(message);
+            }, 700);
         });
     };
     //====================== ====================== ====================== ======================
@@ -283,7 +281,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         WarningMessage(message, queue.songs[0], err);
 
         if (queue.songs.length === 1) void queue.events.queue.emit("DestroyQueue", queue, message);
-        if (queue.songs) this.stop();
+        else if (queue.songs.length > 1) this.stop();
     };
     //====================== ====================== ====================== ======================
     /**
@@ -291,7 +289,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      */
     public destroy = () => {
         if (this.subscribers) {
-            this.subscribers.forEach(({connection}) => connection.destroy());
+            this.subscribers.forEach(({connection}) => connection?.destroy());
             delete this.subscribers;
         }
         if (this._state) delete this._state;
@@ -307,10 +305,11 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
  * @param seek {number} Пропуск музыки до 00:00:00
  */
 async function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0): Promise<FFmpegStream> {
-    if (!song.format?.url) await FindResource(song);
+    await (Promise.all([FindResource(song)]));
 
-    if (song.isLive) return new FFmpegStream(song.format.url);
+    if (!song.format.work) return null;
 
+    if (song.isLive) return new FFmpegStream(song.format.url, null);
     return new FFmpegStream(song.format.url, audioFilters, seek);
 }
 //====================== ====================== ====================== ======================
@@ -319,8 +318,8 @@ async function CreateResource(song: Song, audioFilters: AudioFilters = null, see
  * @param queue {Queue} Очередь сервера
  */
 function isRemoveSong({options, songs}: Queue): void {
-    if (options.loop === "song") return;
-    else if (options.loop === "songs") {
+    if (options?.loop === "song") return;
+    else if (options?.loop === "songs") {
         const repeat = songs.shift();
         songs.push(repeat);
     } else songs.shift();
@@ -336,8 +335,8 @@ type PlayerState = PlayerStateBuffering | PlayerStateIdle | PlayerStatePaused | 
  * @description Статус в котором плеер простаивает
  */
 interface PlayerStateIdle {
-    status: "idle",
-    resource?: FFmpegStream
+    status: "idle";
+    resource?: FFmpegStream;
 }
 
 /**
@@ -376,9 +375,6 @@ interface PlayerStateBuffering {
  * @description Ивенты плеера
  */
 type PlayerEvents = {
-    //subscribe: (subscription: PlayerSubscription) => void;
-    //unsubscribe: (subscription: PlayerSubscription) => void;
-
     //Отслеживаемые ивенты
     idle: (oldState: PlayerState, newState: PlayerState) => void;
     paused: (oldState: PlayerState, newState: PlayerState) => void;

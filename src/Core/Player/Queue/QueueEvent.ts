@@ -69,7 +69,7 @@ function onDestroyQueue(queue: Queue, message: ClientMessage, sendDelQueue: bool
  * @param queue {Queue}
  */
 function CleanPlayer(queue: Queue): void {
-    if (queue.player.state.resource) void queue.player.state.resource.playStream.emit('close');
+    if (queue.player.state.resource) void queue.player.state.resource.destroy();
 
     queue.player?.stop();
 

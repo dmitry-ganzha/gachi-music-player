@@ -27,12 +27,13 @@ export class MessageSystem {
                 try {
                     const queue: Queue = client.queue.get(guild.id);
 
-                    if (!queue) return clearInterval(this._int);
+                    if (!queue) return this.destroy();
                     if (queue.player.state.status !== 'playing') return;
+                    if (!queue.channels.message.editable) return;
 
                     return UpdateMessage(queue.channels.message, true);
                 } catch {
-                    return clearInterval(this._int);
+                    return this.destroy();
                 }
             }, 12e3);
         }
@@ -53,6 +54,7 @@ export class MessageSystem {
  */
 function UpdateMessage(message: ClientMessage, need: boolean = false): Promise<void | ClientMessage> | void {
     const queue: Queue = message.client.queue.get(message.guild.id);
+
     if (message?.embeds[0]?.fields?.length === 1 || need) {
         const CurrentPlayEmbed = CurrentPlay(message.client, queue.songs[0], queue);
 

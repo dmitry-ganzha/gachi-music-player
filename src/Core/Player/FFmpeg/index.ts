@@ -12,10 +12,9 @@ let sources = ['ffmpeg', 'avconv', './FFmpeg/ffmpeg', './FFmpeg/avconv', './node
 export const FFmpegArguments = {
     OggOpus: ["-acodec", "libopus", "-f", "opus"],
     Seek: ["-ss"], // + number
-    Reconnect: ["-reconnect", 1, "-reconnect_delay_max", 125, "-reconnect_streamed", 1],
-    Compress: ["-compression_level", 10],
-    DecoderPreset: ["-preset", "medium", "-tune", "fastdecode", "-ar", 48e3, "-ac", 2],
-    Other: ["-analyzeduration", 0, "-loglevel", 1],
+    Reconnect: ["-reconnect", 1, "-reconnect_delay_max", 25, "-reconnect_streamed", 1],
+    DecoderPreset: ["-ar", 48e3, "-ac", 2],
+    Other: ["-analyzeduration", 0],
     Filters: {
         nightcore: "asetrate=48000*1.25,aresample=48000,bass=g=5",
         karaoke: "stereotools=mlev=0.1",
@@ -28,7 +27,7 @@ export const FFmpegArguments = {
         phaser: "aphaser=in_gain=0.4",
         Vw : "asetrate=48000*0.8,aresample=48000,atempo=1.1", //vaporwave
         AudioFade: "afade=t=in:st=0:d=1.5" //End plying afade=t=out:st=5:d=5
-    }
+    } //Not using args ["-loglevel", 1] ["-preset", "medium"] ["-tune", "fastdecode"] ["-compression_level", 10]
 };
 
 /**
@@ -58,13 +57,19 @@ export class FFmpeg extends Duplex {
     public constructor(args: FFmpegArgs) {
         super({highWaterMark: 12, autoDestroy: true});
         this.process = this.SpawnFFmpeg(args);
+
         this.Binding(['write', 'end'], this.Output);
         this.Binding(['read', 'setEncoding', 'pipe', 'unpipe'], this.Input);
 
+        //Используется для загруски потока в ffmpeg. Неообходимо не указывать параметр -i
+        if (!args.includes('-i')) this.Calling(['on', 'once', 'removeListener', 'removeListeners', 'listeners']);
+
         //Если есть ошибка в <input, output>, выводим!
-        const processError = (error: Error) => this.emit('error', error);
-        this.Input.once('error', processError);
-        this.Output.once('error', processError);
+        //const processError = (error: Error) => this.emit('error', error);
+        //this.Input.once('error', processError);
+        //this.Output.once('error', processError);
+
+        this.process.once("close", () => this.destroy());
     };
 
     /**
@@ -75,6 +80,20 @@ export class FFmpeg extends Duplex {
      */
     // @ts-ignore
     protected Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
+    protected Calling = (methods: string[]) => {
+        const EVENTS = {
+            readable: this.Input,
+            data: this.Input,
+            end: this.Input,
+            unpipe: this.Input,
+            finish: this.Output,
+            drain: this.Output,
+        };
+
+        // @ts-ignore
+        methods.forEach((method) => this[method] = (ev, fn) => EVENTS[ev] ? EVENTS[ev][method](ev, fn) : Duplex.prototype[method].call(this, ev, fn))
+    };
+
     /**
      * @description Удаляем все что не нужно
      * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
@@ -83,7 +102,6 @@ export class FFmpeg extends Duplex {
         if (this.Input) {
             this.Input.removeAllListeners();
             this.Input.destroy();
-            this.Input.read();
             delete this.process.stdout;
         }
 
@@ -109,6 +127,8 @@ export class FFmpeg extends Duplex {
      */
     protected SpawnFFmpeg = (Arguments: FFmpegArgs): any => {
         const Args = [...Arguments, 'pipe:1'];
+        if (!Args.includes('-i')) Args.unshift('-i', '-');
+
         return spawn(FFmpegName, Args as any, { shell: false, windowsHide: true  });
     };
 }

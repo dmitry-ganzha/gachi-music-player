@@ -47,7 +47,7 @@ export interface InputFormat {
     acodec?: AudioCodec;
     vcodec?: VideoCodec;
     quality?: VideoQuality;
-    fps?: number
+    fps?: number;
 }
 
 /**
