@@ -30,7 +30,11 @@ export async function FindResource(song: Song, req: number = 0): Promise<void> {
     } else {
         const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 10, method: "GET"}});
 
-        song.format.work = resource?.statusCode === 200;
+        if (resource.statusCode >= 200 && resource.statusCode < 400) song.format.work = true;
+        else {
+            delete song.format;
+            return FindResource(song, req++);
+        }
     }
 }
 
