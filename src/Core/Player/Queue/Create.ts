@@ -30,7 +30,7 @@ export function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel, 
 function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChannel, song: Song): void {
     const {client, guild} = message;
 
-    client.console(`[${guild.id}]: [Queue]: [Method: Set]`);
+    client.console(`[Queue]: [GuildID: ${guild.id}, Method: Create]`);
     client.queue.set(guild.id, new Queue(message, VoiceChannel));
 
     const queue = client.queue.get(message.guild.id);

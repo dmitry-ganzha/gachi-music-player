@@ -113,11 +113,11 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
-        if (queue.songs?.length === 0) return void queue.events.queue.emit('DestroyQueue', queue, message);
+        if (queue?.songs?.length === 0) return void queue.events.queue.emit('DestroyQueue', queue, message);
 
         setImmediate(() =>
             CreateResource(queue.songs[0], queue.audioFilters).then((stream: FFmpegStream) => {
-                client.console(`[${guild.id}]: [${queue.songs[0].type}]: [${queue.songs[0].title}]`);
+                client.console(`[Queue]: [GuildID: ${guild.id}, Type: ${queue.songs[0].type}]: [${queue.songs[0].title}]`);
                 queue.events.message.PlaySongMessage(queue.channels.message);
                 return this.play(stream);
             })
@@ -258,12 +258,10 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
-        if (!queue || queue?.songs?.length <= 0) return null;
-
         setImmediate(() => {
             setTimeout(() => {
-                isRemoveSong(queue);
-                if (queue.options.random) client.queue.swap(0, Math.floor(Math.random() * queue.songs.length), "songs", guild.id);
+                if (queue?.songs) isRemoveSong(queue);
+                if (queue?.options?.random) client.queue.swap(0, Math.floor(Math.random() * queue.songs.length), "songs", guild.id);
 
                 return this.PlayCallback(message);
             }, 700);
