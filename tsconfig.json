@@ -4,7 +4,7 @@
     "baseUrl": "./",
     // Основные настройки.
     "module": "CommonJS",                // Определяет тип импорта кода в итоговом файле
-    "outDir": "_JavaScript",             // Поместить все скомпилированные файлы в данную папку
+    "outDir": "_Build",             // Поместить все скомпилированные файлы в данную папку
     "alwaysStrict": true,                // Компилировать ли каждый файл в строгом режиме и создавать ли 'use strict'
     "sourceMap": false,                  // Создавать ли соответствующие source map файлы ".map"?
     "target": "ES2021",                  // Тип кода создаваемого итогового файла.
@@ -25,7 +25,7 @@
 
     // Вспомогательные настройки.
     "noFallthroughCasesInSwitch": true,  // Сообщить об ошибке в случае обнаружения проваливания в конструкции switch-case?
-    "noImplicitReturns": true,           // Сообщить об ошибке, когда не все пути кода в функции возвращают значение?
+    "noImplicitReturns": false,           // Сообщить об ошибке, когда не все пути кода в функции возвращают значение?
     "strictNullChecks": false,           // Значения "null" и "undefined" могут быть присвоены только значениям данного типа
     "allowUnreachableCode": true,        // Сообщить об ошибке в случае обнаружения кода, который никогда не будет выполнен?
     "noImplicitThis": true,              // Показывать ошибку на "this", если где-то задан тип "any".
@@ -33,6 +33,6 @@
     "noImplicitAny": true,               // Запрет на использование any
   },
   "exclude": [                 // Секция "exclude" позволяет исключить при компиляции определенные файлы
-    "node_modules", "_JavaScript", ".DEV1", "youtube-dl/youtube-dl.exe", "Core/Utils/TypesHelper.ts"
+    "node_modules", "_JavaScript", ".DEV1"
   ]
 }
