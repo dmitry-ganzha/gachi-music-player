@@ -71,7 +71,7 @@ export class FFmpeg extends Duplex {
 
         this.process.once("close", () => this.destroy());
     };
-
+    //====================== ====================== ====================== ======================
     /**
      * @description Создаем "привязанные функции" (ПФ - термин из ECMAScript 6)
      * @param methods {string[]}
@@ -93,7 +93,18 @@ export class FFmpeg extends Duplex {
         // @ts-ignore
         methods.forEach((method) => this[method] = (ev, fn) => EVENTS[ev] ? EVENTS[ev][method](ev, fn) : Duplex.prototype[method].call(this, ev, fn))
     };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Запускаем FFmpeg
+     * @param Arguments {FFmpegArgs} Указываем аргументы для запуска
+     */
+    protected SpawnFFmpeg = (Arguments: FFmpegArgs): any => {
+        const Args = [...Arguments, 'pipe:1'];
+        if (!Args.includes('-i')) Args.unshift('-i', '-');
 
+        return spawn(FFmpegName, Args as any, { shell: false, windowsHide: true  });
+    };
+    //====================== ====================== ====================== ======================
     /**
      * @description Удаляем все что не нужно
      * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
@@ -119,17 +130,6 @@ export class FFmpeg extends Duplex {
         }
 
         if (error) return console.error(error);
-    };
-
-    /**
-     * @description Запускаем FFmpeg
-     * @param Arguments {FFmpegArgs} Указываем аргументы для запуска
-     */
-    protected SpawnFFmpeg = (Arguments: FFmpegArgs): any => {
-        const Args = [...Arguments, 'pipe:1'];
-        if (!Args.includes('-i')) Args.unshift('-i', '-');
-
-        return spawn(FFmpegName, Args as any, { shell: false, windowsHide: true  });
     };
 }
 //====================== ====================== ====================== ======================

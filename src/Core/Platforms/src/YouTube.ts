@@ -15,7 +15,7 @@ export const YouTube = {getVideo, getPlaylist, SearchVideos};
  * @param name {string} Название канала
  */
 async function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
-    const channel: YouTubeChannelParse[] = (await Promise.all([new httpsClient().parseJson(`${DefaultLinkYouTube}/channel/${id}/channels?flow=grid&view=0&pbj=1`, {
+    const channel: YouTubeChannelParse[] = (await Promise.all([httpsClient.parseJson(`${DefaultLinkYouTube}/channel/${id}/channels?flow=grid&view=0&pbj=1`, {
         request: {
             headers: {
                 'x-youtube-client-name': '1',
@@ -46,7 +46,7 @@ async function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
  */
 async function getVideo(url: string, options: Options = {onlyFormats: false}): Promise<InputTrack | InputFormat> {
     const VideoID = new Utils().getID(url);
-    const body = (await Promise.all([new httpsClient().parseBody(`${DefaultLinkYouTube}/watch?v=${VideoID}&has_verified=1`, {
+    const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/watch?v=${VideoID}&has_verified=1`, {
         options: {
             userAgent: true, cookie: true, zLibEncode: true, english: true
         }
@@ -102,7 +102,7 @@ async function getVideo(url: string, options: Options = {onlyFormats: false}): P
  * @constructor
  */
 async function SearchVideos(search: string, options: SearchOptions = {limit: 15, onlyLink: false}): Promise<string | InputTrack[]> {
-    const body = (await Promise.all([new httpsClient().parseBody(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}`, {
+    const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}`, {
         options: {userAgent: true, cookie: true, zLibEncode: true, english: true}
     })]))[0];
 
@@ -155,7 +155,7 @@ function parsingVideos(details: any[], {limit}: SearchOptions, FakeBase: InputTr
  */
 async function getPlaylist(url: string): Promise<InputPlaylist> {
     const playlistID = new Utils().getID(url, true);
-    const body = (await Promise.all([new httpsClient().parseBody(`${DefaultLinkYouTube}/playlist?list=${playlistID}`, {
+    const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/playlist?list=${playlistID}`, {
         options: {userAgent: true, cookie: true, zLibEncode: true, english: true}
     })]))[0];
 

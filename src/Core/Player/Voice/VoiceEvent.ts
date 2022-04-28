@@ -3,8 +3,8 @@ import {Queue} from "../Structures/Queue/Queue";
 import {AudioPlayer} from "../Audio/AudioPlayer";
 
 type Events = {
-    StartTimerDestroyer: (queue: Queue) => void,
-    CancelTimerDestroyer: (player: AudioPlayer) => boolean | void
+    StartQueueDestroy: (queue: Queue) => void,
+    CancelQueueDestroy: (player: AudioPlayer) => boolean | void
 };
 
 export class VoiceEvent extends TypedEmitter<Events> {
@@ -13,15 +13,15 @@ export class VoiceEvent extends TypedEmitter<Events> {
 
     public constructor() {
         super();
-        this.on('StartTimerDestroyer', this.onStartTimerDestroyer);
-        this.on('CancelTimerDestroyer', this.onCancelTimerDestroyer);
+        this.on('StartQueueDestroy', this.onStartQueueDestroy);
+        this.on('CancelQueueDestroy', this.onCancelQueueDestroy);
         this.setMaxListeners(2);
     };
     /**
      * @description Создаем таймер (по истечению таймера будет удалена очередь)
      * @param queue {object} Очередь сервера
      */
-    protected onStartTimerDestroyer = (queue: Queue): void => {
+    protected onStartQueueDestroy = (queue: Queue): void => {
         if (!queue) return null;
 
         const {player, events, channels} = queue;
@@ -35,7 +35,7 @@ export class VoiceEvent extends TypedEmitter<Events> {
      * @description Удаляем таймер который удаляет очередь
      * @param player {AudioPlayer} Плеер
      */
-    protected onCancelTimerDestroyer = (player: AudioPlayer): boolean | void => {
+    protected onCancelQueueDestroy = (player: AudioPlayer): boolean | void => {
         if (this.state) {
             this.state = false;
 

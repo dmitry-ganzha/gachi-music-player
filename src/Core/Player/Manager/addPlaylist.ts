@@ -29,7 +29,7 @@ export function PlayList(message: ClientMessage, playlist: InputPlaylist, VoiceC
  * @param message {ClientMessage} Сообщение с сервера
  * @param playlist {object} Сам плейлист
  */
-async function SendMessage(message: ClientMessage, playlist: InputPlaylist): Promise<NodeJS.Timeout> {
+function SendMessage(message: ClientMessage, playlist: InputPlaylist): Promise<NodeJS.Timeout> {
     return message.channel.send({embeds: [PlaylistEmbed(message, playlist, Colors.BLUE)]}).then((msg: ClientMessage) => setTimeout(() => msg.delete().catch(() => null), 15e3));
 }
 //====================== ====================== ====================== ======================

@@ -36,7 +36,7 @@ export class GuildMessage {
             Helper.DeleteMessage(message, 12e3);
 
             if (Helper.isOwner(command?.isOwner, message.author.id)) return message.client.Send({ text: `${message.author}, Эта команда не для тебя!`, message, color: 'RED'})
-            if (Helper.isPermissions(command?.permissions, message)) return console.log('User has Permission');
+            if (Helper.isPermissions(command?.permissions, message)) return;
 
             return command.run(message, args);
         }

@@ -48,8 +48,8 @@ export function CurrentPlay(client: WatKLOK, song: Song, queue: Queue): EmbedCon
  * @param client {WatKLOK} Клиент
  */
 function createFields(song: Song, {player, songs, audioFilters}: Queue, client: WatKLOK): { name: string, value: string }[] {
-    const PlayingDuration = ConvertCurrentTime(player, ProgressBarValue, audioFilters);
-    const DurationMusic = MusicDuration(song, PlayingDuration, ProgressBarValue);
+    const PlayingDuration = ConvertCurrentTime(player, audioFilters);
+    const DurationMusic = MusicDuration(song, PlayingDuration);
 
     let fields = [{
         name: `Щас играет`,
@@ -64,28 +64,25 @@ function createFields(song: Song, {player, songs, audioFilters}: Queue, client: 
  * @param isLive {Song<isLive>} Текущий трек, стрим?
  * @param duration {Song<duration>} Продолжительность трека
  * @param curTime {number | string} Текущее время проигрывания трека
- * @param progressBar {boolean} Показать прогресс
  */
-function MusicDuration({isLive, duration}: Song, curTime: number | string, progressBar: boolean = true): string {
+function MusicDuration({isLive, duration}: Song, curTime: number | string): string {
+    if (isLive) return `[${duration.StringTime}]`;
+
     const str = `${duration.StringTime}]`;
-
-    if (isLive) return `[${str}`;
-
     const parsedTimeSong = ParserTimeSong(curTime as number);
-    const progress = ProgressBar(curTime as number, duration.seconds, 12);
+    const progress = ProgressBar(curTime as number, duration.seconds, 15);
 
-    if (progressBar) return `**❯** [${parsedTimeSong} - ${str}\n|${progress}|`;
+    if (ProgressBarValue) return `**❯** [${parsedTimeSong} - ${str}\n${progress}`;
     return `**❯** [${curTime} - ${str}`;
 }
 //====================== ====================== ====================== ======================
 /**
  * @description Конвертируем секунды проигранные плеером
  * @param state {audioPlayer<state>} Статус плеера
- * @param ProgressBar {boolean} Показать прогресс
  * @param filters {AudioFilters}
  * @constructor
  */
-function ConvertCurrentTime({state}: AudioPlayer, ProgressBar: boolean = true, filters: AudioFilters): number | string {
+function ConvertCurrentTime({state}: AudioPlayer, filters: AudioFilters): number | string {
     const duration = state.resource?.playbackDuration ?? 0;
     let seconds: number;
 
@@ -94,7 +91,7 @@ function ConvertCurrentTime({state}: AudioPlayer, ProgressBar: boolean = true, f
     else if (filters.Vw) seconds = parseInt(((duration / 1000) * 0.8).toFixed(0));
     else seconds = parseInt((duration / 1000).toFixed(0));
 
-    if (ProgressBar) return seconds;
+    if (ProgressBarValue) return seconds;
     return ParserTimeSong(seconds);
 }
 //====================== ====================== ====================== ======================
@@ -108,8 +105,8 @@ function ProgressBar(currentTime: number, maxTime: number, size: number = 15): s
     const progressSize = Math.round(size * (currentTime / maxTime));
     const emptySize = size - progressSize;
 
-    const progressText = "█".repeat(progressSize);
-    const emptyText = "ᅠ".repeat(emptySize);
+    const progressText = "─".repeat(progressSize); //Old: "█"
+    const emptyText = "─".repeat(emptySize); //Old:
 
-    return progressText + emptyText;
+    return `${progressText}⚪${emptyText}`;
 }

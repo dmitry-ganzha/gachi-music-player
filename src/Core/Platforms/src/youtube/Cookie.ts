@@ -10,6 +10,8 @@ export function getCookies(): null | string {
     }
 }
 export function uploadCookie(Cookie: string | string[]): void {
+    if (!existsSync(`./DataBase/Cookie.json`)) return null;
+
     let youtubeData = JSON.parse(readFileSync(`./DataBase/Cookie.json`, 'utf8'));
     let EndCookieString: {};
 

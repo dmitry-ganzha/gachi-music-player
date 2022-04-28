@@ -19,7 +19,7 @@ export const Spotify = {getTrack, getAlbum, getPlaylist, SearchTracks};
  * @description Получаем токен
  */
 async function getToken(): Promise<void> {
-    const result = (await Promise.all([new httpsClient().parseJson(`${ApiLink}/token`, {
+    const result = (await Promise.all([httpsClient.parseJson(`${ApiLink}/token`, {
         request: {
             method: 'POST',
             headers: {
@@ -42,7 +42,7 @@ async function getToken(): Promise<void> {
  */
 async function RequestSpotify(method: string): Promise<SpotifyPlaylist & FailResult | SpotifyTrack & FailResult | SpotifyArtist & FailResult | SpotifyUser & FailResult | SpotifyAlbumFull & FailResult | SearchTracks & FailResult> {
     await login();
-    return new httpsClient().parseJson(`${GetApi}/${method}`, {
+    return httpsClient.parseJson(`${GetApi}/${method}`, {
         request: {
             method: "GET",
             headers: {

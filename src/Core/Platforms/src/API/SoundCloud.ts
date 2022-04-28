@@ -11,7 +11,7 @@ export const SoundCloud = {getTrack, getPlaylist, SearchTracks};
  */
 async function getTrack(url: string): Promise<InputTrack> {
     const ClientID = await getClientID();
-    const result = await new httpsClient().parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
+    const result = await httpsClient.parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
 
     return {
         id: result.id, url,
@@ -41,7 +41,7 @@ async function getTrack(url: string): Promise<InputTrack> {
  */
 async function getPlaylist(url: string): Promise<InputPlaylist> {
     const ClientID = await getClientID()
-    const result = await new httpsClient().parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
+    const result = await httpsClient.parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
     const PlaylistItems: InputTrack[] = [];
 
 
@@ -79,7 +79,7 @@ async function getPlaylist(url: string): Promise<InputPlaylist> {
  * @constructor
  */
 async function SearchTracks(search: string, options = {limit: 15}) {
-    const result = await new httpsClient().parseJson(`${APiLink}/search/tracks?q=${search}&client_id=${await getClientID()}&limit=${options.limit}`);
+    const result = await httpsClient.parseJson(`${APiLink}/search/tracks?q=${search}&client_id=${await getClientID()}&limit=${options.limit}`);
     const Items: InputTrack[] = [];
 
 
@@ -100,7 +100,7 @@ async function SearchTracks(search: string, options = {limit: 15}) {
 async function getClientID() {
     if (clientID) return clientID;
 
-    const body = await new httpsClient().parseBody(`https://soundcloud.com/`);
+    const body = await httpsClient.parseBody(`https://soundcloud.com/`);
     const BodySplit = body.split('<script crossorigin src="');
     const urls: string[] = [];
     BodySplit.forEach((r) => {
@@ -108,7 +108,7 @@ async function getClientID() {
             urls.push(r.split('"')[0]);
         }
     });
-    const body2 = await new httpsClient().parseBody(urls.pop());
+    const body2 = await httpsClient.parseBody(urls.pop());
     return body2.split(',client_id:"')[1].split('"')[0];
 }
 
@@ -148,7 +148,7 @@ function CreateInfoTrack(result: any): InputTrack {
  */
 async function getFormat(formats: SoundCloudFormat[], ClientID: string) {
     const FilterFormats = formats.filter((d) => d.format.protocol === "progressive").pop() ?? formats[0];
-    const EndFormat = await new httpsClient().parseJson(`${FilterFormats.url}?client_id=${ClientID}`);
+    const EndFormat = await httpsClient.parseJson(`${FilterFormats.url}?client_id=${ClientID}`);
 
     return {
         url: EndFormat.url,

@@ -10,7 +10,7 @@ import {addAudioPlayer, deleteAudioPlayer} from "../Manager/DataStore";
 import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 
 //Статусы плеера для пропуска музыки
-export const StatusPlayerHasSkipped: Set<string> = new Set(['playing', 'paused', 'buffering', 'autoPaused']);
+export const StatusPlayerHasSkipped: Set<string> = new Set(['playing', 'paused', 'buffering', 'idle']);
 const EmptyFrame = Buffer.from([0xf8, 0xff, 0xfe]);
 
 /**
@@ -64,7 +64,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
         //Удаляем плеер если статус "idle"
         if (newState.status === "idle") {
-            this._signalStopSpeaking();
+            this.signalStopSpeaking();
             deleteAudioPlayer(this);
         }
         if (newResource) addAudioPlayer(this);
@@ -74,7 +74,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
         if (OldState.status !== newState.status || isNewResources) {
             //Перед сменой статуса плеера отправляем пустой пакет. Необходим, так мы правим повышение задержки гс!
-            this._playPacket(EmptyFrame, this.VoiceChannels);
+            this.playOpusPacket(EmptyFrame, this.VoiceChannels);
 
             if (isNewResources) void this.emit(newState.status, OldState, this._state);
             else void this.emit(newState.status, OldState, this._state);
@@ -113,7 +113,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
-        if (queue?.songs?.length === 0) return void queue.events.queue.emit('DestroyQueue', queue, message);
+        if (queue?.songs?.length === 0 || !queue?.songs) return void queue.events.queue.emit('DestroyQueue', queue, message);
 
         setImmediate(() =>
             CreateResource(queue.songs[0], queue.audioFilters).then((stream: FFmpegStream) => {
@@ -210,7 +210,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     /**
      * @description Проверка перед отправкой пакета в голосовой канал
      */
-    protected _sendPacket = (): void => {
+    protected CheckStatusPlayer = (): void => {
         //Если статус (idle или buffering) прекратить выполнение функции
         if (this.state.status === "idle" || this.state.status === "buffering" || this.state.status === "paused") return;
 
@@ -230,9 +230,9 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (this.state.status === "playing") {
             const packet: Buffer | null = this.state.resource.read();
 
-            if (packet) this._playPacket(packet, Receivers);
+            if (packet) this.playOpusPacket(packet, Receivers);
             else {
-                this._signalStopSpeaking();
+                this.signalStopSpeaking();
                 this.stop();
             }
         }
@@ -241,14 +241,14 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     /**
      * @description Перестаем передавать пакеты во все доступные каналы
      */
-    protected _signalStopSpeaking = (): void => this.subscribers.forEach(({connection} ) => connection.setSpeaking(false));
+    protected signalStopSpeaking = (): void => this.subscribers.forEach(({connection} ) => connection.setSpeaking(false));
     //====================== ====================== ====================== ======================
     /**
      * @description Отправляем пакет во все доступные каналы
      * @param packet {Buffer} Сам пакет
      * @param receivers {VoiceConnection[]} В какие каналы отправить пакет
      */
-    protected _playPacket = (packet: Buffer, receivers: VoiceConnection[]): void => receivers.forEach((connection) => connection.playOpusPacket(packet));
+    protected playOpusPacket = (packet: Buffer, receivers: VoiceConnection[]): void => receivers.forEach((connection) => connection.playOpusPacket(packet));
     //====================== ====================== ====================== ======================
     /**
      * @description Когда плеер завершит песню, он возвратит эту функцию

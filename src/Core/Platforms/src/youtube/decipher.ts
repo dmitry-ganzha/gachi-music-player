@@ -40,7 +40,7 @@ export class Decipher {
      * @param html5player {string} Ссылка на html5player
      */
     protected getFunctions = async (html5player: string): Promise<null | string[]> => {
-        const body = (await Promise.all([new httpsClient().parseBody(html5player, {
+        const body = (await Promise.all([httpsClient.parseBody(html5player, {
             request: {
                 method: "GET"
             },

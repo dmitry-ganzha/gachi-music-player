@@ -3,6 +3,7 @@ import {httpsClient} from "../../httpsClient";
 import {InputFormat} from "../../Utils/TypeHelper";
 import {SoundCloud, VK, YouTube} from "../../Platforms";
 
+//====================== ====================== ====================== ======================
 /**
  * @description Заготавливаем необходимые данные для создания потока
  */
@@ -20,7 +21,7 @@ export async function FindResource(song: Song, req: number = 0): Promise<void> {
         song.format = ConstFormat(format);
 
         //Проверяем можно ли скачивать с ресурса
-        const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 10, method: "GET"}});
+        const resource = await httpsClient.Request(song.format?.url, {request: {maxRedirections: 10, method: "GET"}});
         if (resource?.statusCode === 200) {
             song.format.work = true;
             return;
@@ -28,7 +29,7 @@ export async function FindResource(song: Song, req: number = 0): Promise<void> {
         //Если этот формат невозможно включить прогоняем по новой
         if (resource?.statusCode >= 400 && resource?.statusCode <= 500) return FindResource(song, req++);
     } else {
-        const resource = await new httpsClient().Request(song.format?.url, {request: {maxRedirections: 10, method: "GET"}});
+        const resource = await httpsClient.Request(song.format?.url, {request: {maxRedirections: 10, method: "GET"}});
 
         if (resource.statusCode >= 200 && resource.statusCode < 400) song.format.work = true;
         else {
@@ -37,7 +38,7 @@ export async function FindResource(song: Song, req: number = 0): Promise<void> {
         }
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Получаем данные формата
  * @param song {Song} Трек
@@ -53,7 +54,7 @@ async function getLinkFormat({type, url, title, author}: Song): Promise<InputFor
         return null;
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Ищем трек на youtube
  * @param nameSong {string} Название музыки
@@ -64,7 +65,7 @@ async function FindTrack(nameSong: string): Promise<InputFormat> {
     if (Song) return getFormatYouTube(Song);
     return null;
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Получаем от видео аудио формат
  * @param url {string} Ссылка

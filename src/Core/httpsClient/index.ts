@@ -6,41 +6,29 @@ import {request, Dispatcher} from "undici";
 import {RequestOptions} from "undici/types/dispatcher";
 import BodyReadable from "undici/types/readable";
 
-// @ts-ignore
-interface ReqOptions extends RequestOptions {
-    path?: string,
-    body?: string
-}
-type ZlibDecoder =  BrotliDecompress | Gunzip | Deflate;
-type DefaultDecoder = BodyReadable & Dispatcher.BodyMixin;
+export const httpsClient = {Request, parseBody, parseJson};
 
-interface httpsClientOptions {
-    request?: ReqOptions;
-    options?: {
-        cookie?: boolean;
-        userAgent?: boolean;
-        zLibEncode?: boolean;
-        english?: boolean;
-    }
-}
-type IncomingHeaders = IncomingMessage['headers'];
+/**
+ * @description Чистый запрос
+ * @param url {string} Ссылка
+ * @param options {httpsClientOptions} Настройки запроса
+ */
+function Request(url: string, options?: httpsClientOptions) {
+    if (options) EditRequestOptions(options);
+    let req = request(url, options?.request);
 
-export class httpsClient {
-    /**
-     * @description Чистый запрос
-     * @param url {string} Ссылка
-     * @param options {httpsClientOptions} Настройки запроса
-     */
-    public Request = async (url: string, options?: httpsClientOptions) => {
-        if (options) EditRequestOptions(options);
-        return request(url, options?.request)
-    };
-    /**
-     * @description Получаем страницу в формате string
-     * @param url {string} Ссылка
-     * @param options {httpsClientOptions} Настройки запроса
-     */
-    public parseBody = (url: string, options?: httpsClientOptions): Promise<string> => this.Request(url, options).then((res) => {
+    req.catch(() => undefined);
+
+    return req;
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Получаем страницу в формате string
+ * @param url {string} Ссылка
+ * @param options {httpsClientOptions} Настройки запроса
+ */
+function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
+    return Request(url, options).then((res) => {
         let decoder: BrotliDecompress | Gunzip | Deflate | null = null;
         const encoding = res.headers['content-encoding'];
 
@@ -57,23 +45,31 @@ export class httpsClient {
 
         return DecodePage(res.body);
     });
-    /**
-     * @description Получаем со страницы JSON (Работает только тогда когда все страница JSON)
-     * @param url {string} Ссылка
-     * @param options {httpsClientOptions} Настройки запроса
-     */
-    public parseJson = (url: string, options?: httpsClientOptions): Promise<any> => new Promise<any>(async (resolve) => {
-        const body = (await Promise.all([this.parseBody(url, options)]))[0];
-        if (!body) return null;
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Получаем со страницы JSON (Работает только тогда когда все страница JSON)
+ * @param url {string} Ссылка
+ * @param options {httpsClientOptions} Настройки запроса
+ */
+function parseJson(url: string, options?: httpsClientOptions): Promise<null | any> {
+    return new Promise<null | any>(async (resolve) => {
+        const body = (await Promise.all([parseBody(url, options)]))[0];
+        if (!body) return;
 
         try {
             return resolve(JSON.parse(body));
         } catch (e) {
             console.log(`Invalid json response body at ${url} reason: ${e.message}`);
-            return null;
+            return;
         }
     });
 }
+
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+//====================== ===============| OTHER FUNCTION |============ ======================
+//====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
 /**
  * @description Получаем рандомный user-agent
@@ -129,3 +125,22 @@ function DecodePage(decoder: ZlibDecoder | DefaultDecoder): Promise<string> {
         decoder.once('end', () => resolve(data.join('')));
     });
 }
+//====================== ====================== ====================== ======================
+// @ts-ignore
+interface ReqOptions extends RequestOptions {
+    path?: string,
+    body?: string
+}
+type ZlibDecoder =  BrotliDecompress | Gunzip | Deflate;
+type DefaultDecoder = BodyReadable & Dispatcher.BodyMixin;
+
+interface httpsClientOptions {
+    request?: ReqOptions;
+    options?: {
+        cookie?: boolean;
+        userAgent?: boolean;
+        zLibEncode?: boolean;
+        english?: boolean;
+    }
+}
+type IncomingHeaders = IncomingMessage['headers'];

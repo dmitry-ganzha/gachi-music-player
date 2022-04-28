@@ -27,6 +27,6 @@ function CheckToRun(voiceConnection: VoiceState[], client: WatKLOK, guild: Guild
     const PlayableVoiceChannel: VoiceConnection = getVoiceConnection(guild.id);
 
     if (voiceConnection && PlayableVoiceChannel) return voiceConnection.length <= 1 && StatusPlayerHasSkipped.has(queue.player.state.status) ?
-        void queue.events.helper.emit('StartTimerDestroyer', queue) :
-        void queue.events.helper.emit('CancelTimerDestroyer', queue.player);
+        void queue.events.helper.emit('StartQueueDestroy', queue) :
+        void queue.events.helper.emit('CancelQueueDestroy', queue.player);
 }

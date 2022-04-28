@@ -59,7 +59,7 @@ function prepareNextAudioFrame(players: AudioPlayer[]) {
         return;
     }
 
-    nextPlayer['_sendPacket']();
+    nextPlayer['CheckStatusPlayer']();
 
     setImmediate(() => prepareNextAudioFrame(players));
 }
