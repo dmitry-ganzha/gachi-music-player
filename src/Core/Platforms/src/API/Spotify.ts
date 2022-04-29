@@ -18,65 +18,71 @@ export const Spotify = {getTrack, getAlbum, getPlaylist, SearchTracks};
 /**
  * @description Получаем токен
  */
-async function getToken(): Promise<void> {
-    const result = (await Promise.all([httpsClient.parseJson(`${ApiLink}/token`, {
-        request: {
-            method: 'POST',
-            headers: {
-                'Accept': "application/json",
-                'Authorization': `Basic ${Buffer.from(`${clientID}:${clientSecret}`).toString('base64')}`,
-                'Content-Type': 'application/x-www-form-urlencoded',
+function getToken(): Promise<void> {
+    return new Promise<void>(async () => {
+        const result = (await Promise.all([httpsClient.parseJson(`${ApiLink}/token`, {
+            request: {
+                method: 'POST',
+                headers: {
+                    'Accept': "application/json",
+                    'Authorization': `Basic ${Buffer.from(`${clientID}:${clientSecret}`).toString('base64')}`,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: "grant_type=client_credentials"
             },
-            body: "grant_type=client_credentials"
-        },
-        options: {zLibEncode: true}
-    })]))[0] as getToken;
+            options: {zLibEncode: true}
+        })]))[0] as getToken;
 
-    TokenTime = Date.now() + result.expires_in;
-    Token = result.access_token;
+        TokenTime = Date.now() + result.expires_in;
+        Token = result.access_token;
+    });
 }
 //====================== ====================== ====================== ======================
 /**
  * @description Создаем запрос к SPOTIFY API и обновляем токен
  * @param method {string} Ссылка api
  */
-async function RequestSpotify(method: string): Promise<SpotifyPlaylist & FailResult | SpotifyTrack & FailResult | SpotifyArtist & FailResult | SpotifyUser & FailResult | SpotifyAlbumFull & FailResult | SearchTracks & FailResult> {
-    await login();
-    return httpsClient.parseJson(`${GetApi}/${method}`, {
-        request: {
-            method: "GET",
-            headers: {
-                'Accept': "application/json",
-                'Authorization': 'Bearer ' + Token,
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        },
-        options: {zLibEncode: true}
-    })
+function RequestSpotify(method: string): Promise<SpotifyRes> {
+    return new Promise<SpotifyRes>(async (resolve) => {
+        await login();
+        return resolve(httpsClient.parseJson(`${GetApi}/${method}`, {
+            request: {
+                method: "GET",
+                headers: {
+                    'Accept': "application/json",
+                    'Authorization': 'Bearer ' + Token,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            },
+            options: {zLibEncode: true}
+        }));
+    });
 }
 //====================== ====================== ====================== ======================
 /**
  * @description Получаем данные о треке
  * @param url {string} Ссылка на трек
  */
-async function getTrack(url: string): Promise<InputTrack | null> {
-    const id = getID(url);
-    const result = (await Promise.all([RequestSpotify(`tracks/${id}`)]))[0] as SpotifyTrack & FailResult;
+function getTrack(url: string): Promise<InputTrack | null> {
+    return new Promise<InputTrack | null>(async (resolve) => {
+        const id = getID(url);
+        const result = (await Promise.all([RequestSpotify(`tracks/${id}`)]))[0] as SpotifyTrack & FailResult;
 
-    if (!result || !result?.name) return null;
+        if (!result || !result?.name) return resolve(null);
 
-    return {
-        id: id,
-        title: result.name,
-        url: url,
-        author: (await Promise.all([getAuthorTrack(result.artists[0].external_urls.spotify, result?.artists[0]?.type !== "artist")]))[0],
-        duration: {
-            seconds: (result.duration_ms / 1000).toFixed(0)
-        },
-        image: result.album.images[0],
-        isValid: true,
-        PrevFile: result.preview_url
-    }
+        return resolve({
+            id: id,
+            title: result.name,
+            url: url,
+            author: (await Promise.all([getAuthorTrack(result.artists[0].external_urls.spotify, result?.artists[0]?.type !== "artist")]))[0],
+            duration: {
+                seconds: (result.duration_ms / 1000).toFixed(0)
+            },
+            image: result.album.images[0],
+            isValid: true,
+            PrevFile: result.preview_url
+        });
+    });
 }
 //====================== ====================== ====================== ======================
 /**
@@ -84,38 +90,40 @@ async function getTrack(url: string): Promise<InputTrack | null> {
  * @param url {string} Ссылка на плейлист
  * @param options {limit: number} Настройки
  */
-async function getPlaylist(url: string, options: {limit: number} = {limit: 101}): Promise<InputPlaylist | null> {
-    try {
-        const id = getID(url);
-        const result = await RequestSpotify(`playlists/${id}?offset=0&limit=${options.limit}`) as SpotifyPlaylist & FailResult;
+function getPlaylist(url: string, options: {limit: number} = {limit: 101}): Promise<InputPlaylist | null> {
+    return new Promise<InputPlaylist | null>(async (resolve) => {
+        try {
+            const id = getID(url);
+            const result = await RequestSpotify(`playlists/${id}?offset=0&limit=${options.limit}`) as SpotifyPlaylist & FailResult;
 
-        if (!result || !result?.name) return null;
+            if (!result || !result?.name) return resolve(null);
 
-        return {
-            id: id,
-            url: url,
-            title: result.name,
-            items: await Promise.all(result.tracks.items.map(async ({track}) => {
-                return {
-                    id: track?.id,
-                    title: track?.name,
-                    url: `${DefaultUrlSpotify}/track/${track?.id}`,
-                    author: (await Promise.all([getAuthorTrack(track.artists[0].external_urls.spotify)]))[0],
-                    duration: {
-                        seconds: (track.duration_ms / 1000).toFixed(0)
-                    },
-                    image: track.album.images[0] ?? result?.images[0],
-                    isValid: true,
-                    PrevFile: track?.preview_url
-                }
-            })),
-            image: result.images[0],
-            author: (await Promise.all([getAuthorTrack(`${DefaultUrlSpotify}/artist/${result.owner.id}`, result?.owner?.type !== "artist")]))[0]
-        };
-    } catch (e) {
-        console.log(e);
-        return null;
-    }
+            return resolve({
+                id: id,
+                url: url,
+                title: result.name,
+                items: await Promise.all(result.tracks.items.map(async ({track}) => {
+                    return {
+                        id: track?.id,
+                        title: track?.name,
+                        url: `${DefaultUrlSpotify}/track/${track?.id}`,
+                        author: (await Promise.all([getAuthorTrack(track.artists[0].external_urls.spotify)]))[0],
+                        duration: {
+                            seconds: (track.duration_ms / 1000).toFixed(0)
+                        },
+                        image: track.album.images[0] ?? result?.images[0],
+                        isValid: true,
+                        PrevFile: track?.preview_url
+                    }
+                })),
+                image: result.images[0],
+                author: (await Promise.all([getAuthorTrack(`${DefaultUrlSpotify}/artist/${result.owner.id}`, result?.owner?.type !== "artist")]))[0]
+            });
+        } catch (e) {
+            console.log(e);
+            return resolve(null);
+        }
+    });
 }
 //====================== ====================== ====================== ======================
 /**
@@ -123,38 +131,40 @@ async function getPlaylist(url: string, options: {limit: number} = {limit: 101})
  * @param url {string} Ссылка на альбом
  * @param options {limit: number} Настройки
  */
-async function getAlbum(url: string, options: {limit: number} = {limit: 101}): Promise<InputPlaylist | null> {
-    try {
-        const id = getID(url);
-        const result = (await Promise.all([RequestSpotify(`albums/${id}?offset=0&limit=${options.limit}`)]))[0] as SpotifyAlbumFull & FailResult;
+function getAlbum(url: string, options: {limit: number} = {limit: 101}): Promise<InputPlaylist | null> {
+    return new Promise<InputPlaylist | null>(async (resolve) => {
+        try {
+            const id = getID(url);
+            const result = (await Promise.all([RequestSpotify(`albums/${id}?offset=0&limit=${options.limit}`)]))[0] as SpotifyAlbumFull & FailResult;
 
-        if (!result || !result?.name) return null;
+            if (!result || !result?.name) return resolve(null);
 
-        return {
-            id: id,
-            url: url,
-            title: result.name,
-            items: await Promise.all(result.tracks.items.map(async (track: SpotifyTrack) => {
-                return {
-                    id: track.id,
-                    title: track.name,
-                    url: `${DefaultUrlSpotify}/track/${track.id}`,
-                    author: (await Promise.all([getAuthorTrack(track.artists[0].external_urls.spotify)]))[0],
-                    duration: {
-                        seconds: (track.duration_ms / 1000).toFixed(0)
-                    },
-                    image: track?.album?.images[0] ?? result?.images[0],
-                    isValid: true,
-                    PrevFile: track.preview_url
-                }
-            })),
-            image: result?.images[0],
-            author: (await Promise.all([getAuthorTrack(`${DefaultUrlSpotify}/artist/${result.artists[0].id}`, result?.artists[0]?.type !== "artist")]))[0]
-        };
-    } catch (e) {
-        console.log(e);
-        return null;
-    }
+            return resolve({
+                id: id,
+                url: url,
+                title: result.name,
+                items: await Promise.all(result.tracks.items.map(async (track: SpotifyTrack) => {
+                    return {
+                        id: track.id,
+                        title: track.name,
+                        url: `${DefaultUrlSpotify}/track/${track.id}`,
+                        author: (await Promise.all([getAuthorTrack(track.artists[0].external_urls.spotify)]))[0],
+                        duration: {
+                            seconds: (track.duration_ms / 1000).toFixed(0)
+                        },
+                        image: track?.album?.images[0] ?? result?.images[0],
+                        isValid: true,
+                        PrevFile: track.preview_url
+                    }
+                })),
+                image: result?.images[0],
+                author: (await Promise.all([getAuthorTrack(`${DefaultUrlSpotify}/artist/${result.artists[0].id}`, result?.artists[0]?.type !== "artist")]))[0]
+            });
+        } catch (e) {
+            console.log(e);
+            return resolve(null);
+        }
+    });
 }
 //====================== ====================== ====================== ======================
 /**
@@ -162,38 +172,40 @@ async function getAlbum(url: string, options: {limit: number} = {limit: 101}): P
  * @param search {string} Что ищем
  * @param options {limit: number} Настройки поиска
  */
-async function SearchTracks(search: string, options: {limit: number} = {limit: 15}): Promise<{ items: InputTrack[] } | null> {
-    try {
-        const result = (await Promise.all([RequestSpotify(`search?q=${search}&type=track&limit=${options.limit}`)]))[0] as SearchTracks & FailResult;
+function SearchTracks(search: string, options: {limit: number} = {limit: 15}): Promise<{ items: InputTrack[] } | null> {
+    return new Promise<{items: InputTrack[]} | null>(async (resolve) => {
+        try {
+            const result = (await Promise.all([RequestSpotify(`search?q=${search}&type=track&limit=${options.limit}`)]))[0] as SearchTracks & FailResult;
 
-        if (!result) return null;
+            if (!result) return resolve(null);
 
-        return {
-            items: await Promise.all(result.tracks.items.map(async (track: SpotifyTrack) => {
-                return {
-                    id: track.id,
-                    title: track.name,
-                    url: `${DefaultUrlSpotify}/track/${track.id}`,
-                    author: {
-                        id: track.artists[0].id,
-                        url: `${DefaultUrlSpotify}/artist/${track.artists[0].id}`,
-                        title: track.artists[0].name,
-                        image: null,
-                        isVerified: track.artists[0].popularity >= 500
-                    },
-                    duration: {
-                        seconds: (track.duration_ms / 1000).toFixed(0),
-                    },
-                    image: track.album.images[0],
-                    isValid: true,
-                    PrevFile: track.preview_url
-                };
-            }))
-        };
-    } catch (e) {
-        console.log(e);
-        return null;
-    }
+            return resolve({
+                items: await Promise.all(result.tracks.items.map(async (track: SpotifyTrack) => {
+                    return {
+                        id: track.id,
+                        title: track.name,
+                        url: `${DefaultUrlSpotify}/track/${track.id}`,
+                        author: {
+                            id: track.artists[0].id,
+                            url: `${DefaultUrlSpotify}/artist/${track.artists[0].id}`,
+                            title: track.artists[0].name,
+                            image: null,
+                            isVerified: track.artists[0].popularity >= 500
+                        },
+                        duration: {
+                            seconds: (track.duration_ms / 1000).toFixed(0),
+                        },
+                        image: track.album.images[0],
+                        isValid: true,
+                        PrevFile: track.preview_url
+                    };
+                }))
+            });
+        } catch (e) {
+            console.log(e);
+            return resolve(null);
+        }
+    });
 }
 //====================== ====================== ====================== ======================
 /**
@@ -201,13 +213,17 @@ async function SearchTracks(search: string, options: {limit: number} = {limit: 1
  * @param url {string} ссылка на автора или пользователя
  * @param isUser {boolean} Это пользователь
  */
-async function getAuthorTrack(url: string, isUser: boolean = false): Promise<InputAuthor> {
-    const id = getID(url);
-    const result = (await Promise.all([RequestSpotify(`${isUser ? "users" : "artists"}/${id}`)]))[0] as (SpotifyArtist | SpotifyUser) & FailResult
+function getAuthorTrack(url: string, isUser: boolean = false): Promise<InputAuthor> {
+    return new Promise<InputAuthor>(async (resolve) => {
+        const id = getID(url);
+        const result = (await Promise.all([RequestSpotify(`${isUser ? "users" : "artists"}/${id}`)]))[0] as (SpotifyArtist | SpotifyUser) & FailResult
 
-    return { //@ts-ignore
-        id, title: result?.name ?? result?.display_name, url, image: result.images[0], isVerified: result.followers.total >= 500
-    }
+        return resolve({ //@ts-ignore
+            id, title: result?.name ?? result?.display_name, url,
+            image: result.images[0],
+            isVerified: result.followers.total >= 500
+        })
+    });
 }
 
 //Проверяем надо ли обновлять токен
@@ -237,6 +253,7 @@ function getID(url: string): string {
 
 type SpotifyType = "track" | "playlist" | "album" | "artist" | "user";
 type AlbumType = "single";
+type SpotifyRes = SpotifyPlaylist & FailResult | SpotifyTrack & FailResult | SpotifyArtist & FailResult | SpotifyUser & FailResult | SpotifyAlbumFull & FailResult | SearchTracks & FailResult;
 
 interface FailResult {
     error: boolean

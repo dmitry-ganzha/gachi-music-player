@@ -1,4 +1,4 @@
-import {FindResource} from "./Helper";
+import {FindResource} from "./FindResource";
 import {Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
 import {WarningMessage} from "../Manager/Message";
@@ -11,7 +11,7 @@ import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 
 //Статусы плеера для пропуска музыки
 export const StatusPlayerHasSkipped: Set<string> = new Set(['playing', 'paused', 'buffering', 'idle']);
-const EmptyFrame = Buffer.from([0xf8, 0xff, 0xfe]);
+const EmptyFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe]);
 
 /**
  * @description Плеер!)
@@ -75,9 +75,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (OldState.status !== newState.status || isNewResources) {
             //Перед сменой статуса плеера отправляем пустой пакет. Необходим, так мы правим повышение задержки гс!
             this.playOpusPacket(EmptyFrame, this.VoiceChannels);
-
-            if (isNewResources) void this.emit(newState.status, OldState, this._state);
-            else void this.emit(newState.status, OldState, this._state);
+            void this.emit(newState.status, OldState, this._state);
         }
     };
     //====================== ====================== ====================== ======================
@@ -113,7 +111,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
-        if (queue?.songs?.length === 0 || !queue?.songs) return void queue.events.queue.emit('DestroyQueue', queue, message);
+        if (!queue || !queue.songs || !queue.songs.length) return void queue?.events?.queue?.emit('DestroyQueue', queue, message);
 
         setImmediate(() =>
             CreateResource(queue.songs[0], queue.audioFilters).then((stream: FFmpegStream) => {
@@ -230,11 +228,9 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (this.state.status === "playing") {
             const packet: Buffer | null = this.state.resource.read();
 
-            if (packet) this.playOpusPacket(packet, Receivers);
-            else {
-                this.signalStopSpeaking();
-                this.stop();
-            }
+            if (packet) return this.playOpusPacket(packet, Receivers);
+            this.signalStopSpeaking();
+            this.stop();
         }
     };
     //====================== ====================== ====================== ======================
@@ -277,9 +273,8 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         WarningMessage(message, queue.songs[0], err);
-
-        if (queue.songs.length === 1) void queue.events.queue.emit("DestroyQueue", queue, message);
-        else if (queue.songs.length > 1) this.stop();
+        queue.songs.shift();
+        return this.PlayCallback(message);
     };
     //====================== ====================== ====================== ======================
     /**
@@ -302,13 +297,15 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
  * @param audioFilters {AudioFilters} Аудио фильтры которые включил пользователь
  * @param seek {number} Пропуск музыки до 00:00:00
  */
-async function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0): Promise<FFmpegStream> {
-    await (Promise.all([FindResource(song)]));
+function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0): Promise<FFmpegStream> | null {
+    return new Promise<FFmpegStream>(async (resolve) => {
+        await (Promise.all([FindResource(song)]));
 
-    if (!song.format.work) return null;
+        if (!song.format.work) return resolve(null);
 
-    if (song.isLive) return new FFmpegStream(song.format.url, null);
-    return new FFmpegStream(song.format.url, audioFilters, seek);
+        if (song.isLive) return resolve(new FFmpegStream(song.format.url, null));
+        return resolve(new FFmpegStream(song.format.url, audioFilters, seek));
+    })
 }
 //====================== ====================== ====================== ======================
 /**

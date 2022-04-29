@@ -1,8 +1,8 @@
-import { BrotliDecompress, Deflate, Gunzip, createGunzip, createBrotliDecompress, createDeflate } from 'node:zlib';
+import {BrotliDecompress, createBrotliDecompress, createDeflate, createGunzip, Deflate, Gunzip} from 'node:zlib';
 import {IncomingMessage} from "http";
 import {getCookies, uploadCookie} from "../Platforms/src/youtube/Cookie";
 import UserAgents from "./UserAgents.json";
-import {request, Dispatcher} from "undici";
+import {Dispatcher, request} from "undici";
 import {RequestOptions} from "undici/types/dispatcher";
 import BodyReadable from "undici/types/readable";
 
@@ -15,11 +15,7 @@ export const httpsClient = {Request, parseBody, parseJson};
  */
 function Request(url: string, options?: httpsClientOptions) {
     if (options) EditRequestOptions(options);
-    let req = request(url, options?.request);
-
-    req.catch(() => undefined);
-
-    return req;
+    return request(url, options?.request);
 }
 //====================== ====================== ====================== ======================
 /**

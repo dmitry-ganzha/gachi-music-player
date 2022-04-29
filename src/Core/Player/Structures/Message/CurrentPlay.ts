@@ -8,7 +8,7 @@ import {WatKLOK} from "../../../Client";
 import {EmbedConstructor} from "../../../Utils/TypeHelper";
 import {AudioFilters} from "../../FFmpeg";
 
-const ProgressBarValue = true;
+const ProgressBarValue: boolean = true;
 
 /**
  * @description Embed сообщение о текущем треке

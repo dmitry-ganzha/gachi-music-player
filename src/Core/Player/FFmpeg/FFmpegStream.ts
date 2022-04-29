@@ -3,7 +3,7 @@ import {CreateFilters, FFmpegArgs, FFmpegArguments} from "./index";
 import {AudioFilters, FFmpeg} from '.';
 
 /**
- * @description Подготавливаем, получаем и создаем объект схожий с discord.js {AudioResource}
+ * @description Подготавливаем, получаем и создаем объект схожий с (discordjs/voice)<AudioResource>
  */
 export class FFmpegStream {
     public silencePaddingFrames: number = 0;
@@ -33,9 +33,14 @@ export class FFmpegStream {
         return this.playStream?.readableEnded || this.playStream?.destroyed || !this.playStream;
     };
     //====================== ====================== ====================== ======================
+    /**
+     * @param url {string} Ссылка
+     * @param AudioFilters {AudioFilters} Какие фильтры надо использовать
+     * @param seek {number} До скольки пропускаем музыку
+     */
     public constructor(url: string, AudioFilters: AudioFilters = null, seek: number = 0) {
         this.FFmpeg = new FFmpeg(CreateArguments(url, AudioFilters, seek));
-        this.playStream = new opus.OggDemuxer({ destroy: () => this.destroy(), autoDestroy: true});
+        this.playStream = new opus.OggDemuxer({autoDestroy: true});
 
         this.FFmpeg.pipe(this.playStream);
 
