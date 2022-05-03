@@ -1,0 +1,61 @@
+{
+  "Names": ["ffmpeg", "avconv", "./FFmpeg/ffmpeg", "./FFmpeg/avconv", "./node_modules/ffmpeg-static/ffmpeg"],
+  "Args": {
+    "OggOpus": ["-acodec", "libopus", "-f", "opus"],
+    "Seek": ["-ss"],
+    "Reconnect": ["-reconnect", 1, "-reconnect_delay_max", 25, "-reconnect_streamed", 1],
+    "DecoderPreset": ["-ar", 48e3, "-ac", 2],
+    "Other": ["-analyzeduration", 0],
+    "Filters": {
+      "AudioFade": "afade=t=in:st=0:d=1.5"
+    }
+  },
+  "FilterConfigurator": {
+    "nightcore": {
+      "value": false,
+      "arg": "asetrate=48000*1.25,aresample=48000,bass=g=5"
+    },
+    "karaoke": {
+      "value": false,
+      "arg": "stereotools=mlev=0.1"
+    },
+    "echo": {
+      "value": false,
+      "arg": "aecho=0.8:0.9:1000:0.3"
+    },
+    "3d": {
+      "value": false,
+      "arg": "apulsator=hz=0.125"
+    },
+    "speed": {
+      "value": {
+        "max": 3,
+        "min": 1
+      },
+      "arg": "atempo="
+    },
+    "bass": {
+      "value": {
+        "max": 10,
+        "min": 1
+      },
+      "arg": "bass=g="
+    },
+    "Sub_bass": {
+      "value": false,
+      "arg": "asubboost"
+    },
+    "vibro": {
+      "value": false,
+      "arg": "vibrato=f=6.5"
+    },
+    "phaser": {
+      "value": false,
+      "arg": "aphaser=in_gain=0.4"
+    },
+    "vaporwave": {
+      "value": false,
+      "arg": "asetrate=48000*0.8,aresample=48000,atempo=1.1"
+    }
+  }
+}
