@@ -1,12 +1,10 @@
 import {TypedEmitter} from "tiny-typed-emitter";
-import {Song} from "../Structures/Queue/Song";
 import {Queue} from "../Structures/Queue/Queue";
 import {Disconnect} from "../Voice/VoiceManager";
 import {ClientMessage} from "../../Client";
 
 type EventsQueue = {
     DestroyQueue: (queue: Queue, message: ClientMessage, sendDelQueue?: boolean) => boolean | void,
-    pushSong: (song: Song, message: ClientMessage) => void
 };
 export type Queue_Channels = Queue["channels"];
 export type Queue_Options = Queue["options"];
@@ -15,25 +13,12 @@ export class QueueEvents extends TypedEmitter<EventsQueue> {
     public constructor() {
         super();
         this.once('DestroyQueue', onDestroyQueue);
-        this.on('pushSong', onPushSong);
-        this.setMaxListeners(2);
+        this.setMaxListeners(1);
     };
 
     public destroy = () => {
         this.removeAllListeners();
     };
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Добавляем музыку в очередь
- * @param song {object}
- * @param message {object}
- */
-function onPushSong(song: Song, {client, guild}: ClientMessage): void {
-    const queue: Queue = client.queue.get(guild.id);
-
-    if (!queue) return;
-    queue.songs.push(song);
 }
 //====================== ====================== ====================== ======================
 /**
@@ -46,7 +31,7 @@ function onDestroyQueue(queue: Queue, message: ClientMessage, sendDelQueue: bool
     if (!queue) return;
 
     DeleteMessage(queue.channels);
-    LeaveVoice(queue?.channels?.message?.guild.id);
+    Disconnect(queue?.channels?.message?.guild.id);
     CleanPlayer(queue);
     if (sendDelQueue) SendChannelToEnd(queue.options, message);
 
@@ -74,21 +59,13 @@ function CleanPlayer(queue: Queue): void {
     queue.player?.stop();
 
     setImmediate(() => {
+        queue.player.unsubscribe(null);
         queue.player?.removeAllListeners();
         queue.player.destroy();
         delete queue.player;
     });
 }
 //====================== ====================== ====================== ======================
-/**
- * @description Отключаемся от голосового канала
- * @param GuildID {string} ID сервера
- */
-function LeaveVoice(GuildID: string) {
-    return Disconnect(GuildID);
-}
-//====================== ====================== ====================== ======================
-
 /**
  * @description Удаляем сообщение о текущей песне
  * @param channels {Queue_Channels} Все каналы из очереди

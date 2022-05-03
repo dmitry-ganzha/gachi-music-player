@@ -182,7 +182,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @description Убираем из <this.subscribers> голосовой канал
      * @param connection {VoiceConnection} Голосовой канал на котором будет играть музыка
      */
-    protected subscribe = (connection: VoiceConnection): void => {
+    public subscribe = (connection: VoiceConnection): void => {
         const FindVoiceChannel = this.subscribers.find((sub) => sub.connection === connection);
 
         if (!FindVoiceChannel) {
@@ -195,7 +195,9 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @description Убираем из <this.subscribers> голосовой канал
      * @param subscription {PlayerSubscription} Голосовой канал на котором больше не будет играть музыка
      */
-    protected unsubscribe = (subscription: PlayerSubscription): void => {
+    public unsubscribe = (subscription?: PlayerSubscription): void => {
+        if (!subscription) return void (this.subscribers = null);
+
         const index = this.subscribers.indexOf(subscription);
         const FindInIndex = index !== -1;
 
@@ -305,7 +307,7 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
 
         if (song.isLive) return resolve(new FFmpegStream(song.format.url, null));
         return resolve(new FFmpegStream(song.format.url, audioFilters, seek));
-    })
+    });
 }
 //====================== ====================== ====================== ======================
 /**

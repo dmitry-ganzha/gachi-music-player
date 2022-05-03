@@ -39,11 +39,7 @@ export class VoiceEvent extends TypedEmitter<Events> {
         if (this.state) {
             this.state = false;
 
-            if (this.Timer) {
-                clearTimeout(this.Timer);
-                this.Timer = null;
-            }
-
+            if (this.Timer) clearTimeout(this.Timer);
             player.resume();
         }
     };

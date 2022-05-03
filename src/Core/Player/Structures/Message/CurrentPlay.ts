@@ -84,12 +84,7 @@ function MusicDuration({isLive, duration}: Song, curTime: number | string): stri
  */
 function ConvertCurrentTime({state}: AudioPlayer, filters: AudioFilters): number | string {
     const duration = state.resource?.playbackDuration ?? 0;
-    let seconds: number;
-
-    if (filters.speed) seconds = parseInt(((duration / 1000) * filters.speed).toFixed(0));
-    else if (filters.nightcore) seconds = parseInt(((duration / 1000) * 1.25).toFixed(0));
-    else if (filters.Vw) seconds = parseInt(((duration / 1000) * 0.8).toFixed(0));
-    else seconds = parseInt((duration / 1000).toFixed(0));
+    let seconds: number = parseInt((duration / 1000).toFixed(0));
 
     if (ProgressBarValue) return seconds;
     return ParserTimeSong(seconds);

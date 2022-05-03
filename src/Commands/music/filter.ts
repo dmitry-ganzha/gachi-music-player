@@ -1,8 +1,9 @@
 import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
-import {getEnableFilters} from "../../Core/Player/FFmpeg";
 import {ApplicationCommandOptionType} from "discord.js";
+import FFmpegConfiguration from "../../../DataBase/FFmpeg.json";
+import {getEnableFilters} from "../../Core/Player/FFmpeg";
 
 export class CommandLoop extends Command {
     public constructor() {
@@ -55,69 +56,36 @@ export class CommandLoop extends Command {
         const argsNum = Number(args[1]);
         const SendArg: {color: number, type: "css", message: ClientMessage} = {color: song.color, type: "css", message};
 
-        switch (args[0]) {
-            case 'off':
-                queue.audioFilters.Vw = false;
-                queue.audioFilters.nightcore = false;
-                queue.audioFilters.echo = false;
-                queue.audioFilters["3d"] = false;
-                queue.audioFilters.karaoke = false;
-                queue.audioFilters.speed = 0;
-                queue.audioFilters.bass = 0;
-                queue.audioFilters.Sub_bass = false;
+        if (!args[0]) return message.client.Send({text: `Current: ${getEnableFilters(queue.audioFilters) ?? "нет включенных фильтров"}`, ...SendArg});
+
+        // @ts-ignore
+        const Filter = FFmpegConfiguration.FilterConfigurator[args[0]];
+
+        if (Filter) {
+            //Disable filter
+            if (queue.audioFilters.includes(args[0])) {
+                if (Filter.value === false) queue.audioFilters = queue.audioFilters.filter((name: string) => name !== args[0]);
+                else {
+                    const index = queue.audioFilters.indexOf(args[0]);
+                    if (index === -1) return;
+                    queue.audioFilters.splice(index, 2);
+                }
                 void message.client.player.emit("filter", message);
-                return message.client.Send({text: `Filter | [Off]`, ...SendArg});
-            //
-            case 'nc':
-            case 'nightcore':
-               queue.audioFilters.nightcore = !queue.audioFilters.nightcore;
-               queue.audioFilters.Vw = false;
-               void message.client.player.emit("filter", message);
-               return message.client.Send({text: `Filter | [NightCore]: ${queue.audioFilters.nightcore}`, ...SendArg});
-           //
-            case 'echo':
-               queue.audioFilters.echo = !queue.audioFilters.echo;
-               void message.client.player.emit("filter", message);
-               return message.client.Send({text: `Filter | [ECHO]: ${queue.audioFilters.echo}`, ...SendArg});
-           //
-           case '3d':
-           case '3D':
-               queue.audioFilters["3d"] = !queue.audioFilters["3d"];
-               void message.client.player.emit("filter", message);
-               return message.client.Send({text: `Filter | [3D]: ${queue.audioFilters["3d"]}`, ...SendArg});
-           //
-           case 'karaoke':
-               queue.audioFilters.karaoke = !queue.audioFilters.karaoke;
-               void message.client.player.emit("filter", message);
-               return message.client.Send({text: `Filter | [Karaoke]: ${queue.audioFilters.karaoke}`, ...SendArg});
-           //
-           case 'speed':
-               queue.audioFilters.speed = argsNum < 1 ? 0 : argsNum > 3 ? 3 : argsNum;
-               void message.client.player.emit("filter", message);
-               return message.client.Send({text: `Filter | [Speed]: ${queue.audioFilters.speed}`, ...SendArg});
-           //
-           case 'bb':
-           case 'bass':
-               queue.audioFilters.bass = argsNum > 10 ? 10 : argsNum < 0 ? 0 : argsNum;
-               queue.audioFilters.Sub_bass = false;
-               void message.client.player.emit("filter", message);
-               return message.client.Send({text: `Filter | [BassBoost]: ${queue.audioFilters.bass}`, ...SendArg});
-           //
-           case 'sb':
-           case 'subboost':
-                queue.audioFilters.Sub_bass = !queue.audioFilters.Sub_bass;
-                queue.audioFilters.bass = 0;
-                void message.client.player.emit("filter", message);
-                return message.client.Send({text: `Filter | [SubBoost]: ${queue.audioFilters.Sub_bass}`, ...SendArg});
-           //
-           case 'vw':
-           case 'vaporwave':
-              queue.audioFilters.Vw = !queue.audioFilters.Vw;
-              queue.audioFilters.nightcore = false;
-              void message.client.player.emit("filter", message);
-              return message.client.Send({text: `Filter | [VaporWave]: ${queue.audioFilters.Vw}`, ...SendArg});
-           //
-          default: return message.client.Send({text: `All filter command: [nightcore, 3D, karaoke, speed, bass, vaporwave, sub-boost]\n\nCurrent: [${getEnableFilters(queue.audioFilters)}]\nDisable all - !fl off`, ...SendArg});
+                return message.client.Send({text: `${message.author.username} | Filter: ${args[0]} disable`, ...SendArg});
+            }
+            //Enable filter
+            if (Filter.value === false) queue.audioFilters.push(args[0]);
+            else {
+                if (!argsNum || argsNum > Filter.value.max || argsNum < Filter.value.min)
+                    return message.client.Send({text: `${message.author.username}, для этого фильтра нужно указать значение между ${Filter.value.max} - ${Filter.value.min}!`, ...SendArg})
+
+                queue.audioFilters.push(args[0]);
+                // @ts-ignore
+                queue.audioFilters.push(argsNum);
+            }
+            void message.client.player.emit("filter", message);
+            return message.client.Send({text: `${message.author.username} | Filter: ${args[0]} enable`, ...SendArg});
         }
+        return message.client.Send({text: `${message.author.username}, я не нахожу ${args[0]} в своей базе. Может он появится позже!`, ...SendArg})
     };
 }

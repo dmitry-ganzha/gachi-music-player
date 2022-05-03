@@ -1,40 +1,18 @@
 import {spawn, ChildProcessWithoutNullStreams, spawnSync} from "child_process";
 import { Duplex, Readable, Writable } from 'stream';
 import {Queue} from "../Structures/Queue/Queue";
+import FFmpegConfiguration from "../../../../DataBase/FFmpeg.json";
 
 export type FFmpegArgs = (string | number)[] | string[];
 export type AudioFilters = Queue['audioFilters'];
 
 let FFmpegName: string;
-let sources = ['ffmpeg', 'avconv', './FFmpeg/ffmpeg', './FFmpeg/avconv', './node_modules/ffmpeg-static/ffmpeg'];
-
-//Аргументы для FFmpeg'a
-export const FFmpegArguments = {
-    OggOpus: ["-acodec", "libopus", "-f", "opus"],
-    Seek: ["-ss"], // + number
-    Reconnect: ["-reconnect", 1, "-reconnect_delay_max", 25, "-reconnect_streamed", 1],
-    DecoderPreset: ["-ar", 48e3, "-ac", 2],
-    Other: ["-analyzeduration", 0],
-    Filters: {
-        nightcore: "asetrate=48000*1.25,aresample=48000,bass=g=5",
-        karaoke: "stereotools=mlev=0.1",
-        echo: "aecho=0.8:0.9:1000:0.3",
-        "3d": "apulsator=hz=0.125",
-        speed: "atempo=", // + number
-        bass: "bass=g=", // + number
-        Sub_bass: "asubboost",
-        vibro: "vibrato=f=6.5",
-        phaser: "aphaser=in_gain=0.4",
-        Vw : "asetrate=48000*0.8,aresample=48000,atempo=1.1", //vaporwave
-        AudioFade: "afade=t=in:st=0:d=1.5" //End plying afade=t=out:st=5:d=5
-    } //Not using args ["-loglevel", 1] ["-preset", "medium"] ["-tune", "fastdecode"] ["-compression_level", 10]
-};
 
 /**
  * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a если он будет найден
  */
 const FFmpegCheck = () => {
-    for (let source of sources) {
+    for (let source of FFmpegConfiguration.Names) {
         try {
             const result = spawnSync(source, ['-h'], {windowsHide: true});
             if (result.error) continue;
@@ -142,19 +120,25 @@ export function CreateFilters(AudioFilters: AudioFilters): string {
     let response: string[] = [];
 
     if (AudioFilters) {
-        Object.entries(AudioFilters).forEach(([key, value]) => {
-            if (!value || value <= 0) return;
+        AudioFilters.forEach((name: string) => {
+            if (typeof name === 'number') return;
 
             // @ts-ignore
-            let FilterKey = FFmpegArguments.Filters[key];
-            if (!FilterKey) return;
+            const Filter = FFmpegConfiguration.FilterConfigurator[name];
+            if (!Filter) return;
 
-            // @ts-ignore
-            if (typeof value === 'number') response.push(`${FilterKey}${AudioFilters[key]}`);
-            else response.push(FilterKey);
+            if (Filter.value === false) {
+                response.push(Filter.arg);
+                return;
+            }
+            const index = AudioFilters.indexOf(name);
+            if (index === -1) return;
+
+            response.push(`${Filter.arg}${AudioFilters.slice(index + 1)[0]}`);
+            return;
         });
     }
-    response.push(FFmpegArguments.Filters.AudioFade);
+    response.push(FFmpegConfiguration.Args.Filters.AudioFade);
 
     return response.join(',');
 }
@@ -167,26 +151,10 @@ export function getEnableFilters(AudioFilters: AudioFilters): string {
     if (!AudioFilters) return null;
     let response: string[] = [];
 
-    Object.entries(AudioFilters).forEach(([key, value]) => {
-        if (!value || value <= 0) return;
-
-        response.push(key);
+    AudioFilters.forEach((name: string) => {
+        if (typeof name === 'number') return;
+        response.push(name);
     });
 
     return response.join(', ');
-}
-//====================== ====================== ====================== ======================
-
-export interface FFmpegFilters {
-    nightcore?: boolean;
-    karaoke?: boolean;
-    echo?: boolean;
-    "3d"?: boolean;
-    speed?: number;
-    bass?: number;
-    Sub_bass?: boolean;
-    vibro?: boolean;
-    phaser?: boolean;
-    Vw?: boolean;
-    AudioFade?: boolean
 }

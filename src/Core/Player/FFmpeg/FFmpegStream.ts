@@ -1,6 +1,6 @@
 import {opus} from "prism-media";
-import {CreateFilters, FFmpegArgs, FFmpegArguments} from "./index";
-import {AudioFilters, FFmpeg} from '.';
+import {AudioFilters, FFmpeg, FFmpegArgs, CreateFilters} from '.';
+import FFmpegConfiguration from "../../../../DataBase/FFmpeg.json";
 
 /**
  * @description Подготавливаем, получаем и создаем объект схожий с (discordjs/voice)<AudioResource>
@@ -93,9 +93,9 @@ export class FFmpegStream {
  * @constructor
  */
 function CreateArguments (url: string, AudioFilters: AudioFilters, seek: number): FFmpegArgs {
-    let Arguments = [...FFmpegArguments.Other, "-af", CreateFilters(AudioFilters), ...FFmpegArguments.OggOpus, ...FFmpegArguments.DecoderPreset];
+    let Arguments = [...FFmpegConfiguration.Args.Other, "-af", CreateFilters(AudioFilters), ...FFmpegConfiguration.Args.OggOpus, ...FFmpegConfiguration.Args.DecoderPreset];
 
-    if (url) Arguments = [ ...FFmpegArguments.Reconnect, "-vn", ...FFmpegArguments.Seek, seek ?? 0, '-i', url, ...Arguments];
+    if (url) Arguments = [ ...FFmpegConfiguration.Args.Reconnect, "-vn", ...FFmpegConfiguration.Args.Seek, seek ?? 0, '-i', url, ...Arguments];
 
     return Arguments;
 }
