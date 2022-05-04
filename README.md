@@ -7,7 +7,7 @@
     </p>
 </div>
 
-[<img align="right" alt="Avatar bot" width="250px" src="https://cdn.discordapp.com/avatars/678588856588697610/466d3d51e6d497541622085ed18a1ad1.webp?size=4096" />](https://discordapp.com/users/623170593268957214)
+[<img align="right" alt="Avatar bot" width="240px" src="https://cdn.discordapp.com/avatars/678588856588697610/466d3d51e6d497541622085ed18a1ad1.webp?size=4096" />](https://discordapp.com/users/623170593268957214)
 
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
@@ -31,11 +31,14 @@
    - `node ./src/Core/ShardManager.js` Для 1к и более серверов
 
 ## Поддерживаемые платформы
-- [`YouTube`](https://www.youtube.com/) (Видео, плейлисты, поиск, стримы)
-- [`Spotify`](https://open.spotify.com/) (треки, плейлисты, альбомы, поиск)
-- [`VK`](https://vk.com/) (треки, плейлисты, поиск)
-- [`SoundCloud`](https://soundcloud.com/) (треки, плейлисты, поиск, альбомы)
-- [`RuTube`](https://rutube.ru/) (W.I.P)
+
+| Платформы                             | Что доступно                     |
+|---------------------------------------|----------------------------------|
+| [YouTube](https://www.youtube.com/)   | видео, плейлисты, поиск, стримы  |
+| [Spotify](https://open.spotify.com/)  | треки, плейлисты, альбомы, поиск |
+| [VK](https://vk.com/)                 | треки, плейлисты, поиск          |
+| [SoundCloud](https://soundcloud.com/) | треки, плейлисты, поиск, альбомы |
+| [RuTube](https://rutube.ru/)          | W.I.P                            |
 
 ## Требования к хостингу
 - 2.4 ghz процессор [`Heroku`](http://heroku.com/)
