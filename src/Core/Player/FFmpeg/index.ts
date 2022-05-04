@@ -41,12 +41,6 @@ export class FFmpeg extends Duplex {
 
         //Используется для загруски потока в ffmpeg. Неообходимо не указывать параметр -i
         if (!args.includes('-i')) this.Calling(['on', 'once', 'removeListener', 'removeListeners', 'listeners']);
-
-        //Если есть ошибка в <input, output>, выводим!
-        //const processError = (error: Error) => this.emit('error', error);
-        //this.Input.once('error', processError);
-        //this.Output.once('error', processError);
-
         this.process.once("close", () => this.destroy());
     };
     //====================== ====================== ====================== ======================
