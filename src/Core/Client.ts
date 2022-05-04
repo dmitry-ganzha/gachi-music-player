@@ -6,7 +6,8 @@ import {
     Interaction,
     Message,
     MessageEditOptions,
-    User
+    User,
+    Options, VoiceState
 } from "discord.js";
 import {FileSystemLoad} from "./FileSystem";
 import {Channel, MessageChannel, sendType} from "./Utils/TypeHelper";
@@ -35,6 +36,63 @@ export class WatKLOK extends Client {
 
     public constructor() {
         super({
+            makeCache: Options.cacheWithLimits({
+                BaseGuildEmojiManager: 0,       // guild.emojis
+                GuildBanManager: 0,             // guild.bans
+                GuildInviteManager: 0,          // guild.invites
+                GuildStickerManager: 0,         // guild.stickers
+                GuildScheduledEventManager: 0,  // guild.scheduledEvents
+                PresenceManager: 0,             // guild.presences
+                StageInstanceManager: 0,        // guild.stageInstances
+                ThreadManager: 0,               // channel.threads
+                ThreadMemberManager: 0,         // threadchannel.members
+
+                UserManager: {
+                    maxSize: 100,
+                    keepOverLimit: (value) => value.id === value.client.user.id
+                },
+                GuildMemberManager: {
+                    maxSize: 100,
+                    keepOverLimit: (value) => value.id !== value.client.user.id,
+                },
+                VoiceStateManager: {
+                    maxSize: 100,
+                    keepOverLimit: (value) => value.id === value.client.user.id
+                },
+                MessageManager: {
+                    maxSize: 100,
+                    keepOverLimit: (value) => value.id === value.client.user.id
+                },
+                ReactionManager: {
+                    maxSize: 100,
+                    keepOverLimit: (value) => value.client.user.id === value.client.user.id
+                },
+                ReactionUserManager: {
+                    maxSize: 100,
+                    keepOverLimit: (value) => value.id === value.client.user.id
+                },
+                GuildEmojiManager: {
+                    maxSize: 100,
+                    keepOverLimit: (value) => value.id === value.client.user.id
+                }
+            }),
+            sweepers: {
+                users: {
+                    interval: 5e3,
+                    // @ts-ignore
+                    filter: (user: User): boolean => user.id !== user.client.user.id,
+                },
+                messages: {
+                    interval: 5e3,
+                    // @ts-ignore
+                    filter: (message: ClientMessage): boolean => message.author?.id !== message.client.user.id
+                },
+                voiceStates: {
+                    interval: 5e3,
+                    // @ts-ignore
+                    filter: (voice: VoiceState) => voice.member.id !== this.user.id
+                }
+            },
             intents: (Object.keys(IntentsBitField.Flags)) as any,
             ws: {
                 properties: {

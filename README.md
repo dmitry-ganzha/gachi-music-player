@@ -1,13 +1,13 @@
 [<img align="right" alt="Node.js" width="260px" src="https://cdn.discordapp.com/attachments/860113484493881365/917337557841362944/Typescript_logo_2020.svg.png" />](https://nodejs.org/en/)
 
 # WatKLOK
-- Автор: [SNIPPIK](https://github.com/SNIPPIK)
+- Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
 - Язык бота: ru
 - [Настройки](./DataBase/Config.json)
 - [Все команды](./src/Commands)
 
 ## Гайд по запуску
-1. [Node.js]() 16 или 17 версия
+1. [`Node.js`](https://nodejs.org/ru/) 16 или 17 версия
 2. FFmpeg (на выбор)
     - [`FFmpeg`](https://ffmpeg.org/)
     - `ffmpeg-static`: ^4.2.7 (npm install)
@@ -22,27 +22,29 @@
    - `node ./src/Core/ShardManager.js` Для 1к и более серверов
 
 ## Поддерживаемые платформы
-- [YouTube](https://www.youtube.com/) (Видео, плейлисты, поиск, стримы)
-- [Spotify](https://open.spotify.com/) (треки, плейлисты, альбомы, поиск)
-- [VK](https://vk.com/) (треки, плейлисты, поиск)
-- [SoundCloud](https://soundcloud.com/) (треки, плейлисты, поиск, альбомы)
-- [RuTube](https://rutube.ru/) (W.I.P)
+- [`YouTube`](https://www.youtube.com/) (Видео, плейлисты, поиск, стримы)
+- [`Spotify`](https://open.spotify.com/) (треки, плейлисты, альбомы, поиск)
+- [`VK`](https://vk.com/) (треки, плейлисты, поиск)
+- [`SoundCloud`](https://soundcloud.com/) (треки, плейлисты, поиск, альбомы)
+- [`RuTube`](https://rutube.ru/) (W.I.P)
 
 ## Требования к хостингу
-- 2.4 ghz процессор ([Heroku](http://heroku.com/))
-   - RAM: 28-38 Мб в ожидании, +5-6 мб за каждый запущенный FFmpeg, при включении стрима до 12 Мб
-   - CPU: 1-2% в ожидании, +7-12% поиск треков, все фильтры работают на FFmpeg'е
-- 3.6 ghz процессор ([My host]())
-   - RAM: 28-38 Мб в ожидании, +5-6 мб за каждый запущенный FFmpeg, при включении стрима до 12 Мб
-   - CPU: 0-1% в ожидании, +0-1% поиск треков, все фильтры работают на FFmpeg'е
+- 2.4 ghz процессор [`Heroku`](http://heroku.com/)
+   - `RAM`: 28-38 Мб в ожидании, +5-6 мб за каждый запущенный FFmpeg, при включении стрима до 12 Мб
+   - `CPU`: 1-2% в ожидании, +2-5% поиск треков, все фильтры работают на FFmpeg'е
+- 3.6 ghz процессор `R7 3700x`
+   - `RAM`: 28-38 Мб в ожидании, +5-6 мб за каждый запущенный FFmpeg, при включении стрима до 12 Мб
+   - `CPU`: 0-1% в ожидании, +0-1% поиск треков, все фильтры работают на FFmpeg'е
 
     
 ## Настройки
-1. Cookie.json | для прослушивания видео на youtube без ограничений (Авто-обновление)
+1. [`Cookie.json`](./DataBase/Cookie.json) | для прослушивания видео на youtube без ограничений (Авто-обновление)
     ```json5
-    { "Cookie": "КУКИ" }
+   {   
+      "Cookie": "КУКИ" 
+   }
    ```
-2. Config.json
+2. [`Config.json`](./DataBase/Config.json)
     ```json5
     {
       "Channels": {
@@ -64,18 +66,18 @@
       }
     }
     ```
-3. FFmpeg.json | Можно теперь управлять FFmpeg из его конфига | [FFmpeg Docs](https://ffmpeg.org/ffmpeg.html)
+3. [`FFmpeg.json`](./DataBase/FFmpeg.json) | Можно теперь управлять FFmpeg из конфига | [`FFmpeg Docs`](https://ffmpeg.org/ffmpeg.html)
     ```json5
       {
         "Names": [], // Пути к ffmpeg
         "Args": {}, // Аргументы для работы (не менять)
         "FilterConfigurator": { //Для создания кастомных фильтров
-          "speed": {
+          "nameFilter": {
             "value": {       //Нужно использовать значение, указать false если оно не нужно
-              "max": 3,      //Макс значение
-              "min": 1       //Мин значение
+              "max": 200,      //Макс значение
+              "min": 0       //Мин значение
             },
-            "arg": "atempo=" //Сам аргумент
+            "arg": "" //Сам аргумент
           }
         }
       }  
