@@ -1,4 +1,13 @@
-[<img align="right" alt="Node.js" width="260px" src="https://cdn.discordapp.com/attachments/860113484493881365/917337557841362944/Typescript_logo_2020.svg.png" />](https://nodejs.org/en/)
+<div align="center">
+	<p>
+		<a href="https://discord.gg/qMf2Sv3"><img src="https://img.shields.io/discord/332947799605772289?color=5865F2&logo=discord&logoColor=white&style=flat-square" alt="Discord server" /></a>
+		<a href=""><img src="https://img.shields.io/github/stars/SNIPPIK/WatKLOK?logo=github&style=flat-square" alt="Stars"/></a>
+    	<a href=""><img src="https://img.shields.io/github/forks/SNIPPIK/WatKLOK?logo=github&style=flat-square" alt="Forks"/></a>
+        <a href=""><img src="https://img.shields.io/github/watchers/SNIPPIK/WatKLOK?logo=github&style=flat-square" alt="Watchers"/></a>
+    </p>
+</div>
+
+[<img align="right" alt="Avatar bot" width="250px" src="https://cdn.discordapp.com/avatars/678588856588697610/466d3d51e6d497541622085ed18a1ad1.webp?size=4096" />](https://discordapp.com/users/623170593268957214)
 
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
@@ -7,7 +16,7 @@
 - [Все команды](./src/Commands)
 
 ## Гайд по запуску
-1. [`Node.js`](https://nodejs.org/ru/) 16 или 17 версия
+1. [`Node.js`](https://nodejs.org/ru/) 16 - 18
 2. FFmpeg (на выбор)
     - [`FFmpeg`](https://ffmpeg.org/)
     - `ffmpeg-static`: ^4.2.7 (npm install)
@@ -82,9 +91,3 @@
         }
       }  
     ```
-
-<div align="left">
-		<p>
-		<a href="https://discord.gg/qMf2Sv3"><img src="https://img.shields.io/discord/332947799605772289?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
-	</p>
-</div>
