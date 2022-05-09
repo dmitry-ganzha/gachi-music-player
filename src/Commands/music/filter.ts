@@ -15,7 +15,7 @@ export class CommandLoop extends Command {
             options: [
                 {
                     name: "name",
-                    description: "Все фильтры - all",
+                    description: "Все доступные фильтры - all",
                     type: ApplicationCommandOptionType.String
                 }
             ],
@@ -58,7 +58,7 @@ export class CommandLoop extends Command {
         const NameFilter = args[0]?.toLowerCase();
 
 
-        if (!NameFilter) return message.client.Send({text: `Текущие: ${getEnableFilters(queue.audioFilters) ?? "нет включенных фильтров"}`, ...SendArg});
+        if (!NameFilter) return message.client.Send({text: `Включенные фильтры: ${getEnableFilters(queue.audioFilters) ?? "нет включенных фильтров"}`, ...SendArg});
 
         if (NameFilter === 'all') return message.client.Send({text: `Все фильтры: ${FFmpegConfig()}`, ...SendArg});
 
