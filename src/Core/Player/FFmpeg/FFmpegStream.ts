@@ -44,8 +44,8 @@ export class FFmpegStream {
 
         this.FFmpeg.pipe(this.playStream);
 
-        this.playStream.once('readable', () => (this.started = true));
-        ['end', 'close', 'error'].map((event) => this.playStream.once(event, this.destroy));
+        this.playStream.once("readable", () => (this.started = true));
+        ["end", "close", "error"].forEach((event) => this.playStream.once(event, this.destroy));
         return;
     };
     //====================== ====================== ====================== ======================
@@ -73,12 +73,10 @@ export class FFmpegStream {
         delete this.silenceRemaining;
 
         setTimeout(() => {
-            [this.playStream].forEach((Stream) => {
-                if (!Stream?.destroyed) {
-                    Stream?.removeAllListeners();
-                    Stream?.destroy();
-                }
-            });
+            if (this.playStream && !this.playStream?.destroyed) {
+                this.playStream?.removeAllListeners();
+                this.playStream?.destroy();
+            }
             delete this.silencePaddingFrames;
             delete this.playStream;
         }, 125);

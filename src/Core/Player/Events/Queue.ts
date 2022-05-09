@@ -90,6 +90,6 @@ function SendChannelToEnd({stop}: Queue_Options, message: ClientMessage): void {
  */
 function DeleteQueue(message: ClientMessage): boolean {
 
-    message.client.console(`[Queue]: [GuildID: ${message.guild.id}, Method: Delete]`);
+    message.client.console(`[Queue]: [GuildID: ${message.guild.id}, Status: Delete]`);
     return message.client.queue.delete(message.guild.id);
 }

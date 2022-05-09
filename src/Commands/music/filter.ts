@@ -15,7 +15,7 @@ export class CommandLoop extends Command {
             options: [
                 {
                     name: "name",
-                    description: "Filters - 3D, karaoke, nightcore, speed, bassboost, sub-boost, vaporwave",
+                    description: "Все фильтры - all",
                     type: ApplicationCommandOptionType.String
                 }
             ],
@@ -55,37 +55,50 @@ export class CommandLoop extends Command {
         const song = queue.songs[0];
         const argsNum = Number(args[1]);
         const SendArg: {color: number, type: "css", message: ClientMessage} = {color: song.color, type: "css", message};
+        const NameFilter = args[0]?.toLowerCase();
 
-        if (!args[0]) return message.client.Send({text: `Current: ${getEnableFilters(queue.audioFilters) ?? "нет включенных фильтров"}`, ...SendArg});
+
+        if (!NameFilter) return message.client.Send({text: `Текущие: ${getEnableFilters(queue.audioFilters) ?? "нет включенных фильтров"}`, ...SendArg});
+
+        if (NameFilter === 'all') return message.client.Send({text: `Все фильтры: ${FFmpegConfig()}`, ...SendArg});
 
         // @ts-ignore
-        const Filter = FFmpegConfiguration.FilterConfigurator[args[0]];
+        const Filter = FFmpegConfiguration.FilterConfigurator[NameFilter];
 
         if (Filter) {
             //Disable filter
-            if (queue.audioFilters.includes(args[0])) {
-                if (Filter.value === false) queue.audioFilters = queue.audioFilters.filter((name: string) => name !== args[0]);
+            if (queue.audioFilters.includes(NameFilter)) {
+                if (Filter.value === false) queue.audioFilters = queue.audioFilters.filter((name: string) => name !== NameFilter);
                 else {
-                    const index = queue.audioFilters.indexOf(args[0]);
+                    const index = queue.audioFilters.indexOf(NameFilter);
                     if (index === -1) return;
                     queue.audioFilters.splice(index, 2);
                 }
                 void message.client.player.emit("filter", message);
-                return message.client.Send({text: `${message.author.username} | Filter: ${args[0]} disable`, ...SendArg});
+                return message.client.Send({text: `${message.author.username} | Filter: ${NameFilter} выключен`, ...SendArg});
             }
             //Enable filter
-            if (Filter.value === false) queue.audioFilters.push(args[0]);
+            if (Filter.value === false) queue.audioFilters.push(NameFilter);
             else {
                 if (!argsNum || argsNum > Filter.value.max || argsNum < Filter.value.min)
                     return message.client.Send({text: `${message.author.username}, для этого фильтра нужно указать значение между ${Filter.value.max} - ${Filter.value.min}!`, ...SendArg})
 
-                queue.audioFilters.push(args[0]);
+                queue.audioFilters.push(NameFilter);
                 // @ts-ignore
                 queue.audioFilters.push(argsNum);
             }
             void message.client.player.emit("filter", message);
-            return message.client.Send({text: `${message.author.username} | Filter: ${args[0]} enable`, ...SendArg});
+            return message.client.Send({text: `${message.author.username} | Filter: ${NameFilter} включен`, ...SendArg});
         }
-        return message.client.Send({text: `${message.author.username}, я не нахожу ${args[0]} в своей базе. Может он появится позже!`, ...SendArg})
+        return message.client.Send({text: `${message.author.username}, я не нахожу ${NameFilter} в своей базе. Может он появится позже!`, ...SendArg})
     };
+}
+
+function FFmpegConfig() {
+    const resp = [];
+    for (let key of Object.keys(FFmpegConfiguration.FilterConfigurator)) {
+        resp.push(key);
+    }
+
+    return resp.join(', ');
 }

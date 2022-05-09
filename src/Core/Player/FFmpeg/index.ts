@@ -14,7 +14,7 @@ let FFmpegName: string;
 const FFmpegCheck = () => {
     for (let source of FFmpegConfiguration.Names) {
         try {
-            const result = spawnSync(source, ['-h'], {windowsHide: true});
+            const result = spawnSync(source, ['-h'], {windowsHide: true, shell: false});
             if (result.error) continue;
             return FFmpegName = source;
         } catch {/* Nothing */}
@@ -41,7 +41,6 @@ export class FFmpeg extends Duplex {
 
         //Используется для загруски потока в ffmpeg. Неообходимо не указывать параметр -i
         if (!args.includes('-i')) this.Calling(['on', 'once', 'removeListener', 'removeListeners', 'listeners']);
-        this.process.once("close", () => this.destroy());
     };
     //====================== ====================== ====================== ======================
     /**
@@ -82,18 +81,6 @@ export class FFmpeg extends Duplex {
      * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
      */
     public _destroy = (error?: Error | null) => {
-        if (this.Input) {
-            this.Input.removeAllListeners();
-            this.Input.destroy();
-            delete this.process.stdout;
-        }
-
-        if (this.Output) {
-            this.Output.removeAllListeners();
-            this.Output.destroy();
-            delete this.process.stdin;
-        }
-
         if (this.process) {
             this.removeAllListeners();
             this.process.removeAllListeners();

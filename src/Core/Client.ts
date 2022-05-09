@@ -7,8 +7,7 @@ import {
     Message,
     MessageEditOptions,
     User,
-    Options, VoiceState
-} from "discord.js";
+    Options} from "discord.js";
 import {FileSystemLoad} from "./FileSystem";
 import {Channel, MessageChannel, sendType} from "./Utils/TypeHelper";
 import {MessageChannelSend} from "./Utils/Functions/Send";
@@ -76,23 +75,6 @@ export class WatKLOK extends Client {
                     keepOverLimit: (value) => value.id === value.client.user.id
                 }
             }),
-            sweepers: {
-                users: {
-                    interval: 5e3,
-                    // @ts-ignore
-                    filter: (user: User): boolean => user.id !== user.client.user.id,
-                },
-                messages: {
-                    interval: 5e3,
-                    // @ts-ignore
-                    filter: (message: ClientMessage): boolean => message.author?.id !== message.client.user.id
-                },
-                voiceStates: {
-                    interval: 5e3,
-                    // @ts-ignore
-                    filter: (voice: VoiceState) => voice.member.id !== this.user.id
-                }
-            },
             intents: (Object.keys(IntentsBitField.Flags)) as any,
             ws: {
                 properties: {
