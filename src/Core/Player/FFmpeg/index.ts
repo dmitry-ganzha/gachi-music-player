@@ -28,19 +28,19 @@ if (FFmpegName === undefined) Promise.all([FFmpegCheck()]).catch();
  * Это круче вашего Lavalink
  */
 export class FFmpeg extends Duplex {
-    protected process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
-    protected get Input() { return this.process.stdout; };
-    protected get Output() { return this.process.stdin; };
+    #process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
+    get #Input() { return this.#process.stdout; };
+    get #Output() { return this.#process.stdin; };
 
     public constructor(args: FFmpegArgs) {
         super({highWaterMark: 12, autoDestroy: true});
-        this.process = this.SpawnFFmpeg(args);
+        this.#process = this.#SpawnFFmpeg(args);
 
-        this.Binding(['write', 'end'], this.Output);
-        this.Binding(['read', 'setEncoding', 'pipe', 'unpipe'], this.Input);
+        this.#Binding(['write', 'end'], this.#Output);
+        this.#Binding(['read', 'setEncoding', 'pipe', 'unpipe'], this.#Input);
 
         //Используется для загруски потока в ffmpeg. Неообходимо не указывать параметр -i
-        if (!args.includes('-i')) this.Calling(['on', 'once', 'removeListener', 'removeListeners', 'listeners']);
+        if (!args.includes('-i')) this.#Calling(['on', 'once', 'removeListener', 'removeListeners', 'listeners']);
     };
     //====================== ====================== ====================== ======================
     /**
@@ -50,15 +50,15 @@ export class FFmpeg extends Duplex {
      * @constructor
      */
     // @ts-ignore
-    protected Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
-    protected Calling = (methods: string[]) => {
+    #Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
+    #Calling = (methods: string[]) => {
         const EVENTS = {
-            readable: this.Input,
-            data: this.Input,
-            end: this.Input,
-            unpipe: this.Input,
-            finish: this.Output,
-            drain: this.Output,
+            readable: this.#Input,
+            data: this.#Input,
+            end: this.#Input,
+            unpipe: this.#Input,
+            finish: this.#Output,
+            drain: this.#Output,
         };
 
         // @ts-ignore
@@ -69,7 +69,7 @@ export class FFmpeg extends Duplex {
      * @description Запускаем FFmpeg
      * @param Arguments {FFmpegArgs} Указываем аргументы для запуска
      */
-    protected SpawnFFmpeg = (Arguments: FFmpegArgs): any => {
+    #SpawnFFmpeg = (Arguments: FFmpegArgs): any => {
         const Args = [...Arguments, 'pipe:1'];
         if (!Args.includes('-i')) Args.unshift('-i', '-');
 
@@ -81,11 +81,10 @@ export class FFmpeg extends Duplex {
      * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
      */
     public _destroy = (error?: Error | null) => {
-        if (this.process) {
+        if (this.#process) {
             this.removeAllListeners();
-            this.process.removeAllListeners();
-            this.process.kill("SIGKILL");
-            delete this.process;
+            this.#process.removeAllListeners();
+            this.#process.kill("SIGKILL");
         }
 
         if (error) return console.error(error);

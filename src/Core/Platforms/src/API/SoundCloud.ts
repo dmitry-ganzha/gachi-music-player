@@ -43,7 +43,7 @@ function getTrack(url: string): Promise<InputTrack> {
  */
 function getPlaylist(url: string): Promise<InputPlaylist> {
     return new Promise<InputPlaylist>(async (resolve) => {
-        const ClientID = await getClientID()
+        const ClientID = await getClientID();
         const result = await httpsClient.parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
         const PlaylistItems: InputTrack[] = [];
 
