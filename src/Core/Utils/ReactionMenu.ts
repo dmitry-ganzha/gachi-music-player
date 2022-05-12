@@ -30,7 +30,7 @@ export class CollectorSortReaction {
      * @param pages {any[]} ArraySort данные
      * @param queue {Queue} Очередь
      */
-    protected _callback_string = async (page: number, pages: string[], queue: Queue): Promise<CollectorSortReactionFunction> => {
+    protected _callback_string = (page: number, pages: string[], queue: Queue): CollectorSortReactionFunction => {
         return {
             back: async ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): Promise<NodeJS.Timeout> => {
                 await users.remove(user);
@@ -60,7 +60,7 @@ export class CollectorSortReaction {
      * @param queue {Queue} Очередь
      * @param EnableQueue {boolean} Добавляем сколько музыки есть в очереди
      */
-    protected _callbacks_embed = async (page: number, pages: string[], embed: EmbedConstructor, queue: Queue, EnableQueue: boolean): Promise<CollectorSortReactionFunction> => {
+    protected _callbacks_embed = (page: number, pages: string[], embed: EmbedConstructor, queue: Queue, EnableQueue: boolean): CollectorSortReactionFunction => {
         return {
             back: async ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): Promise<NodeJS.Timeout> => {
                 await users.remove(user);
@@ -97,7 +97,7 @@ export class CollectorSortReaction {
      * @param queue {Queue} Очередь
      * @param EnableQueue {boolean} Добавляем сколько музыки есть в очереди
      */
-    protected _type = (embed: EmbedConstructor | string, page: number, pages: string[], queue: Queue, EnableQueue: boolean): Promise<CollectorSortReactionFunction> => typeof embed === "string" ? this._callback_string(page, pages, queue) : this._callbacks_embed(page, pages, embed, queue, EnableQueue);
+    protected _type = (embed: EmbedConstructor | string, page: number, pages: string[], queue: Queue, EnableQueue: boolean): CollectorSortReactionFunction => typeof embed === "string" ? this._callback_string(page, pages, queue) : this._callbacks_embed(page, pages, embed, queue, EnableQueue);
 
     /**
      * @description Создание реакции
