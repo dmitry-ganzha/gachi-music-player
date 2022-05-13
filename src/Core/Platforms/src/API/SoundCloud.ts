@@ -107,7 +107,13 @@ function getClientID(): Promise<string> {
     return new Promise<string>(async (resolve) => {
         if (clientID) return resolve(clientID);
 
-        const body = await httpsClient.parseBody(`https://soundcloud.com/`);
+        const body = await httpsClient.parseBody(`https://soundcloud.com/`, {
+            options: {
+                RealisticRequest: true,
+                english: true,
+                zLibEncode: true
+            }
+        });
         const BodySplit = body.split('<script crossorigin src="');
         const urls: string[] = [];
         BodySplit.forEach((r) => {

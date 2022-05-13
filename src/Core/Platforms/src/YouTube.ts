@@ -24,7 +24,7 @@ function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
                 },
                 method: "GET"
             },
-            options: {zLibEncode: true, english: true}
+            options: {zLibEncode: true, english: true, RealisticRequest: true}
         })]))[0];
 
         // @ts-ignore
@@ -52,7 +52,7 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
         const VideoID = new Utils().getID(url);
         const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/watch?v=${VideoID}&has_verified=1`, {
             options: {
-                userAgent: true, cookie: true, zLibEncode: true, english: true
+                userAgent: true, cookie: true, zLibEncode: true, english: true, RealisticRequest: true
             }
         })]))[0];
 
@@ -107,7 +107,7 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
 function SearchVideos(search: string, options: SearchOptions = {limit: 15, onlyLink: false}): Promise<string | InputTrack[]> {
     return new Promise(async (resolve, reject) => {
         const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}`, {
-            options: {userAgent: true, cookie: true, zLibEncode: true, english: true}
+            options: {userAgent: true, cookie: true, zLibEncode: true, english: true, RealisticRequest: true}
         })]))[0];
 
         if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));
@@ -162,7 +162,7 @@ async function getPlaylist(url: string): Promise<InputPlaylist> {
     return new Promise(async (resolve, reject) => {
         const playlistID = new Utils().getID(url, true);
         const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/playlist?list=${playlistID}`, {
-            options: {userAgent: true, cookie: true, zLibEncode: true, english: true}
+            options: {userAgent: true, cookie: true, zLibEncode: true, english: true, RealisticRequest: true}
         })]))[0];
 
         if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));

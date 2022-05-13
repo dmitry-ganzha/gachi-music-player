@@ -1,7 +1,9 @@
 import {ConstFormat, Song} from "../Structures/Queue/Song";
-import {httpsClient} from "../../httpsClient";
+import {httpsClient, httpsClientOptions} from "../../httpsClient";
 import {InputFormat} from "../../Utils/TypeHelper";
 import {SoundCloud, VK, YouTube} from "../../Platforms";
+
+const GlobalOptions: httpsClientOptions = {request: {maxRedirections: 10, method: "GET"}, options: {RealisticRequest: true}};
 
 //====================== ====================== ====================== ======================
 /**
@@ -21,7 +23,7 @@ export async function FindResource(song: Song, req: number = 0): Promise<void> {
         song.format = ConstFormat(format);
 
         //Проверяем можно ли скачивать с ресурса
-        const resource = await httpsClient.Request(song.format?.url, {request: {maxRedirections: 10, method: "GET"}});
+        const resource = await httpsClient.Request(song.format?.url, GlobalOptions);
 
         if (resource instanceof Error) {
             delete song.format;
@@ -35,7 +37,7 @@ export async function FindResource(song: Song, req: number = 0): Promise<void> {
         //Если этот формат невозможно включить прогоняем по новой
         if (resource?.statusCode >= 400 && resource?.statusCode <= 500) return FindResource(song, req++);
     } else {
-        const resource = await httpsClient.Request(song.format?.url, {request: {maxRedirections: 10, method: "GET"}});
+        const resource = await httpsClient.Request(song.format?.url, GlobalOptions);
 
         if (resource instanceof Error) {
             delete song.format;

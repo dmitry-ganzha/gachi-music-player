@@ -102,23 +102,26 @@ function ChangeReqOptions(options: httpsClientOptions): void {
             if (cookie) options.request.headers = {...options.request.headers, "cookie": cookie};
         }
         if (options.options?.zLibEncode) options.request.headers = {...options.request.headers, "accept-encoding": "gzip, deflate, br"};
-        if (options.options?.english) options.request.headers = {...options.request.headers, "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7"};
+        if (options.options?.english) options.request.headers = {...options.request.headers, "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7"};
     }
 
-    //Сделаем парсинг не таким заметным
-    options.request = { ...options.request,
-        headers: {
-            ...options.request.headers,
-            "sec-ch-ua-platform": "windows",
-            "sec-ch-ua-arch": "x86",
-            "sec-ch-ua-bitness": "64",
-            "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-model": "",
-            "sec-fetch-user": "?1",
-            "sec-fetch-dest": "document",
-            "sec-fetch-mode": "navigate"
-        }
-    };
+    if (options.options?.RealisticRequest) {
+        //Сделаем парсинг не таким заметным
+        options.request = {
+            ...options.request,
+            headers: {
+                ...options.request.headers,
+                "sec-ch-ua-platform": "windows",
+                "sec-ch-ua-arch": "x86",
+                "sec-ch-ua-bitness": "64",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-model": "",
+                "sec-fetch-user": "?1",
+                "sec-fetch-dest": "document",
+                "sec-fetch-mode": "navigate"
+            }
+        };
+    }
 }
 //====================== ====================== ====================== ======================
 /**
@@ -156,13 +159,14 @@ interface ReqOptions extends RequestOptions {
 type ZlibDecoder =  BrotliDecompress | Gunzip | Deflate;
 type DefaultDecoder = BodyReadable & Dispatcher.BodyMixin;
 
-interface httpsClientOptions {
+export interface httpsClientOptions {
     request?: ReqOptions;
     options?: {
         cookie?: boolean;
         userAgent?: boolean;
         zLibEncode?: boolean;
         english?: boolean;
+        RealisticRequest?: boolean;
     }
 }
 type IncomingHeaders = IncomingMessage["headers"];
