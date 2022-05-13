@@ -28,5 +28,5 @@ export function JoinVoiceChannel({id, guild, type}: VoiceChannel | StageChannel)
 }
 
 function SpeakStateChannel(me: Guild["me"], type: ChannelType.GuildVoice | ChannelType.GuildStageVoice): void {
-    if (type === ChannelType.GuildStageVoice && me) me?.voice.setRequestToSpeak(true).catch(() => undefined);
+    if (type === ChannelType.GuildStageVoice && me) me?.voice?.setRequestToSpeak(true).catch(() => undefined);
 }

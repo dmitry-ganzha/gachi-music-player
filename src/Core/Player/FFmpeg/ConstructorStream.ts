@@ -1,5 +1,5 @@
 import {Readable, Writable} from "stream";
-import {AudioFilters, FFmpeg, FFmpegArgs, CreateFilters} from '.';
+import {AudioFilters, CreateFilters, FFmpeg, FFmpegArgs} from '.';
 import FFmpegConfiguration from "../../../../DataBase/FFmpeg.json";
 import {opus} from "prism-media";
 
@@ -17,8 +17,6 @@ export class ConstructorStream {
     public playStream: Readable & Writable;
     #FFmpeg: FFmpeg = null;
     #started = false;
-    #silenceRemaining = -1;
-    #silencePaddingFrames: number = 0;
     //====================== ====================== ====================== ======================
     /**
      * @description Проверяем можно ли читать поток
@@ -31,13 +29,7 @@ export class ConstructorStream {
      * @description Для проверки, читабельный ли стрим
      */
     public get readable() {
-        if (this.#silenceRemaining === 0) return false;
-        const read = this.playStream.readable;
-        if (!read) {
-            if (this.#silenceRemaining === -1) this.#silenceRemaining = this.#silencePaddingFrames;
-            return this.#silenceRemaining !== 0;
-        }
-        return read;
+        return this.playStream.readable;
     };
     //====================== ====================== ====================== ======================
     /**
@@ -125,6 +117,6 @@ function CreateArguments (url: string, AudioFilters: AudioFilters, seek: number)
 
     if (url) Arg = [...Arg, '-i', url];
 
-    if (AudioFilters?.length > 0) return [...Arg, "-af", CreateFilters(AudioFilters), ...FFmpegConfiguration.Args.OggOpus, ...FFmpegConfiguration.Args.DecoderPreset];
+    if (AudioFilters) return [...Arg, "-af", CreateFilters(AudioFilters), ...FFmpegConfiguration.Args.OggOpus, ...FFmpegConfiguration.Args.DecoderPreset];
     return [...Arg, ...FFmpegConfiguration.Args.OggOpus, ...FFmpegConfiguration.Args.DecoderPreset];
 }
