@@ -18,9 +18,8 @@ export const Spotify = {getTrack, getAlbum, getPlaylist, SearchTracks};
 /**
  * @description Получаем токен
  */
-function getToken(): Promise<void> {
-    return new Promise<void>(async () => {
-        const result = (await Promise.all([httpsClient.parseJson(`${ApiLink}/token`, {
+function getToken(): void {
+    httpsClient.parseJson(`${ApiLink}/token`, {
             request: {
                 method: 'POST',
                 headers: {
@@ -31,8 +30,7 @@ function getToken(): Promise<void> {
                 body: "grant_type=client_credentials"
             },
             options: {zLibEncode: true}
-        })]))[0] as getToken;
-
+        }).then((result) => {
         TokenTime = Date.now() + result.expires_in;
         Token = result.access_token;
     });
@@ -43,19 +41,17 @@ function getToken(): Promise<void> {
  * @param method {string} Ссылка api
  */
 function RequestSpotify(method: string): Promise<SpotifyRes> {
-    return new Promise<SpotifyRes>(async (resolve) => {
-        await login();
-        return resolve(httpsClient.parseJson(`${GetApi}/${method}`, {
-            request: {
-                method: "GET",
-                headers: {
-                    'Accept': "application/json",
-                    'Authorization': 'Bearer ' + Token,
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            },
-            options: {zLibEncode: true}
-        }));
+    login();
+    return httpsClient.parseJson(`${GetApi}/${method}`, {
+        request: {
+            method: "GET",
+            headers: {
+                'Accept': "application/json",
+                'Authorization': 'Bearer ' + Token,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        },
+        options: {zLibEncode: true}
     });
 }
 //====================== ====================== ====================== ======================
@@ -258,10 +254,6 @@ type SpotifyRes = SpotifyPlaylist & FailResult | SpotifyTrack & FailResult | Spo
 interface FailResult {
     error: boolean
 }
-interface getToken {
-    expires_in: number,
-    access_token: string
-}
 /*   interface global   */
 interface SpotifyTrack {
     album: SpotifyAlbum,
@@ -342,7 +334,7 @@ interface SpotifyAlbumFull {
         }
     ],
     external_ids: {
-        "upc": string
+        upc: string
     },
     external_urls: {
         spotify: string
@@ -390,14 +382,14 @@ interface SpotifyAlbum {
 
 /*   interface SearchTracks   */
 interface SearchTracks {
-    "tracks": {
-        "href": string,
-        "items": SpotifyTrack[]
-        "limit": number,
-        "next": string,
-        "offset": number,
-        "previous": null,
-        "total": number
+    tracks: {
+        href: string,
+        items: SpotifyTrack[]
+        limit: number,
+        next: string,
+        offset: number,
+        previous: null,
+        total: number
     }
 }
 

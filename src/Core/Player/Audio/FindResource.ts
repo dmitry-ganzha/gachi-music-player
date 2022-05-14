@@ -11,7 +11,7 @@ const GlobalOptions: httpsClientOptions = {request: {maxRedirections: 10, method
  */
 export async function FindResource(song: Song, req: number = 0): Promise<void> {
     if (!song.format || !song.format.url) {
-        if (req > 40) {
+        if (req > 5) {
             song.format.work = false;
             return;
         }
