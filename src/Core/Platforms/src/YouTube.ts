@@ -104,7 +104,7 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
  * @param options {SearchOptions} Настройки
  * @constructor
  */
-function SearchVideos(search: string, options: SearchOptions = {limit: 15, onlyLink: false}): Promise<string | InputTrack[]> {
+function SearchVideos(search: string, options: SearchOptions = {limit: 15}): Promise<string | InputTrack[]> {
     return new Promise(async (resolve, reject) => {
         const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}`, {
             options: {userAgent: true, cookie: true, zLibEncode: true, english: true, RealisticRequest: true}
@@ -116,7 +116,6 @@ function SearchVideos(search: string, options: SearchOptions = {limit: 15, onlyL
 
         if (!details) throw reject(new Error(`Не удалось найти: ${search}`));
 
-        if (options?.onlyLink) return `${DefaultLinkYouTube}/watch?v=${details.find((fn: any) => !!fn.videoRenderer).videoRenderer.videoId}`;
         return resolve((await Promise.all([parsingVideos(details, options)]))[0]);
     })
 }

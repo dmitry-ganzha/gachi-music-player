@@ -6,7 +6,7 @@ export class CommandTest extends Command {
         super({
             name: 'test',
 
-            enable: true,
+            enable: false,
             isOwner: true,
             slash: false
         })

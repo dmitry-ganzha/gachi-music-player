@@ -1,6 +1,6 @@
 import {ConstFormat, Song} from "../Structures/Queue/Song";
 import {httpsClient, httpsClientOptions} from "../../httpsClient";
-import {InputFormat} from "../../Utils/TypeHelper";
+import {InputFormat, InputTrack} from "../../Utils/TypeHelper";
 import {SoundCloud, VK, YouTube} from "../../Platforms";
 
 const GlobalOptions: httpsClientOptions = {request: {maxRedirections: 10, method: "GET"}, options: {RealisticRequest: true}};
@@ -10,14 +10,15 @@ const GlobalOptions: httpsClientOptions = {request: {maxRedirections: 10, method
  * @description Заготавливаем необходимые данные для создания потока
  */
 export async function FindResource(song: Song, req: number = 0): Promise<void> {
-    if (!song.format || !song.format.url) {
-        if (req > 5) {
-            song.format.work = false;
-            return;
-        }
+    if (req > 5) {
+        song.format.work = false;
+        return;
+    }
 
+    if (!song.format || !song.format.url) {
         let format = await getLinkFormat(song);
         if (!format || !format?.url) return FindResource(song, req++);
+
 
         //Подгоняем под общую сетку
         song.format = ConstFormat(format);
@@ -74,9 +75,8 @@ async function getLinkFormat({type, url, title, author}: Song): Promise<InputFor
  * @constructor
  */
 async function FindTrack(nameSong: string): Promise<InputFormat> {
-    const Song: string = await YouTube.SearchVideos(nameSong, {onlyLink: true}) as string;
-    if (Song) return getFormatYouTube(Song);
-    return null;
+    const Song = await YouTube.SearchVideos(nameSong) as InputTrack[];
+    return getFormatYouTube(Song[0].url);
 }
 //====================== ====================== ====================== ======================
 /**

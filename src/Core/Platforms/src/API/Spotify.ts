@@ -10,29 +10,30 @@ const SpotifyStr = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.
 const clientID: string = cfg.spotify.clientID
 const clientSecret: string = cfg.spotify.clientSecret;
 
-let Token: any = null;
-let TokenTime: any = null;
+let Token: string = null
+let TokenTime: number = null;
 
 export const Spotify = {getTrack, getAlbum, getPlaylist, SearchTracks};
 
 /**
  * @description Получаем токен
  */
-function getToken(): void {
-    httpsClient.parseJson(`${ApiLink}/token`, {
+function getToken(): Promise<void> {
+    return httpsClient.parseJson(`${ApiLink}/token`, {
             request: {
                 method: 'POST',
                 headers: {
                     'Accept': "application/json",
-                    'Authorization': `Basic ${Buffer.from(`${clientID}:${clientSecret}`).toString('base64')}`,
+                    'Authorization': `Basic ${Buffer.from(clientID + ':' + clientSecret).toString('base64')}`,
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: "grant_type=client_credentials"
             },
             options: {zLibEncode: true}
         }).then((result) => {
-        TokenTime = Date.now() + result.expires_in;
-        Token = result.access_token;
+            console.log(result);
+            TokenTime = Date.now() + result.expires_in;
+            Token = result.access_token;
     });
 }
 //====================== ====================== ====================== ======================
@@ -41,17 +42,22 @@ function getToken(): void {
  * @param method {string} Ссылка api
  */
 function RequestSpotify(method: string): Promise<SpotifyRes> {
-    login();
-    return httpsClient.parseJson(`${GetApi}/${method}`, {
-        request: {
-            method: "GET",
-            headers: {
-                'Accept': "application/json",
-                'Authorization': 'Bearer ' + Token,
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        },
-        options: {zLibEncode: true}
+    return new Promise<SpotifyRes>(async (resolve) => {
+        await login();
+        return httpsClient.parseJson(`${GetApi}/${method}`, {
+            request: {
+                method: "GET",
+                headers: {
+                    'Accept': "application/json",
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': "Bearer " + Token
+                }
+            },
+            options: {zLibEncode: true}
+        }).then((d) => {
+            console.log(d);
+            return resolve(d);
+        });
     });
 }
 //====================== ====================== ====================== ======================
@@ -62,7 +68,7 @@ function RequestSpotify(method: string): Promise<SpotifyRes> {
 function getTrack(url: string): Promise<InputTrack | null> {
     return new Promise<InputTrack | null>(async (resolve) => {
         const id = getID(url);
-        const result = (await Promise.all([RequestSpotify(`tracks/${id}`)]))[0] as SpotifyTrack & FailResult;
+        const result = await RequestSpotify(`tracks/${id}`) as SpotifyTrack & FailResult;
 
         if (!result || !result?.name) return resolve(null);
 

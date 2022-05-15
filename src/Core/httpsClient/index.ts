@@ -119,7 +119,8 @@ function ChangeReqOptions(options: httpsClientOptions): void {
                 "sec-fetch-user": "?1",
                 "sec-fetch-dest": "document",
                 "sec-fetch-mode": "navigate"
-            }
+            },
+            responseHeader: "raw"
         };
     }
 }
