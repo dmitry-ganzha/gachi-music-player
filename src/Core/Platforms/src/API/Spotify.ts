@@ -31,7 +31,7 @@ function getToken(): Promise<void> {
             },
             options: {zLibEncode: true}
         }).then((result) => {
-            console.log(result);
+            //console.log(result);
             TokenTime = Date.now() + result.expires_in;
             Token = result.access_token;
     });
@@ -55,7 +55,7 @@ function RequestSpotify(method: string): Promise<SpotifyRes> {
             },
             options: {zLibEncode: true}
         }).then((d) => {
-            console.log(d);
+            //console.log(d);
             return resolve(d);
         });
     });
@@ -224,7 +224,7 @@ function getAuthorTrack(url: string, isUser: boolean = false): Promise<InputAuth
             id, title: result?.name ?? result?.display_name, url,
             image: result.images[0],
             isVerified: result.followers.total >= 500
-        })
+        });
     });
 }
 

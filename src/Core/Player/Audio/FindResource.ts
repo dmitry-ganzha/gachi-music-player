@@ -10,7 +10,7 @@ const GlobalOptions: httpsClientOptions = {request: {maxRedirections: 10, method
  * @description Заготавливаем необходимые данные для создания потока
  */
 export async function FindResource(song: Song, req: number = 0): Promise<void> {
-    if (req > 5) {
+    if (req > 7) {
         song.format.work = false;
         return;
     }
