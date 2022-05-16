@@ -17,8 +17,10 @@ export function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel, 
     const queue: Queue = message.client.queue.get(message.guild.id);
     const song: Song = new Song(track, message);
 
-    if (!queue) return CreateQueueGuild(message, VoiceChannel, song);
-    return PushSong(queue, song);
+    setImmediate(() => {
+        if (!queue) return CreateQueueGuild(message, VoiceChannel, song);
+        return PushSong(queue, song);
+    });
 }
 //====================== ====================== ====================== ======================
 /**
@@ -31,17 +33,19 @@ function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChannel, so
     const {client, guild} = message;
     client.console(`[Queue]: [GuildID: ${guild.id}, Status: Create]`);
 
-    const GuildQueue = new Queue(message, VoiceChannel);
-    const connection = JoinVoiceChannel(VoiceChannel);
-    client.queue.set(guild.id, GuildQueue);
-    const queue = client.queue.get(message.guild.id);
+    setImmediate(() => {
+        const GuildQueue = new Queue(message, VoiceChannel);
+        const connection = JoinVoiceChannel(VoiceChannel);
+        client.queue.set(guild.id, GuildQueue);
+        const queue = client.queue.get(message.guild.id);
 
-    PushSong(queue, song, false);
+        PushSong(queue, song, false);
 
-    queue.player.subscribe(connection);
-    queue.channels.connection = connection;
+        queue.player.subscribe(connection);
+        queue.channels.connection = connection;
 
-    return queue.player.PlayCallback(message);
+        return queue.player.PlayCallback(message);
+    });
 }
 //====================== ====================== ====================== ======================
 /**

@@ -17,28 +17,32 @@ export class MessageSystem {
      */
     public PlaySongMessage = ({client, guild, channel}: ClientMessage):Promise<void | ClientMessage> | void =>{
         const queue: Queue = client.queue.get(guild.id);
-        const exampleEmbed = CurrentPlay(client, queue.songs[0], queue);
-
         if (queue.channels.message.deletable) queue.channels.message.delete().catch((e) => console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: playSong, ${e.code}]: ${e?.message}`))
 
         if (!queue.songs[0]?.isLive) {
             if (this._int) clearInterval(this._int);
             this._int = setInterval(() => {
-                try {
-                    const queue: Queue = client.queue.get(guild.id);
+                setImmediate(() => {
+                    try {
+                        const queue: Queue = client.queue.get(guild.id);
 
-                    if (!queue) return this.destroy();
-                    if (queue.player.state.status !== 'playing') return;
-                    if (!queue.channels.message.editable) return;
+                        if (!queue) return this.destroy();
+                        if (queue.player.state.status !== 'playing') return;
+                        if (!queue.channels.message.editable) return;
 
-                    return UpdateMessage(queue.channels.message, true);
-                } catch {
-                    return this.destroy();
-                }
+                        return UpdateMessage(queue.channels.message, true);
+                    } catch {
+                        return this.destroy();
+                    }
+                });
             }, 12e3);
         }
 
-        return AddInQueueMessage(channel, exampleEmbed, Button, queue);
+        setImmediate(() => {
+            const exampleEmbed = CurrentPlay(client, queue.songs[0], queue);
+
+            return AddInQueueMessage(channel, exampleEmbed, Button, queue);
+        });
     };
 
     public destroy = () => {
@@ -55,15 +59,17 @@ export class MessageSystem {
 function UpdateMessage(message: ClientMessage, need: boolean = false): Promise<void | ClientMessage> | void {
     const queue: Queue = message.client.queue.get(message.guild.id);
 
-    if (message?.embeds[0]?.fields?.length === 1 || need) {
-        const CurrentPlayEmbed = CurrentPlay(message.client, queue.songs[0], queue);
+    setImmediate(() => {
+        if (message?.embeds[0]?.fields?.length === 1 || need) {
+            const CurrentPlayEmbed = CurrentPlay(message.client, queue.songs[0], queue);
 
-        try {
-           return message.edit({embeds: [CurrentPlayEmbed]}).then((msg) => queue?.channels?.message ? queue.channels.message = msg : null);
-        } catch (e) {
-            return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: update, ${e.code}]: ${e?.message}`);
+            try {
+                return message.edit({embeds: [CurrentPlayEmbed]}).then((msg) => queue?.channels?.message ? queue.channels.message = msg : null);
+            } catch (e) {
+                return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: update, ${e.code}]: ${e?.message}`);
+            }
         }
-    }
+    });
 }
 //====================== ====================== ====================== ======================
 /**
@@ -90,15 +96,17 @@ export function WarningMessage({channel, client, guild}: ClientMessage, song: So
  * @param song {Song} Сама музыка
  */
 export function PushSongMessage({channel, client, guild}: ClientMessage, song: Song): Promise<void | ClientMessage | NodeJS.Timeout> | void {
-    try {
-        const queue: Queue = client.queue.get(guild.id);
-        const EmbedPushedSong = AddSong(client, song, queue);
-        const PushChannel = channel.send({embeds: [EmbedPushedSong]});
+    setImmediate(() => {
+        try {
+            const queue: Queue = client.queue.get(guild.id);
+            const EmbedPushedSong = AddSong(client, song, queue);
+            const PushChannel = channel.send({embeds: [EmbedPushedSong]});
 
-        return DeleteMessage(PushChannel, 5e3);
-    } catch (e) {
-        return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
-    }
+            return DeleteMessage(PushChannel, 5e3);
+        } catch (e) {
+            return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
+        }
+    });
 }
 //====================== ====================== ====================== ======================
 /**
