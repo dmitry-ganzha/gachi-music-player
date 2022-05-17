@@ -5,8 +5,9 @@ import {Button} from "../Structures/Message/Helper";
 import {Song} from "../Structures/Queue/Song";
 import {Warning} from "../Structures/Message/Warning";
 import {AddSong} from "../Structures/Message/AddSong";
+import {CollectionMap} from "../../Utils/CollectionMap";
 
-const Message: ClientMessage[] = [];
+const Message = new CollectionMap<string, ClientMessage>();
 let MessageTimer: NodeJS.Timeout = null;
 
 /**
@@ -15,10 +16,10 @@ let MessageTimer: NodeJS.Timeout = null;
  * @constructor
  */
 export function PlaySongMessage(message: ClientMessage) {
-    if (Message.includes(message)) removeMessage(message);
+    if (Message.get(message.channelId)) removeMessage(message);
 
     AddInQueueMessage(message).then((msg) => {
-        addMessage(msg);
+        setImmediate(() => addMessage(msg));
     });
 }
 //====================== ====================== ====================== ======================
@@ -123,10 +124,10 @@ function DeleteMessage(send: Promise<ClientMessage>, time: number = 5e3): void {
  * @param message {message} Сообщение
  */
 function addMessage(message: ClientMessage) {
-    if (Message.includes(message)) return;
-    Message.push(message);
+    if (Message.get(message.channelId)) return;
+    Message.set(message.channelId, message);
 
-    if (Message.length === 1) setImmediate(StepCycleMessage);
+    if (Message.size === 1) setImmediate(StepCycleMessage);
 }
 //====================== ====================== ====================== ======================
 /**
@@ -134,13 +135,13 @@ function addMessage(message: ClientMessage) {
  * @param message
  */
 function removeMessage(message: ClientMessage) {
-    if (message.deletable) message.delete().catch(() => undefined);
+    const Find = Message.get(message.channelId)
+    if (!Find) return;
 
-    const index = Message.indexOf(message);
-    if (index === -1) return;
-    Message.splice(index, 1);
+    if (Find.deletable) Find.delete().catch(() => undefined);
+    Message.delete(message.channelId);
 
-    if (Message.length === 0) {
+    if (Message.size === 0) {
         if (typeof MessageTimer !== 'undefined') clearTimeout(MessageTimer);
     }
 }
