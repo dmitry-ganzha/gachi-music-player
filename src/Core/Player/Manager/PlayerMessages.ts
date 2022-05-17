@@ -73,7 +73,7 @@ export function PushSongMessage({channel, client, guild}: ClientMessage, song: S
 function UpdateMessage(message: ClientMessage): void {
     const queue: Queue = message.client.queue.get(message.guild.id);
 
-    if (!queue) return removeMessage(message);
+    if (!queue || queue.songs.length === 0) return removeMessage(message);
 
     setImmediate(() => {
         const CurrentPlayEmbed = CurrentPlay(message.client, queue.songs[0], queue);
