@@ -19,13 +19,30 @@ export type Queue_Options = Queue["options"];
  * @description Выбираем что сделать создать базу для сервера или добавить в базу музыку
  * @param message {ClientMessage} Сообщение с сервера
  * @param VoiceChannel {VoiceChannel} Подключение к голосовому каналу
- * @param track {any} Сама музыка
+ * @param tracks {any} Сама музыка
  */
-export function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel, track: InputTrack): boolean | void | Promise<void | ClientMessage | NodeJS.Timeout> {
-    const queue: Queue = message.client.queue.get(message.guild.id);
-    const song: Song = new Song(track, message);
+export function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel, tracks: InputTrack | InputTrack[]): boolean | void | Promise<void | ClientMessage | NodeJS.Timeout> {
+    let queue: Queue = message.client.queue.get(message.guild.id);
 
+    //Если поступает InputTrack[]
+    if (tracks instanceof Array) {
+        return tracks.forEach((track) => setTimeout(() => setImmediate(() => {
+            const song: Song = new Song(track, message);
+
+            //Если нет очереди
+            if (!queue) {
+                CreateQueueGuild(message, VoiceChannel, song);
+                queue = message.client.queue.get(message.guild.id);
+                return;
+            }
+            return PushSong(queue, song, false);
+        }), 2e3));
+    }
+
+    //Если поступает InputTrack
     setImmediate(() => {
+        const song: Song = new Song(tracks, message);
+
         if (!queue) return CreateQueueGuild(message, VoiceChannel, song);
         return PushSong(queue, song);
     });
@@ -39,21 +56,21 @@ export function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel, 
  */
 function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChannel, song: Song): void {
     const {client, guild} = message;
+
+    if (client.queue.get(message.guild.id)) return;
     client.console(`[Queue]: [GuildID: ${guild.id}, Status: Create]`);
 
-    setImmediate(() => {
-        const GuildQueue = new Queue(message, VoiceChannel);
-        const connection = JoinVoiceChannel(VoiceChannel);
-        client.queue.set(guild.id, GuildQueue);
-        const queue = client.queue.get(message.guild.id);
+    const GuildQueue = new Queue(message, VoiceChannel);
+    const connection = JoinVoiceChannel(VoiceChannel);
+    client.queue.set(guild.id, GuildQueue);
+    const queue = client.queue.get(message.guild.id);
 
-        PushSong(queue, song, false);
+    PushSong(queue, song, false);
 
-        queue.player.subscribe(connection);
-        queue.channels.connection = connection;
+    queue.player.subscribe(connection);
+    queue.channels.connection = connection;
 
-        return queue.player.PlayCallback(message);
-    });
+    return queue.player.PlayCallback(message);
 }
 //====================== ====================== ====================== ======================
 /**
@@ -64,9 +81,19 @@ function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChannel, so
  */
 export function PushSong(queue: Queue, song: Song, sendMessage: boolean = true): void {
     queue.songs.push(song);
-    if (sendMessage) PushSongMessage(queue.channels.message, song);
+    setImmediate(() => {
+        if (sendMessage) PushSongMessage(queue.channels.message, song);
+    });
 }
 
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+/**
+ * @description Потом что-то напишу)
+ */
 export class QueueEvents extends TypedEmitter<EventsQueue> {
     public constructor() {
         super();

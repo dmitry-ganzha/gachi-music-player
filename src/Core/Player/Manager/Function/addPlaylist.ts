@@ -1,11 +1,9 @@
 import {DiscordAPIError, VoiceChannel} from "discord.js";
-import {Song} from "../../Structures/Queue/Song";
 import {FullTimeSongs} from "../Duration/FullTimeSongs";
 import {ClientMessage} from "../../../Client";
 import {EmbedConstructor, InputPlaylist, InputTrack} from "../../../Utils/TypeHelper";
 import {Colors} from "../../../Utils/Colors";
 import {NotImage} from "../../Structures/Message/Helper";
-import {PushSong} from "../Queue";
 
 /**
  * @description Отправляет сообщение сколько было добавлено, после добавляет музыку в очередь
@@ -21,7 +19,7 @@ export function PlayList(message: ClientMessage, playlist: InputPlaylist, VoiceC
     });
 
     SendMessage(message, playlist).catch((err: DiscordAPIError) => console.log(`[Discord Error]: [Send message]: ${err}`));
-    return addSongsQueue(playlist.items, message, VoiceChannel);
+    return void message.client.player.emit("play", message, VoiceChannel, playlist.items);
 }
 //====================== ====================== ====================== ======================
 /**
@@ -31,27 +29,6 @@ export function PlayList(message: ClientMessage, playlist: InputPlaylist, VoiceC
  */
 function SendMessage(message: ClientMessage, playlist: InputPlaylist): Promise<NodeJS.Timeout> {
     return message.channel.send({embeds: [PlaylistEmbed(message, playlist, Colors.BLUE)]}).then((msg: ClientMessage) => setTimeout(() => msg.delete().catch(() => null), 15e3));
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Добавляем музыку в очередь
- * @param playlistItems {InputPlaylist.items[]} Список музыки плейлиста
- * @param message {ClientMessage} Сообщение с сервера
- * @param VoiceChannel {VoiceChannel} Подключение к голосовому каналу
- */
-function addSongsQueue(playlistItems: InputTrack[], message: ClientMessage, VoiceChannel: VoiceChannel): void {
-    const {player} = message.client;
-    let queue = message.client.queue.get(message.guild.id);
-
-    return playlistItems.forEach((track: InputTrack) => setTimeout(() => {
-        if (!queue) {
-            void player.emit('play', message, VoiceChannel, track);
-            queue = message.client.queue.get(message.guild.id);
-            return;
-        }
-
-        return PushSong(queue, new Song(track, message), false);
-    }, 2e3));
 }
 //====================== ====================== ====================== ======================
 /**

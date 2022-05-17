@@ -7,7 +7,7 @@ import {CreateQueue} from "./Manager/Queue";
 import {PlayList} from "./Manager/Function/addPlaylist";
 
 type Events = {
-    play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack) => boolean | void | Promise<void | ClientMessage | NodeJS.Timeout>;
+    play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack | InputTrack[]) => boolean | void | Promise<void | ClientMessage | NodeJS.Timeout>;
     pause: (message: ClientMessage) => void;
     resume: (message: ClientMessage) => void;
     skip: (message: ClientMessage, args?: number) => void;
