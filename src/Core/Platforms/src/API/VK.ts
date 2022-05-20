@@ -17,10 +17,11 @@ export const VK = {getTrack, getPlaylist, SearchTracks};
 function getTrack(url: string): Promise<null | InputTrack> {
     return new Promise<InputTrack | null>(async (resolve) => {
         const TrackID = getID(url);
-        let res = await RequestVK('audio', 'getById', `&audios=${TrackID}`) as VK_track;
-        if (!res.response) return resolve(null);
+        let Request = await RequestVK('audio', 'getById', `&audios=${TrackID}`) as VK_track;
 
-        const track = res.response[0];
+        if (!Request || !Request?.response) return resolve(null);
+
+        const track = Request?.response[0];
         const image = track?.album?.thumb;
 
         return resolve({
@@ -53,17 +54,17 @@ function getTrack(url: string): Promise<null | InputTrack> {
  */
 function SearchTracks(str: string, options: {limit: number} = {limit: 15}): Promise<null | {items: InputTrack[]}> {
     return new Promise(async (resolve) => {
-        let items: InputTrack[] = [], num = 0;
+        const items: InputTrack[] = [];
+        const Request = await RequestVK('audio','search', `&q=${str}`) as VK_Search;
+        let NumberTrack = 0;
 
-        let res = await RequestVK('audio','search', `&q=${str}`) as VK_Search;
+        if (!Request || !Request?.response) return null;
 
-        if (!res.response) return null;
+        for (let i in Request.response.items) {
+            const track = Request.response.items[i];
 
-        for (let i in res.response.items) {
-            const track = res.response.items[i];
-
-            if (options.limit <= num) break;
-            num++;
+            if (options.limit <= NumberTrack) break;
+            NumberTrack++;
 
             items.push({
                 id: track.id,
@@ -97,12 +98,12 @@ function getPlaylist(url: string, options = {limit: 50}): Promise<null | InputPl
         const owner_id = PlaylistFullID[0];
         const key = PlaylistFullID[2];
 
-        const res = await RequestVK('audio', 'getPlaylistById', `&owner_id=${owner_id}&playlist_id=${playlist_id}&access_key=${key}`) as VK_playlist;
+        const Request = await RequestVK('audio', 'getPlaylistById', `&owner_id=${owner_id}&playlist_id=${playlist_id}&access_key=${key}`) as VK_playlist;
         const itemsPlaylist = await RequestVK('audio', 'get', `&owner_id=${owner_id}&album_id=${playlist_id}&access_key=${key}&count=${options.limit}`) as VK_Search;
 
-        if (!res.response || !itemsPlaylist.response) return resolve(null);
+        if (!Request.response || !itemsPlaylist.response || !Request || !itemsPlaylist) return resolve(null);
 
-        const PlaylistData = res.response;
+        const PlaylistData = Request.response;
         const PlaylistImage = PlaylistData?.thumbs?.length > 0 ? PlaylistData?.thumbs[0] : null;
 
         return resolve({

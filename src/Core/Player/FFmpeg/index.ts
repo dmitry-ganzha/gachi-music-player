@@ -62,7 +62,7 @@ export class FFmpeg extends Duplex {
         };
 
         // @ts-ignore
-        methods.forEach((method) => this[method] = (ev, fn) => EVENTS[ev] ? EVENTS[ev][method](ev, fn) : Duplex.prototype[method].call(this, ev, fn))
+        methods.forEach((method) => this[method] = (ev, fn) => EVENTS[ev] ? EVENTS[ev][method](ev, fn) : Duplex.prototype[method].call(this, ev, fn));
     };
     //====================== ====================== ====================== ======================
     /**

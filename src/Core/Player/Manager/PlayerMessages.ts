@@ -33,15 +33,17 @@ export function PlaySongMessage(message: ClientMessage) {
  * @constructor
  */
 export function ErrorPlayerMessage({channel, client, guild}: ClientMessage, song: Song, err: Error | string = null) {
-    try {
-        const queue: Queue = client.queue.get(guild.id);
-        const Embed = Warning(client, song, queue, err);
-        const WarningChannelSend = channel.send({embeds: [Embed]});
+    setImmediate(() => {
+        try {
+            const queue: Queue = client.queue.get(guild.id);
+            const Embed = Warning(client, song, queue, err);
+            const WarningChannelSend = channel.send({embeds: [Embed]});
 
-        return DeleteMessage(WarningChannelSend, 5e3);
-    } catch (e) {
-        return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
-    }
+            return DeleteMessage(WarningChannelSend, 5e3);
+        } catch (e) {
+            return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
+        }
+    });
 }
 //====================== ====================== ====================== ======================
 /**

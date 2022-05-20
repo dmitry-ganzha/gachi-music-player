@@ -49,12 +49,11 @@ function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
  * @param options {httpsClientOptions} Настройки запроса
  */
 function parseJson(url: string, options?: httpsClientOptions): Promise<null | any> {
-    return new Promise<null | any>(async (resolve) => {
-        const body = (await Promise.all([parseBody(url, options)]))[0];
+    return parseBody(url, options).then((body: string) => {
         if (!body) return;
 
         try {
-            return resolve(JSON.parse(body));
+            return JSON.parse(body);
         } catch (e) {
             console.log(`Invalid json response body at ${url} reason: ${e.message}`);
             return;

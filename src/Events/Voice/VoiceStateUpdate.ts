@@ -8,18 +8,21 @@ export class voiceStateUpdate {
     public readonly name: string = 'voiceStateUpdate';
     public readonly enable: boolean = true;
 
-    public run = ({guild}: VoiceState, newState: VoiceState, client: WatKLOK): void | boolean => {
+    public run = ({guild}: VoiceState, newState: VoiceState, client: WatKLOK): void => {
         const queue: Queue = client.queue.get(guild.id);
 
         if (!queue) return;
 
-        const voiceConnection: VoiceState[] = client.connections(guild);
-        if (!voiceConnection.find((fn: VoiceState) => fn.id === client.user.id)) {
-            queue.songs = [];
-            queue.options.stop = true;
-            return void queue.events.queue.emit('DestroyQueue', queue, queue.channels.message);
-        }
-        return CheckToRun(voiceConnection, client, guild, queue);
+        setImmediate(() => {
+            const voiceConnection: VoiceState[] = client.connections(guild);
+
+            if (!voiceConnection.find((fn: VoiceState) => fn.id === client.user.id)) {
+                queue.songs = [];
+                queue.options.stop = true;
+                return void queue.events.queue.emit('DestroyQueue', queue, queue.channels.message);
+            }
+            return CheckToRun(voiceConnection, client, guild, queue);
+        });
     };
 }
 

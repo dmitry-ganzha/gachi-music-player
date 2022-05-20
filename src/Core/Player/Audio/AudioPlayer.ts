@@ -247,10 +247,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @param packet {Buffer} Сам пакет
      * @param receivers {VoiceConnection[]} В какие каналы отправить пакет
      */
-    protected playOpusPacket = (packet: Buffer, receivers: VoiceConnection[]): void => receivers.forEach((connection) => {
-        connection.dispatchAudio();
-        connection.prepareAudioPacket(packet);
-    });
+    protected playOpusPacket = (packet: Buffer, receivers: VoiceConnection[]): void => receivers.forEach((connection) => connection.playOpusPacket(packet));
     //====================== ====================== ====================== ======================
     /**
      * @description Когда плеер завершит песню, он возвратит эту функцию

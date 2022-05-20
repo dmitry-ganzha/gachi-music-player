@@ -14,6 +14,8 @@ function getTrack(url: string): Promise<InputTrack> {
         const ClientID = await getClientID();
         const result = await httpsClient.parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
 
+        if (!result?.id || !result) return resolve(null);
+
         return resolve({
             id: result.id, url,
             title: result.title,
@@ -47,6 +49,7 @@ function getPlaylist(url: string): Promise<InputPlaylist> {
         const result = await httpsClient.parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
         const PlaylistItems: InputTrack[] = [];
 
+        if (!result?.id || !result) return resolve(null);
 
         for (let i in result.tracks) {
             const track = result.tracks[i];
@@ -87,6 +90,7 @@ function SearchTracks(search: string, options = {limit: 15}): Promise<InputTrack
         const result = await httpsClient.parseJson(`${APiLink}/search/tracks?q=${search}&client_id=${await getClientID()}&limit=${options.limit}`);
         const Items: InputTrack[] = [];
 
+        if (!result) return resolve(null);
 
         for (let i in result.collection) {
             const track = result.collection[i];

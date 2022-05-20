@@ -1,6 +1,6 @@
 import querystring from "node:querystring";
 import {Utils} from "./Utils";
-import vm from "node:vm";
+import vm from "vm";
 import {httpsClient} from "../../../httpsClient";
 
 export interface YouTubeFormat {
@@ -16,6 +16,13 @@ export interface YouTubeFormat {
     targetDurationSec?: number;
 }
 
+/**
+ * @author ytdl-core (https://github.com/fent/node-ytdl-core)
+ */
+
+/**
+ * @description vm<Script>
+ */
 // @ts-ignore
 interface Script extends vm<Script> {
     runInNewContext(param: { sig?: string, ncode?: string }): string;
@@ -47,7 +54,7 @@ function getFunctions(html5player: string): Promise<null | string[]> {
         const functions = extractFunctions(body);
 
         return !functions || !functions.length ? null : functions;
-    })
+    });
 }
 //====================== ====================== ====================== ======================
 /**

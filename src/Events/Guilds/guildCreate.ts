@@ -13,13 +13,15 @@ export class guildCreate {
     public run = (guild: Guild, f2: null, client: WatKLOK): void | Promise<Message> => {
         if (!guild.systemChannel) return;
 
-        try {
-            // @ts-ignore
-            return guild.systemChannel.send({embeds: [ConstructEmbed(guild)], components: [getButtons(client.user.id)]})
-        } catch (e) {
-            console.log(e);
-            return;
-        }
+        setImmediate(() => {
+            try {
+                // @ts-ignore
+                return guild.systemChannel.send({ embeds: [ConstructEmbed(guild)], components: [getButtons(client.user.id)] })
+            } catch (e) {
+                console.log(e);
+                return;
+            }
+        });
     };
 }
 
