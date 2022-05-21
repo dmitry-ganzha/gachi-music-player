@@ -1,12 +1,12 @@
 import {FullTimeSongs} from "../../Manager/Duration/FullTimeSongs";
 import {Song} from "../Queue/Song";
 import {Queue} from "../Queue/Queue";
-import {AudioPlayer} from "../../../Player/Audio/AudioPlayer";
+import {AudioPlayer} from "../../Audio/AudioPlayer";
 import {ParserTimeSong} from "../../Manager/Duration/ParserTimeSong";
 import {NotFound, NotImage, NotVer, Ver} from "./Helper";
 import {WatKLOK} from "../../../Client";
 import {EmbedConstructor} from "../../../Utils/TypeHelper";
-import {AudioFilters} from "../../../Player/FFmpeg";
+import {AudioFilters} from "../../FFmpeg";
 
 const ProgressBarValue: boolean = true;
 
@@ -69,7 +69,7 @@ function MusicDuration({isLive, duration}: Song, curTime: number | string): stri
     if (isLive) return `[${duration.StringTime}]`;
 
     const str = `${duration.StringTime}]`;
-    const parsedTimeSong = ParserTimeSong(curTime as number);
+    const parsedTimeSong = curTime > duration.seconds ? duration.StringTime : ParserTimeSong(curTime as number);
     const progress = ProgressBar(curTime as number, duration.seconds, 15);
 
     if (ProgressBarValue) return `**❯** [${parsedTimeSong} - ${str}\n${progress}`;
