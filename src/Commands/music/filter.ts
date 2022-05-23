@@ -57,10 +57,14 @@ export class CommandLoop extends Command {
         const SendArg: {color: number, type: "css", message: ClientMessage} = {color: song.color, type: "css", message};
         const NameFilter = args[0]?.toLowerCase();
 
-
         if (!NameFilter) return message.client.Send({text: `Включенные фильтры: ${getEnableFilters(queue.audioFilters) ?? "нет включенных фильтров"}`, ...SendArg});
 
         if (NameFilter === 'all') return message.client.Send({text: `Все фильтры: ${FFmpegConfig()}`, ...SendArg});
+
+        if (NameFilter === "off") {
+            queue.audioFilters = [];
+            return message.client.Send({text: `Все фильтры: отключены`, ...SendArg});
+        }
 
         // @ts-ignore
         const Filter = FFmpegConfiguration.FilterConfigurator[NameFilter];

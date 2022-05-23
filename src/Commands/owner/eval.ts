@@ -21,13 +21,13 @@ export class CommandEval extends Command {
 
         try {
             RunEval = eval(code);
-            return CommandEval.MessageSend(message, RunEval, Colors.GREEN, '[Status: Work]', code, StartTime);
+            return this.#MessageSend(message, RunEval, Colors.GREEN, '[Status: Work]', code, StartTime);
         } catch (err) {
-            await CommandEval.MessageSend(message, err.code ? err.code : err, Colors.RED, '[Status: Fail]', code, StartTime);
+            await this.#MessageSend(message, err.code ? err.code : err, Colors.RED, '[Status: Fail]', code, StartTime);
             return message.client.console(`[EVAL]: [ERROR: ${err.code ? err.code : err}]`);
         }
     };
-    protected static MessageSend = (message: ClientMessage, response: string, color: number, type: string, code: string, StartTime: number): Promise<number | NodeJS.Timeout> => {
+    #MessageSend = (message: ClientMessage, response: string, color: number, type: string, code: string, StartTime: number): Promise<number | NodeJS.Timeout> => {
         const EndTime = new Date().getMilliseconds();
         let embed: EmbedConstructor = {
             color,

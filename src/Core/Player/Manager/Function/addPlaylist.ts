@@ -1,7 +1,7 @@
 import {DiscordAPIError, VoiceChannel} from "discord.js";
 import {FullTimeSongs} from "../Duration/FullTimeSongs";
 import {ClientMessage} from "../../../Client";
-import {EmbedConstructor, InputPlaylist, InputTrack} from "../../../Utils/TypeHelper";
+import {EmbedConstructor, InputPlaylist} from "../../../Utils/TypeHelper";
 import {Colors} from "../../../Utils/Colors";
 import {NotImage} from "../../Structures/Message/Helper";
 
@@ -47,7 +47,7 @@ function PlaylistEmbed({client, author: DisAuthor}: ClientMessage, {author, imag
         color,
         author: {
             name: author?.title,
-            iconURL: author?.image?.url ?? client.user.displayAvatarURL(),
+            iconURL: author?.image?.url ?? NotImage,
             url: author?.url,
         },
         thumbnail: {

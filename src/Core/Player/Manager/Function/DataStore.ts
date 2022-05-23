@@ -62,6 +62,7 @@ function prepareNextAudioFrame(players: AudioPlayer[]) {
 
     nextPlayer['CheckStatusPlayer']();
 
-    setImmediate(() => prepareNextAudioFrame(players));
+    //setImmediate(() => prepareNextAudioFrame(players));
+    prepareNextAudioFrame(players);
 }
 //====================== ====================== ====================== ======================

@@ -1,5 +1,4 @@
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle} from "discord.js";
-// @ts-ignore
 import cfg from "../../../../DataBase/Config.json";
 
 export function getButtons(ClientID: string) {

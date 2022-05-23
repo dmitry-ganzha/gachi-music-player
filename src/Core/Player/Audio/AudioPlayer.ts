@@ -318,19 +318,25 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
  * @param song {Song} Трек
  * @param audioFilters {AudioFilters} Аудио фильтры которые включил пользователь
  * @param seek {number} Пропуск музыки до 00:00:00
+ * @param req
  */
-function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0): Promise<PlayerResource> | null {
-    return new Promise(async (resolve) => {
-        await (Promise.all([FindResource(song)]));
+function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0, req: number = 0): Promise<PlayerResource> {
+    return new Promise((resolve) => {
+        if (req > 2) return resolve(null);
 
-        if (!song.format.work) return resolve(null);
+        FindResource(song).finally(() => {
+            if (!song.format.work) return resolve(null);
 
-        if (song.isLive) return resolve(new ConstructorStream({
-            stream: song.format.url
-        }));
-        return resolve(new ConstructorStream({
-            stream: song.format.url, seek, Filters: audioFilters
-        }));
+            if (song.isLive) return resolve(new ConstructorStream({
+                stream: song.format.url
+            }));
+            return resolve(new ConstructorStream({
+                stream: song.format.url, seek, Filters: audioFilters
+            }));
+        }).catch((err) => {
+            console.log(`[FindResource]: [Error: ${err}, Req: ${req}]`);
+            return resolve(CreateResource(song, audioFilters, seek, req++));
+        });
     });
 }
 //====================== ====================== ====================== ======================

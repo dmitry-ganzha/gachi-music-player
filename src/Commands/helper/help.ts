@@ -22,11 +22,11 @@ export class CommandHelp extends Command {
 
         // @ts-ignore
         let List: Command[] = Commands.ArraySort(5);
-        let {embed, page, pages} = CommandHelp.CreateEmbedMessage(message, List);
+        let {embed, page, pages} = this.#CreateEmbedMessage(message, List);
 
         return new CollectorSortReaction()._run(embed, pages, page, message, false);
     };
-    protected static CreateEmbedMessage = (message: ClientMessage, List: Command[]): { embed: EmbedConstructor, pages: any[], page: number } => {
+    #CreateEmbedMessage = (message: ClientMessage, List: Command[]): { embed: EmbedConstructor, pages: any[], page: number } => {
         let helpEmbed: EmbedConstructor = {
             title: "Help Menu",
             color: Colors.YELLOW,

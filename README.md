@@ -79,6 +79,7 @@
     }
     ```
 3. [`FFmpeg.json`](./DataBase/FFmpeg.json) | Можно теперь управлять FFmpeg'ом из конфига | [`FFmpeg Docs`](https://ffmpeg.org/ffmpeg.html)
+  - При добавлении новых аргументов, которые влияют на скорость надо будет добавить [`сюда`](./src/Core/Player/FFmpeg/ConstructorStream.ts), в функцию `FFmpegTimer`
     ```json5
       {
         "Names": [], //Путь(и) к ffmpeg

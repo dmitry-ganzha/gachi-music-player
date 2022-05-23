@@ -8,6 +8,7 @@ export function Connections(Guild: Guild): VoiceState[] {
             if (!(fn.channelId === set.joinConfig.channelId && fn.guild.id === set.joinConfig.guildId)) return;
             Users.push(fn);
         })
-        return Users;
-    } else return Users;
+    }
+
+    return Users;
 }

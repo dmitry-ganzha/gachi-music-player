@@ -68,7 +68,7 @@ export class CommandPlay extends Command {
         });
 
         try {
-            return CommandPlay.getInfoPlatform(search, message, voiceChannel);
+            return this.#getInfoPlatform(search, message, voiceChannel);
         } catch (e) {
             console.log(`[PlayCommand]: [ERROR] -> `, e);
             return message.client.Send({
@@ -77,11 +77,11 @@ export class CommandPlay extends Command {
         }
     };
     //Выбираем платформу
-    protected static getInfoPlatform = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
-        if (search.match(youtubeStr)) return this.PlayYouTube(message, search, voiceChannel);
-        else if (search.match(spotifySrt)) return this.PlaySpotify(message, search, voiceChannel);
-        else if (search.match(/vk.com/)) return this.PlayVK(message, search, voiceChannel);
-        else if (search.match(SoundCloudSrt)) return this.PlaySoundCloud(message, search, voiceChannel);
+    #getInfoPlatform = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
+        if (search.match(youtubeStr)) return this.#PlayYouTube(message, search, voiceChannel);
+        else if (search.match(spotifySrt)) return this.#PlaySpotify(message, search, voiceChannel);
+        else if (search.match(/vk.com/)) return this.#PlayVK(message, search, voiceChannel);
+        else if (search.match(SoundCloudSrt)) return this.#PlaySoundCloud(message, search, voiceChannel);
         const SplitSearch = search.split(' ');
         const SearchType = SplitSearch[0].toLowerCase();
 
@@ -99,24 +99,24 @@ export class CommandPlay extends Command {
         return new HandleInfoResource().YT_SearchVideos(message, voiceChannel, search);
     };
     //Для системы youtube
-    protected static PlayYouTube = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): void => {
+    #PlayYouTube = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): void => {
         if (search.match(/v=/) && search.match(/list=/)) return new HandleInfoResource().ChangeRes(message, search, voiceChannel);
         if (search.match(/playlist/)) return new HandleInfoResource().YT_getPlaylist(search, message, voiceChannel);
         return new HandleInfoResource().YT_getVideo(search, message, voiceChannel);
     };
     //Для системы spotify
-    protected static PlaySpotify = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): void => {
+    #PlaySpotify = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): void => {
         if (search.match(/playlist/)) return new HandleInfoResource().SP_getPlaylist(search, message, voiceChannel);
         if (search.match(/album/)) return new HandleInfoResource().SP_getAlbum(search, message, voiceChannel);
         return new HandleInfoResource().SP_getTrack(search, message, voiceChannel);
     };
     //Для системы VK
-    protected static PlayVK = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): void => {
+    #PlayVK = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): void => {
         if (search.match(/playlist/)) return new HandleInfoResource().VK_getPlaylist(search, message, voiceChannel);
         return new HandleInfoResource().VK_getTrack(search, message, voiceChannel);
     };
     //Для системы SoundCloud
-    protected static PlaySoundCloud = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): void => {
+    #PlaySoundCloud = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): void => {
         if (search.match(/sets/) || search.match(/albums/)) return new HandleInfoResource().SC_getPlaylist(search, message, voiceChannel);
         return new HandleInfoResource().SC_getTrack(search, message, voiceChannel);
     };
@@ -124,35 +124,35 @@ export class CommandPlay extends Command {
 
 class HandleInfoResource {
     //Для поиска музыки
-    protected collector: MessageCollector = null;
-    protected type: "yt" | "sp" | "vk" | "sc" = null;
+    #collector: MessageCollector = null;
+    #type: "yt" | "sp" | "vk" | "sc" = null;
 
     //YouTube (youtube.com) взаимодействие с youtube
     public YT_getVideo = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
         setImmediate(() => {
             YouTube.getVideo(search).then((video: InputTrack) => {
-                if (!video) return this.SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Существует ли это видео вообще!`)
-                this.runPlayer(video, message, voiceChannel);
+                if (!video) return this.#SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Существует ли это видео вообще!`)
+                this.#runPlayer(video, message, voiceChannel);
             });
         });
     };
     public YT_getPlaylist = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
         setImmediate(() => {
             YouTube.getPlaylist(search).then((playlist: InputPlaylist) => {
-                if (!playlist) return this.SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Существует ли это плейлист вообще!`);
+                if (!playlist) return this.#SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Существует ли это плейлист вообще!`);
 
-                return this.runPlaylistSystem(message, playlist, voiceChannel);
+                return this.#runPlaylistSystem(message, playlist, voiceChannel);
             });
         });
     };
     public YT_SearchVideos = (message: ClientMessage, voiceChannel: VoiceChannel | StageChannel, searchString: string): void => {
-        this.type = "yt";
+        this.#type = "yt";
 
         setImmediate(() => {
             YouTube.SearchVideos(searchString).then((result: InputTrack[]) => {
-                if (!result) return this.SendEmptyDataMessage(message, `${message.author}, я нечего не нашел в **YouTube**`);
+                if (!result) return this.#SendEmptyDataMessage(message, `${message.author}, я нечего не нашел в **YouTube**`);
 
-                return this.SendMessage(message, result, voiceChannel, this.ArraySort(result, message), result.length);
+                return this.#SendMessage(message, result, voiceChannel, this.#ArraySort(result, message), result.length);
             });
         });
     };
@@ -161,38 +161,38 @@ class HandleInfoResource {
     public SP_getTrack = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
         setImmediate(() => {
             Spotify.getTrack(search).then((track: InputTrack) => {
-                if (!track?.isValid) return this.SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это трек вообще!`);
+                if (!track?.isValid) return this.#SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это трек вообще!`);
 
-                return this.runPlayer(track, message, voiceChannel);
+                return this.#runPlayer(track, message, voiceChannel);
             });
         });
     };
     public SP_getPlaylist = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
         setImmediate(() => {
             Spotify.getPlaylist(search).then((playlist: InputPlaylist) => {
-                if (!playlist?.title) return this.SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это плейлист вообще!`)
+                if (!playlist?.title) return this.#SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это плейлист вообще!`)
 
-                return this.runPlaylistSystem(message, playlist, voiceChannel)
+                return this.#runPlaylistSystem(message, playlist, voiceChannel)
             });
         });
     };
     public SP_getAlbum = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
         setImmediate(() => {
             Spotify.getAlbum(search).then((playlist: InputPlaylist) => {
-                if (!playlist?.title) return this.SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это альбом вообще!`)
+                if (!playlist?.title) return this.#SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это альбом вообще!`)
 
-                return this.runPlaylistSystem(message, playlist, voiceChannel)
+                return this.#runPlaylistSystem(message, playlist, voiceChannel)
             });
         });
     };
     public SP_SearchTracks = (message: ClientMessage, voiceChannel: VoiceChannel | StageChannel, searchString: string): void => {
-        this.type = "sp";
+        this.#type = "sp";
 
         setImmediate(() => {
             Spotify.SearchTracks(searchString).then((result) => {
-                if (!result || !result.items) return this.SendEmptyDataMessage(message, `${message.author}, я нечего не нашел в **Spotify**`);
+                if (!result || !result.items) return this.#SendEmptyDataMessage(message, `${message.author}, я нечего не нашел в **Spotify**`);
 
-                this.SendMessage(message, result?.items, voiceChannel, this.ArraySort(result?.items, message), result.items?.length)
+                this.#SendMessage(message, result?.items, voiceChannel, this.#ArraySort(result?.items, message), result.items?.length)
             });
         });
     };
@@ -201,27 +201,27 @@ class HandleInfoResource {
     public VK_getTrack = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
         setImmediate(() => {
             VK.getTrack(search).then((track: InputTrack) => {
-                if (!track) return this.SendEmptyDataMessage(message, `${message.author}, **VK** не хочет делится данными! Существует ли это трек вообще!`);
-                return this.runPlayer(track, message, voiceChannel)
+                if (!track) return this.#SendEmptyDataMessage(message, `${message.author}, **VK** не хочет делится данными! Существует ли это трек вообще!`);
+                return this.#runPlayer(track, message, voiceChannel)
             });
         });
     };
     public VK_getPlaylist = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
         setImmediate(() => {
             VK.getPlaylist(search).then((playlist: InputPlaylist) => {
-                if (!playlist) return this.SendEmptyDataMessage(message, `${message.author}, **VK** не хочет делится данными! Существует ли это плейлист вообще!`);
+                if (!playlist) return this.#SendEmptyDataMessage(message, `${message.author}, **VK** не хочет делится данными! Существует ли это плейлист вообще!`);
 
-                return this.runPlaylistSystem(message, playlist, voiceChannel);
+                return this.#runPlaylistSystem(message, playlist, voiceChannel);
             });
         });
     };
     public VK_SearchTracks = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
-        this.type = "vk";
+        this.#type = "vk";
         setImmediate(() => {
             VK.SearchTracks(search).then((result) => {
-                if (!result || !result.items) return this.SendEmptyDataMessage(message, `${message.author}, я нечего не нашел в **VK*`);
+                if (!result || !result.items) return this.#SendEmptyDataMessage(message, `${message.author}, я нечего не нашел в **VK*`);
 
-                return this.SendMessage(message, result?.items, voiceChannel, this.ArraySort(result?.items, message), result?.items?.length);
+                return this.#SendMessage(message, result?.items, voiceChannel, this.#ArraySort(result?.items, message), result?.items?.length);
             });
         });
     };
@@ -230,29 +230,29 @@ class HandleInfoResource {
     public SC_getTrack = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
         setImmediate(() => {
             SoundCloud.getTrack(search).then((track: InputTrack) => {
-                if (!track) return this.SendEmptyDataMessage(message, `${message.author}, **SoundCloud** не хочет делится данными! Существует ли это трек вообще!`);
+                if (!track) return this.#SendEmptyDataMessage(message, `${message.author}, **SoundCloud** не хочет делится данными! Существует ли это трек вообще!`);
 
-                return this.runPlayer(track, message, voiceChannel);
+                return this.#runPlayer(track, message, voiceChannel);
             });
         });
     };
     public SC_getPlaylist = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
         setImmediate(() => {
             SoundCloud.getPlaylist(search).then((playlist: InputPlaylist) => {
-                if (!playlist) return this.SendEmptyDataMessage(message, `${message.author}, **SoundCloud** не хочет делится данными! Существует ли это плейлист вообще!`);
+                if (!playlist) return this.#SendEmptyDataMessage(message, `${message.author}, **SoundCloud** не хочет делится данными! Существует ли это плейлист вообще!`);
 
-                return this.runPlaylistSystem(message, playlist, voiceChannel)
+                return this.#runPlaylistSystem(message, playlist, voiceChannel)
             });
         });
     };
     public SC_SearchTracks = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
-        this.type = "sc";
+        this.#type = "sc";
 
         setImmediate(() => {
             return SoundCloud.SearchTracks(search).then((result) => {
-                if (!result) return this.SendEmptyDataMessage(message, `${message.author}, я нечего не нашел в **SoundCloud**`);
+                if (!result) return this.#SendEmptyDataMessage(message, `${message.author}, я нечего не нашел в **SoundCloud**`);
 
-                return this.SendMessage(message, result, voiceChannel, this.ArraySort(result, message), result?.length)
+                return this.#SendMessage(message, result, voiceChannel, this.#ArraySort(result, message), result?.length)
             });
         });
     };
@@ -261,37 +261,37 @@ class HandleInfoResource {
     public ChangeRes = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel) => {
         message.channel.send(`\`\`\`css\nЯ обнаружил в этой ссылке, видео и плейлист. Что включить\n\n1️⃣ - Включить плейлист\n2️⃣ - Включить видео\`\`\``).then((msg: ClientMessage) => {
             setImmediate(() => {
-                this.Reaction(msg, message, "1️⃣", () => {
-                    this.deleteMessage(msg as any);
+                this.#Reaction(msg, message, "1️⃣", () => {
+                    this.#deleteMessage(msg as any);
                     return this.YT_getPlaylist(search, message, voiceChannel);
                 });
-                this.Reaction(msg, message, "2️⃣", () => {
-                    this.deleteMessage(msg as any);
+                this.#Reaction(msg, message, "2️⃣", () => {
+                    this.#deleteMessage(msg as any);
                     return this.YT_getVideo(search, message, voiceChannel);
                 });
 
                 setTimeout(() => {
-                    this.deleteMessage(msg as any);
-                    this.deleteMessage(message);
-                    return this.collector?.stop();
+                    this.#deleteMessage(msg as any);
+                    this.#deleteMessage(message);
+                    return this.#collector?.stop();
                 }, 10e3);
             });
         });
     }
 
     //Какое перенаправление делаем в систему плейлистов или просто добавим трек?
-    protected runPlayer = (video: InputTrack, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => void message.client.player.emit('play', message, voiceChannel, video);
-    protected runPlaylistSystem = (message: ClientMessage, playlist: InputPlaylist, voiceChannel: VoiceChannel | StageChannel): void => void message.client.player.emit('playlist', message, playlist, voiceChannel);
+    #runPlayer = (video: InputTrack, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => void message.client.player.emit('play', message, voiceChannel, video);
+    #runPlaylistSystem = (message: ClientMessage, playlist: InputPlaylist, voiceChannel: VoiceChannel | StageChannel): void => void message.client.player.emit('playlist', message, playlist, voiceChannel);
 
     //Создаем сборщик для поиска треков
-    protected ArraySort = (results: InputTrack[], message: ClientMessage): string => {
+    #ArraySort = (results: InputTrack[], message: ClientMessage): string => {
         let NumberTrack = 1, String;
 
         // @ts-ignore
         results.ArraySort(15).forEach((s: InputTrack[]) => {
             String = s.map((video) => {
                 const NameTrack = `[${message.client.ConvertedText(video.title, 80, true)}]`;
-                const DurationTrack = `[${this.ConvertTimeSearch(video.duration.seconds) ?? "LIVE"}]`;
+                const DurationTrack = `[${this.#ConvertTimeSearch(video.duration.seconds) ?? "LIVE"}]`;
                 const AuthorTrack = `[${message.client.ConvertedText(video.author.title, 12, true)}]`;
 
                 return `${NumberTrack++} ➜ ${DurationTrack} | ${AuthorTrack} | ${NameTrack}`;
@@ -299,39 +299,39 @@ class HandleInfoResource {
         });
         return String;
     };
-    protected SendMessage = (message: ClientMessage, results: any[], voiceChannel: VoiceChannel | StageChannel, resp: string, num: number): void => {
+    #SendMessage = (message: ClientMessage, results: any[], voiceChannel: VoiceChannel | StageChannel, resp: string, num: number): void => {
         setImmediate(() => {
-            message.channel.send(`\`\`\`css\nВыбери от 1 до ${results.length}\n[Платформа: ${this.isType()} | Запросил: ${message.author}]\n\n${resp}\`\`\``).then((msg: ClientMessage) => {
-                this.Reaction(msg, message, "❌", () => (this.collector?.stop(), this.deleteMessage(msg)));
-                this.MessageCollector(msg, message, num);
-                return this.CollectorCollect(msg, results, message, voiceChannel);
+            message.channel.send(`\`\`\`css\nВыбери от 1 до ${results.length}\n[Платформа: ${this.#isType()} | Запросил: ${message.author}]\n\n${resp}\`\`\``).then((msg: ClientMessage) => {
+                this.#Reaction(msg, message, "❌", () => (this.#collector?.stop(), this.#deleteMessage(msg)));
+                this.#MessageCollector(msg, message, num);
+                return this.#CollectorCollect(msg, results, message, voiceChannel);
             })
         });
     }
     //Добавляем к коллектору ивент сбора
-    protected CollectorCollect = (msg: ClientMessage, results: any[], message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
-        this.collector.once('collect', (m: any): void => {
+    #CollectorCollect = (msg: ClientMessage, results: any[], message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
+        this.#collector.once('collect', (m: any): void => {
             setImmediate(() => {
-                this.deleteMessage(msg);
-                this.deleteMessage(m);
-                this.collector.stop();
-                return this.pushSong(results, m, message, voiceChannel);
+                this.#deleteMessage(msg);
+                this.#deleteMessage(m);
+                this.#collector.stop();
+                return this.#pushSong(results, m, message, voiceChannel);
             });
         });
     }
     //Из типа выдает поиск трека
-    protected pushSong = (results: any[], m: ClientMessage, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
+    #pushSong = (results: any[], m: ClientMessage, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
         setImmediate(() => {
-            if (this.type === "sp") return this.SP_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
-            else if (this.type === "vk") return this.VK_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
-            else if (this.type === "sc") return this.SC_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
+            if (this.#type === "sp") return this.SP_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
+            else if (this.#type === "vk") return this.VK_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
+            else if (this.#type === "sc") return this.SC_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
             return this.YT_getVideo(results[parseInt(m.content) - 1].url, message, voiceChannel);
         });
     };
     //Удаляем сообщение
-    protected deleteMessage = (msg: ClientMessage): NodeJS.Timeout => setTimeout(() => msg.delete().catch(() => null), 1000);
+    #deleteMessage = (msg: ClientMessage): NodeJS.Timeout => setTimeout(() => msg.delete().catch(() => null), 1000);
     //Добавляем реакцию (эмодзи)
-    protected Reaction = (msg: ClientMessage | any, message: ClientMessage, emoji: string, callback: any): void => {
+    #Reaction = (msg: ClientMessage | any, message: ClientMessage, emoji: string, callback: any): void => {
         setImmediate(() => {
             msg.react(emoji).then(() => {
                 msg.createReactionCollector({
@@ -342,23 +342,23 @@ class HandleInfoResource {
         });
     }
     //Создаем коллектор (discord.js) для обработки сообщений от пользователя
-    protected MessageCollector = (msg: ClientMessage, message: ClientMessage, num: any): any => this.collector = msg.channel.createMessageCollector({filter: (m: any) => !isNaN(m.content) && m.content <= num && m.content > 0 && m.author.id === message.author.id, max: 1});
+    #MessageCollector = (msg: ClientMessage, message: ClientMessage, num: any): any => this.#collector = msg.channel.createMessageCollector({filter: (m: any) => !isNaN(m.content) && m.content <= num && m.content > 0 && m.author.id === message.author.id, max: 1});
     //Тип поиска
-    protected isType = () => {
-        if (this.type === "sp") return  "SPOTIFY";
-        else if (this.type === "yt") return "YOUTUBE"
-        else if (this.type === "vk") return "VK";
-        else if (this.type === "sc") return "SOUNDCLOUD";
+    #isType = () => {
+        if (this.#type === "sp") return  "SPOTIFY";
+        else if (this.#type === "yt") return "YOUTUBE"
+        else if (this.#type === "vk") return "VK";
+        else if (this.#type === "sc") return "SOUNDCLOUD";
 
         return "UNKNOWN";
     };
     //Конвертируем время в 00:00
-    protected ConvertTimeSearch = (duration: string) => {
-        if (this.type === 'yt') return duration;
+    #ConvertTimeSearch = (duration: string) => {
+        if (this.#type === 'yt') return duration;
         return ParserTimeSong(parseInt(duration));
     };
 
-    protected SendEmptyDataMessage = (message: ClientMessage, text: string): void => {
+    #SendEmptyDataMessage = (message: ClientMessage, text: string): void => {
         message.client.Send({text, color: "RED", message});
     };
 }

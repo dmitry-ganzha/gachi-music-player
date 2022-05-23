@@ -85,7 +85,7 @@ function CallbackString(page: number, pages: string[], queue: Queue) {
         cancel: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
             setImmediate(() => {
                 [msg, message].forEach((mes) => DeleteMessage(mes));
-            })
+            });
         },
         up: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
             setImmediate(() => {
@@ -134,7 +134,7 @@ function CallbackEmbed(page: number, pages: string[], embed: EmbedConstructor, q
         cancel: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
             setImmediate(() => {
                 [msg, message].forEach((mes) => DeleteMessage(mes));
-            })
+            });
         },
         up: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
             setImmediate(() => {

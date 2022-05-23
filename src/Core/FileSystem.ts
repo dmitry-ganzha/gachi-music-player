@@ -22,7 +22,7 @@ class MultiLoader {
             if (dir.endsWith(".js") || dir.endsWith(".ts")) return null;
 
             const Files = readdirSync(`./src/${this.path}/${dir}/`).filter((d: string) => (d.endsWith('.js') || d.endsWith('.ts')));
-            return this.ForLoad(Files, dir);
+            return this.#ForLoad(Files, dir);
         });
     };
     /**
@@ -30,12 +30,12 @@ class MultiLoader {
      * @param Files {string[]} Все файлы в этой директории
      * @param dir {string} Директория из которой загружаем файлы
      */
-    protected ForLoad = async (Files: string[], dir: string): Promise<void> => {
+    #ForLoad = async (Files: string[], dir: string): Promise<void> => {
         for (let file of Files) {
             let pull: Command;
 
             try {
-                pull = await this.getFile(`../${this.path}/${dir}/${file}`);
+                pull = await this.#getFile(`../${this.path}/${dir}/${file}`);
 
                 pull.type = dir;
 
@@ -48,7 +48,7 @@ class MultiLoader {
             this.callback(pull, { dir: dir, file: file });
         }
     };
-    protected getFile = async (path: string): Promise<Command> => {
+    #getFile = async (path: string): Promise<Command> => {
         let cmd = (await import(path));
         let name = Object.keys(cmd)[0];
         return new cmd[name];

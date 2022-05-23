@@ -21,12 +21,15 @@ export class CommandRestart extends Command {
         if (!queue) return message.client.Send({ text: `${message.author}, ⚠ | Музыка щас не играет.`, message, color: "RED" });
 
         return message.channel.send({ embeds: [{ description: "**Очередь и плеер будут уничтожены!** \n**Музыка перезапустится только для этого сервера!**", color: Colors.RED }]}).then(async (msg: ClientMessage) => {
-            await CommandRestart.createReaction(message, msg, queue, "✅", () => {
+            this.#createReaction(msg, "✅", () => {
                 Command.DeleteMessage(msg, 5e3);
                 message.client.queue.delete(message.guild.id);
             });
-            await CommandRestart.createReaction(message, msg, queue, "❎", () => Command.DeleteMessage(msg, 5e3));
+            this.#createReaction(msg, "❎", () => Command.DeleteMessage(msg, 5e3));
         });
     };
-    protected static createReaction = (message: ClientMessage, msg: ClientMessage, queue: Queue, emoji: string, callback: Function) => msg.react(emoji).then(() => msg.createReactionCollector({filter: (reaction: MessageReaction, user: User) => (reaction.emoji.name === emoji && user.id !== msg.client.user.id)}).on('collect', () => callback()));
+
+    #createReaction = (msg: ClientMessage, emoji: string, callback: Function): void => {
+        msg.react(emoji).then(() => msg.createReactionCollector({filter: (reaction: MessageReaction, user: User) => (reaction.emoji.name === emoji && user.id !== msg.client.user.id)}).on('collect', () => callback()));
+    };
 }

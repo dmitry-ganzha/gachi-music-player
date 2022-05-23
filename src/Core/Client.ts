@@ -21,6 +21,8 @@ import {CollectionMap} from "./Utils/CollectionMap";
 
 export type ClientDevice = "Discord iOS" | "Web";
 
+const keepOverLimit = (value: any): boolean => value.id !== value.client.user.id
+
 export class WatKLOK extends Client {
     public commands = new CollectionMap<string, Command>();
     public aliases = new CollectionMap<string, string>();
@@ -46,34 +48,13 @@ export class WatKLOK extends Client {
                 ThreadManager: 0,               // channel.threads
                 ThreadMemberManager: 0,         // threadchannel.members
 
-                UserManager: {
-                    maxSize: 100,
-                    keepOverLimit: (value) => value.id === value.client.user.id
-                },
-                GuildMemberManager: {
-                    maxSize: 100,
-                    keepOverLimit: (value) => value.id !== value.client.user.id,
-                },
-                VoiceStateManager: {
-                    maxSize: 100,
-                    keepOverLimit: (value) => value.id === value.client.user.id
-                },
-                MessageManager: {
-                    maxSize: 100,
-                    keepOverLimit: (value) => value.id === value.client.user.id
-                },
-                ReactionManager: {
-                    maxSize: 100,
-                    keepOverLimit: (value) => value.client.user.id === value.client.user.id
-                },
-                ReactionUserManager: {
-                    maxSize: 100,
-                    keepOverLimit: (value) => value.id === value.client.user.id
-                },
-                GuildEmojiManager: {
-                    maxSize: 100,
-                    keepOverLimit: (value) => value.id === value.client.user.id
-                }
+                UserManager: { keepOverLimit },
+                GuildMemberManager: { keepOverLimit },
+                VoiceStateManager: { keepOverLimit },
+                MessageManager: { keepOverLimit },
+                ReactionManager: { keepOverLimit },
+                ReactionUserManager: { keepOverLimit },
+                GuildEmojiManager: { keepOverLimit }
             }),
             intents: (Object.keys(IntentsBitField.Flags)) as any,
             ws: {
