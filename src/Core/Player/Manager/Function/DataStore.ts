@@ -1,4 +1,3 @@
-
 //База с плеерами
 import {AudioPlayer} from "../../Audio/AudioPlayer";
 
@@ -25,7 +24,7 @@ export function addAudioPlayer(player: AudioPlayer): void {
  * @description Удаляем плеер из базы
  * @param player {AudioPlayer}
  */
-export function deleteAudioPlayer(player: AudioPlayer) {
+export function deleteAudioPlayer(player: AudioPlayer): void {
     const index = audioPlayers.indexOf(player);
     if (index === -1) return;
     audioPlayers.splice(index, 1);
@@ -39,7 +38,7 @@ export function deleteAudioPlayer(player: AudioPlayer) {
 /**
  * @description Проверяем плееры на возможность включить музыку в голосовые каналы
  */
-function audioCycleStep() {
+function audioCycleStep(): void {
     if (TimeToFrame === -1) return;
 
     TimeToFrame += 20;
@@ -52,7 +51,7 @@ function audioCycleStep() {
  * @description Подготавливаем пакет с музыкой и отправляем в голосовой канал
  * @param players {AudioPlayer}
  */
-function prepareNextAudioFrame(players: AudioPlayer[]) {
+function prepareNextAudioFrame(players: AudioPlayer[]): void {
     const nextPlayer = players.shift();
 
     if (!nextPlayer) {
@@ -62,7 +61,6 @@ function prepareNextAudioFrame(players: AudioPlayer[]) {
 
     nextPlayer['CheckStatusPlayer']();
 
-    //setImmediate(() => prepareNextAudioFrame(players));
-    prepareNextAudioFrame(players);
+    setImmediate(() => prepareNextAudioFrame(players));
 }
 //====================== ====================== ====================== ======================

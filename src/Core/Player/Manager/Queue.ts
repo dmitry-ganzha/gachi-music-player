@@ -26,25 +26,28 @@ export function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel, 
 
     //Если поступает InputTrack[]
     if (tracks instanceof Array) {
-        return tracks.forEach((track) => setTimeout(() => setImmediate(() => {
-            const song: Song = new Song(track, message);
+        setImmediate(() => {
+            tracks.forEach((track) => setTimeout(() => setImmediate(() => {
+                const song: Song = new Song(track, message);
 
-            //Если нет очереди
-            if (!queue) {
-                CreateQueueGuild(message, VoiceChannel, song);
-                queue = message.client.queue.get(message.guild.id);
-                return;
-            }
-            return PushSong(queue, song, false);
-        }), 2e3));
+                //Если нет очереди
+                if (!queue) {
+                    CreateQueueGuild(message, VoiceChannel, song);
+                    queue = message.client.queue.get(message.guild.id);
+                    return;
+                }
+                return PushSong(queue, song, false);
+            }), 2e3));
+        });
+        return;
     }
 
     //Если поступает InputTrack
     setImmediate(() => {
         const song: Song = new Song(tracks, message);
 
-        if (!queue) return CreateQueueGuild(message, VoiceChannel, song);
-        return PushSong(queue, song);
+        if (queue) return PushSong(queue, song);
+        return CreateQueueGuild(message, VoiceChannel, song);
     });
 }
 //====================== ====================== ====================== ======================
