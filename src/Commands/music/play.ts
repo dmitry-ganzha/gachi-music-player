@@ -133,6 +133,9 @@ class HandleInfoResource {
             YouTube.getVideo(search).then((video: InputTrack) => {
                 if (!video) return this.#SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Существует ли это видео вообще!`)
                 this.#runPlayer(video, message, voiceChannel);
+            }).catch((err) => {
+                console.error(err);
+                return this.#SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Произошла ошибка!`);
             });
         });
     };
@@ -142,6 +145,9 @@ class HandleInfoResource {
                 if (!playlist) return this.#SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Существует ли это плейлист вообще!`);
 
                 return this.#runPlaylistSystem(message, playlist, voiceChannel);
+            }).catch((err) => {
+                console.error(err);
+                return this.#SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Произошла ошибка!`);
             });
         });
     };
@@ -153,6 +159,9 @@ class HandleInfoResource {
                 if (!result) return this.#SendEmptyDataMessage(message, `${message.author}, я нечего не нашел в **YouTube**`);
 
                 return this.#SendMessage(message, result, voiceChannel, this.#ArraySort(result, message), result.length);
+            }).catch((err) => {
+                console.error(err);
+                return this.#SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Произошла ошибка!`);
             });
         });
     };
@@ -164,6 +173,9 @@ class HandleInfoResource {
                 if (!track?.isValid) return this.#SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это трек вообще!`);
 
                 return this.#runPlayer(track, message, voiceChannel);
+            }).catch((err) => {
+                console.error(err);
+                return this.#SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Произошла ошибка!`);
             });
         });
     };
@@ -173,6 +185,9 @@ class HandleInfoResource {
                 if (!playlist?.title) return this.#SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это плейлист вообще!`)
 
                 return this.#runPlaylistSystem(message, playlist, voiceChannel)
+            }).catch((err) => {
+                console.error(err);
+                return this.#SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Произошла ошибка!`);
             });
         });
     };
@@ -182,6 +197,9 @@ class HandleInfoResource {
                 if (!playlist?.title) return this.#SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это альбом вообще!`)
 
                 return this.#runPlaylistSystem(message, playlist, voiceChannel)
+            }).catch((err) => {
+                console.error(err);
+                return this.#SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Произошла ошибка!`);
             });
         });
     };
@@ -193,6 +211,9 @@ class HandleInfoResource {
                 if (!result || !result.items) return this.#SendEmptyDataMessage(message, `${message.author}, я нечего не нашел в **Spotify**`);
 
                 this.#SendMessage(message, result?.items, voiceChannel, this.#ArraySort(result?.items, message), result.items?.length)
+            }).catch((err) => {
+                console.error(err);
+                return this.#SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Произошла ошибка!`);
             });
         });
     };
@@ -203,6 +224,9 @@ class HandleInfoResource {
             VK.getTrack(search).then((track: InputTrack) => {
                 if (!track) return this.#SendEmptyDataMessage(message, `${message.author}, **VK** не хочет делится данными! Существует ли это трек вообще!`);
                 return this.#runPlayer(track, message, voiceChannel)
+            }).catch((err) => {
+                console.error(err);
+                return this.#SendEmptyDataMessage(message, `${message.author}, **VK** не хочет делится данными! Произошла ошибка!`);
             });
         });
     };
@@ -212,6 +236,9 @@ class HandleInfoResource {
                 if (!playlist) return this.#SendEmptyDataMessage(message, `${message.author}, **VK** не хочет делится данными! Существует ли это плейлист вообще!`);
 
                 return this.#runPlaylistSystem(message, playlist, voiceChannel);
+            }).catch((err) => {
+                console.error(err);
+                return this.#SendEmptyDataMessage(message, `${message.author}, **VK** не хочет делится данными! Произошла ошибка!`);
             });
         });
     };
@@ -222,6 +249,9 @@ class HandleInfoResource {
                 if (!result || !result.items) return this.#SendEmptyDataMessage(message, `${message.author}, я нечего не нашел в **VK*`);
 
                 return this.#SendMessage(message, result?.items, voiceChannel, this.#ArraySort(result?.items, message), result?.items?.length);
+            }).catch((err) => {
+                console.error(err);
+                return this.#SendEmptyDataMessage(message, `${message.author}, **VK** не хочет делится данными! Произошла ошибка!`);
             });
         });
     };
@@ -233,6 +263,9 @@ class HandleInfoResource {
                 if (!track) return this.#SendEmptyDataMessage(message, `${message.author}, **SoundCloud** не хочет делится данными! Существует ли это трек вообще!`);
 
                 return this.#runPlayer(track, message, voiceChannel);
+            }).catch((err) => {
+                console.error(err);
+                return this.#SendEmptyDataMessage(message, `${message.author}, **SoundCloud** не хочет делится данными! Произошла ошибка!`);
             });
         });
     };
@@ -242,6 +275,9 @@ class HandleInfoResource {
                 if (!playlist) return this.#SendEmptyDataMessage(message, `${message.author}, **SoundCloud** не хочет делится данными! Существует ли это плейлист вообще!`);
 
                 return this.#runPlaylistSystem(message, playlist, voiceChannel)
+            }).catch((err) => {
+                console.error(err);
+                return this.#SendEmptyDataMessage(message, `${message.author}, **SoundCloud** не хочет делится данными! Произошла ошибка!`);
             });
         });
     };
@@ -253,6 +289,9 @@ class HandleInfoResource {
                 if (!result) return this.#SendEmptyDataMessage(message, `${message.author}, я нечего не нашел в **SoundCloud**`);
 
                 return this.#SendMessage(message, result, voiceChannel, this.#ArraySort(result, message), result?.length)
+            }).catch((err) => {
+                console.error(err);
+                return this.#SendEmptyDataMessage(message, `${message.author}, **SoundCloud** не хочет делится данными! Произошла ошибка!`);
             });
         });
     };
@@ -302,7 +341,10 @@ class HandleInfoResource {
     #SendMessage = (message: ClientMessage, results: any[], voiceChannel: VoiceChannel | StageChannel, resp: string, num: number): void => {
         setImmediate(() => {
             message.channel.send(`\`\`\`css\nВыбери от 1 до ${results.length}\n[Платформа: ${this.#isType()} | Запросил: ${message.author}]\n\n${resp}\`\`\``).then((msg: ClientMessage) => {
-                this.#Reaction(msg, message, "❌", () => (this.#collector?.stop(), this.#deleteMessage(msg)));
+                this.#Reaction(msg, message, "❌", () => {
+                    this.#collector?.stop();
+                    this.#deleteMessage(msg);
+                });
                 this.#MessageCollector(msg, message, num);
                 return this.#CollectorCollect(msg, results, message, voiceChannel);
             })
