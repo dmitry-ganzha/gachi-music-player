@@ -5,6 +5,7 @@ import cfg from '../../../DataBase/Config.json';
 import {ClientMessage} from "../../Core/Client";
 import {ParserTimeSong} from "../../Core/Player/Manager/Duration/ParserTimeSong";
 import {Channel, EmbedConstructor} from "../../Core/Utils/TypeHelper";
+import {getMe} from "../../Core/Utils/getMe";
 
 type CommandPermission = Command['permissions'];
 type CommandIsOwner = Command['isOwner'];
@@ -75,7 +76,7 @@ class Permissions {
     // Если одно право
     protected _createPresenceOnePerm = (permissions: CommandPermission, message: ClientMessage): boolean => {
         if (permissions.client) {
-            if (!message.guild.me.permissions.has(permissions.client[0])) {
+            if (!getMe(message.guild).permissions.has(permissions.client[0])) {
                 this.SendMessage(NotPermissions(message, `У меня нет таких прав!`, `•${permissions.client[0]}`), message.channel).catch(() => null);
                 return true;
             }
@@ -100,7 +101,7 @@ class Permissions {
         // Права бота
         if (permissions.client) {
             for (let i in permissions.client) {
-                if (!message.guild?.me?.permissions?.has(permissions.client[i])) resp += `•${permissions.client[i]}\n`;
+                if (!getMe(message.guild)?.permissions?.has(permissions.client[i])) resp += `•${permissions.client[i]}\n`;
             }
         // Права пользователя
         } else if (permissions.user) {

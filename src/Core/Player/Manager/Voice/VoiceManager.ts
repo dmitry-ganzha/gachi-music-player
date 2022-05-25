@@ -1,4 +1,10 @@
-import {Guild, InternalDiscordGatewayAdapterCreator, StageChannel, VoiceChannel, ChannelType} from "discord.js";
+import {
+    InternalDiscordGatewayAdapterCreator,
+    StageChannel,
+    VoiceChannel,
+    ChannelType,
+    GuildMember
+} from "discord.js";
 import {
     DiscordGatewayAdapterCreator,
     getVoiceConnection,
@@ -8,6 +14,7 @@ import {
 import {TypedEmitter} from "tiny-typed-emitter";
 import {Queue} from "../../Structures/Queue/Queue";
 import {AudioPlayer} from "../../Audio/AudioPlayer";
+import {getMe} from "../../../Utils/getMe";
 
 type Events = {
     StartQueueDestroy: (queue: Queue) => void,
@@ -31,11 +38,11 @@ export function JoinVoiceChannel({id, guild, type}: VoiceChannel | StageChannel)
         adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator & DiscordGatewayAdapterCreator,
     });
 
-    SpeakStateChannel(guild.me, type);
+    SpeakStateChannel(getMe(guild), type);
     return VoiceChannel;
 }
 
-function SpeakStateChannel(me: Guild["me"], type: ChannelType.GuildVoice | ChannelType.GuildStageVoice): void {
+function SpeakStateChannel(me: GuildMember, type: ChannelType.GuildVoice | ChannelType.GuildStageVoice): void {
     if (type === ChannelType.GuildStageVoice && me) me?.voice?.setRequestToSpeak(true).catch(() => undefined);
 }
 

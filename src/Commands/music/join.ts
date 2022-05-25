@@ -3,6 +3,7 @@ import {StageChannel, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {JoinVoiceChannel} from "../../Core/Player/Manager/Voice/VoiceManager";
+import {getMe} from "../../Core/Utils/getMe";
 
 export class CommandJoin extends Command {
     public constructor() {
@@ -30,7 +31,7 @@ export class CommandJoin extends Command {
             color: "RED"
         });
 
-        if (voiceChannel.id === message.guild.me.voice.id) return message.client.Send({
+        if (voiceChannel.id === getMe(message.guild).voice.id) return message.client.Send({
             text: `${message.author}, Я уже в этом канале <#${queue.channels.voice.id}>.`,
             message,
             color: "RED"

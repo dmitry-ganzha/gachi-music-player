@@ -7,7 +7,8 @@ import {
     Message,
     MessageEditOptions,
     User,
-    Options} from "discord.js";
+    Options, Guild
+} from "discord.js";
 import {FileSystemLoad} from "./FileSystem";
 import {Channel, MessageChannel, sendType} from "./Utils/TypeHelper";
 import {MessageChannelSend} from "./Utils/Functions/Send";
@@ -18,6 +19,7 @@ import {PlayerEmitter} from "./Player/execute";
 import {Command} from "../Commands/Constructor";
 import {Queue} from "./Player/Structures/Queue/Queue";
 import {CollectionMap} from "./Utils/CollectionMap";
+import {getMe} from "./Utils/getMe";
 
 export type ClientDevice = "Discord iOS" | "Web";
 
@@ -30,6 +32,7 @@ export class WatKLOK extends Client {
     public cfg = require('../../DataBase/Config.json');
 
     public Send = MessageChannelSend;
+    public getMe = getMe;
     public ConvertedText = ConvertedText;
     public console = ConsoleLog;
     public connections = Connections;
