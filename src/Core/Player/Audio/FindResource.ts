@@ -92,5 +92,5 @@ function getFormatYouTube(url: string): Promise<InputFormat> {
 function Filter(track: InputTrack, NeedDuration: number) {
     const DurationSong = ParserTime(track.duration.seconds);
 
-    return DurationSong === NeedDuration || NeedDuration + 7 >= DurationSong;
+    return DurationSong === NeedDuration || NeedDuration + 5 > DurationSong || NeedDuration - 5 < DurationSong;
 }
