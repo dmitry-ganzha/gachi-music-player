@@ -17,21 +17,21 @@ export function ParserTime(duration: string): number {
     const Splitter = duration?.split(":");
 
     if (Splitter.length === 4) {
-        const days = Number(Splitter[0]) * ((60 * 60) * 24) % 24;
-        const hours = Number(Splitter[1]) * (60 * 60) % 24;
-        const minutes = (Number(Splitter[2]) * 60) % 60;
-        const seconds = Number(Splitter[3]) % 60;
+        const days = Number(Splitter[0]) * ((60 * 60) * 24);
+        const hours = Number(Splitter[1]) * (60 * 60);
+        const minutes = (Number(Splitter[2]) * 60)
+        const seconds = Number(Splitter[3]);
 
         return days + hours + minutes + seconds;
     } else if (Splitter.length === 3) {
-        const hours = Number(Splitter[0]) * (60 * 60) % 24;
-        const minutes = (Number(Splitter[1]) * 60) % 60;
-        const seconds = Number(Splitter[2]) % 60;
+        const hours = Number(Splitter[0]) * (60 * 60);
+        const minutes = (Number(Splitter[1]) * 60);
+        const seconds = Number(Splitter[2]);
 
         return hours + minutes + seconds;
     } else if (Splitter.length === 2) {
-        const minutes = (Number(Splitter[0]) * 60) % 60;
-        const seconds = Number(Splitter[1]) % 60;
+        const minutes = (Number(Splitter[0]) * 60);
+        const seconds = Number(Splitter[1]);
 
         return minutes + seconds;
     }

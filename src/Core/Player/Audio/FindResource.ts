@@ -2,7 +2,7 @@ import {ConstFormat, Song} from "../Structures/Queue/Song";
 import {httpsClient, httpsClientOptions} from "../../httpsClient";
 import {InputFormat, InputTrack} from "../../Utils/TypeHelper";
 import {SoundCloud, VK, YouTube} from "../../Platforms";
-import {ParserTime} from "../Manager/Duration/ParserTimeSong";
+import {ParserTime, ParserTimeSong} from "../Manager/Duration/ParserTimeSong";
 
 const GlobalOptions: httpsClientOptions = {request: {maxRedirections: 10, method: "GET"}, options: {RealisticRequest: true}};
 
@@ -77,7 +77,7 @@ function FindTrack(nameSong: string, duration: number): Promise<InputFormat> {
 
         if (FindTrack.length === 0) return null;
 
-        return getFormatYouTube(FindTrack.pop()?.url);
+        return getFormatYouTube(FindTrack[0].url);
     });
 }
 //====================== ====================== ====================== ======================
@@ -92,5 +92,6 @@ function getFormatYouTube(url: string): Promise<InputFormat> {
 function Filter(track: InputTrack, NeedDuration: number) {
     const DurationSong = ParserTime(track.duration.seconds);
 
-    return DurationSong === NeedDuration || NeedDuration + 5 > DurationSong || NeedDuration - 5 < DurationSong;
+    //Если время трека больше или равно нужному времени и время трека меньше времени трека + 5 и время трека больше времени трека - 5 и время трека меньше нужного времени на 12, то true
+    return DurationSong >= NeedDuration && DurationSong < DurationSong + 5 && DurationSong > DurationSong - 5 && DurationSong < NeedDuration + 12;
 }
