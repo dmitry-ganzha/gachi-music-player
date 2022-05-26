@@ -71,7 +71,7 @@ async function getLinkFormat({type, url, title, author, duration}: Song): Promis
  * @param duration
  * @constructor
  */
-async function FindTrack(nameSong: string, duration: number): Promise<InputFormat> {
+function FindTrack(nameSong: string, duration: number): Promise<InputFormat> {
     return YouTube.SearchVideos(nameSong).then((Tracks) => {
         const FindTrack = Tracks.filter((track) => Filter(track, duration));
 
