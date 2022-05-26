@@ -3,15 +3,6 @@ import {AudioFilters, CreateFilters, FFmpeg, FFmpegArgs} from '.';
 import FFmpegConfiguration from "../../../../DataBase/FFmpeg.json";
 import {opus} from "prism-media";
 
-type TypeStream = "ogg/opus" | "webm/opus" | "ffmpeg";
-
-interface Options {
-    stream: Readable | string;
-    seek?: number;
-    Filters?: AudioFilters;
-    type?: TypeStream;
-}
-
 export class ConstructorStream {
     public playbackDuration = 0;
     public playStream: Readable & Writable;
@@ -154,4 +145,13 @@ function FFmpegTimer(AudioFilters: AudioFilters) {
         NumberDuration += Number(number1 + number2);
     }
     return NumberDuration;
+}
+
+type TypeStream = "ogg/opus" | "webm/opus" | "ffmpeg";
+
+interface Options {
+    stream: Readable | string;
+    seek?: number;
+    Filters?: AudioFilters;
+    type?: TypeStream;
 }

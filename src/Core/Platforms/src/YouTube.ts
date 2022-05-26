@@ -104,7 +104,7 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
  * @param options {SearchOptions} Настройки
  * @constructor
  */
-function SearchVideos(search: string, options: SearchOptions = {limit: 15}): Promise<string | InputTrack[]> {
+function SearchVideos(search: string, options: SearchOptions = {limit: 15}): Promise<InputTrack[]> {
     return new Promise(async (resolve, reject) => {
         const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}`, {
             options: {userAgent: true, cookie: true, zLibEncode: true, english: true, RealisticRequest: true}

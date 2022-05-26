@@ -97,8 +97,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
-        setImmediate(() =>
-            CreateResource(queue.songs[0], queue.audioFilters, seek).then((stream: PlayerResource) => {
+        setImmediate(() => CreateResource(queue.songs[0], queue.audioFilters, seek).then((stream: PlayerResource) => {
                 this.play(stream);
                 if (seek) this.CurrentTime = seek;
             })
@@ -325,7 +324,7 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
         if (req > 2) return resolve(null);
 
         FindResource(song).finally(() => {
-            if (!song.format.work) return resolve(null);
+            if (!song.format?.work) return resolve(null);
 
             if (song.isLive) return resolve(new ConstructorStream({
                 stream: song.format.url
@@ -334,8 +333,9 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
                 stream: song.format.url, seek, Filters: audioFilters
             }));
         }).catch((err) => {
-            console.log(`[FindResource]: [Error: ${err}, Req: ${req}]`);
-            return resolve(CreateResource(song, audioFilters, seek, req++));
+            console.log(`[FindResource]: [Error: ${err}, Req: ${req}]`, err);
+            req++;
+            return resolve(CreateResource(song, audioFilters, seek, req));
         });
     });
 }

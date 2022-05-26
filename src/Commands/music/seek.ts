@@ -50,13 +50,12 @@ export class CommandSeek extends Command {
             color: 'RED'
         });
 
-        if (choiceDur) {
-            if (!choiceDur) return message.client.Send({
-                text: `${message.author}, Укажи время, пример 00:00:00!`,
-                message,
-                color: 'RED'
-            });
-
+        if (!choiceDur) return message.client.Send({
+            text: `${message.author}, Укажи время, пример 00:00:00!`,
+            message,
+            color: 'RED'
+        })
+        else if (choiceDur.length > 1) {
             if (!choiceDur[2]) optDur = (choiceDur[0] * 60) + (choiceDur[1] % 60000);
             else optDur = (choiceDur[0] * 60 * 60) + (choiceDur[1] * 60) + (choiceDur[2] % 60000);
         } else optDur = parseInt(args[0]);
