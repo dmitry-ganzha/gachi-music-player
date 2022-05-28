@@ -13,7 +13,6 @@ import {Colors} from "../../../Utils/Colors";
 type SongType = "SPOTIFY" | "YOUTUBE" | "VK" | "SOUNDCLOUD" | "UNKNOWN";
 
 export class Song {
-    public id: string | number;
     public title: string;
     public url: string;
     public author: InputTrackAuthor;
@@ -31,10 +30,11 @@ export class Song {
     public constructor(track: InputTrack, {author}: ClientMessage) {
         const type = Type(track.url);
 
-        this.id = track.id;
         this.title = track.title;
         this.url = track.url;
-        this.author = track.author;
+        this.author = {
+            url: track.author.url, title: track.author.title, image: track.author.image, isVerified: track.author.isVerified
+        };
         this.duration = ConstDuration(track.duration);
         this.image = track.image;
         this.requester = author;

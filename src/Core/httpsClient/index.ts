@@ -14,7 +14,7 @@ export const httpsClient = {Request, parseBody, parseJson};
  * @param options {httpsClientOptions} Настройки запроса
  */
 function Request(url: string, options?: httpsClientOptions) {
-    if (options) ChangeReqOptions(options);
+    if (options) ChangeReqOptions(options, url);
     return request(url, options?.request);
 }
 //====================== ====================== ====================== ======================
@@ -85,8 +85,9 @@ function GetUserAgent(): {Agent: string, Version: string} {
 /**
  * @description Добавляем свои аргументы запроса
  * @param options {httpsClientOptions} Настройки запроса
+ * @param url
  */
-function ChangeReqOptions(options: httpsClientOptions): void {
+function ChangeReqOptions(options: httpsClientOptions, url: string): void {
     if (!options.request?.headers) options.request = {...options.request, headers: {}};
 
     if (options.request?.headers) {
@@ -102,8 +103,16 @@ function ChangeReqOptions(options: httpsClientOptions): void {
         }
         if (options.options?.zLibEncode) options.request.headers = {...options.request.headers, "accept-encoding": "gzip, deflate, br"};
         if (options.options?.english) options.request.headers = {...options.request.headers, "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7"};
+
+        if (options.options.OldReqYouTube) {
+            options.request.headers = {...options.request.headers,
+                'x-youtube-client-name': '1',
+                'x-youtube-client-version': '2.20201021.03.00'
+            }
+        }
     }
 
+    /*
     if (options.options?.RealisticRequest) {
         //Сделаем парсинг не таким заметным
         options.request = {
@@ -122,6 +131,8 @@ function ChangeReqOptions(options: httpsClientOptions): void {
             responseHeader: "raw"
         };
     }
+
+     */
 }
 //====================== ====================== ====================== ======================
 /**
@@ -167,6 +178,7 @@ export interface httpsClientOptions {
         zLibEncode?: boolean;
         english?: boolean;
         RealisticRequest?: boolean;
+        OldReqYouTube?: boolean
     }
 }
 type IncomingHeaders = IncomingMessage["headers"];

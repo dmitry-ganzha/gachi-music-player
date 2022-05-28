@@ -58,21 +58,25 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
 
         if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));
 
-        const VideoRes = JSON.parse(body.split('var ytInitialPlayerResponse = ')?.[1]?.split(';</script>')[0].split(/;\s*(var|const|let)\s/)[0]);
-        if (!VideoRes) throw reject(new Error('Данные на странице не были найдены'));
+        const VideoRes: any[] = await httpsClient.parseJson(`${DefaultLinkYouTube}/watch?v=${VideoID}?flow=grid&view=0&pbj=1`, {
+            options: {OldReqYouTube: true}
+        });
+        const VideoFinalData = VideoRes?.filter((d) => d.playerResponse !== undefined)[0]?.playerResponse;
 
-        if (VideoRes.playabilityStatus?.status !== 'OK') throw reject(new Error(`Не удалось получить данные из-за: ${VideoRes.playabilityStatus.status}`));
+        if (!VideoFinalData) throw reject(new Error('Данные на странице не были найдены'));
+
+        if (VideoFinalData.playabilityStatus?.status !== 'OK') throw reject(new Error(`Не удалось получить данные из-за: ${VideoFinalData.playabilityStatus.status}`));
 
         const html5player = `https://www.youtube.com${body.split('"jsUrl":"')[1].split('"')[0]}`;
-        const videoDetails = VideoRes.videoDetails;
+        const videoDetails = VideoFinalData.videoDetails;
         let format: YouTubeFormat[];
 
         const LiveData: LiveData = {
             isLive: videoDetails.isLiveContent,
-            url: VideoRes.streamingData?.hlsManifestUrl ?? null //dashManifestUrl, hlsManifestUrl
+            url: VideoFinalData.streamingData?.hlsManifestUrl ?? null //dashManifestUrl, hlsManifestUrl
         };
 
-        const VideoFormats: YouTubeFormat[] = [...VideoRes.streamingData.formats ?? [], ...VideoRes.streamingData.adaptiveFormats ?? []].filter((d: any) => d?.mimeType?.match(/opus/) || d?.mimeType?.match(/audio/)) ?? [];
+        const VideoFormats: YouTubeFormat[] = [...VideoFinalData.streamingData.formats ?? [], ...VideoFinalData.streamingData.adaptiveFormats ?? []].filter((d: any) => d?.mimeType?.match(/opus/) || d?.mimeType?.match(/audio/)) ?? [];
 
         if (!LiveData.isLive) {
             if (VideoFormats[0].signatureCipher || VideoFormats[0].cipher) format = (await Promise.all([Decipher(VideoFormats, html5player)]))[0];

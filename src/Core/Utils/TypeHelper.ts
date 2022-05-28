@@ -9,6 +9,7 @@ import {
     ThreadChannel
 } from "discord.js";
 import {ClientMessage} from "../Client";
+import {Song} from "../Player/Structures/Queue/Song";
 
 // interface for EmbedConstructor<EmbedData>
 export interface EmbedConstructor extends EmbedData {}
@@ -79,7 +80,16 @@ export interface InputTrack {
     PrevFile?: string;
 }
 export type InputTrackDuration = InputTrack['duration'];
-export type InputTrackAuthor = InputTrack['author'];
+export type InputTrackAuthor = {
+    title: string;
+    url: string | undefined;
+    image?: {
+        url: string | undefined;
+        width?: number;
+        height?: number;
+    };
+    isVerified?: boolean;
+};
 export type InputTrackImage = InputTrack['image'];
 //
 /**
