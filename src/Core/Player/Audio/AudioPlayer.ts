@@ -28,14 +28,14 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (this.state.resource?.playbackDuration <= 0) return 0;
         return parseInt((this.state.resource?.playbackDuration / 1000).toFixed(0));
     };
-    protected set CurrentTime(time: number) {
+    set #CurrentTime(time: number) {
         this.state.resource.playbackDuration = time * 1e3;
     };
     //====================== ====================== ====================== ======================
     /**
      * @description Голосовые каналы в которых можно включить музыку
      */
-    protected get VoiceChannels() {
+    get #VoiceChannels() {
         return this.subscribers.filter(( {connection} ) => connection.state.status === "ready").map(({connection}) => connection);
     };
     //====================== ====================== ====================== ======================
@@ -65,7 +65,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
         //Удаляем плеер если статус "idle"
         if (newState.status === "idle") {
-            this.signalStopSpeaking();
+            this.#signalStopSpeaking();
             deleteAudioPlayer(this);
         }
         if (newResource) addAudioPlayer(this);
@@ -75,7 +75,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
         if (OldState.status !== newState.status || isNewResources) {
             //Перед сменой статуса плеера отправляем пустой пакет. Необходим, так мы правим повышение задержки гс!
-            this.playOpusPacket(EmptyFrame, this.VoiceChannels);
+            this.#playOpusPacket(EmptyFrame, this.#VoiceChannels);
             void this.emit(newState.status, OldState, this._state);
         }
     };
@@ -98,8 +98,8 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const queue: Queue = client.queue.get(guild.id);
 
         setImmediate(() => CreateResource(queue.songs[0], queue.audioFilters, seek).then((stream: PlayerResource) => {
-                this.play(stream);
-                if (seek) this.CurrentTime = seek;
+                this.#play(stream);
+                if (seek) this.#CurrentTime = seek;
             })
         );
     };
@@ -117,7 +117,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         setImmediate(() => CreateResource(queue.songs[0], queue.audioFilters).then((stream: PlayerResource) => {
                 client.console(`[Queue]: [GuildID: ${guild.id}, Type: ${queue.songs[0].type}, Status: Playing]: [${queue.songs[0].title}]`);
                 PlaySongMessage(queue.channels.message);
-                return this.play(stream);
+                return this.#play(stream);
             })
         );
     };
@@ -150,7 +150,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @description Что будет отправлять в голосовой канал
      * @param resource {PlayerResource} Поток
      */
-    protected play = (resource: PlayerResource): void => {
+    #play = (resource: PlayerResource): void => {
         if (!resource) return void this.emit('error', 'Error: AudioResource has not found');
         if (resource?.ended) return void this.emit('error', `[AudioPlayer]: [Message: Fail to load a ended stream]`);
 
@@ -174,7 +174,6 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         }
     };
     //====================== ====================== ====================== ======================
-
     /**
      * @description Убираем из <this.subscribers> голосовой канал
      * @param connection {VoiceConnection} Голосовой канал на котором будет играть музыка
@@ -212,15 +211,15 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (this.state.status === "idle" || this.state.status === "buffering" || this.state.status === "paused") return;
 
         //Голосовые каналы к которым подключен плеер
-        const Receivers = this.VoiceChannels;
+        const Receivers = this.#VoiceChannels;
 
         //Если стоит статус плеера (autoPaused) и есть канал или каналы в которые можно воспроизвести музыку, стартуем!
         if (this.state.status === "autoPaused" && Receivers.length > 0) this.state = { ...this.state, status: "playing" };
 
         //Не читать пакеты при статусе плеера (paused | autoPaused)
         if (this.state.status === "paused" || this.state.status === "autoPaused") {
-            this.playOpusPacket(EmptyFrame, Receivers);
-            this.signalStopSpeaking();
+            this.#playOpusPacket(EmptyFrame, Receivers);
+            this.#signalStopSpeaking();
             return;
         }
         //Если некуда проигрывать музыку ставить плеер на паузу
@@ -230,8 +229,8 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (this.state.status === "playing") {
             const packet: Buffer | null = this.state.resource?.read();
 
-            if (packet) return this.playOpusPacket(packet, Receivers);
-            this.signalStopSpeaking();
+            if (packet) return this.#playOpusPacket(packet, Receivers);
+            this.#signalStopSpeaking();
             this.stop();
         }
     };
@@ -239,14 +238,14 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     /**
      * @description Перестаем передавать пакеты во все доступные каналы
      */
-    protected signalStopSpeaking = (): void => this.subscribers.forEach(({connection} ) => connection.setSpeaking(false));
+    #signalStopSpeaking = (): void => this.subscribers.forEach(({connection} ) => connection.setSpeaking(false));
     //====================== ====================== ====================== ======================
     /**
      * @description Отправляем пакет во все доступные каналы
      * @param packet {Buffer} Сам пакет
      * @param receivers {VoiceConnection[]} В какие каналы отправить пакет
      */
-    protected playOpusPacket = (packet: Buffer, receivers: VoiceConnection[]): void => receivers.forEach((connection) => connection.playOpusPacket(packet));
+    #playOpusPacket = (packet: Buffer, receivers: VoiceConnection[]): void => receivers.forEach((connection) => connection.playOpusPacket(packet));
     //====================== ====================== ====================== ======================
     /**
      * @description Когда плеер завершит песню, он возвратит эту функцию
@@ -333,7 +332,7 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
                 stream: song.format.url, seek, Filters: audioFilters
             }));
         }).catch((err) => {
-            console.log(`[FindResource]: [Error: ${err}, Req: ${req}]`, err);
+            console.log(`[FindResource]: [Error: ${err}, Req: ${req}]`);
             req++;
             return resolve(CreateResource(song, audioFilters, seek, req));
         });

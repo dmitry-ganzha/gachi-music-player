@@ -340,6 +340,8 @@ class HandleInfoResource {
     };
     #SendMessage = (message: ClientMessage, results: any[], voiceChannel: VoiceChannel | StageChannel, resp: string, num: number): void => {
         setImmediate(() => {
+            if (results.length < 1) return message.client.Send({text: `${message.author} | Я не смог найти музыку с таким названием. Попробуй другое название!`, message, color: "RED"});
+
             message.channel.send(`\`\`\`css\nВыбери от 1 до ${results.length}\n[Платформа: ${this.#isType()} | Запросил: ${message.author}]\n\n${resp}\`\`\``).then((msg: ClientMessage) => {
                 this.#Reaction(msg, message, "❌", () => {
                     this.#collector?.stop();

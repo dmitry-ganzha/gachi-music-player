@@ -113,7 +113,6 @@ function getClientID(): Promise<string> {
 
         const body = await httpsClient.parseBody(`https://soundcloud.com/`, {
             options: {
-                RealisticRequest: true,
                 english: true,
                 zLibEncode: true
             }

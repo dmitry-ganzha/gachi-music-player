@@ -134,7 +134,7 @@ function addMessage(message: ClientMessage) {
 //====================== ====================== ====================== ======================
 /**
  * @description Удаляем сообщение из <Message[]>, так-же проверяем отключить ли таймер
- * @param message
+ * @param message {ClientMessage} Сообщение
  */
 function removeMessage(message: ClientMessage) {
     const Find = Message.get(message.channelId)

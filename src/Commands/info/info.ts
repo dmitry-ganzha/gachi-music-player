@@ -32,7 +32,7 @@ export class CommandInfo extends Command {
         })
     };
 }
-
+//====================== ====================== ====================== ======================
 function InfoEmbed(message: ClientMessage, cpu: string): EmbedConstructor {
     return {
         color: Colors.GREEN,
@@ -67,12 +67,14 @@ function InfoEmbed(message: ClientMessage, cpu: string): EmbedConstructor {
         }
     }
 }
+//====================== ====================== ====================== ======================
 function FormatBytes(heapUsed: number): string {
     if (heapUsed === 0) return '0 Байт';
     const sizes: string[] = ['Байт', 'КБ', 'МБ', 'ГБ', 'ТБ', 'ПБ', 'ЕБ', 'ЗБ', 'УБ'];
     const i: number = Math.floor(Math.log(heapUsed) / Math.log(1024));
     return `${parseFloat((heapUsed / Math.pow(1024, i)).toFixed(2))} ${sizes[i]}`;
 }
+//====================== ====================== ====================== ======================
 function getCPUUsage(callback: Function, free = false) {
     const stats1 = getCPUInfo();
     const startIdle = stats1.idle;
@@ -91,6 +93,7 @@ function getCPUUsage(callback: Function, free = false) {
         else callback( (1 - per) );
     }, 1000 );
 }
+//====================== ====================== ====================== ======================
 function getCPUInfo(){
     const cpus = os.cpus();
 

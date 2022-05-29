@@ -17,14 +17,12 @@ class MultiLoader {
     /**
      * @description Открываем директорию (папку) и смотрим что в ней, проверяем что-бы были файлы js или ts. Загружаем...
      */
-    public readdirSync = async (): Promise<void> => {
-        return readdirSync(`./src/${this.path}`).forEach((dir: string) => {
-            if (dir.endsWith(".js") || dir.endsWith(".ts")) return null;
+    public readdirSync = async (): Promise<void> => readdirSync(`./src/${this.path}`).forEach((dir: string) => {
+        if (dir.endsWith(".js") || dir.endsWith(".ts")) return null;
 
-            const Files = readdirSync(`./src/${this.path}/${dir}/`).filter((d: string) => (d.endsWith('.js') || d.endsWith('.ts')));
-            return this.#ForLoad(Files, dir);
-        });
-    };
+        const Files = readdirSync(`./src/${this.path}/${dir}/`).filter((d: string) => (d.endsWith('.js') || d.endsWith('.ts')));
+        return this.#ForLoad(Files, dir);
+    });
     /**
      * @description Загружаем файлы находящиеся в dir
      * @param Files {string[]} Все файлы в этой директории
@@ -108,7 +106,6 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
         })
     ]);
 }
-
 //
 function FileType(file: string): string {
     return file.endsWith('.ts') ? `TS` : `JS`;

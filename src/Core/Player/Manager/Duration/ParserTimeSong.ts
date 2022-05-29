@@ -36,7 +36,7 @@ export function ParserTime(duration: string): number {
         return minutes + seconds;
     }
 
-    return Number(duration) % 60;
+    return Number(duration);
 }
 //====================== ====================== ====================== ======================
 

@@ -27,7 +27,7 @@ export class CollectorSortReaction {
 
             message.channel.send(typeof embed === "string" ? embed : {embeds: [embed]}).then((msg) => {
                 // @ts-ignore
-                Object.entries(Callbacks).forEach(([key, value]) => reaction(message.author, message, msg, value, emojis[key]));
+                Object.entries(Callbacks).forEach(([key, value]) => reaction(message.author, message, msg, value, key));
             });
         });
     }

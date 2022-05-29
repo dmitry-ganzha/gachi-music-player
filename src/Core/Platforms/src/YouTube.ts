@@ -17,14 +17,7 @@ export const YouTube = {getVideo, getPlaylist, SearchVideos};
 function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
     return new Promise(async (resolve) => {
         const channel: YouTubeChannelParse[] = (await Promise.all([httpsClient.parseJson(`${DefaultLinkYouTube}/channel/${id}/channels?flow=grid&view=0&pbj=1`, {
-            request: {
-                headers: {
-                    'x-youtube-client-name': '1',
-                    'x-youtube-client-version': '2.20201021.03.00',
-                },
-                method: "GET"
-            },
-            options: {zLibEncode: true, english: true, RealisticRequest: true}
+            options: {zLibEncode: true, english: true, YouTubeClient: true}
         })]))[0];
 
         // @ts-ignore
@@ -51,20 +44,19 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
     return new Promise(async (resolve, reject) => {
         const VideoID = new Utils().getID(url);
         const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/watch?v=${VideoID}&has_verified=1`, {
-            options: {
-                userAgent: true, cookie: true, zLibEncode: true, english: true, RealisticRequest: true
-            }
+            options: { userAgent: true, zLibEncode: true, english: true, cookie: true }
         })]))[0];
 
         if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));
 
+        let Token = body.match(/(["'])ID_TOKEN\1[:,]\s?"([^"]+)"/);
+
         const VideoRes: any[] = await httpsClient.parseJson(`${DefaultLinkYouTube}/watch?v=${VideoID}?flow=grid&view=0&pbj=1`, {
-            options: {OldReqYouTube: true}
+            options: {YouTubeClient: true, cookie: true}, Token: Token.length >= 3 ? Token[2] : null
         });
         const VideoFinalData = VideoRes?.filter((d) => d.playerResponse !== undefined)[0]?.playerResponse;
 
         if (!VideoFinalData) throw reject(new Error('Данные на странице не были найдены'));
-
         if (VideoFinalData.playabilityStatus?.status !== 'OK') throw reject(new Error(`Не удалось получить данные из-за: ${VideoFinalData.playabilityStatus.status}`));
 
         const html5player = `https://www.youtube.com${body.split('"jsUrl":"')[1].split('"')[0]}`;
@@ -111,7 +103,7 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
 function SearchVideos(search: string, options: SearchOptions = {limit: 15}): Promise<InputTrack[]> {
     return new Promise(async (resolve, reject) => {
         const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}`, {
-            options: {userAgent: true, cookie: true, zLibEncode: true, english: true, RealisticRequest: true}
+            options: {userAgent: true, YouTubeClient: true, zLibEncode: true, english: true}
         })]))[0];
 
         if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));
@@ -165,7 +157,7 @@ async function getPlaylist(url: string): Promise<InputPlaylist> {
     return new Promise(async (resolve, reject) => {
         const playlistID = new Utils().getID(url, true);
         const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/playlist?list=${playlistID}`, {
-            options: {userAgent: true, cookie: true, zLibEncode: true, english: true, RealisticRequest: true}
+            options: {userAgent: true, YouTubeClient: true, zLibEncode: true, english: true}
         })]))[0];
 
         if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));

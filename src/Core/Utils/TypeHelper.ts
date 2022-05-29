@@ -9,7 +9,6 @@ import {
     ThreadChannel
 } from "discord.js";
 import {ClientMessage} from "../Client";
-import {Song} from "../Player/Structures/Queue/Song";
 
 // interface for EmbedConstructor<EmbedData>
 export interface EmbedConstructor extends EmbedData {}
@@ -96,15 +95,15 @@ export type InputTrackImage = InputTrack['image'];
  * @description Пример получаемого автора трека
  */
 export interface InputAuthor {
-    id: string | number,
-    title: string,
-    url: string,
+    id: string | number;
+    title: string;
+    url: string;
     image: {
-        url: string,
-        width?: number,
-        height?: number
-    },
-    isVerified: boolean | undefined
+        url: string;
+        width?: number;
+        height?: number;
+    };
+    isVerified: boolean | undefined;
 }
 /**
  * @description Пример получаемого плейлиста
@@ -112,10 +111,10 @@ export interface InputAuthor {
 export interface InputPlaylist {
     id: string | number;
     url: string;
-    title: string,
+    title: string;
     items: InputTrack[];
     image: {
-        url: string
+        url: string;
     };
-    author?: InputAuthor
+    author?: InputAuthor;
 }

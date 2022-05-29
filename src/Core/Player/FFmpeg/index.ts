@@ -39,7 +39,7 @@ export class FFmpeg extends Duplex {
         this.#Binding(['write', 'end'], this.#Output);
         this.#Binding(['read', 'setEncoding', 'pipe', 'unpipe'], this.#Input);
 
-        //Используется для загруски потока в ffmpeg. Неообходимо не указывать параметр -i
+        //Используется для загрузки потока в ffmpeg. Неообходимо не указывать параметр -i
         if (!args.includes('-i')) this.#Calling(['on', 'once', 'removeListener', 'removeListeners', 'listeners']);
     };
     //====================== ====================== ====================== ======================
@@ -97,27 +97,23 @@ export class FFmpeg extends Duplex {
  * @constructor
  */
 export function CreateFilters(AudioFilters: AudioFilters): string {
-    let response: string[] = [];
+    const response: string[] = [];
 
-    if (AudioFilters) {
-        AudioFilters.forEach((name: string) => {
-            if (typeof name === 'number') return;
+    if (AudioFilters) AudioFilters.forEach((name: string) => {
+        if (typeof name === 'number') return;
 
-            // @ts-ignore
-            const Filter = FFmpegConfiguration.FilterConfigurator[name];
-            if (!Filter) return;
+        // @ts-ignore
+        const Filter = FFmpegConfiguration.FilterConfigurator[name];
+        if (!Filter) return;
+        if (Filter.value === false) return response.push(Filter.arg);
 
-            if (Filter.value === false) {
-                response.push(Filter.arg);
-                return;
-            }
-            const index = AudioFilters.indexOf(name);
-            if (index === -1) return;
+        const index = AudioFilters.indexOf(name);
+        if (index === -1) return;
 
-            response.push(`${Filter.arg}${AudioFilters.slice(index + 1)[0]}`);
-            return;
-        });
-    }
+        response.push(`${Filter.arg}${AudioFilters.slice(index + 1)[0]}`);
+        return;
+    });
+
     response.push(FFmpegConfiguration.Args.Filters.AudioFade);
 
     return response.join(',');
@@ -129,7 +125,7 @@ export function CreateFilters(AudioFilters: AudioFilters): string {
  */
 export function getEnableFilters(AudioFilters: AudioFilters): string {
     if (!AudioFilters) return null;
-    let response: string[] = [];
+    const response: string[] = [];
 
     AudioFilters.forEach((name: string) => {
         if (typeof name === 'number') return;

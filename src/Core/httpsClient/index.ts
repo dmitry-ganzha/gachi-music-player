@@ -14,7 +14,7 @@ export const httpsClient = {Request, parseBody, parseJson};
  * @param options {httpsClientOptions} Настройки запроса
  */
 function Request(url: string, options?: httpsClientOptions) {
-    if (options) ChangeReqOptions(options, url);
+    if (options) ChangeReqOptions(options);
     return request(url, options?.request);
 }
 //====================== ====================== ====================== ======================
@@ -85,9 +85,8 @@ function GetUserAgent(): {Agent: string, Version: string} {
 /**
  * @description Добавляем свои аргументы запроса
  * @param options {httpsClientOptions} Настройки запроса
- * @param url
  */
-function ChangeReqOptions(options: httpsClientOptions, url: string): void {
+function ChangeReqOptions(options: httpsClientOptions): void {
     if (!options.request?.headers) options.request = {...options.request, headers: {}};
 
     if (options.request?.headers) {
@@ -96,43 +95,24 @@ function ChangeReqOptions(options: httpsClientOptions, url: string): void {
             options.request.headers = {...options.request.headers, "user-agent": Agent};
             if (Version) options.request.headers = {...options.request.headers, "sec-ch-ua-full-version": Version};
         }
-        if (options.options?.cookie) {
-            const cookie = getCookies();
-
-            if (cookie) options.request.headers = {...options.request.headers, "cookie": cookie};
-        }
         if (options.options?.zLibEncode) options.request.headers = {...options.request.headers, "accept-encoding": "gzip, deflate, br"};
         if (options.options?.english) options.request.headers = {...options.request.headers, "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7"};
 
-        if (options.options.OldReqYouTube) {
-            options.request.headers = {...options.request.headers,
+        if (options.options?.cookie) {
+            const cookie = getCookies();
+            if (cookie) options.request.headers = {...options.request.headers, "cookie": cookie};
+        }
+
+        if (options.options?.YouTubeClient || options.Token) {
+            if (options.Token) options.request.headers = {'x-youtube-identity-token': options.Token?.split('\\')[0], ...options.request.headers}
+
+            options.request.headers = {
                 'x-youtube-client-name': '1',
-                'x-youtube-client-version': '2.20201021.03.00'
-            }
+                'x-youtube-client-version': '2.20201021.03.00',
+                ...options.request.headers,
+            };
         }
     }
-
-    /*
-    if (options.options?.RealisticRequest) {
-        //Сделаем парсинг не таким заметным
-        options.request = {
-            ...options.request,
-            headers: {
-                ...options.request.headers,
-                "sec-ch-ua-platform": "windows",
-                "sec-ch-ua-arch": "x86",
-                "sec-ch-ua-bitness": "64",
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-model": "",
-                "sec-fetch-user": "?1",
-                "sec-fetch-dest": "document",
-                "sec-fetch-mode": "navigate"
-            },
-            responseHeader: "raw"
-        };
-    }
-
-     */
 }
 //====================== ====================== ====================== ======================
 /**
@@ -173,12 +153,12 @@ type DefaultDecoder = BodyReadable & Dispatcher.BodyMixin;
 export interface httpsClientOptions {
     request?: ReqOptions;
     options?: {
-        cookie?: boolean;
         userAgent?: boolean;
         zLibEncode?: boolean;
         english?: boolean;
-        RealisticRequest?: boolean;
-        OldReqYouTube?: boolean
-    }
+        YouTubeClient?: boolean;
+        cookie?: boolean;
+    };
+    Token?: string | "Not Token";
 }
 type IncomingHeaders = IncomingMessage["headers"];

@@ -52,15 +52,15 @@ export class Voice extends TypedEmitter<Events> {
 
     public constructor() {
         super();
-        this.on('StartQueueDestroy', this.onStartQueueDestroy);
-        this.on('CancelQueueDestroy', this.onCancelQueueDestroy);
+        this.on('StartQueueDestroy', this.#onStartQueueDestroy);
+        this.on('CancelQueueDestroy', this.#onCancelQueueDestroy);
         this.setMaxListeners(2);
     };
     /**
      * @description Создаем таймер (по истечению таймера будет удалена очередь)
      * @param queue {object} Очередь сервера
      */
-    protected onStartQueueDestroy = (queue: Queue): void => {
+    #onStartQueueDestroy = (queue: Queue): void => {
         if (!queue) return null;
 
         const {player, events, channels} = queue;
@@ -74,7 +74,7 @@ export class Voice extends TypedEmitter<Events> {
      * @description Удаляем таймер который удаляет очередь
      * @param player {AudioPlayer} Плеер
      */
-    protected onCancelQueueDestroy = (player: AudioPlayer): boolean | void => {
+    #onCancelQueueDestroy = (player: AudioPlayer): boolean | void => {
         if (this.state) {
             this.state = false;
 

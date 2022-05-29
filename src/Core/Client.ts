@@ -1,14 +1,4 @@
-import {
-    ActivityType,
-    Client,
-    GuildMember,
-    IntentsBitField,
-    Interaction,
-    Message,
-    MessageEditOptions,
-    User,
-    Options, Guild
-} from "discord.js";
+import { ActivityType, Client, GuildMember, IntentsBitField, Interaction, Message, MessageEditOptions, User, Options } from "discord.js";
 import {FileSystemLoad} from "./FileSystem";
 import {Channel, MessageChannel, sendType} from "./Utils/TypeHelper";
 import {MessageChannelSend} from "./Utils/Functions/Send";
@@ -19,11 +9,10 @@ import {PlayerEmitter} from "./Player/execute";
 import {Command} from "../Commands/Constructor";
 import {Queue} from "./Player/Structures/Queue/Queue";
 import {CollectionMap} from "./Utils/CollectionMap";
-import {getMe} from "./Utils/getMe";
 
 export type ClientDevice = "Discord iOS" | "Web";
 
-const keepOverLimit = (value: any): boolean => value.id !== value.client.user.id
+const keepOverLimit = (value: any): boolean => value.id !== value.client.user.id;
 
 export class WatKLOK extends Client {
     public commands = new CollectionMap<string, Command>();
@@ -32,7 +21,6 @@ export class WatKLOK extends Client {
     public cfg = require('../../DataBase/Config.json');
 
     public Send = MessageChannelSend;
-    public getMe = getMe;
     public ConvertedText = ConvertedText;
     public console = ConsoleLog;
     public connections = Connections;
@@ -67,7 +55,7 @@ export class WatKLOK extends Client {
             },
             presence: {
                 activities: [{
-                    name: "music on youtube, spotify, vk, soundcloud",
+                    name: "music on youtube, spotify, soundcloud",
                     type: ActivityType.Listening
                 }]
             }
@@ -104,7 +92,7 @@ export class ClientInteraction extends Interaction {
 const client = new WatKLOK();
 
 client.login(client.cfg.Bot.token).then(() => {
-    Promise.all([FileSystemLoad(client)]).catch((e) => console.log(e));
+    Promise.all([FileSystemLoad(client)]).catch(console.error);
 
     if (client.cfg.Bot.ignoreError) {
         process.on('uncaughtException', (err: Error): void | Promise<ClientMessage> => {
