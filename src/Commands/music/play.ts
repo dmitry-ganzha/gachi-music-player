@@ -12,6 +12,8 @@ import {SoundCloud, Spotify, VK, YouTube} from "../../Core/Platforms";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {InputPlaylist, InputTrack} from "../../Core/Utils/TypeHelper";
 import {ParserTimeSong} from "../../Core/Player/Manager/Duration/ParserTimeSong";
+import {FFprobe} from "../../Core/Player/FFmpeg";
+import {NotImage} from "../../Core/Player/Structures/Message/Helper";
 
 const youtubeStr = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi;
 const spotifySrt = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;
@@ -22,7 +24,7 @@ export class CommandPlay extends Command {
         super({
             name: "play",
             aliases: ["p", "playing", "з"],
-            description: 'Включение музыки по ссылке или названию!',
+            description: 'Включение музыки по ссылке или названию, можно прикрепить свой файл!',
 
             permissions: {client: ['Speak', 'Connect'], user: []},
             options: [
@@ -61,8 +63,8 @@ export class CommandPlay extends Command {
             color: 'RED'
         });
 
-        if (!search) return message.client.Send({
-            text: `${message.author}, Укажи ссылку, название!`,
+        if (!search && !message.attachments) return message.client.Send({
+            text: `${message.author}, Укажи ссылку, название или прикрепи файл!`,
             message,
             color: "RED"
         });
@@ -82,6 +84,7 @@ export class CommandPlay extends Command {
         else if (search.match(spotifySrt)) return this.#PlaySpotify(message, search, voiceChannel);
         else if (search.match(/vk.com/)) return this.#PlayVK(message, search, voiceChannel);
         else if (search.match(SoundCloudSrt)) return this.#PlaySoundCloud(message, search, voiceChannel);
+        else if (search.match(/cdn.discordapp.com/) || message.attachments?.last()?.url) return new HandleInfoResource().Discord_getMedia(search, message, voiceChannel);
         const SplitSearch = search.split(' ');
         const SearchType = SplitSearch[0].toLowerCase();
 
@@ -127,11 +130,39 @@ class HandleInfoResource {
     #collector: MessageCollector = null;
     #type: "yt" | "sp" | "vk" | "sc" = null;
 
+    //Discord (discord.com) взаимодействие с discord (можно включить свой трек)
+    public Discord_getMedia = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
+        setImmediate(() => {
+            const attachment = message.attachments.last();
+            if (attachment) search = attachment.url;
+
+            new FFprobe(["-i", search]).getInfo().then((trackInfo: any) => {
+                if (!trackInfo) return this.#SendEmptyDataMessage(message, `${message.author}, я не нахожу в этом файле звуковую дорожку!`);
+
+                const TrackData: InputTrack = {
+                    url: search,
+                    title: search.split("/").pop(),
+                    author: {
+                        url: `https://discordapp.com/users/${message.author.id}`,
+                        title: message.author.username,
+                        isVerified: false,
+                        image: { url: message.author.avatarURL() }
+                    },
+                    image: { url: NotImage },
+                    duration: { seconds: trackInfo.format.duration },
+                    format: { url: trackInfo.format.filename }
+                };
+
+                return this.#runPlayer(TrackData, message, voiceChannel);
+            });
+        });
+    };
+
     //YouTube (youtube.com) взаимодействие с youtube
     public YT_getVideo = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
         setImmediate(() => {
             YouTube.getVideo(search).then((video: InputTrack) => {
-                if (!video) return this.#SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Существует ли это видео вообще!`)
+                if (!video) return this.#SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Существует ли это видео вообще!`);
                 this.#runPlayer(video, message, voiceChannel);
             }).catch((err) => {
                 console.error(err);
@@ -349,9 +380,9 @@ class HandleInfoResource {
                 });
                 this.#MessageCollector(msg, message, num);
                 return this.#CollectorCollect(msg, results, message, voiceChannel);
-            })
+            });
         });
-    }
+    };
     //Добавляем к коллектору ивент сбора
     #CollectorCollect = (msg: ClientMessage, results: any[], message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
         this.#collector.once('collect', (m: any): void => {

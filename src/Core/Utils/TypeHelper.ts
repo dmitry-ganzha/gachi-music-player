@@ -54,7 +54,7 @@ export interface InputFormat {
  * @description Пример получаемого трека
  */
 export interface InputTrack {
-    id: string | number;
+    id?: string | number;
     title: string;
     url: string;
     duration: {
@@ -62,7 +62,7 @@ export interface InputTrack {
     };
     image?: { url: string; height?: number; width?: number };
     author: {
-        id: string | number;
+        id?: string | number;
         title: string;
         url: string | undefined;
         image?: {
