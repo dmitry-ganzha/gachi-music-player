@@ -10,7 +10,7 @@ let FFmpegName: string;
 let FFprobeName: string
 
 /**
- * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a если он будет найден
+ * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a и для <FFprobeName> задаем название, если они будут найдены!
  */
 const FFmpegCheck = () => {
     try {
@@ -91,7 +91,7 @@ export class FFmpeg extends Duplex {
         const Args = [...Arguments, 'pipe:1'];
         if (!Args.includes('-i')) Args.unshift('-i', '-');
 
-        return spawn(FFmpegName, Args as any, { shell: false, windowsHide: true  });
+        return spawn(FFmpegName, Args as any, { shell: false, windowsHide: true });
     };
     //====================== ====================== ====================== ======================
     /**

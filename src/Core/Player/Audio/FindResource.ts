@@ -33,19 +33,19 @@ export async function FindResource(song: Song): Promise<void> {
         }
         //Если этот формат невозможно включить прогоняем по новой
         if (resource?.statusCode >= 400 && resource?.statusCode <= 500) return FindResource(song);
-    } else {
-        const resource = await httpsClient.Request(song.format?.url, GlobalOptions);
+    }
 
-        if (resource instanceof Error) {
-            delete song.format;
-            throw Error(`Failed checking link resource. Code: ${resource.statusCode}`);
-        }
+    const resource = await httpsClient.Request(song.format?.url, GlobalOptions);
 
-        if (resource.statusCode >= 200 && resource.statusCode < 400) song.format.work = true;
-        else {
-            delete song.format;
-            throw Error(`Failed checking link resource. Code: ${resource.statusCode}`);
-        }
+    if (resource instanceof Error) {
+        delete song.format;
+        throw Error(`Failed checking link resource. Code: ${resource.statusCode}`);
+    }
+
+    if (resource.statusCode >= 200 && resource.statusCode < 400) song.format.work = true;
+    else {
+        delete song.format;
+        throw Error(`Failed checking link resource. Code: ${resource.statusCode}`);
     }
 }
 //====================== ====================== ====================== ======================
@@ -93,5 +93,5 @@ function Filter(track: InputTrack, NeedDuration: number) {
     const DurationSong = ParserTime(track.duration.seconds);
 
     //Если время трека больше или равно нужному времени и время трека меньше времени трека + 5 и время трека больше времени трека - 5 и время трека меньше нужного времени на 12, то true
-    return DurationSong >= NeedDuration && DurationSong < DurationSong + 5 && DurationSong > DurationSong - 5 && DurationSong < NeedDuration + 12;
+    return DurationSong >= NeedDuration && DurationSong < DurationSong + 7 && DurationSong > DurationSong - 7 && DurationSong < NeedDuration + 15;
 }

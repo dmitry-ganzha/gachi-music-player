@@ -3,6 +3,14 @@ import {AudioFilters, CreateFilters, FFmpeg, FFmpegArgs} from '.';
 import FFmpegConfiguration from "../../../../DataBase/FFmpeg.json";
 import {opus} from "prism-media";
 
+type SupportTypeStream = "ogg/opus" | "webm/opus" | "ffmpeg";
+interface Parameters {
+    stream: Readable | string;
+    seek?: number;
+    Filters?: AudioFilters;
+    type?: SupportTypeStream;
+}
+
 export class ConstructorStream {
     public playbackDuration = 0;
     public playStream: Readable & Writable;
@@ -33,32 +41,32 @@ export class ConstructorStream {
     //====================== ====================== ====================== ======================
     /**
      * @description
-     * @param options {Options}
+     * @param parameters {Options}
      */
-    public constructor(options: Options) {
-        setImmediate(() => this.#TimeFrame = this.#TimeFrame * FFmpegTimer(options?.Filters) || 20);
+    public constructor(parameters: Parameters) {
+        setImmediate(() => this.#TimeFrame = this.#TimeFrame * FFmpegTimer(parameters?.Filters) || 20);
         //Даем FFmpeg'у, ссылку с которой надо скачать поток
-        if (typeof options.stream === "string") {
-            this.#FFmpeg = new FFmpeg(CreateArguments(options.stream, options?.Filters, options?.seek));
+        if (typeof parameters.stream === "string") {
+            this.#FFmpeg = new FFmpeg(CreateArguments(parameters.stream, parameters?.Filters, parameters?.seek));
             this.playStream = new opus.OggDemuxer({autoDestroy: true});
 
             this.#FFmpeg.pipe(this.playStream);
         } else {
             //Расшифровываем входной поток, добавляем аргументы если они есть, пропускаем время в песне!
-            if (options.Filters || options.seek || options.type === 'ffmpeg') {
-                this.#FFmpeg = new FFmpeg(CreateArguments(null, options?.Filters, options?.seek));
+            if (parameters.Filters || parameters.seek || parameters.type === 'ffmpeg') {
+                this.#FFmpeg = new FFmpeg(CreateArguments(null, parameters?.Filters, parameters?.seek));
                 this.playStream = new opus.OggDemuxer({autoDestroy: true});
 
-                options.stream.pipe(this.#FFmpeg);
+                parameters.stream.pipe(this.#FFmpeg);
                 this.#FFmpeg.pipe(this.playStream);
             //Расшифровываем из ogg/opus в opus, без фильтров и пропуска
-            } else if (options.type === 'ogg/opus') {
+            } else if (parameters.type === 'ogg/opus') {
                 this.playStream = new opus.OggDemuxer({autoDestroy: true});
-                options.stream.pipe(this.playStream);
+                parameters.stream.pipe(this.playStream);
             //Расшифровываем из webm/opus в opus, без фильтров и пропуска
-            } else if (options.type === 'webm/opus') {
+            } else if (parameters.type === 'webm/opus') {
                 this.playStream = new opus.WebmDemuxer({autoDestroy: true});
-                options.stream.pipe(this.playStream);
+                parameters.stream.pipe(this.playStream);
             }
         }
 
@@ -145,13 +153,4 @@ function FFmpegTimer(AudioFilters: AudioFilters) {
         NumberDuration += Number(number1 + number2);
     }
     return NumberDuration;
-}
-
-type TypeStream = "ogg/opus" | "webm/opus" | "ffmpeg";
-
-interface Options {
-    stream: Readable | string;
-    seek?: number;
-    Filters?: AudioFilters;
-    type?: TypeStream;
 }
