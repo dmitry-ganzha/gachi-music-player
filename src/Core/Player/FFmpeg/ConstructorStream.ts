@@ -3,6 +3,8 @@ import {AudioFilters, CreateFilters, FFmpeg, FFmpegArgs} from '.';
 import FFmpegConfiguration from "../../../../DataBase/FFmpeg.json";
 import {opus} from "prism-media";
 
+const OptionsPrism = {autoDestroy: true, highWaterMark: 12};
+
 type SupportTypeStream = "ogg/opus" | "webm/opus" | "ffmpeg";
 interface Parameters {
     stream: Readable | string;
@@ -48,24 +50,24 @@ export class ConstructorStream {
         //Даем FFmpeg'у, ссылку с которой надо скачать поток
         if (typeof parameters.stream === "string") {
             this.#FFmpeg = new FFmpeg(CreateArguments(parameters.stream, parameters?.Filters, parameters?.seek));
-            this.playStream = new opus.OggDemuxer({autoDestroy: true});
+            this.playStream = new opus.OggDemuxer(OptionsPrism);
 
             this.#FFmpeg.pipe(this.playStream);
         } else {
             //Расшифровываем входной поток, добавляем аргументы если они есть, пропускаем время в песне!
             if (parameters.Filters || parameters.seek || parameters.type === 'ffmpeg') {
                 this.#FFmpeg = new FFmpeg(CreateArguments(null, parameters?.Filters, parameters?.seek));
-                this.playStream = new opus.OggDemuxer({autoDestroy: true});
+                this.playStream = new opus.OggDemuxer(OptionsPrism);
 
                 parameters.stream.pipe(this.#FFmpeg);
                 this.#FFmpeg.pipe(this.playStream);
             //Расшифровываем из ogg/opus в opus, без фильтров и пропуска
             } else if (parameters.type === 'ogg/opus') {
-                this.playStream = new opus.OggDemuxer({autoDestroy: true});
+                this.playStream = new opus.OggDemuxer(OptionsPrism);
                 parameters.stream.pipe(this.playStream);
             //Расшифровываем из webm/opus в opus, без фильтров и пропуска
             } else if (parameters.type === 'webm/opus') {
-                this.playStream = new opus.WebmDemuxer({autoDestroy: true});
+                this.playStream = new opus.WebmDemuxer(OptionsPrism);
                 parameters.stream.pipe(this.playStream);
             }
         }

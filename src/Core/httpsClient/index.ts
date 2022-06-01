@@ -98,7 +98,7 @@ function ChangeReqOptions(options: httpsClientOptions): void {
         if (options.options?.zLibEncode) options.request.headers = {...options.request.headers, "accept-encoding": "gzip, deflate, br"};
         if (options.options?.english) options.request.headers = {...options.request.headers, "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7"};
 
-        if (options.options?.cookie) {
+        if (options.options?.cookie || options.Token) {
             const cookie = getCookies();
             if (cookie) options.request.headers = {...options.request.headers, "cookie": cookie};
         }

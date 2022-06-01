@@ -125,7 +125,6 @@ export class FFprobe {
     /**
      * @description Запуск FFprobe
      * @param Arguments {FFmpegArgs} Указываем аргументы для запуска
-     * @private
      */
     public constructor(Arguments: string[]) {
         this.#process = this.#SpawnProbe(Arguments);
@@ -134,7 +133,7 @@ export class FFprobe {
     /**
      * @description Получаем данные
      */
-    public getInfo = () => new Promise((resolve) => {
+    public getInfo = (): Promise<any> => new Promise((resolve) => {
         let information = '';
         this.#process.once('close', () => {
             this.#process?.kill();
@@ -155,7 +154,7 @@ export class FFprobe {
      * @param Arguments {FFmpegArgs} Указываем аргументы для запуска
      * @private
      */
-    #SpawnProbe = (Arguments: string[]) => spawn(FFprobeName, ['-print_format', 'json', '-show_format', ...Arguments]);
+    #SpawnProbe = (Arguments: string[]) => spawn(FFprobeName, ['-print_format', 'json', '-show_format', ...Arguments], { shell: false, windowsHide: true });
 }
 //====================== ====================== ====================== ======================
 /**
