@@ -16,7 +16,7 @@ interface Parameters {
 export class ConstructorStream {
     public playbackDuration = 0;
     public playStream: Readable & Writable;
-    #FFmpeg: FFmpeg = null;
+    #FFmpeg: FFmpeg;
     #started = false;
     #TimeFrame = 20;
     //====================== ====================== ====================== ======================

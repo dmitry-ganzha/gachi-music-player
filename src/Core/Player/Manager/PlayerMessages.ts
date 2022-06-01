@@ -79,7 +79,7 @@ function UpdateMessage(message: ClientMessage): void {
     if (!queue || queue?.songs?.length === 0) return removeMessage(message);
 
     setImmediate(() => {
-        const CurrentPlayEmbed = CurrentPlay(message.client, queue.songs[0], queue);
+        const CurrentPlayEmbed = CurrentPlay(message.client, queue?.songs[0], queue);
 
         try {
             return message.edit({embeds: [CurrentPlayEmbed]});
