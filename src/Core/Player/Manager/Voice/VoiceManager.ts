@@ -47,8 +47,12 @@ function SpeakStateChannel(me: GuildMember, type: ChannelType.GuildVoice | Chann
 }
 
 export class Voice extends TypedEmitter<Events> {
-    protected Timer: NodeJS.Timeout;
-    protected state: boolean;
+    #Timer: NodeJS.Timeout;
+    #state: boolean;
+
+    public get DestroyStart() {
+        return this.#state;
+    }
 
     public constructor() {
         super();
@@ -65,29 +69,26 @@ export class Voice extends TypedEmitter<Events> {
 
         const {player, events, channels} = queue;
 
-        if (!this.Timer) this.Timer = setTimeout(() => events.queue.emit('DestroyQueue', queue, channels.message, false), 15e3);
+        if (!this.#Timer) this.#Timer = setTimeout(() => events.queue.emit('DestroyQueue', queue, channels.message, false), 15e3);
 
         player.pause();
-        this.state = true;
+        this.#state = true;
     };
     /**
      * @description Удаляем таймер который удаляет очередь
      * @param player {AudioPlayer} Плеер
      */
     #onCancelQueueDestroy = (player: AudioPlayer): boolean | void => {
-        if (this.state) {
-            this.state = false;
+        if (this.#state) {
+            this.#state = false;
 
-            if (this.Timer) clearTimeout(this.Timer);
+            if (this.#Timer) clearTimeout(this.#Timer);
             player.resume();
         }
     };
 
     public destroy = () => {
-        clearTimeout(this.Timer);
-        delete this.Timer;
-        delete this.state;
-
+        clearTimeout(this.#Timer);
         this.removeAllListeners();
     };
 }
