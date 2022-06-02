@@ -1,16 +1,5 @@
-import {
-    InternalDiscordGatewayAdapterCreator,
-    StageChannel,
-    VoiceChannel,
-    ChannelType,
-    GuildMember
-} from "discord.js";
-import {
-    DiscordGatewayAdapterCreator,
-    getVoiceConnection,
-    joinVoiceChannel,
-    VoiceConnection
-} from "@discordjs/voice";
+import { InternalDiscordGatewayAdapterCreator, StageChannel, VoiceChannel, ChannelType, GuildMember } from "discord.js";
+import { DiscordGatewayAdapterCreator, getVoiceConnection, joinVoiceChannel, VoiceConnection } from "@discordjs/voice";
 import {TypedEmitter} from "tiny-typed-emitter";
 import {Queue} from "../../Structures/Queue/Queue";
 import {AudioPlayer} from "../../Audio/AudioPlayer";
@@ -29,6 +18,14 @@ export function Disconnect(GuildID: string) {
     const connection: VoiceConnection | null = getVoiceConnection(GuildID);
     if (connection) connection.disconnect();
 }
+//====================== ====================== ====================== ======================
+/**
+ * @description Подключаемся к гс
+ * @param id {string} ID голосового канала
+ * @param guild {Guild} Сервер к которому подключимся
+ * @param type {ChannelType} Тип канала
+ * @constructor
+ */
 export function JoinVoiceChannel({id, guild, type}: VoiceChannel | StageChannel) {
     const VoiceChannel = joinVoiceChannel({
         selfDeaf: true,
@@ -41,11 +38,20 @@ export function JoinVoiceChannel({id, guild, type}: VoiceChannel | StageChannel)
     SpeakStateChannel(getMe(guild), type);
     return VoiceChannel;
 }
-
+//====================== ====================== ====================== ======================
+/**
+ * @description Делаем запрос на выступление на трибуне
+ * @param me {GuildMember} Бот
+ * @param type {ChannelType} Тип канала
+ * @constructor
+ */
 function SpeakStateChannel(me: GuildMember, type: ChannelType.GuildVoice | ChannelType.GuildStageVoice): void {
     if (type === ChannelType.GuildStageVoice && me) me?.voice?.setRequestToSpeak(true).catch(() => undefined);
 }
-
+//====================== ====================== ====================== ======================
+/**
+ * @description Система <QueueDestroy> для удаления очереди и отключения бота от гс!
+ */
 export class Voice extends TypedEmitter<Events> {
     #Timer: NodeJS.Timeout;
     #state: boolean;
@@ -60,6 +66,7 @@ export class Voice extends TypedEmitter<Events> {
         this.on('CancelQueueDestroy', this.#onCancelQueueDestroy);
         this.setMaxListeners(2);
     };
+    //====================== ====================== ====================== ======================
     /**
      * @description Создаем таймер (по истечению таймера будет удалена очередь)
      * @param queue {object} Очередь сервера
@@ -74,6 +81,7 @@ export class Voice extends TypedEmitter<Events> {
         player.pause();
         this.#state = true;
     };
+    //====================== ====================== ====================== ======================
     /**
      * @description Удаляем таймер который удаляет очередь
      * @param player {AudioPlayer} Плеер
