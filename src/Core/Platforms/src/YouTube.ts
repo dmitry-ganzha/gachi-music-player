@@ -157,7 +157,7 @@ async function getPlaylist(url: string): Promise<InputPlaylist> {
     return new Promise(async (resolve, reject) => {
         const playlistID = new Utils().getID(url, true);
         const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/playlist?list=${playlistID}`, {
-            options: {userAgent: true, YouTubeClient: true, zLibEncode: true, english: true}
+            options: {userAgent: true, zLibEncode: true, english: true}
         })]))[0];
 
         if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));
