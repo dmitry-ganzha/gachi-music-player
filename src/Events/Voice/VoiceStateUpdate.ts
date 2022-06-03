@@ -22,7 +22,7 @@ export class voiceStateUpdate {
                 return void queue.events.queue.emit('DestroyQueue', queue, queue.channels.message);
             }
 
-            if (!FilterVoiceChannel) return void queue.events.helper.emit('StartQueueDestroy', queue); //Если нет слушателей, удаляем очередь
+            if (FilterVoiceChannel.length <= 0) return void queue.events.helper.emit('StartQueueDestroy', queue); //Если нет слушателей, удаляем очередь
             return void queue.events.helper.emit('CancelQueueDestroy', queue.player); //Если они есть, отмена удаления очереди
         });
     };
