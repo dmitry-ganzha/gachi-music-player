@@ -151,8 +151,8 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @param resource {PlayerResource} Поток
      */
     #play = (resource: PlayerResource): void => {
-        if (!resource) return void this.emit('error', 'Error: AudioResource has not found');
-        if (resource?.ended) return void this.emit('error', `[AudioPlayer]: [Message: Fail to load a ended stream]`);
+        if (!resource) return void this.emit('error', '[AudioResource]: has not found!');
+        if (resource?.ended) return void this.emit('error', `[AudioPlayer]: [Message: Fail to load stream]`);
 
         const onStreamError = (error: Error) => {
             if (this.state.status !== "idle") void this.emit('error', error);
@@ -334,7 +334,7 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
         }).catch((err) => {
             console.log(`[FindResource]: [Error: ${err}, Req: ${req}]`);
             req++;
-            return resolve(CreateResource(song, audioFilters, seek, req));
+            return CreateResource(song, audioFilters, seek, req);
         });
     });
 }

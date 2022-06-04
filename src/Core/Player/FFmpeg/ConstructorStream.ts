@@ -91,9 +91,7 @@ export class ConstructorStream {
      * @description Чистим память!
      */
     public destroy = (): void => {
-        if (this.#FFmpeg) {
-            this.#FFmpeg.destroy();
-        }
+        if (this.#FFmpeg) this.#FFmpeg.destroy();
 
         //Delete other
         delete this.playbackDuration;

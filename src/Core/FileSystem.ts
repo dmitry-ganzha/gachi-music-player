@@ -66,9 +66,9 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
 
                 if (pull.name) {
                     client.commands.set(pull.name, pull);
-                    if (!ClientShard) console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Commands/${dir}/${file}]`);
+                    if (!ClientShard) SendLog(file, `./Commands/${dir}/${file}`, "✔️");
                 } else {
-                    if (!ClientShard) console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Commands/${dir}/${file}]`);
+                    if (!ClientShard) SendLog(file, `./Commands/${dir}/${file}`, "✖️");
                 }
                 if (pull.aliases && Array.isArray(pull.aliases)) pull.aliases.forEach((alias: string) => client.aliases.set(alias, pull.name));
             }
@@ -81,9 +81,9 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
 
                 if (pull) {
                     client.on(pull.name as any, async (ev: any, ev2: any) => pull.run(ev, ev2, client));
-                    if (!ClientShard) console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Events/${dir}/${file}]`);
+                    if (!ClientShard) SendLog(file, `./Events/${dir}/${file}`, "✔️");
                 } else {
-                    if (!ClientShard) console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Events/${dir}/${file}]`);
+                    if (!ClientShard) SendLog(file, `./Events/${dir}/${file}`, "✖️");
                 }
             }
         }).readdirSync(),
@@ -95,9 +95,9 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
 
                 if (pull) {
                     pull.run(client);
-                    if (!ClientShard) console.log(`${AddTime()} ->  Status: [✔️] | Type: [${FileType(file)}] | Path: [./Modules/${dir}/${file}]`);
+                    if (!ClientShard) SendLog(file, `./Modules/${dir}/${file}`, "✔️");
                 } else {
-                    if (!ClientShard) console.log(`${AddTime()} ->  Status: [✖️] | Type: [${FileType(file)}] | Path: [./Modules/${dir}/${file}]`);
+                    if (!ClientShard) SendLog(file, `./Modules/${dir}/${file}`, "✖️");
                 }
             }
         }).readdirSync(),
@@ -112,5 +112,8 @@ function FileType(file: string): string {
 }
 function AddTime(): string {
     return `[FileSystem]`;
+}
+function SendLog(File: string, Path: string, status: "✖️" | "✔️") {
+    return console.log(`${AddTime()} ->  Status: [${status}] | Type: [${FileType(File)}] | Path: [${Path}]`);
 }
 //

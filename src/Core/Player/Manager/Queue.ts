@@ -2,7 +2,7 @@ import {ClientMessage} from "../../Client";
 import {InputTrack} from "../../Utils/TypeHelper";
 import {Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
-import {Disconnect, JoinVoiceChannel} from "./Voice/VoiceManager";
+import {Disconnect} from "./Voice/VoiceManager";
 import {PushSongMessage} from "./PlayerMessages";
 import {VoiceChannel} from "discord.js";
 import {TypedEmitter} from "tiny-typed-emitter";
@@ -64,15 +64,10 @@ function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChannel, so
     client.console(`[Queue]: [GuildID: ${guild.id}, Status: Create]`);
 
     const GuildQueue = new Queue(message, VoiceChannel);
-    const connection = JoinVoiceChannel(VoiceChannel);
     client.queue.set(guild.id, GuildQueue);
     const queue = client.queue.get(message.guild.id);
 
     PushSong(queue, song, false);
-
-    queue.player.subscribe(connection);
-    queue.channels.connection = connection;
-
     return queue.player.PlayCallback(message);
 }
 //====================== ====================== ====================== ======================

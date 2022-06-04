@@ -143,9 +143,7 @@ function removeMessage(message: ClientMessage) {
     if (Find.deletable) Find.delete().catch(() => undefined);
     Message.delete(message.channelId);
 
-    if (Message.size === 0) {
-        if (typeof MessageTimer !== 'undefined') clearTimeout(MessageTimer);
-    }
+    if (Message.size === 0 && typeof MessageTimer !== 'undefined') clearTimeout(MessageTimer);
 }
 //====================== ====================== ====================== ======================
 /**
@@ -156,6 +154,6 @@ function StepCycleMessage() {
     try {
         Message.forEach((message) => setImmediate(() => UpdateMessage(message)));
     } finally {
-        MessageTimer = setTimeout(StepCycleMessage, 15e3);
+        MessageTimer = setTimeout(StepCycleMessage, 12e3);
     }
 }

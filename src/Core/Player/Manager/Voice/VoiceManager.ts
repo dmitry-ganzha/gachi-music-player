@@ -56,10 +56,6 @@ export class Voice extends TypedEmitter<Events> {
     #Timer: NodeJS.Timeout;
     #state: boolean;
 
-    public get DestroyStart() {
-        return this.#state;
-    }
-
     public constructor() {
         super();
         this.on('StartQueueDestroy', this.#onStartQueueDestroy);

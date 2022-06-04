@@ -104,7 +104,7 @@ function ChangeReqOptions(options: httpsClientOptions): void {
         }
 
         if (options.options?.YouTubeClient || options.Token) {
-            if (options.Token) options.request.headers = {'x-youtube-identity-token': options.Token?.split('\\')[0], ...options.request.headers}
+            if (options.Token) options.request.headers = {'x-youtube-identity-token': options.Token?.split('\\')[0], ...options.request.headers};
 
             options.request.headers = {
                 'x-youtube-client-name': '1',
@@ -159,6 +159,6 @@ export interface httpsClientOptions {
         YouTubeClient?: boolean;
         cookie?: boolean;
     };
-    Token?: string | "Not Token";
+    Token?: string;
 }
 type IncomingHeaders = IncomingMessage["headers"];
