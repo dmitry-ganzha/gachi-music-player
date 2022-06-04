@@ -11,7 +11,7 @@
 
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
-- Язык бота: ru
+- Язык бота: русский
 - [Настройки](./DataBase/Config.json)
 - [Все команды](./src/Commands)
 
