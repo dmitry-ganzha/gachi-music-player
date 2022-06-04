@@ -18,7 +18,7 @@ import {NotImage} from "../../Core/Player/Structures/Message/Helper";
 const youtubeStr = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi;
 const spotifySrt = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;
 const SoundCloudSrt = /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/(.*)$/;
-const HttpORHttps = /^(https?:\/\/|http?:\/\/)\/.+$/gi;
+const HttpORHttps = /^(https?:\/\/|http?:\/\/)/gi;
 
 export class CommandPlay extends Command {
     public constructor() {

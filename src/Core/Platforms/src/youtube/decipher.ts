@@ -128,7 +128,7 @@ function extractManipulations(caller: string, body: string): string {
 /**
  * @description Вырезаем Decipher
  * @param body {string} Страничка
- * @param functions {any[]} данные youtube htmlPlayer
+ * @param functions {string[]} данные youtube htmlPlayer
  */
 function extractDecipher(body: string, functions: string[]): void {
     const functionName = new Utils().between(body, `a.set("alr","yes");c&&(c=`, `(decodeURIC`);
@@ -149,9 +149,9 @@ function extractDecipher(body: string, functions: string[]): void {
 /**
  * @description Вырезаем параметр n
  * @param body {string} Страничка
- * @param functions {any[]} данные youtube htmlPlayer
+ * @param functions {string[]} данные youtube htmlPlayer
  */
-function extractNCode(body: string, functions: any[]): void {
+function extractNCode(body: string, functions: string[]): void {
     let functionName = new Utils().between(body, `&&(b=a.get("n"))&&(b=`, `(b)`);
 
     if (functionName.includes('[')) functionName = new Utils().between(body, `${functionName.split('[')[0]}=[`, `]`);
