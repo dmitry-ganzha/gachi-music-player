@@ -98,10 +98,9 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const queue: Queue = client.queue.get(guild.id);
 
         setImmediate(() => CreateResource(queue.songs[0], queue.audioFilters, seek).then((stream: PlayerResource) => {
-                this.#play(stream);
-                if (seek) this.#CurrentTime = seek;
-            })
-        );
+            this.#play(stream);
+            if (seek) this.#CurrentTime = seek;
+        }));
     };
     //====================== ====================== ====================== ======================
     /**
@@ -115,11 +114,10 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (!queue || !queue.songs || !queue.songs.length) return void queue?.events?.queue?.emit('DestroyQueue', queue, message);
 
         setImmediate(() => CreateResource(queue.songs[0], queue.audioFilters).then((stream: PlayerResource) => {
-                client.console(`[Queue]: [GuildID: ${guild.id}, Type: ${queue.songs[0].type}, Status: Playing]: [${queue.songs[0].title}]`);
-                if (stream instanceof ConstructorStream) PlaySongMessage(queue.channels.message);
-                return this.#play(stream);
-            })
-        );
+            client.console(`[Queue]: [GuildID: ${guild.id}, Type: ${queue.songs[0].type}, Status: Playing]: [${queue.songs[0].title}]`);
+            if (stream instanceof ConstructorStream) PlaySongMessage(queue.channels.message);
+            return this.#play(stream);
+        }));
     };
     //====================== ====================== ====================== ======================
     /**

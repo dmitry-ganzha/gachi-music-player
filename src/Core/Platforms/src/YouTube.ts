@@ -51,9 +51,9 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
 
         let Token = body.match(/(["'])ID_TOKEN\1[:,]\s?"([^"]+)"/);
 
-        const VideoRes: any[] = await httpsClient.parseJson(`${DefaultLinkYouTube}/watch?v=${VideoID}?flow=grid&view=0&pbj=1`, {
+        const VideoRes: any[] = (await Promise.all([httpsClient.parseJson(`${DefaultLinkYouTube}/watch?v=${VideoID}?flow=grid&view=0&pbj=1`, {
             options: {YouTubeClient: true, cookie: true}, Token: Token.length >= 3 ? Token[2] : null
-        });
+        })]))[0];
         const VideoFinalData = VideoRes?.filter((d) => d.playerResponse !== undefined)[0]?.playerResponse;
 
         if (!VideoFinalData) throw reject(new Error('Данные на странице не были найдены'));
@@ -102,9 +102,9 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
  */
 function SearchVideos(search: string, options: SearchOptions = {limit: 15}): Promise<InputTrack[]> {
     return new Promise(async (resolve, reject) => {
-        const SearchRes = await httpsClient.parseJson(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}?flow=grid&view=0&pbj=1`, {
+        const SearchRes = (await Promise.all([httpsClient.parseJson(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}?flow=grid&view=0&pbj=1`, {
             options: {userAgent: true, YouTubeClient: true, zLibEncode: true, english: true}
-        });
+        })]))[0];
 
         const SearchFinal = SearchRes.find((res: any) => res.response !== undefined).response;
         const details = SearchFinal?.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents[0]?.itemSectionRenderer?.contents;
