@@ -1,8 +1,8 @@
 import {Command} from "../Constructor";
-import {Colors} from '../../Core/Utils/Colors';
 import {ClientMessage} from "../../Core/Client";
 import {EmbedConstructor} from "../../Core/Utils/TypeHelper";
 import {CollectorSortReaction} from "../../Core/Utils/ReactionMenu";
+import {Colors} from "../../Core/Utils/LiteUtils";
 
 export class CommandHelp extends Command {
     public constructor() {

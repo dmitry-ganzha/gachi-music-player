@@ -1,8 +1,8 @@
 import {Command} from "../Constructor";
 import {MessageReaction, ReactionCollector, User} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
-import {Colors} from "../../Core/Utils/Colors";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
+import {Colors} from "../../Core/Utils/LiteUtils";
 
 export class CommandRestart extends Command {
     public constructor() {

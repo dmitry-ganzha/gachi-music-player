@@ -2,7 +2,7 @@ import {ConstFormat, Song} from "../Structures/Queue/Song";
 import {httpsClient, httpsClientOptions} from "../../httpsClient";
 import {InputFormat, InputTrack} from "../../Utils/TypeHelper";
 import {SoundCloud, VK, YouTube} from "../../Platforms";
-import {ParserTime} from "../Manager/Duration/ParserTimeSong";
+import {ParserTime} from "../Manager/DurationUtils";
 
 const GlobalOptions: httpsClientOptions = {request: {maxRedirections: 10, method: "GET"}};
 

@@ -1,9 +1,9 @@
-import {FullTimeSongs} from "../../Manager/Duration/FullTimeSongs";
 import {Song} from "../Queue/Song";
 import {Queue} from "../Queue/Queue";
 import {NotFound, NotImage, NotVer, Ver} from "./Helper";
 import {WatKLOK} from "../../../Client";
 import {EmbedConstructor} from "../../../Utils/TypeHelper";
+import {TimeInArray} from "../../Manager/DurationUtils";
 
 /**
  * @description Embed сообщение о добавленном треке
@@ -32,7 +32,7 @@ export function Warning(client: WatKLOK, {color, author, image, title, url, dura
         },
         timestamp: new Date(),
         footer: {
-            text: `${requester.username} | ${FullTimeSongs(songs)} | 🎶: ${songs.length}`,
+            text: `${requester.username} | ${TimeInArray(songs)} | 🎶: ${songs.length}`,
             iconURL: requester.displayAvatarURL() ? requester.displayAvatarURL() : client.user.displayAvatarURL(),
         }
     }

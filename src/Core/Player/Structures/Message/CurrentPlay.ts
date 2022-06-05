@@ -1,12 +1,11 @@
-import {FullTimeSongs} from "../../Manager/Duration/FullTimeSongs";
 import {Song} from "../Queue/Song";
 import {Queue} from "../Queue/Queue";
 import {AudioPlayer} from "../../Audio/AudioPlayer";
-import {ParserTimeSong} from "../../Manager/Duration/ParserTimeSong";
 import {NotFound, NotImage, NotVer, Ver} from "./Helper";
 import {WatKLOK} from "../../../Client";
 import {EmbedConstructor} from "../../../Utils/TypeHelper";
 import {AudioFilters} from "../../FFmpeg";
+import {TimeInArray, ParseTimeString} from "../../Manager/DurationUtils";
 
 const ProgressBarValue: boolean = true;
 
@@ -33,7 +32,7 @@ export function CurrentPlay(client: WatKLOK, song: Song, queue: Queue): EmbedCon
         },
         //timestamp: new Date(),
         footer: {
-            text: `${song.requester.username} | ${FullTimeSongs(queue)} | 🎶: ${queue.songs.length} | Повтор: ${queue.options.loop}`,
+            text: `${song.requester.username} | ${TimeInArray(queue)} | 🎶: ${queue.songs.length} | Повтор: ${queue.options.loop}`,
             iconURL: song.requester.displayAvatarURL(),
         }
     };
@@ -69,7 +68,7 @@ function MusicDuration({isLive, duration}: Song, curTime: number | string): stri
     if (isLive) return `[${duration.StringTime}]`;
 
     const str = `${duration.StringTime}]`;
-    const parsedTimeSong = curTime > duration.seconds ? duration.StringTime : ParserTimeSong(curTime as number);
+    const parsedTimeSong = curTime > duration.seconds ? duration.StringTime : ParseTimeString(curTime as number);
     const progress = ProgressBar(curTime as number, duration.seconds, 15);
 
     if (ProgressBarValue) return `**❯** [${parsedTimeSong} - ${str}\n${progress}`;
@@ -87,7 +86,7 @@ function ConvertCurrentTime({state}: AudioPlayer, filters: AudioFilters): number
     let seconds: number = parseInt((duration / 1000).toFixed(0));
 
     if (ProgressBarValue) return seconds;
-    return ParserTimeSong(seconds);
+    return ParseTimeString(seconds);
 }
 //====================== ====================== ====================== ======================
 /**

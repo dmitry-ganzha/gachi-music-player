@@ -1,7 +1,7 @@
 import cfg from "../../../DataBase/Config.json";
-import {Colors} from "../../Core/Utils/Colors";
 import {ClientMessage, WatKLOK} from "../../Core/Client";
 import {EmbedConstructor, MessageChannel} from "../../Core/Utils/TypeHelper";
+import {Colors} from "../../Core/Utils/LiteUtils";
 
 export class Ready {
     public readonly name: string = "ready";

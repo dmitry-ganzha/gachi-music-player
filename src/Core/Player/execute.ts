@@ -4,7 +4,7 @@ import {StageChannel, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../Client";
 import {InputPlaylist, InputTrack} from "../Utils/TypeHelper";
 import {CreateQueue} from "./Manager/Queue";
-import {PlayList} from "./Manager/Function/addPlaylist";
+import {PlayList} from "./Manager/PlaylistManager";
 
 type Events = {
     play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack | InputTrack[]) => boolean | void | Promise<void | ClientMessage | NodeJS.Timeout>;

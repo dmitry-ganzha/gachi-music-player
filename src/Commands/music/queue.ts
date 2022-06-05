@@ -3,8 +3,8 @@ import {ReactionCollector} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {CollectorSortReaction} from "../../Core/Utils/ReactionMenu";
-import {FullTimeSongs} from "../../Core/Player/Manager/Duration/FullTimeSongs";
 import {Song} from "../../Core/Player/Structures/Queue/Song";
+import {TimeInArray} from "../../Core/Player/Manager/DurationUtils";
 
 export class CommandQueue extends Command {
     public constructor() {
@@ -40,6 +40,6 @@ export class CommandQueue extends Command {
             if (song !== undefined) pages.push(song);
         });
 
-        return new CollectorSortReaction()._run(`\`\`\`css\n➡️ | Current playing [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${FullTimeSongs(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``, pages, page, message, true);
+        return new CollectorSortReaction()._run(`\`\`\`css\n➡️ | Current playing [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${TimeInArray(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``, pages, page, message, true);
     };
 }

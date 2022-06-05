@@ -3,7 +3,7 @@ import {StageChannel, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {JoinVoiceChannel} from "../../Core/Player/Manager/Voice/VoiceManager";
-import {getMe} from "../../Core/Utils/getMe";
+import {getMe} from "../../Core/Utils/LiteUtils";
 
 export class CommandJoin extends Command {
     public constructor() {

@@ -102,13 +102,12 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
  */
 function SearchVideos(search: string, options: SearchOptions = {limit: 15}): Promise<InputTrack[]> {
     return new Promise(async (resolve, reject) => {
-        const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}`, {
+        const SearchRes = await httpsClient.parseJson(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}?flow=grid&view=0&pbj=1`, {
             options: {userAgent: true, YouTubeClient: true, zLibEncode: true, english: true}
-        })]))[0];
+        });
 
-        if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));
-
-        const details = JSON.parse((body.split("var ytInitialData = ")[1].split("}};")[0] + '}}').split(';</script><script')[0]).contents.twoColumnSearchResultsRenderer.primaryContents.sectionListRenderer.contents[0].itemSectionRenderer.contents
+        const SearchFinal = SearchRes.find((res: any) => res.response !== undefined).response;
+        const details = SearchFinal?.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents[0]?.itemSectionRenderer?.contents;
 
         if (!details) throw reject(new Error(`Не удалось найти: ${search}`));
 

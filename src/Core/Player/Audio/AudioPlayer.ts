@@ -6,9 +6,9 @@ import {ClientMessage} from "../../Client";
 import {AudioFilters} from "../FFmpeg";
 import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 import {ConstructorStream} from "../FFmpeg/ConstructorStream";
-import {addAudioPlayer, deleteAudioPlayer} from "../Manager/Function/DataStore";
+import {addAudioPlayer, deleteAudioPlayer} from "../Manager/PlayersManager";
 import {JoinVoiceChannel} from "../Manager/Voice/VoiceManager";
-import {ErrorPlayerMessage, PlaySongMessage} from "../Manager/PlayerMessages";
+import {ErrorPlayerMessage, PlaySongMessage} from "../Manager/MessagePlayer";
 
 //Статусы плеера для пропуска музыки
 export const StatusPlayerHasSkipped: Set<string> = new Set(['playing', 'paused', 'buffering', 'idle']);

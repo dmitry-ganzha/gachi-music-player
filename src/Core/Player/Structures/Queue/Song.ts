@@ -1,4 +1,3 @@
-import {ParserTimeSong} from "../../Manager/Duration/ParserTimeSong";
 import {User} from "discord.js";
 import {
     FFmpegFormat, InputFormat,
@@ -8,7 +7,8 @@ import {
     InputTrackImage
 } from "../../../Utils/TypeHelper";
 import {ClientMessage} from "../../../Client";
-import {Colors} from "../../../Utils/Colors";
+import {Colors} from "../../../Utils/LiteUtils";
+import {ParseTimeString} from "../../Manager/DurationUtils";
 
 type SongType = "SPOTIFY" | "YOUTUBE" | "VK" | "SOUNDCLOUD" | "UNKNOWN";
 
@@ -53,7 +53,7 @@ export class Song {
 function ConstDuration(duration: InputTrackDuration): { StringTime: string | "Live"; seconds: number } {
     const seconds = parseInt(duration.seconds);
     return {
-        seconds, StringTime: seconds > 0 ? ParserTimeSong(seconds) : 'Live'
+        seconds, StringTime: seconds > 0 ? ParseTimeString(seconds) : 'Live'
     };
 }
 //====================== ====================== ====================== ======================

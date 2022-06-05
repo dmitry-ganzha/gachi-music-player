@@ -1,10 +1,9 @@
 import {
     Guild, Message,
 } from "discord.js";
-import {Colors} from "../../Core/Utils/Colors";
 import {WatKLOK} from "../../Core/Client";
 import {EmbedConstructor} from "../../Core/Utils/TypeHelper";
-import {getButtons} from "../../Core/Utils/Functions/Buttons";
+import {Colors, getButtons} from "../../Core/Utils/LiteUtils";
 
 export class guildCreate {
     public readonly name: string = 'guildCreate';

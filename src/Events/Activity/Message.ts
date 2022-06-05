@@ -1,11 +1,10 @@
 import {ChannelType} from "discord.js";
 import {Command} from "../../Commands/Constructor";
-import {Colors} from "../../Core/Utils/Colors";
 import cfg from '../../../DataBase/Config.json';
 import {ClientMessage} from "../../Core/Client";
-import {ParserTimeSong} from "../../Core/Player/Manager/Duration/ParserTimeSong";
 import {Channel, EmbedConstructor} from "../../Core/Utils/TypeHelper";
-import {getMe} from "../../Core/Utils/getMe";
+import {Colors, getMe} from "../../Core/Utils/LiteUtils";
+import {ParseTimeString} from "../../Core/Player/Manager/DurationUtils";
 
 type CommandPermission = Command['permissions'];
 type CommandIsOwner = Command['isOwner'];
@@ -24,7 +23,7 @@ export class GuildMessage {
         const CoolDownFind = CoolDownBase.get(message.author.id);
 
         if (Helper.isOwner(true, message.author.id)) {
-            if (CoolDownFind) return message.client.Send({ text: `${message.author.username}, Воу воу, ты слишком быстро отправляешь сообщения. Подожди ${ParserTimeSong(CoolDownFind.time)}`, message, type: "css" });
+            if (CoolDownFind) return message.client.Send({ text: `${message.author.username}, Воу воу, ты слишком быстро отправляешь сообщения. Подожди ${ParseTimeString(CoolDownFind.time)}`, message, type: "css" });
             else {
                 CoolDownBase.set(message.author.id, {
                     time: command?.CoolDown ?? 5

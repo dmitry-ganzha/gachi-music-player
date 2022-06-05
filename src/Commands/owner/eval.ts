@@ -1,7 +1,7 @@
 import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
-import {Colors} from "../../Core/Utils/Colors";
 import {EmbedConstructor} from "../../Core/Utils/TypeHelper";
+import {Colors} from "../../Core/Utils/LiteUtils";
 
 export class CommandEval extends Command {
     public constructor() {

@@ -1,9 +1,9 @@
-import {ParserTimeSong} from "../Manager/Duration/ParserTimeSong";
 import {Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
 import {VoiceState} from "discord.js";
 import {StatusPlayerHasSkipped} from "./AudioPlayer";
 import {ClientMessage} from "../../Client";
+import {ParseTimeString} from "../Manager/DurationUtils";
 
 export const Controller = {PlayerFilter, PlayerRemove, PlayerPause, PlayerReplay, PlayerResume, PlayerSeek, PlayerSkip};
 
@@ -88,7 +88,7 @@ function PlayerSeek(message: ClientMessage, seek: number): void {
     const {title, color}: Song = songs[0];
 
     try {
-        client.Send({text: `⏭️ | Seeking to [${ParserTimeSong(seek)}] song | ${title}`, message, type: 'css', color});
+        client.Send({text: `⏭️ | Seeking to [${ParseTimeString(seek)}] song | ${title}`, message, type: 'css', color});
         return player.seek(message, seek);
     } catch {
         return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: 'RED'});
