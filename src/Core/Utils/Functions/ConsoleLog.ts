@@ -1,4 +1,4 @@
 
-export function ConsoleLog(set: string) {
-    return setTimeout(() => console.log(`[${(new Date).toLocaleString("ru")}] ${set}`), 25)
+export function ConsoleLog(text: string) {
+    return setTimeout(() => console.log(`[${(new Date).toLocaleString("ru")}] ${text}`), 25);
 }

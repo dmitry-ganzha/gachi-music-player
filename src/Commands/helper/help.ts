@@ -47,10 +47,9 @@ export class CommandHelp extends Command {
         });
 
         helpEmbed = {...helpEmbed, description: pages[page - 1], footer: {text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL()}};
+
         return {
-            embed: helpEmbed,
-            pages: pages,
-            page: page
+            embed: helpEmbed, pages, page
         };
     };
 }

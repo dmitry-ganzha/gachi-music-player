@@ -10,8 +10,6 @@ import {Command} from "../Commands/Constructor";
 import {Queue} from "./Player/Structures/Queue/Queue";
 import {CollectionMap} from "./Utils/CollectionMap";
 
-export type ClientDevice = "Discord iOS" | "Web";
-
 const keepOverLimit = (value: any): boolean => value.id !== value.client.user.id;
 
 export class WatKLOK extends Client {
@@ -22,9 +20,11 @@ export class WatKLOK extends Client {
 
     public Send = MessageChannelSend;
     public ConvertedText = ConvertedText;
-    public console = ConsoleLog;
+    public console: (text: string) => NodeJS.Timeout;
     public connections = Connections;
     public player = new PlayerEmitter();
+
+    public ShardID: number | null;
 
     public constructor() {
         super({
@@ -50,7 +50,7 @@ export class WatKLOK extends Client {
             intents: (Object.keys(IntentsBitField.Flags)) as any,
             ws: {
                 properties: {
-                    $browser: "Web" as ClientDevice
+                    $browser: "Web" as "Discord iOS" | "Web"
                 }
             },
             presence: {
@@ -60,6 +60,11 @@ export class WatKLOK extends Client {
                 }]
             }
         });
+        this.ShardID = this.shard?.ids[0];
+        this.console = (text: string) => {
+            if (this.ShardID !== undefined) return ConsoleLog(`[ShardID: ${this.ShardID}] -> ` + text);
+            return ConsoleLog(text);
+        }
     };
 }
 

@@ -41,7 +41,7 @@ export function ErrorPlayerMessage({channel, client, guild}: ClientMessage, song
 
             return DeleteMessage(WarningChannelSend, 5e3);
         } catch (e) {
-            return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
+            client.console(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
         }
     });
 }
@@ -63,7 +63,7 @@ export function PushSongMessage({channel, client, guild}: ClientMessage, song: S
 
             return DeleteMessage(PushChannel, 5e3);
         } catch (e) {
-            return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
+            client.console(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
         }
     });
 }
@@ -84,7 +84,7 @@ function UpdateMessage(message: ClientMessage): void {
         try {
             return message.edit({embeds: [CurrentPlayEmbed]});
         } catch (e) {
-            return console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: update, ${e.code}]: ${e?.message}`);
+            message.client.console(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: update, ${e.code}]: ${e?.message}`);
         }
     });
 }
@@ -102,7 +102,7 @@ function AddInQueueMessage(message: ClientMessage): Promise<ClientMessage> {
         // @ts-ignore
         return message.channel.send({embeds: [CurrentPlayEmbed], components: [Button]});
     } catch (e) {
-        console.log(`[${(new Date).toLocaleString("ru")}] [MessageEmitter]: [Method: ${e.method ?? null}]: [on: playSong, ${e.code}]: ${e?.message}`);
+        message.client.console(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: playSong, ${e.code}]: ${e?.message}`);
     }
 }
 //====================== ====================== ====================== ======================

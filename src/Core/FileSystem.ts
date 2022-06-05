@@ -54,7 +54,7 @@ class MultiLoader {
 }
 
 export async function FileSystemLoad (client: WatKLOK): Promise<void> {
-    const ClientShard = !!client.shard;
+    const ClientShard = !!client.ShardID;
     if (!ClientShard) console.clear();
 
     await Promise.all([
