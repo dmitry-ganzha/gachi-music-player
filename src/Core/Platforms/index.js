@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SoundCloud = exports.YouTube = exports.Spotify = exports.VK = void 0;
+const Spotify_1 = require("./src/API/Spotify");
+Object.defineProperty(exports, "Spotify", { enumerable: true, get: function () { return Spotify_1.Spotify; } });
+const VK_1 = require("./src/API/VK");
+Object.defineProperty(exports, "VK", { enumerable: true, get: function () { return VK_1.VK; } });
+const YouTube_1 = require("./src/YouTube");
+Object.defineProperty(exports, "YouTube", { enumerable: true, get: function () { return YouTube_1.YouTube; } });
+const SoundCloud_1 = require("./src/API/SoundCloud");
+Object.defineProperty(exports, "SoundCloud", { enumerable: true, get: function () { return SoundCloud_1.SoundCloud; } });
