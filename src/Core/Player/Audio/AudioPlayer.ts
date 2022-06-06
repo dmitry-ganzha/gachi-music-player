@@ -15,7 +15,7 @@ export const StatusPlayerHasSkipped: Set<string> = new Set(['playing', 'paused',
 const EmptyFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe]);
 
 /**
- * @description Плеер!)
+ * @description Плеер. За основу взять с <discordjs/voice>. Немного изменен!
  */
 export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     #_state: PlayerState = { status: "idle" };

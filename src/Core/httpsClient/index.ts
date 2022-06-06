@@ -9,7 +9,7 @@ import BodyReadable from "undici/types/readable";
 export const httpsClient = {Request, parseBody, parseJson};
 
 /**
- * @description Чистый запрос
+ * @description Создаем запрос по ссылке, модифицируем по необходимости
  * @param url {string} Ссылка
  * @param options {httpsClientOptions} Настройки запроса
  */

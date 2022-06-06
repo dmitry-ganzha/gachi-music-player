@@ -13,6 +13,9 @@ interface Parameters {
     type?: SupportTypeStream;
 }
 
+/**
+ * @description Создаем <AudioResource> для проигрывания в голосовой канал
+ */
 export class ConstructorStream {
     public playbackDuration = 0;
     public playStream: Readable & Writable;

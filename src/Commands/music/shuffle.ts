@@ -55,11 +55,11 @@ export class CommandShuffle extends Command {
             color: 'RED'
         });
 
-        CommandShuffle.shuffleSongs(queue.songs);
+        this.#shuffleSongs(queue.songs);
         return message.client.Send({text: `🔀 | Shuffle total [${queue.songs.length}]`, message, type: 'css'});
     };
 
-    protected static shuffleSongs = (songs: Song[]): void => {
+    #shuffleSongs = (songs: Song[]): void => {
         for (let i = songs.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [songs[i], songs[j]] = [songs[j], songs[i]];

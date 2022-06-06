@@ -10,7 +10,7 @@ let FFmpegName: string;
 let FFprobeName: string
 
 /**
- * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a и для <FFprobeName> задаем название, если они будут найдены!
+ * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a и для <FFprobeName> задаем название для FFprobe, если они будут найдены!
  */
 const FFmpegCheck = () => {
     try {
@@ -111,10 +111,10 @@ export class FFmpeg extends Duplex {
 
 /**
  * ffprobe gathers information from multimedia streams and prints it in human- and machine-readable fashion.
- * For example it can be used to check the format of the container used by a multimedia stream and the format and type of each media stream contained in it.
- * If a url is specified in input, ffprobe will try to open and probe the url content. If the url cannot be opened or recognized as a multimedia file, a positive exit code is returned.
+ * For example, it can be used to check the format of the container used by a multimedia stream and the format and type of each media stream contained in it.
+ * If an url is specified in input, ffprobe will try to open and probe the url content. If the url cannot be opened or recognized as a multimedia file, a positive exit code is returned.
  * ffprobe may be employed both as a standalone application or in combination with a textual filter, which may perform more sophisticated processing, e.g. statistical processing or plotting.
- * Options are used to list some of the formats supported by ffprobe or for specifying which information to display, and for setting how ffprobe will show it.
+ * Options are used to list some formats supported by ffprobe or for specifying which information to display, and for setting how ffprobe will show it.
  * ffprobe output is designed to be easily parsable by a textual filter, and consists of one or more sections of a form defined by the selected writer, which is specified by the print_format option.
  * Sections may contain other nested sections, and are identified by a name (which may be shared by other sections), and an unique name. See the output of sections.
  * Metadata tags stored in the container or in the streams are recognized and printed in the corresponding "FORMAT", "STREAM" or "PROGRAM_STREAM" section.

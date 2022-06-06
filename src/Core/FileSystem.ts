@@ -13,7 +13,7 @@ class MultiLoader {
         this.path = options.path;
         this.callback = options.callback;
     };
-
+    //====================== ====================== ====================== ======================
     /**
      * @description Открываем директорию (папку) и смотрим что в ней, проверяем что-бы были файлы js или ts. Загружаем...
      */
@@ -23,6 +23,7 @@ class MultiLoader {
         const Files = readdirSync(`./src/${this.path}/${dir}/`).filter((d: string) => (d.endsWith('.js') || d.endsWith('.ts')));
         return this.#ForLoad(Files, dir);
     });
+    //====================== ====================== ====================== ======================
     /**
      * @description Загружаем файлы находящиеся в dir
      * @param Files {string[]} Все файлы в этой директории
@@ -46,6 +47,12 @@ class MultiLoader {
             this.callback(pull, { dir: dir, file: file });
         }
     };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Получаем сам класс
+     * @param path {string} Путь до файла
+     * @private
+     */
     #getFile = async (path: string): Promise<Command> => {
         let cmd = (await import(path));
         let name = Object.keys(cmd)[0];
@@ -73,6 +80,7 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
                 if (pull.aliases && Array.isArray(pull.aliases)) pull.aliases.forEach((alias: string) => client.aliases.set(alias, pull.name));
             }
         }).readdirSync(),
+        //====================== ====================== ====================== ======================
         new MultiLoader({
             name: 'Events',
             path: 'Events',
@@ -87,6 +95,7 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
                 }
             }
         }).readdirSync(),
+        //====================== ====================== ====================== ======================
         new MultiLoader({
             name: 'Modules',
             path: 'Modules',

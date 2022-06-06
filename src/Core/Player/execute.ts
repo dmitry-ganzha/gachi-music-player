@@ -19,6 +19,9 @@ type Events = {
     playlist: (message: ClientMessage, playlist: InputPlaylist, VoiceChannel: VoiceChannel |  StageChannel) => void;
 };
 
+/**
+ * @description Запускаем все функции плеера
+ */
 export class PlayerEmitter extends TypedEmitter<Events> {
     public constructor() {
         super();

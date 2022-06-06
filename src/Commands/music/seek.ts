@@ -23,8 +23,8 @@ export class CommandSeek extends Command {
     };
 
     public run = (message: ClientMessage, args: string[]): void => {
-        const queue: Queue = message.client.queue.get(message.guild.id), choiceDur: any[] = args.join(" ").split(":");
-        let optDur: number;
+        const queue: Queue = message.client.queue.get(message.guild.id), ArgDuration: any[] = args.join(" ").split(":");
+        let EndDuration: number;
 
         if (!queue) return message.client.Send({
             text: `${message.author}, ⚠ | Музыка щас не играет.`,
@@ -50,27 +50,27 @@ export class CommandSeek extends Command {
             color: 'RED'
         });
 
-        if (!choiceDur) return message.client.Send({
+        if (!ArgDuration) return message.client.Send({
             text: `${message.author}, Укажи время, пример 00:00:00!`,
             message,
             color: 'RED'
         })
-        else if (choiceDur.length > 1) {
-            if (!choiceDur[2]) optDur = (choiceDur[0] * 60) + (choiceDur[1] % 60000);
-            else optDur = (choiceDur[0] * 60 * 60) + (choiceDur[1] * 60) + (choiceDur[2] % 60000);
-        } else optDur = parseInt(args[0]);
+        else if (ArgDuration.length > 1) {
+            if (!ArgDuration[2]) EndDuration = (ArgDuration[0] * 60) + (ArgDuration[1] % 60000);
+            else EndDuration = (ArgDuration[0] * 60 * 60) + (ArgDuration[1] * 60) + (ArgDuration[2] % 60000);
+        } else EndDuration = parseInt(args[0]);
 
-        if (isNaN(optDur)) return message.client.Send({
+        if (isNaN(EndDuration)) return message.client.Send({
             text: `${message.author}, Я не могу определить что ты написал, попробуй еще раз!`,
             message,
             color: 'RED'
         });
-        if (optDur > queue.songs[0].duration.seconds) return message.client.Send({
+        if (EndDuration > queue.songs[0].duration.seconds) return message.client.Send({
             text: `${message.author}, Ты указал слишком много времени!`,
             message,
             color: 'RED'
         });
 
-        return void message.client.player.emit('seek', message, optDur);
+        return void message.client.player.emit('seek', message, EndDuration);
     };
 }
