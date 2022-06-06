@@ -325,6 +325,8 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
             req++;
             return CreateResource(song, audioFilters, seek, req);
         }).then(() => {
+            if (!song.format?.url) return CreateResource;
+
             if (song.isLive) return resolve(new ConstructorStream({
                 stream: song.format.url
             }));

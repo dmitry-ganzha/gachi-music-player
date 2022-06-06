@@ -93,5 +93,5 @@ function Filter(track: InputTrack, NeedDuration: number) {
     const DurationSong = ParserTime(track.duration.seconds);
 
     //Если время трека больше или равно нужному времени и время трека меньше времени трека + 5 и время трека больше времени трека - 5 и время трека меньше нужного времени на 12, то true
-    return DurationSong >= NeedDuration && DurationSong < DurationSong + 7 && DurationSong > DurationSong - 7 && DurationSong < NeedDuration + 15;
+    return DurationSong >= NeedDuration && DurationSong < NeedDuration + 15 && DurationSong > NeedDuration - 15;
 }
