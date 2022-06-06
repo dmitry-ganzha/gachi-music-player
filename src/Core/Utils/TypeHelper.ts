@@ -95,7 +95,7 @@ export type InputTrackImage = InputTrack['image'];
  * @description Пример получаемого автора трека
  */
 export interface InputAuthor {
-    id: string | number;
+    id?: string | number;
     title: string;
     url: string;
     image: {
@@ -109,7 +109,7 @@ export interface InputAuthor {
  * @description Пример получаемого плейлиста
  */
 export interface InputPlaylist {
-    id: string | number;
+    id?: string | number;
     url: string;
     title: string;
     items: InputTrack[];

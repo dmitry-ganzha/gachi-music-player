@@ -26,7 +26,7 @@ function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
               avatar = info?.avatar, badges = info?.badges;
 
         return resolve({
-            id, title: Channel?.title ?? name ?? "Not found",
+            title: Channel?.title ?? name ?? "Not found",
             url: `${DefaultLinkYouTube}/channel/${id}`,
             image: avatar?.thumbnails.pop() ?? null,
             isVerified: !!badges?.find((badge: any) => VerAuthor.has(badge?.metadataBadgeRenderer?.tooltip))
@@ -79,7 +79,6 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
 
         const authorVideo = (await Promise.all([getChannel({ id: videoDetails.channelId, name: videoDetails.author })]))[0];
         const VideoData: InputTrack = {
-            id: VideoID,
             url: `${DefaultLinkYouTube}/watch?v=${VideoID}`,
             title: videoDetails.title,
             duration: {seconds: videoDetails.lengthSeconds},
@@ -128,11 +127,9 @@ function parsingVideos(details: any[], {limit}: SearchOptions, FakeBase: InputTr
         num++;
 
         FakeBase.push({
-            id: video.videoId,
             url: `https://www.youtube.com/watch?v=${video.videoId}`,
             title: video.title.runs[0].text,
             author: {
-                id: video.ownerText.runs[0].navigationEndpoint.browseEndpoint.browseId,
                 title: video.ownerText.runs[0].text,
                 url: `https://www.youtube.com${video.ownerText.runs[0].navigationEndpoint.browseEndpoint.canonicalBaseUrl || video.ownerText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url}`,
                 image: video.channelThumbnailSupportedRenderers.channelThumbnailWithLinkRenderer.thumbnail.thumbnails.pop(),
@@ -167,7 +164,6 @@ async function getPlaylist(url: string): Promise<InputPlaylist> {
         const channel = (playlistDetails[1] ?? playlistDetails[0])?.playlistSidebarSecondaryInfoRenderer?.videoOwner?.videoOwnerRenderer.title.runs[0] ?? null;
 
         return resolve({
-            id: playlistID,
             url: `${DefaultLinkYouTube}/playlist?list=${playlistID}`,
             title: playlistInfo?.title?.runs[0]?.text ?? 'Not found',
             items: (await Promise.all([_parsingVideos(parsed)]))[0],
@@ -188,7 +184,6 @@ function _parsingVideos(parsed: any[], finder: InputTrack[] = []): InputTrack[] 
         num++;
 
         finder.push({
-            id: video.videoId,
             title: video.title.runs[0].text,
             url: `${DefaultLinkYouTube}/watch?v=${video.videoId}`,
             duration: {
@@ -200,7 +195,6 @@ function _parsingVideos(parsed: any[], finder: InputTrack[] = []): InputTrack[] 
                 width: video.thumbnail.thumbnails.pop().width
             },
             author: {
-                id: video.shortBylineText.runs[0].navigationEndpoint.browseEndpoint.browseId || undefined,
                 title: video.shortBylineText.runs[0].text || undefined,
                 url: `https://www.youtube.com${video.shortBylineText.runs[0].navigationEndpoint.browseEndpoint.canonicalBaseUrl || video.shortBylineText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url}`,
             },

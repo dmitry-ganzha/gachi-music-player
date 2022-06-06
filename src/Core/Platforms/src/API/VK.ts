@@ -25,11 +25,9 @@ function getTrack(url: string): Promise<null | InputTrack> {
         const image = track?.album?.thumb;
 
         return resolve({
-            id: track.id,
             url: `https://vk.com/audio${TrackID}`,
             title: track.title,
             author: {
-                id: track.owner_id,
                 url: ReplaceAuthorUrl(track.artist),
                 title: track.artist,
                 image: {url: image?.photo_1200 ?? image?.photo_600 ?? image?.photo_300 ?? image?.photo_270 ?? undefined},
@@ -67,11 +65,9 @@ function SearchTracks(str: string, options: {limit: number} = {limit: 15}): Prom
             NumberTrack++;
 
             items.push({
-                id: track.id,
                 url: `https://vk.com/audio${track.owner_id}_${track.id}`,
                 title: track.title,
                 author: {
-                    id: track.owner_id,
                     url: ReplaceAuthorUrl(track.artist),
                     title: track.artist,
                     isVerified: track.is_licensed
@@ -107,17 +103,14 @@ function getPlaylist(url: string, options = {limit: 50}): Promise<null | InputPl
         const PlaylistImage = PlaylistData?.thumbs?.length > 0 ? PlaylistData?.thumbs[0] : null;
 
         return resolve({
-            id: playlist_id, url,
-            title: PlaylistData.title,
+            url, title: PlaylistData.title,
             items: itemsPlaylist.response.items.map((track) => {
                 const image = track?.album?.thumb ?? undefined;
 
                 return {
-                    id: track.id,
                     url: `https://vk.com/audio${track.owner_id}_${track.id}`,
                     title: track.title,
                     author: {
-                        id: track.owner_id,
                         url: ReplaceAuthorUrl(track.artist),
                         title: track.artist,
                         image: {url: image?.photo_1200 ?? image?.photo_600 ?? image?.photo_300 ?? image?.photo_270 ?? undefined},

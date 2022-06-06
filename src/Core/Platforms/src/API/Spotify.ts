@@ -73,7 +73,6 @@ function getTrack(url: string): Promise<InputTrack | null> {
         if (!result || !result?.name) return resolve(null);
 
         return resolve({
-            id: id,
             title: result.name,
             url: url,
             author: (await Promise.all([getAuthorTrack(result.artists[0].external_urls.spotify, result?.artists[0]?.type !== "artist")]))[0],
@@ -101,12 +100,10 @@ function getPlaylist(url: string, options: {limit: number} = {limit: 101}): Prom
             if (!result || !result?.name) return resolve(null);
 
             return resolve({
-                id: id,
-                url: url,
-                title: result.name,
+                url, title: result.name,
                 items: await Promise.all(result.tracks.items.map(async ({track}) => {
                     return {
-                        id: track?.id,
+                        //id: track?.id,
                         title: track?.name,
                         url: `${DefaultUrlSpotify}/track/${track?.id}`,
                         author: (await Promise.all([getAuthorTrack(track.artists[0].external_urls.spotify)]))[0],
@@ -147,7 +144,7 @@ function getAlbum(url: string, options: {limit: number} = {limit: 101}): Promise
                 title: result.name,
                 items: await Promise.all(result.tracks.items.map(async (track: SpotifyTrack) => {
                     return {
-                        id: track.id,
+                        //id: track.id,
                         title: track.name,
                         url: `${DefaultUrlSpotify}/track/${track.id}`,
                         author: (await Promise.all([getAuthorTrack(track.artists[0].external_urls.spotify)]))[0],
@@ -184,11 +181,11 @@ function SearchTracks(search: string, options: {limit: number} = {limit: 15}): P
             return resolve({
                 items: await Promise.all(result.tracks.items.map(async (track: SpotifyTrack) => {
                     return {
-                        id: track.id,
+                        //id: track.id,
                         title: track.name,
                         url: `${DefaultUrlSpotify}/track/${track.id}`,
                         author: {
-                            id: track.artists[0].id,
+                            //id: track.artists[0].id,
                             url: `${DefaultUrlSpotify}/artist/${track.artists[0].id}`,
                             title: track.artists[0].name,
                             image: null,
@@ -220,8 +217,8 @@ function getAuthorTrack(url: string, isUser: boolean = false): Promise<InputAuth
         const id = getID(url);
         const result = (await Promise.all([RequestSpotify(`${isUser ? "users" : "artists"}/${id}`)]))[0] as (SpotifyArtist | SpotifyUser) & FailResult
 
-        return resolve({ //@ts-ignore
-            id, title: result?.name ?? result?.display_name, url,
+        return resolve({ // @ts-ignore
+            title: result?.name ?? result?.display_name, url,
             image: result.images[0],
             isVerified: result.followers.total >= 500
         });

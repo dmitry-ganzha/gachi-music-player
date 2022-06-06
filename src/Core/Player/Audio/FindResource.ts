@@ -73,11 +73,11 @@ async function getLinkFormat({type, url, title, author, duration}: Song): Promis
  */
 function FindTrack(nameSong: string, duration: number): Promise<InputFormat> {
     return YouTube.SearchVideos(nameSong).then((Tracks) => {
-        const FindTrack = Tracks.filter((track) => Filter(track, duration));
+        const FindTracks = Tracks.filter((track) => Filter(track, duration));
 
-        if (FindTrack.length === 0) return null;
+        if (FindTracks.length === 0) return null;
 
-        return getFormatYouTube(FindTrack[0].url);
+        return getFormatYouTube(FindTracks[0].url);
     });
 }
 //====================== ====================== ====================== ======================
@@ -92,6 +92,5 @@ function getFormatYouTube(url: string): Promise<InputFormat> {
 function Filter(track: InputTrack, NeedDuration: number) {
     const DurationSong = ParserTime(track.duration.seconds);
 
-    //Если время трека больше или равно нужному времени и время трека меньше времени трека + 5 и время трека больше времени трека - 5 и время трека меньше нужного времени на 12, то true
-    return DurationSong >= NeedDuration && DurationSong < NeedDuration + 15 && DurationSong > NeedDuration - 15;
+    return DurationSong < NeedDuration + 15 && DurationSong > NeedDuration - 15;
 }
