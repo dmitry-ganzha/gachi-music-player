@@ -19,6 +19,6 @@
     "github": "https://github.com/SNIPPIK/WatKLOK.git"
   },
   "engines": {
-    "node": "18"
+    "node": ">16"
   }
 }
