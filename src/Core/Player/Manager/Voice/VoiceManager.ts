@@ -73,9 +73,8 @@ export class Voice extends TypedEmitter<Events> {
         const {player, events, channels} = queue;
 
         if (!this.#Timer) this.#Timer = setTimeout(() => events.queue.emit('DestroyQueue', queue, channels.message, false), 15e3);
-
-        player.pause();
         this.#state = true;
+        player.pause();
     };
     //====================== ====================== ====================== ======================
     /**

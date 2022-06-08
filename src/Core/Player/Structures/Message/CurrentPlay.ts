@@ -68,7 +68,7 @@ function MusicDuration({isLive, duration}: Song, curTime: number | string): stri
     if (isLive) return `[${duration.StringTime}]`;
 
     const str = `${duration.StringTime}]`;
-    const parsedTimeSong = curTime > duration.seconds ? duration.StringTime : ParseTimeString(curTime as number);
+    const parsedTimeSong = curTime >= duration.seconds ? duration.StringTime : ParseTimeString(curTime as number);
     const progress = ProgressBar(curTime as number, duration.seconds, 15);
 
     if (ProgressBarValue) return `**❯** [${parsedTimeSong} - ${str}\n${progress}`;

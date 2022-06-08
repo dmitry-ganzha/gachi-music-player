@@ -55,10 +55,13 @@ export async function FindResource(song: Song): Promise<void> {
  */
 async function getLinkFormat({type, url, title, author, duration}: Song): Promise<InputFormat> {
     try {
-        if (type === "SPOTIFY") return FindTrack(`${author.title} - ${title}`, duration.seconds);
-        else if (type === "VK") return (await VK.getTrack(url))?.format;
-        else if (type === "SOUNDCLOUD") return (await SoundCloud.getTrack(url))?.format;
-        return getFormatYouTube(url);
+        switch (type) {
+            case "SPOTIFY": return FindTrack(`${author.title} - ${title}`, duration.seconds);
+            case "SOUNDCLOUD": return (await VK.getTrack(url))?.format;
+            case "VK": return (await SoundCloud.getTrack(url))?.format;
+            case "YOUTUBE": return getFormatYouTube(url);
+            default: return null
+        }
     } catch {
         console.log('[FindResource]: [Fail to found format!]');
         return null;
