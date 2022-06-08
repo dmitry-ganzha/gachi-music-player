@@ -53,7 +53,7 @@ export class Song {
 function ConstDuration(duration: InputTrackDuration): { StringTime: string | "Live"; seconds: number } {
     const seconds = parseInt(duration.seconds);
     return {
-        seconds, StringTime: seconds > 0 ? ParseTimeString(seconds) : 'Live'
+        seconds, StringTime: seconds > 0 ? ParseTimeString(seconds) : "Live"
     };
 }
 //====================== ====================== ====================== ======================
@@ -63,10 +63,12 @@ function ConstDuration(duration: InputTrackDuration): { StringTime: string | "Li
  * @constructor
  */
 function Color(type: string): number {
-    if (type === "YOUTUBE") return Colors.RED;
-    else if (type === "SPOTIFY") return Colors.GREEN;
-    else if (type === 'SOUNDCLOUD') return Colors.ORANGE;
-    return Colors.BLUE;
+    switch (type) {
+        case "YOUTUBE": return Colors.RED
+        case "SPOTIFY": return Colors.GREEN
+        case "SOUNDCLOUD": return Colors.ORANGE
+        default: return Colors.BLUE
+    }
 }
 //====================== ====================== ====================== ======================
 /**
@@ -76,7 +78,7 @@ function Color(type: string): number {
  */
 function Type(url: string): SongType {
     try {
-        let start = url.split('://')[1].split('/')[0];
+        let start = url.split("://")[1].split("/")[0];
         let split = start.split(".");
         return (split[split.length - 2]).toUpperCase() as SongType;
     } catch {

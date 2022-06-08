@@ -10,7 +10,7 @@ export class CommandLoop extends Command {
         super({
             name: "filter",
             aliases: ["fl"],
-            description: 'Включение фильтров для музыки!',
+            description: "Включение фильтров для музыки!",
 
             options: [
                 {
@@ -49,7 +49,7 @@ export class CommandLoop extends Command {
         if (queue.songs[0].isLive) return message.client.Send({
             text: `${message.author}, Фильтры не работают со стримами`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         const song = queue.songs[0];
@@ -59,7 +59,7 @@ export class CommandLoop extends Command {
 
         if (!NameFilter) return message.client.Send({text: `Включенные фильтры: ${getEnableFilters(queue.audioFilters) ?? "нет включенных фильтров"}`, ...SendArg});
 
-        if (NameFilter === 'all') return message.client.Send({text: `Все фильтры: ${FFmpegConfig()}`, ...SendArg});
+        if (NameFilter === "all") return message.client.Send({text: `Все фильтры: ${FFmpegConfig()}`, ...SendArg});
 
         if (NameFilter === "off") {
             queue.audioFilters = [];
@@ -104,5 +104,5 @@ function FFmpegConfig() {
         resp.push(key);
     }
 
-    return resp.join(', ');
+    return resp.join(", ");
 }

@@ -5,7 +5,7 @@ import {ClientMessage} from "../../Core/Client";
 export class CommandDelete extends Command {
     public constructor() {
         super({
-            name: 'delete',
+            name: "delete",
 
             enable: true,
             isOwner: true,

@@ -20,7 +20,7 @@ export class CommandStop extends Command {
         if (queue) {
             Disconnect(message.guild.id);
             queue.songs = [];
-            void queue.events.queue.emit('DestroyQueue', queue, message);
+            void queue.events.queue.emit("DestroyQueue", queue, message);
             return;
         }
         try {

@@ -4,7 +4,7 @@ import {ClientMessage} from "../../Core/Client";
 export class CommandDeploy extends Command {
     public constructor() {
         super({
-            name: 'deploy',
+            name: "deploy",
 
             enable: true,
             isOwner: true,

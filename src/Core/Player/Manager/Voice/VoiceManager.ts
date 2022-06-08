@@ -58,8 +58,8 @@ export class Voice extends TypedEmitter<Events> {
 
     public constructor() {
         super();
-        this.on('StartQueueDestroy', this.#onStartQueueDestroy);
-        this.on('CancelQueueDestroy', this.#onCancelQueueDestroy);
+        this.on("StartQueueDestroy", this.#onStartQueueDestroy);
+        this.on("CancelQueueDestroy", this.#onCancelQueueDestroy);
         this.setMaxListeners(2);
     };
     //====================== ====================== ====================== ======================
@@ -72,7 +72,7 @@ export class Voice extends TypedEmitter<Events> {
 
         const {player, events, channels} = queue;
 
-        if (!this.#Timer) this.#Timer = setTimeout(() => events.queue.emit('DestroyQueue', queue, channels.message, false), 15e3);
+        if (!this.#Timer) this.#Timer = setTimeout(() => events.queue.emit("DestroyQueue", queue, channels.message, false), 15e3);
         this.#state = true;
         player.pause();
     };

@@ -25,9 +25,9 @@ export class CommandPlay extends Command {
         super({
             name: "play",
             aliases: ["p", "playing", "з"],
-            description: 'Включение музыки по ссылке или названию, можно прикрепить свой файл!',
+            description: "Включение музыки по ссылке или названию, можно прикрепить свой файл!",
 
-            permissions: {client: ['Speak', 'Connect'], user: []},
+            permissions: {client: ["Speak", "Connect"], user: []},
             options: [
                 {
                     name: "url-name-type",
@@ -55,13 +55,13 @@ export class CommandPlay extends Command {
         if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.Send({
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (!voiceChannel || !message.member.voice) return message.client.Send({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (!search && !message.attachments) return message.client.Send({
@@ -90,13 +90,13 @@ export class CommandPlay extends Command {
         const SplitSearch = search.split(' ');
         const SearchType = SplitSearch[0].toLowerCase();
 
-        if (SearchType === 'sp') {
+        if (SearchType === "sp") {
             delete SplitSearch[0];
             return new HandleInfoResource().SP_SearchTracks(message, voiceChannel, SplitSearch.join(' '));
-        } else if (SearchType === 'vk') {
+        } else if (SearchType === "vk") {
             delete SplitSearch[0];
             return new HandleInfoResource().VK_SearchTracks(SplitSearch.join(' '), message, voiceChannel);
-        } else if (SearchType === 'sc') {
+        } else if (SearchType === "sc") {
             delete SplitSearch[0];
             return new HandleInfoResource().SC_SearchTracks(SplitSearch.join(' '), message, voiceChannel);
         }
@@ -352,8 +352,8 @@ class HandleInfoResource {
     }
 
     //Какое перенаправление делаем в систему плейлистов или просто добавим трек?
-    #runPlayer = (video: InputTrack, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => void message.client.player.emit('play', message, voiceChannel, video);
-    #runPlaylistSystem = (message: ClientMessage, playlist: InputPlaylist, voiceChannel: VoiceChannel | StageChannel): void => void message.client.player.emit('playlist', message, playlist, voiceChannel);
+    #runPlayer = (video: InputTrack, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => void message.client.player.emit("play", message, voiceChannel, video);
+    #runPlaylistSystem = (message: ClientMessage, playlist: InputPlaylist, voiceChannel: VoiceChannel | StageChannel): void => void message.client.player.emit("playlist", message, playlist, voiceChannel);
 
     //Создаем сборщик для поиска треков
     #ArraySort = (results: InputTrack[], message: ClientMessage): string => {
@@ -387,7 +387,7 @@ class HandleInfoResource {
     };
     //Добавляем к коллектору ивент сбора
     #CollectorCollect = (msg: ClientMessage, results: any[], message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
-        this.#collector.once('collect', (m: any): void => {
+        this.#collector.once("collect", (m: any): void => {
             setImmediate(() => {
                 this.#deleteMessage(msg);
                 this.#deleteMessage(m);
@@ -414,7 +414,7 @@ class HandleInfoResource {
                 msg.createReactionCollector({
                     filter: (reaction: MessageReaction, user: User) => (reaction.emoji.name === emoji && user.id !== message.client.user.id),
                     max: 1
-                }).once('collect', callback);
+                }).once("collect", callback);
             });
         });
     }
@@ -431,7 +431,7 @@ class HandleInfoResource {
     };
     //Конвертируем время в 00:00
     #ConvertTimeSearch = (duration: string) => {
-        if (this.#type === 'yt') return duration;
+        if (this.#type === "yt") return duration;
         return ParseTimeString(parseInt(duration));
     };
 

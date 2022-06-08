@@ -27,25 +27,25 @@ export class CommandSkip extends Command {
         if (!queue) return message.client.Send({
             text: `${message.author}, ⚠ | Музыка щас не играет.`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.Send({
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (!message.member.voice.channel || !message.member.voice) return message.client.Send({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         try {
-            return void message.client.player.emit('skip', message, args && args[0] && !isNaN(argsNum) ? argsNum : null);
+            return void message.client.player.emit("skip", message, args && args[0] && !isNaN(argsNum) ? argsNum : null);
         } catch {
-            return message.client.Send({ text: `${message.author}, Ошибка... попробуй еще раз!!!`, message, color: 'RED' });
+            return message.client.Send({ text: `${message.author}, Ошибка... попробуй еще раз!!!`, message, color: "RED" });
         }
     };
 }

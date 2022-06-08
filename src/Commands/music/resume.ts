@@ -20,33 +20,33 @@ export class CommandResume extends Command {
         if (!queue) return message.client.Send({
             text: `${message.author}, ⚠ | Музыка щас не играет.`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.Send({
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (!message.member.voice.channel || !message.member.voice) return message.client.Send({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
-        if (queue.player.state.status === 'playing') return message.client.Send({
+        if (queue.player.state.status === "playing") return message.client.Send({
             text: `${message.author}, ⚠ Музыка щас играет.`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (queue.songs[0].isLive) return message.client.Send({
             text: `${message.author}, ⚠ | Это бесполезно!`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
-        return void message.client.player.emit('resume', message);
+        return void message.client.player.emit("resume", message);
     };
 }

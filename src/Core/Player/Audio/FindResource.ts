@@ -63,7 +63,7 @@ async function getLinkFormat({type, url, title, author, duration}: Song): Promis
             default: return null
         }
     } catch {
-        console.log('[FindResource]: [Fail to found format!]');
+        console.log("[FindResource]: [Fail to found format]");
         return null;
     }
 }

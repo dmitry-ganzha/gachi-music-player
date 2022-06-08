@@ -2,7 +2,7 @@ export class ArraySort {
     public readonly enable: boolean = true;
 
     public run = (): void => {
-        Object.defineProperty(Array.prototype, 'ArraySort', {
+        Object.defineProperty(Array.prototype, "ArraySort", {
             configurable: true,
             writable: true,
             value: function<V>(n: number): (V[])[] {

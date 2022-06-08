@@ -6,7 +6,7 @@ import {Colors} from "../../Core/Utils/LiteUtils";
 export class CommandEval extends Command {
     public constructor() {
         super({
-            name: 'eval',
+            name: "eval",
 
             enable: true,
             isOwner: true,
@@ -21,9 +21,9 @@ export class CommandEval extends Command {
 
         try {
             RunEval = eval(code);
-            return this.#MessageSend(message, RunEval, Colors.GREEN, '[Status: Work]', code, StartTime);
+            return this.#MessageSend(message, RunEval, Colors.GREEN, "[Status: Work]", code, StartTime);
         } catch (err) {
-            await this.#MessageSend(message, err.code ? err.code : err, Colors.RED, '[Status: Fail]', code, StartTime);
+            await this.#MessageSend(message, err.code ? err.code : err, Colors.RED, "[Status: Fail]", code, StartTime);
             return message.client.console(`[EVAL]: [ERROR: ${err.code ? err.code : err}]`);
         }
     };
@@ -31,7 +31,7 @@ export class CommandEval extends Command {
         const EndTime = new Date().getMilliseconds();
         let embed: EmbedConstructor = {
             color,
-            title: `${type === 'Fail' ? `❌ ${type}` : `✅ ${type}`}\n`,
+            title: `${type === "Fail" ? `❌ ${type}` : `✅ ${type}`}\n`,
             fields: [
                 {
                     name: "Input Code:",

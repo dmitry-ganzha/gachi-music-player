@@ -3,7 +3,7 @@ import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {WatKLOK} from "../../Core/Client";
 
 export class voiceStateUpdate {
-    public readonly name: string = 'voiceStateUpdate';
+    public readonly name: string = "voiceStateUpdate";
     public readonly enable: boolean = true;
 
     public run = (oldState: VoiceState, newState: VoiceState, client: WatKLOK): void => {
@@ -19,11 +19,11 @@ export class voiceStateUpdate {
             if (!FindBotVoiceChannel) { //Если бота нет в гс
                 queue.songs = [];
                 queue.options.stop = true;
-                return void queue.events.queue.emit('DestroyQueue', queue, queue.channels.message);
+                return void queue.events.queue.emit("DestroyQueue", queue, queue.channels.message);
             }
 
-            if (FilterVoiceChannel.length <= 0) return void queue.events.helper.emit('StartQueueDestroy', queue); //Если нет слушателей, удаляем очередь
-            return void queue.events.helper.emit('CancelQueueDestroy', queue.player); //Если они есть, отмена удаления очереди
+            if (FilterVoiceChannel.length <= 0) return void queue.events.helper.emit("StartQueueDestroy", queue); //Если нет слушателей, удаляем очередь
+            return void queue.events.helper.emit("CancelQueueDestroy", queue.player); //Если они есть, отмена удаления очереди
         });
     };
 }

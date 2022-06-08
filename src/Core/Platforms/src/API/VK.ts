@@ -17,7 +17,7 @@ export const VK = {getTrack, getPlaylist, SearchTracks};
 function getTrack(url: string): Promise<null | InputTrack> {
     return new Promise<InputTrack | null>(async (resolve) => {
         const TrackID = getID(url);
-        let Request = await RequestVK('audio', 'getById', `&audios=${TrackID}`) as VK_track;
+        let Request = await RequestVK("audio", "getById", `&audios=${TrackID}`) as VK_track;
 
         if (!Request || !Request?.response) return resolve(null);
 
@@ -53,7 +53,7 @@ function getTrack(url: string): Promise<null | InputTrack> {
 function SearchTracks(str: string, options: {limit: number} = {limit: 15}): Promise<null | {items: InputTrack[]}> {
     return new Promise(async (resolve) => {
         const items: InputTrack[] = [];
-        const Request = await RequestVK('audio','search', `&q=${str}`) as VK_Search;
+        const Request = await RequestVK("audio","search", `&q=${str}`) as VK_Search;
         let NumberTrack = 0;
 
         if (!Request || !Request?.response) return null;
@@ -94,8 +94,8 @@ function getPlaylist(url: string, options = {limit: 50}): Promise<null | InputPl
         const owner_id = PlaylistFullID[0];
         const key = PlaylistFullID[2];
 
-        const Request = await RequestVK('audio', 'getPlaylistById', `&owner_id=${owner_id}&playlist_id=${playlist_id}&access_key=${key}`) as VK_playlist;
-        const itemsPlaylist = await RequestVK('audio', 'get', `&owner_id=${owner_id}&album_id=${playlist_id}&access_key=${key}&count=${options.limit}`) as VK_Search;
+        const Request = await RequestVK("audio", "getPlaylistById", `&owner_id=${owner_id}&playlist_id=${playlist_id}&access_key=${key}`) as VK_playlist;
+        const itemsPlaylist = await RequestVK("audio", "get", `&owner_id=${owner_id}&album_id=${playlist_id}&access_key=${key}&count=${options.limit}`) as VK_Search;
 
         if (!Request.response || !itemsPlaylist.response || !Request || !itemsPlaylist) return resolve(null);
 
@@ -147,8 +147,8 @@ function CreateUrl(method: methodType, type: requestType, options: string): stri
 
 //Получаем ID
 function getID(url: string): string {
-    if (url.match(/\/audio/)) return url.split('/audio')[1];
-    return url.split('playlist/')[1];
+    if (url.match(/\/audio/)) return url.split("/audio")[1];
+    return url.split("playlist/")[1];
 }
 
 //Убираем пропуск между словами

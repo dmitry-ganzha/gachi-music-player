@@ -19,7 +19,7 @@ export class GuildMessage {
         if (message.author.bot || !message.content.startsWith(prefix) || message.channel.type === ChannelType.DM) return;
 
         const args = message.content.split(" ").slice(1);
-        const command = GuildMessage.getCommand(message, prefix);
+        const command = this.#getCommand(message, prefix);
         const CoolDownFind = CoolDownBase.get(message.author.id);
 
         if (Helper.isOwner(true, message.author.id)) {
@@ -35,15 +35,15 @@ export class GuildMessage {
         if (command) {
             Helper.DeleteMessage(message, 12e3);
 
-            if (Helper.isOwner(command?.isOwner, message.author.id)) return message.client.Send({ text: `${message.author}, Эта команда не для тебя!`, message, color: 'RED'})
+            if (Helper.isOwner(command?.isOwner, message.author.id)) return message.client.Send({ text: `${message.author}, Эта команда не для тебя!`, message, color: "RED"})
             if (Helper.isPermissions(command?.permissions, message)) return;
 
             return command.run(message, args);
         }
-        return message.client.Send({ text: `${message.author}, Я не нахожу такой команды, используй ${prefix}help  :confused:`, message, color: 'RED'});
+        return message.client.Send({ text: `${message.author}, Я не нахожу такой команды, используй ${prefix}help  :confused:`, message, color: "RED"});
     };
     // Получаем данные о команде
-    protected static getCommand = ({content, client}: ClientMessage, prefix: string) => {
+    #getCommand = ({content, client}: ClientMessage, prefix: string) => {
         let cmd = content.slice(prefix.length).trim().split(/ +/g).shift().toLowerCase();
         return client.commands.get(cmd) ?? client.commands.get(client.aliases.get(cmd));
     };
@@ -69,34 +69,34 @@ export class Helper {
 class Permissions {
     // Проверяем сколько прав
     public PermissionSize = (permissions: CommandPermission, message: ClientMessage) => {
-        if ((permissions.user || permissions.client).length > 1) return this._createPresencePerm(permissions, message);
-        return this._createPresenceOnePerm(permissions, message);
+        if ((permissions.user || permissions.client).length > 1) return this.#_createPresencePerm(permissions, message);
+        return this.#_createPresenceOnePerm(permissions, message);
     };
     // Если одно право
-    protected _createPresenceOnePerm = (permissions: CommandPermission, message: ClientMessage): boolean => {
+    #_createPresenceOnePerm = (permissions: CommandPermission, message: ClientMessage): boolean => {
         if (permissions.client) {
             if (!getMe(message.guild).permissions.has(permissions.client[0])) {
-                this.SendMessage(NotPermissions(message, `У меня нет таких прав!`, `•${permissions.client[0]}`), message.channel).catch(() => null);
+                this.#SendMessage(NotPermissions(message, "У меня нет таких прав!", `•${permissions.client[0]}`), message.channel).catch(() => null);
                 return true;
             }
         } else if (permissions.user) {
             if (!message.member.permissions.has(permissions.user[0])) {
-                this.SendMessage(NotPermissions(message, `У тебя нет таких прав!`, `•${permissions.user[0]}`), message.channel).catch(() => null);
+                this.#SendMessage(NotPermissions(message, "У тебя нет таких прав!", `•${permissions.user[0]}`), message.channel).catch(() => null);
                 return true;
             }
         }
         return false;
     };
     // Если прав более 1
-    protected _createPresencePerm = (permissions: CommandPermission, message: ClientMessage): boolean => {
-        let resp = this._parsePermissions(permissions, message);
+    #_createPresencePerm = (permissions: CommandPermission, message: ClientMessage): boolean => {
+        let resp = this.#_parsePermissions(permissions, message);
         if (resp !== '') {
-            this.SendMessage(NotPermissions(message, `У меня нет таких прав!`, resp), message.channel).catch(() => null);
+            this.#SendMessage(NotPermissions(message, "У меня нет таких прав!", resp), message.channel).catch(() => null);
             return true;
         }
         return false;
     };
-    protected _parsePermissions = (permissions: CommandPermission, message: ClientMessage, resp: string = ''): string => {
+    #_parsePermissions = (permissions: CommandPermission, message: ClientMessage, resp: string = ''): string => {
         // Права бота
         if (permissions.client) {
             for (let i in permissions.client) {
@@ -111,7 +111,7 @@ class Permissions {
         return resp;
     };
     // Отправляем сообщение о том каких прав нет у пользователя или бота
-    protected SendMessage = (embed: EmbedConstructor, channel: Channel): Promise<NodeJS.Timeout> => channel.send({embeds: [embed as any]}).then((msg: ClientMessage) => Helper.DeleteMessage(msg, 12e3));
+    #SendMessage = (embed: EmbedConstructor, channel: Channel): Promise<NodeJS.Timeout> => channel.send({embeds: [embed as any]}).then((msg: ClientMessage) => Helper.DeleteMessage(msg, 12e3));
 }
 
 //Embed сообщение

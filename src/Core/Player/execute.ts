@@ -25,17 +25,17 @@ type Events = {
 export class PlayerEmitter extends TypedEmitter<Events> {
     public constructor() {
         super();
-        this.on('play', CreateQueue);
+        this.on("play", CreateQueue);
 
-        this.on('pause', Controller.PlayerPause);
-        this.on('resume', Controller.PlayerResume);
-        this.on('remove', Controller.PlayerRemove);
-        this.on('seek', Controller.PlayerSeek);
-        this.on('skip', Controller.PlayerSkip);
-        this.on('replay', Controller.PlayerReplay);
-        this.on('filter', Controller.PlayerFilter);
+        this.on("pause", Controller.PlayerPause);
+        this.on("resume", Controller.PlayerResume);
+        this.on("remove", Controller.PlayerRemove);
+        this.on("seek", Controller.PlayerSeek);
+        this.on("skip", Controller.PlayerSkip);
+        this.on("replay", Controller.PlayerReplay);
+        this.on("filter", Controller.PlayerFilter);
 
-        this.on('playlist', PlayList);
+        this.on("playlist", PlayList);
         this.setMaxListeners(9);
     };
 }

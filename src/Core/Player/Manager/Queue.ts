@@ -91,7 +91,7 @@ export function PushSong(queue: Queue, song: Song, sendMessage: boolean = true):
 export class QueueEvents extends TypedEmitter<EventsQueue> {
     public constructor() {
         super();
-        this.once('DestroyQueue', onDestroyQueue);
+        this.once("DestroyQueue", onDestroyQueue);
         this.setMaxListeners(1);
     };
 }

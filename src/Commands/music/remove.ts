@@ -8,7 +8,7 @@ export class CommandRemove extends Command {
         super({
             name: "remove",
             aliases: [],
-            description: 'Эта команда удаляет из очереди музыку!',
+            description: "Эта команда удаляет из очереди музыку!",
 
             options: [
                 {
@@ -31,33 +31,33 @@ export class CommandRemove extends Command {
         if (!queue) return message.client.Send({
             text: `${message.author}, ⚠ | Музыка щас не играет.`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.Send({
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (!message.member.voice.channel || !message.member.voice) return message.client.Send({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (isNaN(argsNum)) return message.client.Send({
             text: `${message.author}, Это не число!`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (argsNum > queue.songs.length) return message.client.Send({
             text: `${message.author}, Я не могу убрать музыку, поскольку всего ${queue.songs.length}!`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
-        return void message.client.player.emit('remove', message, argsNum);
+        return void message.client.player.emit("remove", message, argsNum);
     };
 }

@@ -47,7 +47,7 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
             options: { userAgent: true, zLibEncode: true, english: true, cookie: true }
         })]))[0];
 
-        if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));
+        if (body.includes("Our systems have detected unusual traffic from your computer network.")) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));
 
         let Token = body.match(/(["'])ID_TOKEN\1[:,]\s?"([^"]+)"/);
 
@@ -56,8 +56,8 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
         })]))[0];
         const VideoFinalData = VideoRes?.filter((d) => d.playerResponse !== undefined)[0]?.playerResponse;
 
-        if (!VideoFinalData) throw reject(new Error('Данные на странице не были найдены'));
-        if (VideoFinalData.playabilityStatus?.status !== 'OK') throw reject(new Error(`Не удалось получить данные из-за: ${VideoFinalData.playabilityStatus.status}`));
+        if (!VideoFinalData) throw reject(new Error("Данные на странице не были найдены"));
+        if (VideoFinalData.playabilityStatus?.status !== "OK") throw reject(new Error(`Не удалось получить данные из-за: ${VideoFinalData.playabilityStatus.status}`));
 
         const html5player = `https://www.youtube.com${body.split('"jsUrl":"')[1].split('"')[0]}`;
         const videoDetails = VideoFinalData.videoDetails;
@@ -133,7 +133,7 @@ function parsingVideos(details: any[], {limit}: SearchOptions, FakeBase: InputTr
                 title: video.ownerText.runs[0].text,
                 url: `https://www.youtube.com${video.ownerText.runs[0].navigationEndpoint.browseEndpoint.canonicalBaseUrl || video.ownerText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url}`,
                 image: video.channelThumbnailSupportedRenderers.channelThumbnailWithLinkRenderer.thumbnail.thumbnails.pop(),
-                isVerified: author?.metadataBadgeRenderer?.tooltip === 'Verified' || author?.metadataBadgeRenderer?.tooltip === 'Official Artist Channel'
+                isVerified: author?.metadataBadgeRenderer?.tooltip === 'Verified' || author?.metadataBadgeRenderer?.tooltip === "Official Artist Channel"
             },
             duration: {
                 seconds: video.lengthText ? video.lengthText.simpleText : null
@@ -156,20 +156,20 @@ async function getPlaylist(url: string): Promise<InputPlaylist> {
             options: {userAgent: true, zLibEncode: true, english: true, cookie: true}
         })]))[0];
 
-        if (body.includes('Our systems have detected unusual traffic from your computer network.')) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));
+        if (body.includes("Our systems have detected unusual traffic from your computer network.")) throw reject(new Error("Google понял что я бот! Это может занять много времени!"));
 
-        const parsed = JSON.parse(`${body.split('{"playlistVideoListRenderer":{"contents":')[1].split('}],"playlistId"')[0]}}]`);
-        const playlistDetails = JSON.parse(body.split('{"playlistSidebarRenderer":')[1].split("}};</script>")[0]).items;
+        const parsed = JSON.parse(`${body.split("{\"playlistVideoListRenderer\":{\"contents\":")[1].split("}],\"playlistId\"")[0]}}]`);
+        const playlistDetails = JSON.parse(body.split("{\"playlistSidebarRenderer\":")[1].split("}};</script>")[0]).items;
         const playlistInfo = playlistDetails[0].playlistSidebarPrimaryInfoRenderer;
         const channel = (playlistDetails[1] ?? playlistDetails[0])?.playlistSidebarSecondaryInfoRenderer?.videoOwner?.videoOwnerRenderer.title.runs[0] ?? null;
 
         return resolve({
             url: `${DefaultLinkYouTube}/playlist?list=${playlistID}`,
-            title: playlistInfo?.title?.runs[0]?.text ?? 'Not found',
+            title: playlistInfo?.title?.runs[0]?.text ?? "Not found",
             items: (await Promise.all([_parsingVideos(parsed)]))[0],
             author: channel === null ? null : (await Promise.all([getChannel({ id: channel.navigationEndpoint.browseEndpoint.browseId, name: channel.text })]))[0],
             image: {
-                url: playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer?.thumbnail.thumbnails?.pop().url?.split('?sqp=')[0]
+                url: playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer?.thumbnail.thumbnails?.pop().url?.split("?sqp=")[0]
             }
         })
     })
@@ -216,7 +216,7 @@ interface ChannelPageBase {
     name?: string
 }
 interface YouTubeChannelParse {
-    page: 'channel',
+    page: "channel",
     rootVe: string,
     response: {
         metadata: {

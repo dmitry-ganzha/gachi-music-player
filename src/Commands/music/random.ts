@@ -20,33 +20,33 @@ export class CommandRandom extends Command {
         if (!queue) return message.client.Send({
             text: `${message.author}, ⚠ | Музыка щас не играет.`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.Send({
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (!message.member.voice.channel || !message.member.voice) return message.client.Send({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (queue.songs.length <= 2) return message.client.Send({
             text: `${message.author}, Всего в списке ${queue.songs.length}, нет смысла!`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         if (queue.options.random === false) {
             queue.options.random = true;
-            return message.client.Send({text: `🔀 | Auto shuffle enable`, message, type: 'css'});
+            return message.client.Send({text: `🔀 | Auto shuffle enable`, message, type: "css"});
         } else {
             queue.options.random = false
-            return message.client.Send({text: `🔀 | Auto shuffle disable`, message, type: 'css'});
+            return message.client.Send({text: `🔀 | Auto shuffle disable`, message, type: "css"});
         }
     };
 }

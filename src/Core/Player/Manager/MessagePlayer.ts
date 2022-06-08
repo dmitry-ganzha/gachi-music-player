@@ -143,7 +143,7 @@ function removeMessage(message: ClientMessage) {
     if (Find.deletable) Find.delete().catch(() => undefined);
     Message.delete(message.channelId);
 
-    if (Message.size === 0 && typeof MessageTimer !== 'undefined') clearTimeout(MessageTimer);
+    if (Message.size === 0 && typeof MessageTimer !== "undefined") clearTimeout(MessageTimer);
 }
 //====================== ====================== ====================== ======================
 /**

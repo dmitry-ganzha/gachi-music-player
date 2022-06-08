@@ -16,9 +16,9 @@ interface OptionsEmbed {
 export class CommandInfo extends Command {
     public constructor() {
         super({
-            name: 'info',
+            name: "info",
             description: "Здесь показана моя информация!",
-            aliases: ['information'],
+            aliases: ["information"],
 
             slash: true,
             enable: true,
@@ -52,19 +52,19 @@ export class CommandInfo extends Command {
                 url: message.client.user.displayAvatarURL()
             },
             author: {
-                name: 'Информация'
+                name: "Информация"
             },
             fields: [
                 {
-                    name: `Основные`,
+                    name: "Основные",
                     value: `**❯ Разработчик: SNIPPIK#4178 **\n**❯ Команд:** ${message.client.commands.size}\n**❯ Версия:** [${pak.version}]\n**❯ Процессор [${core?.model}]**`
                 },
                 {
-                    name: 'Статистика',
+                    name: "Статистика",
                     value: `\`\`\`css\n• Platform   => ${process.platform}\n• Node       => ${process.version}\n\n• Servers    => ${options?.guilds ?? message.client.guilds.cache.size}\n• Channels   => ${options?.channels ??message.client.channels.cache.size}\n\`\`\`\n`
                 },
                 {
-                    name: 'Музыка',
+                    name: "Музыка",
                     value: `\`\`\`css\n• Queue      => ${options?.queue ?? message.client.queue.size}\n• Player     => ${message.client.queue.get(message.guild.id) ? message.client.queue.get(message.guild.id).player.state.status : 'Is not a work player'}\`\`\``
                 }
             ],

@@ -48,9 +48,9 @@ function RequestSpotify(method: string): Promise<SpotifyRes> {
             request: {
                 method: "GET",
                 headers: {
-                    'Accept': "application/json",
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Authorization': "Bearer " + Token
+                    "Accept": "application/json",
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Authorization": "Bearer " + Token
                 }
             },
             options: {zLibEncode: true}
@@ -237,7 +237,7 @@ function isLoggedIn() {
 
 //Получаем ID трека, плейлиста, альбома
 function getID(url: string): string {
-    if (typeof url !== 'string') return undefined;
+    if (typeof url !== "string") return undefined;
     if (!url.match(SpotifyStr)) return undefined;
 
     return new URL(url).pathname.split('/')[2];

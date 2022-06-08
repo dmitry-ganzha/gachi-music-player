@@ -51,10 +51,10 @@ function createFields(song: Song, {player, songs, audioFilters}: Queue, client: 
     const DurationMusic = MusicDuration(song, PlayingDuration);
 
     let fields = [{
-        name: `Щас играет`,
+        name: "Щас играет",
         value: `**❯** [${client.ConvertedText(song.title, 29, true)}](${song.url})\n${DurationMusic}`
     }];
-    if (songs[1]) fields.push({ name: `Потом`, value: `**❯** [${client.ConvertedText(songs[1].title, 29, true)}](${songs[1].url})` });
+    if (songs[1]) fields.push({ name: "Потом", value: `**❯** [${client.ConvertedText(songs[1].title, 29, true)}](${songs[1].url})` });
     return fields;
 }
 //====================== ====================== ====================== ======================

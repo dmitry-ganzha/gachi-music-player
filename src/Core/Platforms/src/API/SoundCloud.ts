@@ -117,15 +117,15 @@ function getClientID(): Promise<string> {
                 zLibEncode: true
             }
         });
-        const BodySplit = body.split('<script crossorigin src="');
+        const BodySplit = body.split("<script crossorigin src=\"");
         const urls: string[] = [];
         BodySplit.forEach((r) => {
-            if (r.startsWith('https')) {
-                urls.push(r.split('"')[0]);
+            if (r.startsWith("https")) {
+                urls.push(r.split("\"")[0]);
             }
         });
         const body2 = await httpsClient.parseBody(urls.pop());
-        return resolve(body2.split(',client_id:"')[1].split('"')[0]);
+        return resolve(body2.split(",client_id:\"")[1].split("\"")[0]);
     });
 }
 
@@ -183,22 +183,22 @@ function getFormat(formats: SoundCloudFormat[], ClientID: string): Promise<FFmpe
 function ParseImageToFull(image: string) {
     if (!image) return image;
 
-    const imageSplit = image.split('-');
-    const FormatImage = image.split('.').pop();
+    const imageSplit = image.split("-");
+    const FormatImage = image.split(".").pop();
 
-    imageSplit[imageSplit.length - 1] = 'original';
+    imageSplit[imageSplit.length - 1] = "original";
 
-    return `${imageSplit.join('-')}.${FormatImage}`;
+    return `${imageSplit.join("-")}.${FormatImage}`;
 }
 
 interface SoundCloudFormat {
     url: string,
-    preset: 'mp3_0_0' | 'opus_0_0',
+    preset: "mp3_0_0" | "opus_0_0",
     duration: number,
     snipped: boolean,
     format: {
-        protocol: 'hls' | 'progressive',
-        mime_type: 'audio/mpeg'
+        protocol: "hls" | "progressive",
+        mime_type: "audio/mpeg"
     },
-    quality: 'sq'
+    quality: "sq"
 }

@@ -96,9 +96,9 @@ client.login(client.cfg.Bot.token).then(() => {
     Promise.all([FileSystemLoad(client)]).catch(console.error);
 
     if (client.cfg.Bot.ignoreError) {
-        process.on('uncaughtException', (err: Error): void | Promise<ClientMessage> => {
+        process.on("uncaughtException", (err: Error): void | Promise<ClientMessage> => {
             console.error(err);
-            if (err.toString() === 'Error: connect ECONNREFUSED 127.0.0.1:443') return null;
+            if (err.toString() === "Error: connect ECONNREFUSED 127.0.0.1:443") return null;
 
             try {
                 const channel = client.channels.cache.get(client.cfg.Channels.SendErrors) as MessageChannel

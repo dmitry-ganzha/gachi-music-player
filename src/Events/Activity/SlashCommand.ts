@@ -3,7 +3,7 @@ import {CoolDownBase, Helper} from './Message';
 import {ClientInteraction, WatKLOK} from "../../Core/Client";
 import {ParseTimeString} from "../../Core/Player/Manager/DurationUtils";
 
-const CustomID = new Set(['skip', 'resume_pause', 'replay', 'last']);
+const CustomID = new Set(["skip", "resume_pause", "replay", "last"]);
 
 
 export class SlashCommandN {
@@ -45,13 +45,13 @@ function PlayerButtons(client: WatKLOK, interaction: ClientInteraction) {
     const type = interaction.customId;
     const queue = client.queue.get(interaction.guildId);
 
-    if (type === 'resume_pause') {
-        if (queue.player.state.status === "paused") return getCommand(client, 'resume').run(interaction, []);
-        else if (queue.player.state.status === "playing") return getCommand(client, 'pause').run(interaction, []);
+    if (type === "resume_pause") {
+        if (queue.player.state.status === "paused") return getCommand(client, "resume").run(interaction, []);
+        else if (queue.player.state.status === "playing") return getCommand(client, "pause").run(interaction, []);
     }
-    else if (type === 'skip') return getCommand(client, 'skip').run(interaction, []);
-    else if (type === 'replay') return getCommand(client, 'replay').run(interaction, []);
-    else if (type === 'last') {
+    else if (type === "skip") return getCommand(client, "skip").run(interaction, []);
+    else if (type === "replay") return getCommand(client, "replay").run(interaction, []);
+    else if (type === "last") {
         if (!queue || !queue?.songs) return;
         if (queue.songs.length === 1) return queue.player.stop();
 

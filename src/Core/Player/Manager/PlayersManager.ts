@@ -31,7 +31,7 @@ export function deleteAudioPlayer(player: AudioPlayer): void {
 
     if (audioPlayers.length === 0) {
         TimeToFrame = -1;
-        if (typeof AudioCycleTimer !== 'undefined') clearTimeout(AudioCycleTimer);
+        if (typeof AudioCycleTimer !== "undefined") clearTimeout(AudioCycleTimer);
     }
 }
 //====================== ====================== ====================== ======================
@@ -59,7 +59,7 @@ function prepareNextAudioFrame(players: AudioPlayer[]): void {
         return;
     }
 
-    nextPlayer['CheckStatusPlayer']();
+    nextPlayer["CheckStatusPlayer"]();
 
     setImmediate(() => prepareNextAudioFrame(players));
 }

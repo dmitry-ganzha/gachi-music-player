@@ -30,6 +30,6 @@ export class CommandRestart extends Command {
     };
 
     #createReaction = (msg: ClientMessage, emoji: string, callback: Function): void => {
-        msg.react(emoji).then(() => msg.createReactionCollector({filter: (reaction: MessageReaction, user: User) => (reaction.emoji.name === emoji && user.id !== msg.client.user.id)}).on('collect', () => callback()));
+        msg.react(emoji).then(() => msg.createReactionCollector({filter: (reaction: MessageReaction, user: User) => (reaction.emoji.name === emoji && user.id !== msg.client.user.id)}).on("collect", () => callback()));
     };
 }

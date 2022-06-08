@@ -7,9 +7,9 @@ import {Colors} from "../../Core/Utils/LiteUtils";
 export class CommandHelp extends Command {
     public constructor() {
         super({
-            name: 'help',
+            name: "help",
             aliases: ["h"],
-            description: 'Можешь глянуть все мои команды!',
+            description: "Можешь глянуть все мои команды!",
 
             slash: true,
             enable: true,

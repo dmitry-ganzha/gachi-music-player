@@ -6,7 +6,7 @@ import {EmbedConstructor} from "../../Core/Utils/TypeHelper";
 import {Colors, getButtons} from "../../Core/Utils/LiteUtils";
 
 export class guildCreate {
-    public readonly name: string = 'guildCreate';
+    public readonly name: string = "guildCreate";
     public readonly enable: boolean = true;
 
     public run = (guild: Guild, f2: null, client: WatKLOK): void | Promise<Message> => {

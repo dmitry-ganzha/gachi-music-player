@@ -82,16 +82,16 @@ function _decipher(url: string, decipherScript: Script): string {
     if (!args.s || !decipherScript) return args.url;
 
     const components = new URL(decodeURIComponent(args.url));
-    components.searchParams.set(args.sp ? args.sp : 'signature', decipherScript.runInNewContext({ sig: decodeURIComponent(args.s) }));
+    components.searchParams.set(args.sp ? args.sp : "signature", decipherScript.runInNewContext({ sig: decodeURIComponent(args.s) }));
     return components.toString();
 }
 function EncodeCode(url: string, nTransformScript: Script): string {
     const components = new URL(decodeURIComponent(url));
-    const n = components.searchParams.get('n');
+    const n = components.searchParams.get("n");
 
     if (!n || !nTransformScript) return url;
 
-    components.searchParams.set('n', nTransformScript.runInNewContext({ ncode: n }));
+    components.searchParams.set("n", nTransformScript.runInNewContext({ ncode: n }));
     return components.toString();
 }
 //====================== ====================== ====================== ======================
@@ -113,13 +113,13 @@ function extractFunctions(body: string): string[] {
  * @param body {string} Страничка
  */
 function extractManipulations(caller: string, body: string): string {
-    const functionName = new Utils().between(caller, `a=a.split("");`, `.`);
+    const functionName = new Utils().between(caller, "a=a.split(\"\");", ".");
     if (!functionName) return '';
 
     const functionStart = `var ${functionName}={`;
     const ndx = body.indexOf(functionStart);
 
-    if (ndx < 0) return '';
+    if (ndx < 0) return "";
 
     const subBody = body.slice(ndx + functionStart.length - 1);
     return `var ${functionName}=${new Utils().cutAfterJSON(subBody)}`;
@@ -131,7 +131,7 @@ function extractManipulations(caller: string, body: string): string {
  * @param functions {string[]} данные youtube htmlPlayer
  */
 function extractDecipher(body: string, functions: string[]): void {
-    const functionName = new Utils().between(body, `a.set("alr","yes");c&&(c=`, `(decodeURIC`);
+    const functionName = new Utils().between(body, "a.set(\"alr\",\"yes\");c&&(c=", "(decodeURIC");
 
     if (functionName && functionName.length) {
         const functionStart = `${functionName}=function(a)`;
@@ -152,9 +152,9 @@ function extractDecipher(body: string, functions: string[]): void {
  * @param functions {string[]} данные youtube htmlPlayer
  */
 function extractNCode(body: string, functions: string[]): void {
-    let functionName = new Utils().between(body, `&&(b=a.get("n"))&&(b=`, `(b)`);
+    let functionName = new Utils().between(body, "&&(b=a.get(\"n\"))&&(b=", "(b)");
 
-    if (functionName.includes('[')) functionName = new Utils().between(body, `${functionName.split('[')[0]}=[`, `]`);
+    if (functionName.includes('[')) functionName = new Utils().between(body, `${functionName.split("[")[0]}=[`, "]");
     if (functionName && functionName.length) {
         const functionStart = `${functionName}=function(a)`;
         const ndx = body.indexOf(functionStart);

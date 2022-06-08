@@ -20,7 +20,7 @@ class MultiLoader {
     public readdirSync = async (): Promise<void> => readdirSync(`./src/${this.path}`).forEach((dir: string) => {
         if (dir.endsWith(".js") || dir.endsWith(".ts")) return null;
 
-        const Files = readdirSync(`./src/${this.path}/${dir}/`).filter((d: string) => (d.endsWith('.js') || d.endsWith('.ts')));
+        const Files = readdirSync(`./src/${this.path}/${dir}/`).filter((d: string) => (d.endsWith(".js") || d.endsWith(".ts")));
         return this.#ForLoad(Files, dir);
     });
     //====================== ====================== ====================== ======================
@@ -66,8 +66,8 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
 
     await Promise.all([
         new MultiLoader({
-            name: 'Commands',
-            path: 'Commands',
+            name: "Commands",
+            path: "Commands",
             callback: (pull: Command, op: { dir: string, file: string }): void => {
                 const {dir, file} = op;
 
@@ -82,8 +82,8 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
         }).readdirSync(),
         //====================== ====================== ====================== ======================
         new MultiLoader({
-            name: 'Events',
-            path: 'Events',
+            name: "Events",
+            path: "Events",
             callback: (pull: { name: ClientEvents, run (ev: any, ev2: any, client: WatKLOK): Promise<void> | void }, op: { dir: string, file: string }): void => {
                 const {dir, file} = op;
 
@@ -97,8 +97,8 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
         }).readdirSync(),
         //====================== ====================== ====================== ======================
         new MultiLoader({
-            name: 'Modules',
-            path: 'Modules',
+            name: "Modules",
+            path: "Modules",
             callback: (pull: {run (client: WatKLOK): Promise<void> | void }, op: { dir: string, file: string }): void => {
                 const {dir, file} = op;
 

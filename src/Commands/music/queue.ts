@@ -24,7 +24,7 @@ export class CommandQueue extends Command {
         if (!queue) return message.client.Send({
             text: `${message.author}, ⚠ | Музыка щас не играет.`,
             message,
-            color: 'RED'
+            color: "RED"
         });
 
         let pages: string[] = [], page = 1, TrackNumber = 1

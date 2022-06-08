@@ -29,7 +29,7 @@ export function AddSong(client: WatKLOK, {color, author, image, title, url, dura
             url: !image?.url ? author?.image.url : image?.url ?? NotImage,
         },
         fields: [{
-            name: `Добавлено`,
+            name: "Добавлено в очередь",
             value: `**❯** [${client.ConvertedText(title, 40, true)}](${url}})\n**❯** [${duration.StringTime}]`
         }],
         //timestamp: new Date(),

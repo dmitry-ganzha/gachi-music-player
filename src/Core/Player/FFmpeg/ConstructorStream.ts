@@ -5,7 +5,7 @@ import {opus} from "prism-media";
 
 const OptionsPrism = {autoDestroy: true, highWaterMark: 12};
 
-type SupportTypeStream = "ogg/opus" | "webm/opus" | "ffmpeg";
+type SupportTypeStream = "ogg/opus" | "webm/opus" | "any";
 interface Parameters {
     stream: Readable | string;
     seek?: number;
@@ -58,18 +58,18 @@ export class ConstructorStream {
             this.#FFmpeg.pipe(this.playStream);
         } else {
             //Расшифровываем входной поток, добавляем аргументы если они есть, пропускаем время в песне!
-            if (parameters.Filters || parameters.seek || parameters.type === 'ffmpeg') {
+            if (parameters.Filters || parameters.seek || parameters.type === "any") {
                 this.#FFmpeg = new FFmpeg(CreateArguments(null, parameters?.Filters, parameters?.seek));
                 this.playStream = new opus.OggDemuxer(OptionsPrism);
 
                 parameters.stream.pipe(this.#FFmpeg);
                 this.#FFmpeg.pipe(this.playStream);
             //Расшифровываем из ogg/opus в opus, без фильтров и пропуска
-            } else if (parameters.type === 'ogg/opus') {
+            } else if (parameters.type === "ogg/opus") {
                 this.playStream = new opus.OggDemuxer(OptionsPrism);
                 parameters.stream.pipe(this.playStream);
             //Расшифровываем из webm/opus в opus, без фильтров и пропуска
-            } else if (parameters.type === 'webm/opus') {
+            } else if (parameters.type === "webm/opus") {
                 this.playStream = new opus.WebmDemuxer(OptionsPrism);
                 parameters.stream.pipe(this.playStream);
             }
@@ -119,7 +119,7 @@ export class ConstructorStream {
 function CreateArguments (url: string, AudioFilters: AudioFilters, seek: number): FFmpegArgs {
     let Arg = [...FFmpegConfiguration.Args.Reconnect, "-vn", ...FFmpegConfiguration.Args.Seek, seek ?? 0];
 
-    if (url) Arg = [...Arg, '-i', url];
+    if (url) Arg = [...Arg, "-i", url];
 
     if (AudioFilters) return [...Arg, "-af", CreateFilters(AudioFilters), ...FFmpegConfiguration.Args.OggOpus, ...FFmpegConfiguration.Args.DecoderPreset];
     return [...Arg, ...FFmpegConfiguration.Args.OggOpus, ...FFmpegConfiguration.Args.DecoderPreset];
@@ -142,7 +142,7 @@ function FFmpegTimer(AudioFilters: AudioFilters) {
     }
 
     if (AudioFilters.indexOf("speed") >= 0) {
-        const Index = AudioFilters.indexOf('speed') + 1;
+        const Index = AudioFilters.indexOf("speed") + 1;
         const number = AudioFilters.slice(Index);
 
         NumberDuration += Number(number);

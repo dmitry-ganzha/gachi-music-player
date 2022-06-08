@@ -104,11 +104,11 @@ function ChangeReqOptions(options: httpsClientOptions): void {
         }
 
         if (options.options?.YouTubeClient || options.Token) {
-            if (options.Token) options.request.headers = {'x-youtube-identity-token': options.Token?.split('\\')[0], ...options.request.headers};
+            if (options.Token) options.request.headers = {"x-youtube-identity-token": options.Token?.split("\\")[0], ...options.request.headers};
 
             options.request.headers = {
-                'x-youtube-client-name': '1',
-                'x-youtube-client-version': '2.20201021.03.00',
+                "x-youtube-client-name": "1",
+                "x-youtube-client-version": "2.20201021.03.00",
                 ...options.request.headers,
             };
         }

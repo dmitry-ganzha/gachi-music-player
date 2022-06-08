@@ -11,7 +11,7 @@ import {JoinVoiceChannel} from "../Manager/Voice/VoiceManager";
 import {ErrorPlayerMessage, PlaySongMessage} from "../Manager/MessagePlayer";
 
 //Статусы плеера для пропуска музыки
-export const StatusPlayerHasSkipped: Set<string> = new Set(['playing', 'paused', 'buffering', 'idle']);
+export const StatusPlayerHasSkipped: Set<string> = new Set(["playing", "paused", "buffering", "idle"]);
 const EmptyFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe]);
 
 /**
@@ -111,7 +111,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
-        if (!queue || !queue.songs || !queue.songs.length) return void queue?.events?.queue?.emit('DestroyQueue', queue, message);
+        if (!queue || !queue.songs || !queue.songs.length) return void queue?.events?.queue?.emit("DestroyQueue", queue, message);
 
         setImmediate(() => CreateResource(queue.songs[0], queue.audioFilters).then((stream: PlayerResource) => {
             client.console(`[Queue]: [GuildID: ${guild.id}, Type: ${queue.songs[0].type}, Status: Playing]: [${queue.songs[0].title}]`);
@@ -211,11 +211,11 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @private
      */
     #play = (resource: PlayerResource): void => {
-        if (!resource) return void this.emit('error', '[AudioResource]: has not found!');
-        if (resource?.ended) return void this.emit('error', `[AudioPlayer]: [Message: Fail to load stream]`);
+        if (!resource) return void this.emit("error", '[AudioResource]: has not found!');
+        if (resource?.ended) return void this.emit("error", `[AudioPlayer]: [Message: Fail to load stream]`);
 
         const onStreamError = (error: Error) => {
-            if (this.state.status !== "idle") void this.emit('error', error);
+            if (this.state.status !== "idle") void this.emit("error", error);
             if (this.state.status !== "idle" && this.state.resource === resource) this.state = { status: "idle" };
         };
 
@@ -229,7 +229,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
             };
 
             resource.playStream.once('readable', onReadableCallback);
-            ['end', 'close', 'finish'].forEach((event: string) => resource.playStream.once(event, onFailureCallback));
+            ["end", "close", "finish"].forEach((event: string) => resource.playStream.once(event, onFailureCallback));
             this.state = { status: "buffering", resource, onReadableCallback, onFailureCallback, onStreamError };
         }
     };

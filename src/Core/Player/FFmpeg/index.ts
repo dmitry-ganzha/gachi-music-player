@@ -54,11 +54,11 @@ export class FFmpeg extends Duplex {
         super({highWaterMark: 12, autoDestroy: true});
         this.#process = this.#SpawnFFmpeg(args);
 
-        this.#Binding(['write', 'end'], this.#Output);
-        this.#Binding(['read', 'setEncoding', 'pipe', 'unpipe'], this.#Input);
+        this.#Binding(["write", "end"], this.#Output);
+        this.#Binding(["read", "setEncoding", "pipe", "unpipe"], this.#Input);
 
         //Используется для загрузки потока в ffmpeg. Неообходимо не указывать параметр -i
-        if (!args.includes('-i')) this.#Calling(['on', 'once', 'removeListener', 'removeListeners', 'listeners']);
+        if (!args.includes('-i')) this.#Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
     };
     //====================== ====================== ====================== ======================
     /**
@@ -88,8 +88,8 @@ export class FFmpeg extends Duplex {
      * @param Arguments {FFmpegArgs} Указываем аргументы для запуска
      */
     #SpawnFFmpeg = (Arguments: FFmpegArgs): any => {
-        const Args = [...Arguments, 'pipe:1'];
-        if (!Args.includes('-i')) Args.unshift('-i', '-');
+        const Args = [...Arguments, "pipe:1"];
+        if (!Args.includes("-i")) Args.unshift("-i", "-");
 
         return spawn(FFmpegName, Args as any, { shell: false, windowsHide: true });
     };
@@ -134,18 +134,18 @@ export class FFprobe {
      * @description Получаем данные
      */
     public getInfo = (): Promise<any> => new Promise((resolve) => {
-        let information = '';
-        this.#process.once('close', () => {
+        let information = "";
+        this.#process.once("close", () => {
             this.#process?.kill();
             let JsonParsed = null;
 
             try {
-                JsonParsed = JSON.parse(information + '}');
+                JsonParsed = JSON.parse(information + "}");
             } catch {/* Nothing */}
 
             return resolve(JsonParsed);
         });
-        this.#process.stdout.once('data', (data) => information += data.toString());
+        this.#process.stdout.once("data", (data) => information += data.toString());
         this.#process.once("error", () => this.#process?.kill());
     });
     //====================== ====================== ====================== ======================
@@ -154,7 +154,7 @@ export class FFprobe {
      * @param Arguments {FFmpegArgs} Указываем аргументы для запуска
      * @private
      */
-    #SpawnProbe = (Arguments: string[]) => spawn(FFprobeName, ['-print_format', 'json', '-show_format', ...Arguments], { shell: false, windowsHide: true });
+    #SpawnProbe = (Arguments: string[]) => spawn(FFprobeName, ["-print_format", "json", "-show_format", ...Arguments], { shell: false, windowsHide: true });
 }
 //====================== ====================== ====================== ======================
 /**
@@ -166,7 +166,7 @@ export function CreateFilters(AudioFilters: AudioFilters): string {
     const response: string[] = [];
 
     if (AudioFilters) AudioFilters.forEach((name: string) => {
-        if (typeof name === 'number') return;
+        if (typeof name === "number") return;
 
         // @ts-ignore
         const Filter = FFmpegConfiguration.FilterConfigurator[name];
@@ -182,7 +182,7 @@ export function CreateFilters(AudioFilters: AudioFilters): string {
 
     response.push(FFmpegConfiguration.Args.Filters.AudioFade);
 
-    return response.join(',');
+    return response.join(",");
 }
 //====================== ====================== ====================== ======================
 /**
@@ -194,9 +194,9 @@ export function getEnableFilters(AudioFilters: AudioFilters): string {
     const response: string[] = [];
 
     AudioFilters.forEach((name: string) => {
-        if (typeof name === 'number') return;
+        if (typeof name === "number") return;
         response.push(name);
     });
 
-    return response.join(', ');
+    return response.join(", ");
 }
