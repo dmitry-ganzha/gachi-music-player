@@ -60,13 +60,10 @@ export function ConsoleLog(text: string) {
  */
 export function ConvertedText(text: string, value: number | any, clearText: boolean = false) {
     try {
-        if (clearText) text = text.replace('[', '').replace(']', '').replace(/`/, '');
-        if (text.length > value && value !== false) {
-            return `${text.substring(0, value)}...`;
-        } else return text;
-    } catch {
+        if (clearText) text = text.replace("[", "").replace("]", "").replace(/`/, "");
+        if (text.length > value && value !== false) return `${text.substring(0, value)}...`;
         return text;
-    }
+    } catch { return text; }
 }
 //====================== ====================== ====================== ======================
 /**
@@ -83,9 +80,9 @@ export function getMe(guild: Guild): GuildMember {
  */
 export function getButtons(ClientID: string) {
     const Buttons = {
-        MyUrl: new ButtonBuilder().setURL(`https://discord.com/oauth2/authorize?client_id=${ClientID}&permissions=8&scope=bot+applications.commands`).setEmoji({name: '🔗'}).setLabel('Invite').setStyle(ButtonStyle.Link),
-        ServerUrl: new ButtonBuilder().setURL(cfg.Bot.DiscordServer).setEmoji({name: '🛡'}).setLabel('Help server').setStyle(ButtonStyle.Link),
-        Git: new ButtonBuilder().setURL('https://github.com/SNIPPIK/WatKLOK-BOT').setEmoji({name: "🗂"}).setLabel("GitHub").setStyle(ButtonStyle.Link)
+        MyUrl: new ButtonBuilder().setURL(`https://discord.com/oauth2/authorize?client_id=${ClientID}&permissions=8&scope=bot+applications.commands`).setEmoji({name: "🔗"}).setLabel("Invite").setStyle(ButtonStyle.Link),
+        ServerUrl: new ButtonBuilder().setURL(cfg.Bot.DiscordServer).setEmoji({name: "🛡"}).setLabel("Help server").setStyle(ButtonStyle.Link),
+        Git: new ButtonBuilder().setURL("https://github.com/SNIPPIK/WatKLOK-BOT").setEmoji({name: "🗂"}).setLabel("GitHub").setStyle(ButtonStyle.Link)
     };
     return new ActionRowBuilder().addComponents([Buttons.MyUrl, Buttons.ServerUrl, Buttons.Git]);
 }
@@ -122,7 +119,7 @@ type OptionsSendType =  "css" | "js" | "ts" | "cpp" | "html" | "cs";
 
 
 export function MessageChannelSend(options: SendOptions): void {
-    if (typeof options.type === 'string') return SendMessageCode(options);
+    if (typeof options.type === "string") return SendMessageCode(options);
     return SendMessageNoCode(options)
 }
 
@@ -144,7 +141,7 @@ function CatchMessage(type: Promise<ClientMessage>): void {
     return;
 }
 
-function MessageEmbed(color: ColorResolvable | number = 'BLUE', description: string): EmbedConstructor {
+function MessageEmbed(color: ColorResolvable | number = "BLUE", description: string): EmbedConstructor {
     return {
         color: typeof color === "number" ? color : ConvertColor(color), description
     }

@@ -21,7 +21,7 @@ function MessageEmbed(client: WatKLOK): EmbedConstructor {
         description: `**${client.user}**: Starting...`,
         timestamp: new Date() as any,
         footer: {
-            text: `${client.user.username}`,
+            text: client.user.username,
             iconURL: client.user.displayAvatarURL(),
         }
     };

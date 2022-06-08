@@ -8,7 +8,7 @@ import {Song} from "../Structures/Queue/Song";
  * @constructor
  */
 export function NumberString(duration: string | number): string | number {
-    return (duration < 10) ? ('0' + duration) : duration;
+    return (duration < 10) ? ("0" + duration) : duration;
 }
 //====================== ====================== ====================== ======================
 /**
@@ -36,7 +36,7 @@ export function ParseTimeString (duration: number ): string {
     let minutes = toStringTime((duration / 60) % 60);
     let seconds = toStringTime(duration % 60);
 
-    return (days > 0 ? `${days}:` : '') + (hours > 0 || days > 0 ? `${hours}:` : '') + (minutes > 0 ? `${minutes}:` : '00:') + (seconds > 0 ? `${seconds}` : '00');
+    return (days > 0 ? `${days}:` : "") + (hours > 0 || days > 0 ? `${hours}:` : "") + (minutes > 0 ? `${minutes}:` : "00:") + (seconds > 0 ? `${seconds}` : "00");
 }
 //====================== ====================== ====================== ======================
 /**

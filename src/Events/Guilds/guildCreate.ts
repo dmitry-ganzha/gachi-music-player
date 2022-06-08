@@ -15,7 +15,7 @@ export class guildCreate {
         setImmediate(() => {
             try {
                 // @ts-ignore
-                return guild.systemChannel.send({ embeds: [ConstructEmbed(guild)], components: [getButtons(client.user.id)] })
+                return guild.systemChannel.send({ embeds: [ConstructEmbed(guild)], components: [getButtons(client.user.id)] });
             } catch (e) {
                 console.log(e);
                 return;

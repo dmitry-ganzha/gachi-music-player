@@ -51,7 +51,7 @@ function DeleteMessage(msg: ClientMessage): void {
  */
 function reaction(user: User, message: ClientMessage, msg: ClientMessage, callback: Function, emoji: string): Promise<ReactionCollector> {
     return msg.react(emoji).then(() => msg.createReactionCollector({filter: (reaction: MessageReaction, user: User) => filter(emoji, reaction, user, message), time: 1e4 * 25})
-        .on('collect', (reaction: MessageReaction): Promise<ReactionCollector> => callback(reaction, user, message, msg))).catch(() => undefined);
+        .on("collect", (reaction: MessageReaction): Promise<ReactionCollector> => callback(reaction, user, message, msg))).catch(() => undefined);
 }
 //====================== ====================== ====================== ======================
 /**

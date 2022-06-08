@@ -36,7 +36,7 @@ export class FFmpeg extends Duplex {
     get #Output() { return this.#process.stdin; };
     //====================== ====================== ====================== ======================
     public constructor(args: FFmpegArgs) {
-        super({highWaterMark: 12, autoDestroy: true});
+        super({autoDestroy: true, objectMode: true});
         this.#process = this.#SpawnFFmpeg(args);
 
         this.#Binding(["write", "end"], this.#Output);

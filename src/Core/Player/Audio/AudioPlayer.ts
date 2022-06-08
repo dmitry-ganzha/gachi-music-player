@@ -210,8 +210,8 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @private
      */
     #play = (resource: PlayerResource): void => {
-        if (!resource) return void this.emit("error", '[AudioResource]: has not found!');
-        if (resource?.ended) return void this.emit("error", `[AudioPlayer]: [Message: Fail to load stream]`);
+        if (!resource) return void this.emit("error", "[AudioResource]: has not found!");
+        if (resource?.ended) return void this.emit("error", "[AudioPlayer]: [Message: Fail to load stream]");
 
         const onStreamError = (error: Error) => {
             if (this.state.status !== "idle") void this.emit("error", error);
@@ -227,7 +227,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
                 if (this.state.status === "buffering" && this.state.resource === resource) this.state = { status: "idle" };
             };
 
-            resource.playStream.once('readable', onReadableCallback);
+            resource.playStream.once("readable", onReadableCallback);
             ["end", "close", "finish"].forEach((event: string) => resource.playStream.once(event, onFailureCallback));
             this.state = { status: "buffering", resource, onReadableCallback, onFailureCallback, onStreamError };
         }
@@ -341,11 +341,18 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
  * @param queue {Queue} Очередь сервера
  */
 function isRemoveSong({options, songs}: Queue): void {
-    if (options?.loop === "song") return;
-    else if (options?.loop === "songs") {
-        const repeat = songs.shift();
-        songs.push(repeat);
-    } else songs.shift();
+    switch (options?.loop) {
+        case "song": return;
+        case "songs": {
+            const repeat = songs.shift();
+            songs.push(repeat);
+            return;
+        }
+        default: {
+            songs.shift();
+            return;
+        }
+    }
 }
 //====================== ====================== ====================== ======================
 

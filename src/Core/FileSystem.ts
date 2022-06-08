@@ -20,7 +20,7 @@ class MultiLoader {
     public readdirSync = async (): Promise<void> => readdirSync(`./src/${this.path}`).forEach((dir: string) => {
         if (dir.endsWith(".js") || dir.endsWith(".ts")) return null;
 
-        const Files = readdirSync(`./src/${this.path}/${dir}/`).filter((d: string) => (d.endsWith(".js") || d.endsWith(".ts")));
+        const Files = readdirSync(`./src/${this.path}/${dir}/`).filter((file: string) => (file.endsWith(".js") || file.endsWith(".ts")));
         return this.#ForLoad(Files, dir);
     });
     //====================== ====================== ====================== ======================

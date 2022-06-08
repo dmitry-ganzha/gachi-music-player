@@ -4,7 +4,7 @@ import FFmpegConfiguration from "../../../../DataBase/FFmpeg.json";
 import {CreateFilters, FFmpeg, FFmpegArgs} from "./Media/FFmpeg";
 import {AudioFilters} from "./Queue/Queue";
 
-const OptionsPrism = {autoDestroy: true, highWaterMark: 12};
+const OptionsPrism = {autoDestroy: true, objectMode: true};
 /**
  * @name FFmpegDecoder
  * @description

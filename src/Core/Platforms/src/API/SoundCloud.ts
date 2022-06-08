@@ -23,14 +23,10 @@ function getTrack(url: string): Promise<InputTrack> {
                 id: result.user.id,
                 url: result.user.permalink_url,
                 title: result.user.username,
-                image: {
-                    url: ParseImageToFull(result.user.avatar_url)
-                },
+                image: ParseImageToFull(result.user.avatar_url),
                 isVerified: result.user.verified
             },
-            image: {
-                url: ParseImageToFull(result.artwork_url)
-            },
+            image: ParseImageToFull(result.artwork_url),
             duration: {
                 seconds: (result.duration / 1e3).toFixed(0)
             },
@@ -66,14 +62,10 @@ function getPlaylist(url: string): Promise<InputPlaylist> {
                 id: result.user.id,
                 url: result.user.permalink_url,
                 title: result.user.username,
-                image: {
-                    url: ParseImageToFull(result.user.avatar_url)
-                },
+                image: ParseImageToFull(result.user.avatar_url),
                 isVerified: result.user.verified
             },
-            image: {
-                url: ParseImageToFull(result.artwork_url)
-            },
+            image: ParseImageToFull(result.artwork_url),
             items: PlaylistItems
         });
     });
@@ -111,7 +103,7 @@ function getClientID(): Promise<string> {
     return new Promise<string>(async (resolve) => {
         if (clientID) return resolve(clientID);
 
-        const body = await httpsClient.parseBody(`https://soundcloud.com/`, {
+        const body = await httpsClient.parseBody("https://soundcloud.com/", {
             options: {
                 english: true,
                 zLibEncode: true
@@ -144,14 +136,10 @@ function CreateInfoTrack(result: any): InputTrack {
             id: result.user.id,
             url: result.user.permalink_url,
             title: result.user.username,
-            image: {
-                url: ParseImageToFull(result.user.avatar_url)
-            },
+            image: ParseImageToFull(result.user.avatar_url),
             isVerified: result.user.verified
         },
-        image: {
-            url: ParseImageToFull(result.artwork_url)
-        },
+        image: ParseImageToFull(result.artwork_url),
         duration: {
             seconds: (result.duration / 1e3).toFixed(0)
         }
@@ -180,15 +168,15 @@ function getFormat(formats: SoundCloudFormat[], ClientID: string): Promise<FFmpe
  * @param image {string} Ссылка на картинку
  * @constructor
  */
-function ParseImageToFull(image: string) {
-    if (!image) return image;
+function ParseImageToFull(image: string): {url: string} {
+    if (!image) return {url: image};
 
     const imageSplit = image.split("-");
     const FormatImage = image.split(".").pop();
 
     imageSplit[imageSplit.length - 1] = "original";
 
-    return `${imageSplit.join("-")}.${FormatImage}`;
+    return {url: `${imageSplit.join("-")}.${FormatImage}`};
 }
 
 interface SoundCloudFormat {

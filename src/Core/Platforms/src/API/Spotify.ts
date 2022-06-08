@@ -21,11 +21,11 @@ export const Spotify = {getTrack, getAlbum, getPlaylist, SearchTracks};
 function getToken(): Promise<void> {
     return httpsClient.parseJson(`${ApiLink}/token`, {
             request: {
-                method: 'POST',
+                method: "POST",
                 headers: {
-                    'Accept': "application/json",
-                    'Authorization': `Basic ${Buffer.from(clientID + ':' + clientSecret).toString('base64')}`,
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    "Accept": "application/json",
+                    "Authorization": `Basic ${Buffer.from(clientID + ":" + clientSecret).toString("base64")}`,
+                    "Content-Type": "application/x-www-form-urlencoded",
                 },
                 body: "grant_type=client_credentials"
             },

@@ -133,7 +133,7 @@ function parsingVideos(details: any[], {limit}: SearchOptions, FakeBase: InputTr
                 title: video.ownerText.runs[0].text,
                 url: `https://www.youtube.com${video.ownerText.runs[0].navigationEndpoint.browseEndpoint.canonicalBaseUrl || video.ownerText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url}`,
                 image: video.channelThumbnailSupportedRenderers.channelThumbnailWithLinkRenderer.thumbnail.thumbnails.pop(),
-                isVerified: author?.metadataBadgeRenderer?.tooltip === 'Verified' || author?.metadataBadgeRenderer?.tooltip === "Official Artist Channel"
+                isVerified: author?.metadataBadgeRenderer?.tooltip === "Verified" || author?.metadataBadgeRenderer?.tooltip === "Official Artist Channel"
             },
             duration: {
                 seconds: video.lengthText ? video.lengthText.simpleText : null

@@ -12,7 +12,7 @@ export class WatKLOK extends Client {
     public commands = new CollectionMap<string, Command>();
     public aliases = new CollectionMap<string, string>();
     public queue = new CollectionMap<string, Queue>();
-    public cfg = require('../../DataBase/Config.json');
+    public cfg = require("../../DataBase/Config.json");
 
     public Send = MessageChannelSend;
     public ConvertedText = ConvertedText;

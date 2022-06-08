@@ -22,9 +22,9 @@ export type ColorResolvable = "RED" | "BLUE" | "GREEN" | "DARK" | "YELLOW" | "GR
 
 
 //Аудио кодеки которые предоставляет youtube
-type AudioCodec =  'mp4a' | 'mp3' | 'vorbis' | 'aac' | 'opus' | 'flac';
+type AudioCodec =  "mp4a" | "mp3" | "vorbis" | "aac" | "opus" | "flac";
 //Видео кодеки которые предоставляет youtube
-type VideoCodec = 'mp4v' | 'avc1' | 'Sorenson H.283' | 'MPEG-4 Visual' | 'VP8' | 'VP9' | 'H.264';
+type VideoCodec = "mp4v" | "avc1" | "Sorenson H.283" | "MPEG-4 Visual" | "VP8" | "VP9" | "H.264";
 //Качество видео которые предоставляет youtube
 type VideoQuality = "tiny" | "LOW" | "MEDIUM" | "HIGH";
 
@@ -78,7 +78,7 @@ export interface InputTrack {
     isValid?: boolean;
     PrevFile?: string;
 }
-export type InputTrackDuration = InputTrack['duration'];
+export type InputTrackDuration = InputTrack["duration"];
 export type InputTrackAuthor = {
     title: string;
     url: string | undefined;
@@ -89,7 +89,7 @@ export type InputTrackAuthor = {
     };
     isVerified?: boolean;
 };
-export type InputTrackImage = InputTrack['image'];
+export type InputTrackImage = InputTrack["image"];
 //
 /**
  * @description Пример получаемого автора трека
