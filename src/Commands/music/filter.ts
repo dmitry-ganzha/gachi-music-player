@@ -3,7 +3,7 @@ import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {ApplicationCommandOptionType} from "discord.js";
 import FFmpegConfiguration from "../../../DataBase/FFmpeg.json";
-import {getEnableFilters} from "../../Core/Player/FFmpeg";
+import {getEnableFilters} from "../../Core/Player/Structures/Media/FFmpeg";
 
 export class CommandLoop extends Command {
     public constructor() {
@@ -63,6 +63,7 @@ export class CommandLoop extends Command {
 
         if (NameFilter === "off") {
             queue.audioFilters = [];
+            void message.client.player.emit("filter", message);
             return message.client.Send({text: `Все фильтры: отключены`, ...SendArg});
         }
 

@@ -11,9 +11,9 @@ import {ClientMessage} from "../../Core/Client";
 import {SoundCloud, Spotify, VK, YouTube} from "../../Core/Platforms";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {InputPlaylist, InputTrack} from "../../Core/Utils/TypeHelper";
-import {FFprobe} from "../../Core/Player/FFmpeg";
 import {NotImage} from "../../Core/Player/Structures/Message/Helper";
 import {ParseTimeString} from "../../Core/Player/Manager/DurationUtils";
+import {FFprobe} from "../../Core/Player/Structures/Media/FFprobe";
 
 const youtubeStr = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi;
 const spotifySrt = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;
