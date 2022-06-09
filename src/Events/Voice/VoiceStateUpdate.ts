@@ -12,7 +12,7 @@ export class voiceStateUpdate {
         if (!queue) return;
 
         const voiceConnection: VoiceState[] = client.connections(newState.guild); //Все пользователи в гс который нам надо
-        const FilterVoiceChannel: VoiceState[] = voiceConnection.filter((fn) => !newState.guild.members.cache.get(fn.id).user.bot); //Фильтруем пользователей чтоб боты не слушали музыку
+        const FilterVoiceChannel: VoiceState[] = voiceConnection.filter((fn) => !fn.member.user.bot); //Фильтруем пользователей чтоб боты не слушали музыку
         const FindBotVoiceChannel = voiceConnection.find((fn: VoiceState) => fn.id === client.user.id); //Есть ли бот в гс
 
         setImmediate(() => {
