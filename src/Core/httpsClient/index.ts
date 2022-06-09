@@ -50,13 +50,13 @@ function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
  */
 function parseJson(url: string, options?: httpsClientOptions): Promise<null | any> {
     return parseBody(url, options).then((body: string) => {
-        if (!body) return;
+        if (!body) return null;
 
         try {
             return JSON.parse(body);
         } catch (e) {
             console.log(`Invalid json response body at ${url} reason: ${e.message}`);
-            return;
+            return null;
         }
     });
 }

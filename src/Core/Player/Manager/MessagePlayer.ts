@@ -18,9 +18,7 @@ let MessageTimer: NodeJS.Timeout = null;
 export function PlaySongMessage(message: ClientMessage) {
     if (Message.get(message.channelId)) removeMessage(message);
 
-    AddInQueueMessage(message).then((msg) => {
-        setImmediate(() => addMessage(msg));
-    });
+    AddInQueueMessage(message).then((msg) => setImmediate(() => addMessage(msg)));
 }
 //====================== ====================== ====================== ======================
 /**
@@ -61,7 +59,7 @@ export function PushSongMessage({channel, client, guild}: ClientMessage, song: S
             const EmbedPushedSong = AddSong(client, song, queue);
             const PushChannel = channel.send({embeds: [EmbedPushedSong]});
 
-            return DeleteMessage(PushChannel, 5e3);
+            return DeleteMessage(PushChannel, 8e3);
         } catch (e) {
             client.console(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
         }

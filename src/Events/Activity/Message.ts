@@ -3,7 +3,7 @@ import {Command} from "../../Commands/Constructor";
 import cfg from '../../../DataBase/Config.json';
 import {ClientMessage} from "../../Core/Client";
 import {Channel, EmbedConstructor} from "../../Core/Utils/TypeHelper";
-import {Colors, getMe} from "../../Core/Utils/LiteUtils";
+import {Colors} from "../../Core/Utils/LiteUtils";
 import {ParseTimeString} from "../../Core/Player/Manager/DurationUtils";
 
 type CommandPermission = Command['permissions'];
@@ -75,7 +75,7 @@ class Permissions {
     // Если одно право
     #_createPresenceOnePerm = (permissions: CommandPermission, message: ClientMessage): boolean => {
         if (permissions.client) {
-            if (!getMe(message.guild).permissions.has(permissions.client[0])) {
+            if (!message.guild.members.me.permissions.has(permissions.client[0])) {
                 this.#SendMessage(NotPermissions(message, "У меня нет таких прав!", `•${permissions.client[0]}`), message.channel).catch(() => null);
                 return true;
             }
@@ -100,7 +100,7 @@ class Permissions {
         // Права бота
         if (permissions.client) {
             for (let i in permissions.client) {
-                if (!getMe(message.guild)?.permissions?.has(permissions.client[i])) resp += `•${permissions.client[i]}\n`;
+                if (!message.guild.members.me?.permissions?.has(permissions.client[i])) resp += `•${permissions.client[i]}\n`;
             }
         // Права пользователя
         } else if (permissions.user) {

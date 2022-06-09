@@ -53,12 +53,12 @@ export async function FindResource(song: Song): Promise<void> {
  * @description Получаем данные формата
  * @param song {Song} Трек
  */
-async function getLinkFormat({type, url, title, author, duration}: Song): Promise<InputFormat> {
+function getLinkFormat({type, url, title, author, duration}: Song): Promise<InputFormat> {
     try {
         switch (type) {
             case "SPOTIFY": return FindTrack(`${author.title} - ${title}`, duration.seconds);
-            case "SOUNDCLOUD": return (await VK.getTrack(url))?.format;
-            case "VK": return (await SoundCloud.getTrack(url))?.format;
+            case "SOUNDCLOUD": return VK.getTrack(url).then((d) => d?.format);
+            case "VK": return SoundCloud.getTrack(url).then((d) => d?.format);
             case "YOUTUBE": return getFormatYouTube(url);
             default: return null
         }

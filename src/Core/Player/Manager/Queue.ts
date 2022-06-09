@@ -152,8 +152,8 @@ function DeleteMessage({message}: Queue_Channels): NodeJS.Timeout {
  * @param message {ClientMessage} Сообщение с сервера
  */
 function SendChannelToEnd({stop}: Queue_Options, message: ClientMessage): void {
-    if (stop) return message.client.Send({text: `🎵 | Музыка была выключена`, message, type: 'css'});
-    return message.client.Send({text: `🎵 | Музыка закончилась`, message, type: 'css'});
+    if (stop) return message.client.Send({text: "🎵 | Музыка была выключена", message, type: "css"});
+    return message.client.Send({text: "🎵 | Музыка закончилась", message, type: "css"});
 }
 //====================== ====================== ====================== ======================
 /**

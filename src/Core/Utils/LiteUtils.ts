@@ -1,4 +1,4 @@
-import {Guild, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle, VoiceState} from "discord.js";
+import {Guild, ActionRowBuilder, ButtonBuilder, ButtonStyle, VoiceState} from "discord.js";
 import cfg from "../../../DataBase/Config.json";
 import {getVoiceConnection} from "@discordjs/voice";
 import {ColorResolvable, EmbedConstructor} from "./TypeHelper";
@@ -67,14 +67,6 @@ export function ConvertedText(text: string, value: number | any, clearText: bool
 }
 //====================== ====================== ====================== ======================
 /**
- * @description Получаем <guild.me>
- * @param guild {Guild} Сервер, где будет получен параметр <guild.me>
- */
-export function getMe(guild: Guild): GuildMember {
-    return guild.members.cache.get(guild.client.user.id);
-}
-//====================== ====================== ====================== ======================
-/**
  * @description Заранее заготовленные кнопки
  * @param ClientID {string} ID бота
  */
@@ -95,10 +87,10 @@ export function getButtons(ClientID: string) {
 export function Connections(Guild: Guild): VoiceState[] {
     const Users: VoiceState[] = [], set = getVoiceConnection(Guild.id);
     if (set) {
-        Guild.voiceStates.cache.find((fn: VoiceState): any => {
+        Guild.voiceStates.cache.forEach((fn: VoiceState): any => {
             if (!(fn.channelId === set.joinConfig.channelId && fn.guild.id === set.joinConfig.guildId)) return;
             Users.push(fn);
-        })
+        });
     }
 
     return Users;

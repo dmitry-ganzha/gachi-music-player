@@ -70,8 +70,12 @@ export class CommandPlay extends Command {
             color: "RED"
         });
 
-        try {
+        //Отправляем сообщение потом чтоб не замедлять поиск трека
+        setImmediate(() => {
             if (search.match(HttpORHttps)) message.client.Send({ text: `🔎 Search | ${search}`, message, color: "GREY", type: "css" });
+        });
+
+        try {
             return this.#getInfoPlatform(search, message, voiceChannel);
         } catch (e) {
             console.log(`[PlayCommand]: [ERROR] -> `, e);

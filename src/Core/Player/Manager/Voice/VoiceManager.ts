@@ -3,7 +3,6 @@ import { DiscordGatewayAdapterCreator, getVoiceConnection, joinVoiceChannel, Voi
 import {TypedEmitter} from "tiny-typed-emitter";
 import {Queue} from "../../Structures/Queue/Queue";
 import {AudioPlayer} from "../../Audio/AudioPlayer";
-import {getMe} from "../../../Utils/LiteUtils";
 
 type Events = {
     StartQueueDestroy: (queue: Queue) => void,
@@ -35,7 +34,7 @@ export function JoinVoiceChannel({id, guild, type}: VoiceChannel | StageChannel)
         adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator & DiscordGatewayAdapterCreator,
     });
 
-    SpeakStateChannel(getMe(guild), type);
+    SpeakStateChannel(guild.members.me, type);
     return VoiceChannel;
 }
 //====================== ====================== ====================== ======================

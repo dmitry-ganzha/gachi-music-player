@@ -64,7 +64,7 @@ export class CommandLoop extends Command {
         if (NameFilter === "off") {
             queue.audioFilters = [];
             void message.client.player.emit("filter", message);
-            return message.client.Send({text: `Все фильтры: отключены`, ...SendArg});
+            return message.client.Send({text: "Все фильтры: отключены", ...SendArg});
         }
 
         // @ts-ignore
