@@ -1,7 +1,6 @@
 import {Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
 
-
 /**
  * @description Добавляем 0 к числу. Пример: 01:10
  * @param duration {string | number} Число

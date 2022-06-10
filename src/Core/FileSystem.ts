@@ -111,16 +111,16 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
             }
         }).readdirSync(),
         setImmediate(() => {
-            if (!ClientShard) console.log(`----------------------------> [FileSystem Ending loading] <----------------------------`)
+            if (!ClientShard) console.log("----------------------------> [FileSystem Ending loading] <----------------------------");
         })
     ]);
 }
 //
 function FileType(file: string): string {
-    return file.endsWith('.ts') ? `TS` : `JS`;
+    return file.endsWith(".ts") ? "TS" : "JS";
 }
 function AddTime(): string {
-    return `[FileSystem]`;
+    return "[FileSystem]";
 }
 function SendLog(File: string, Path: string, status: "✖️" | "✔️") {
     return console.log(`${AddTime()} ->  Status: [${status}] | Type: [${FileType(File)}] | Path: [${Path}]`);

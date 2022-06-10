@@ -49,7 +49,7 @@ export class CommandPlay extends Command {
     };
 
     public run = (message: ClientMessage, args: string[]): void => {
-        const voiceChannel: VoiceChannel | StageChannel = message.member.voice.channel, search: string = args.join(' '),
+        const voiceChannel: VoiceChannel | StageChannel = message.member.voice.channel, search: string = args.join(" "),
             queue: Queue = message.client.queue.get(message.guild.id);
 
         if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.Send({

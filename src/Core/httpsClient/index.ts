@@ -138,7 +138,7 @@ function DecodePage(decoder: ZlibDecoder | DefaultDecoder): Promise<string> {
     return new Promise((resolve) => {
         decoder.setEncoding("utf-8");
         decoder.on("data", (c) => data.push(c));
-        decoder.once("end", () => resolve(data.join('')));
+        decoder.once("end", () => resolve(data.join("")));
     });
 }
 //====================== ====================== ====================== ======================
