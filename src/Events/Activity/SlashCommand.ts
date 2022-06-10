@@ -31,7 +31,7 @@ export class SlashCommandN {
         //
 
         setImmediate(() => {
-            if (interaction.isCommand()) return RunCommand(client, interaction);
+            if (interaction.isChatInputCommand() || interaction.isContextMenuCommand()) return RunCommand(client, interaction);
             else if (CustomID.has(interaction.customId) && client.queue.get(interaction.guildId)) {
                 if (!interaction.member.voice.channel) return;
                 return PlayerButtons(client, interaction);

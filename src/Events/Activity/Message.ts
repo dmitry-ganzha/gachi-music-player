@@ -111,7 +111,7 @@ class Permissions {
         return resp;
     };
     // Отправляем сообщение о том каких прав нет у пользователя или бота
-    #SendMessage = (embed: EmbedConstructor, channel: Channel): Promise<NodeJS.Timeout> => channel.send({embeds: [embed as any]}).then((msg: ClientMessage) => Helper.DeleteMessage(msg, 12e3));
+    #SendMessage = (embed: EmbedConstructor, channel: Channel): Promise<NodeJS.Timeout> => channel.send({embeds: [embed as any]}).then((msg: any) => Helper.DeleteMessage(msg, 12e3));
 }
 
 //Embed сообщение
