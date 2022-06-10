@@ -74,5 +74,5 @@ export function ParserTime(duration: string): number {
  * @param duration {number} Желательно число
  */
 function toStringTime(duration: number): string | number {
-    return NumberString(duration.toFixed(0));
+    return NumberString(parseInt(duration as any));
 }
