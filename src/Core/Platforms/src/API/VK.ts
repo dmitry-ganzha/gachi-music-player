@@ -132,7 +132,13 @@ function getPlaylist(url: string, options = {limit: 50}): Promise<null | InputPl
  * @param options {string} Параметры через &
  */
 function RequestVK(method: methodType, type: requestType, options: string): Promise<any> {
-    return httpsClient.parseJson(CreateUrl(method, type, options), { options: { zLibEncode: true } });
+    return httpsClient.parseJson(CreateUrl(method, type, options), {
+        request: {
+            headers: {
+                "accept-encoding": "gzip, deflate, br"
+            }
+        }
+    });
 }
 //====================== ====================== ====================== ======================
 /**

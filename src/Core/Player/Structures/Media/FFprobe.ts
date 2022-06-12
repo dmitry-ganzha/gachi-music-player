@@ -7,12 +7,12 @@ let FFprobeName: string
 const FFprobeCheck = () => {
     for (let source of ["ffprobe"]) {
         try {
-            const result = spawnSync(source, ['-h'], {windowsHide: true, shell: false});
+            const result = spawnSync(source, ["-h"], {windowsHide: true, shell: false});
             if (result.error) continue;
             return FFprobeName = source;
         } catch {/* Nothing */}
     }
-    throw new Error('FFprobe not found!');
+    throw new Error("FFprobe not found!");
 };
 if (FFprobeName === undefined) Promise.all([FFprobeCheck()]).catch();
 

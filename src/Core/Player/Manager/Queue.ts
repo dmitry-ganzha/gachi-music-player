@@ -2,7 +2,7 @@ import {ClientMessage} from "../../Client";
 import {InputTrack} from "../../Utils/TypeHelper";
 import {Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
-import {Disconnect} from "./Voice/VoiceManager";
+import {Disconnect, JoinVoiceChannel} from "./Voice/VoiceManager";
 import {PushSongMessage} from "./MessagePlayer";
 import {VoiceChannel} from "discord.js";
 import {TypedEmitter} from "tiny-typed-emitter";
@@ -41,12 +41,10 @@ export function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel, 
     }
 
     //Если поступает InputTrack
-    setImmediate(() => {
-        const song: Song = new Song(tracks, message);
+    const song: Song = new Song(tracks, message);
 
-        if (queue) return PushSong(queue, song);
-        return CreateQueueGuild(message, VoiceChannel, song);
-    });
+    if (queue) return PushSong(queue, song);
+    return CreateQueueGuild(message, VoiceChannel, song);
 }
 //====================== ====================== ====================== ======================
 /**
@@ -59,14 +57,19 @@ function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChannel, so
     const {client, guild} = message;
 
     if (client.queue.get(message.guild.id)) return;
-    client.console(`[Queue]: [GuildID: ${guild.id}, Status: Create]`);
 
+    //Создаем очередь
     const GuildQueue = new Queue(message, VoiceChannel);
-    client.queue.set(guild.id, GuildQueue);
-    const queue = client.queue.get(message.guild.id);
+    PushSong(GuildQueue, song, false); // Добавляем трек в очередь
 
-    PushSong(queue, song, false);
-    return queue.player.PlayCallback(message);
+    const connection = JoinVoiceChannel(VoiceChannel);
+    GuildQueue.channels.connection = connection;
+    GuildQueue.player.subscribe(connection);
+
+    client.queue.set(guild.id, GuildQueue); //Записываем очередь в <client.queue>
+
+    client.console(`[Queue]: [GuildID: ${guild.id}, Status: Create]`);
+    return GuildQueue.player.PlayCallback(message); //Включаем трек
 }
 //====================== ====================== ====================== ======================
 /**

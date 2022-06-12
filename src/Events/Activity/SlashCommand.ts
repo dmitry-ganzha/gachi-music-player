@@ -1,10 +1,9 @@
 import {ApplicationCommand, CommandInteractionOption, GuildResolvable} from "discord.js";
-import {CoolDownBase, Helper} from './Message';
+import {CoolDownBase, isOwner} from './Message';
 import {ClientInteraction, WatKLOK} from "../../Core/Client";
 import {ParseTimeString} from "../../Core/Player/Manager/DurationUtils";
 
 const CustomID = new Set(["skip", "resume_pause", "replay", "last"]);
-
 
 export class SlashCommandN {
     public readonly name: string = "interactionCreate";
@@ -19,7 +18,7 @@ export class SlashCommandN {
         const CoolDownFind = CoolDownBase.get(interaction.author.id);
 
         //
-        if (Helper.isOwner(null, interaction.author.id)) {
+        if (isOwner(null, interaction.author.id)) {
             if (CoolDownFind) return client.Send({ text: `${interaction.author.username}, Воу воу, ты слишком быстро вызываешь "Interaction". Подожди ${ParseTimeString(CoolDownFind.time)}`, message: interaction as any, type: "css" });
             else {
                 CoolDownBase.set(interaction.author.id, {

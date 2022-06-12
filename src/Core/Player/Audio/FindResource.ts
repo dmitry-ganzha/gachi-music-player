@@ -4,7 +4,7 @@ import {InputFormat, InputTrack} from "../../Utils/TypeHelper";
 import {SoundCloud, VK, YouTube} from "../../Platforms";
 import {ParserTime} from "../Manager/DurationUtils";
 
-const GlobalOptions: httpsClientOptions = {request: {maxRedirections: 10, method: "GET"}};
+const GlobalOptions: httpsClientOptions = {request: {method: "GET"}};
 
 //====================== ====================== ====================== ======================
 /**
@@ -31,11 +31,12 @@ export async function FindResource(song: Song): Promise<void> {
  */
 function CheckLink(url: string) {
     if (!url) return "Fail";
-     return httpsClient.Request(url, GlobalOptions).then((resource) => {
-         if (resource instanceof Error) return "Fail";
-         if (resource.statusCode >= 200 && resource.statusCode < 400) return "OK";
-         return "Fail";
-     });
+
+    return httpsClient.Request(url, GlobalOptions).then((resource) => {
+        if (resource instanceof Error) return "Fail";
+        if (resource.statusCode >= 200 && resource.statusCode < 400) return "OK";
+        return "Fail";
+    });
 }
 //====================== ====================== ====================== ======================
 /**

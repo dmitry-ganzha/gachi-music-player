@@ -318,13 +318,13 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
  * @param seek {number} Пропуск музыки до 00:00:00
  * @param req
  */
-function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0, req: number = 0): Promise<PlayerResource> {
+async function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0, req: number = 0): Promise<PlayerResource> {
     return new Promise((resolve) => {
         if (req > 4) return resolve(null);
 
         FindResource(song).catch(() => CreateResource(song, audioFilters, seek, req++)).then(() => {
             if (!song.format?.url) return CreateResource;
-            let Params: any = {stream: song.format.url};
+            let Params: any = {url: song.format.url};
 
             if (!song.isLive) Params = {...Params, seek: seek, Filters: audioFilters}
 
@@ -366,7 +366,6 @@ interface PlayerStateIdle {
     status: "idle";
     resource?: PlayerResource;
 }
-
 /**
  * @description Статус в котором плеер играет музыку
  */
@@ -376,7 +375,6 @@ interface PlayerStatePlaying {
 
     onStreamError: (error: any) => void;
 }
-
 /**
  * @description Статус в котором плеер стоит на паузе или плеер сам решил поставить паузу поскольку нет голосовых каналов
  */
@@ -386,7 +384,6 @@ interface PlayerStatePaused {
 
     onStreamError: (error: any) => void;
 }
-
 /**
  * @description Статус при котором плеер готовится к отправке пакетов
  */
@@ -398,7 +395,6 @@ interface PlayerStateBuffering {
     onFailureCallback: () => void;
     onStreamError: (error: any) => void;
 }
-
 /**
  * @description Ивенты плеера
  */

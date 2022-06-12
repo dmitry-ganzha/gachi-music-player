@@ -48,8 +48,14 @@ export function Decipher(formats: YouTubeFormat[], html5player: string): Promise
  */
 function getFunctions(html5player: string): Promise<null | string[]> {
     return httpsClient.parseBody(html5player, {
-        request: { method: "GET" },
-        options: { zLibEncode: true, userAgent: true }
+        options: { userAgent: true },
+        request: {
+            method: "GET",
+            headers: {
+                "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
+                "accept-encoding": "gzip, deflate, br"
+            }
+        }
     }).then((body: string) => {
         const functions = extractFunctions(body);
 

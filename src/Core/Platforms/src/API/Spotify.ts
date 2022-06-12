@@ -26,10 +26,10 @@ function getToken(): Promise<void> {
                     "Accept": "application/json",
                     "Authorization": `Basic ${Buffer.from(clientID + ":" + clientSecret).toString("base64")}`,
                     "Content-Type": "application/x-www-form-urlencoded",
+                    "accept-encoding": "gzip, deflate, br"
                 },
                 body: "grant_type=client_credentials"
-            },
-            options: {zLibEncode: true}
+            }
         }).then((result) => {
             //console.log(result);
             TokenTime = Date.now() + result.expires_in;
@@ -50,14 +50,11 @@ function RequestSpotify(method: string): Promise<SpotifyRes> {
                 headers: {
                     "Accept": "application/json",
                     "Content-Type": "application/x-www-form-urlencoded",
-                    "Authorization": "Bearer " + Token
+                    "Authorization": "Bearer " + Token,
+                    "accept-encoding": "gzip, deflate, br"
                 }
-            },
-            options: {zLibEncode: true}
-        }).then((d) => {
-            //console.log(d);
-            return resolve(d);
-        });
+            }
+        }).then((d) => resolve(d));
     });
 }
 //====================== ====================== ====================== ======================
@@ -68,7 +65,7 @@ function RequestSpotify(method: string): Promise<SpotifyRes> {
 function getTrack(url: string): Promise<InputTrack | null> {
     return new Promise<InputTrack | null>(async (resolve) => {
         const id = getID(url);
-        const result = await RequestSpotify(`tracks/${id}`) as SpotifyTrack & FailResult;
+        const result = (await Promise.all([RequestSpotify(`tracks/${id}`)]))[0] as SpotifyTrack & FailResult;
 
         if (!result || !result?.name) return resolve(null);
 
@@ -95,7 +92,7 @@ function getPlaylist(url: string, options: {limit: number} = {limit: 101}): Prom
     return new Promise<InputPlaylist | null>(async (resolve) => {
         try {
             const id = getID(url);
-            const result = await RequestSpotify(`playlists/${id}?offset=0&limit=${options.limit}`) as SpotifyPlaylist & FailResult;
+            const result = (await Promise.all([RequestSpotify(`playlists/${id}?offset=0&limit=${options.limit}`)]))[0] as SpotifyPlaylist & FailResult;
 
             if (!result || !result?.name) return resolve(null);
 
@@ -103,7 +100,6 @@ function getPlaylist(url: string, options: {limit: number} = {limit: 101}): Prom
                 url, title: result.name,
                 items: await Promise.all(result.tracks.items.map(async ({track}) => {
                     return {
-                        //id: track?.id,
                         title: track?.name,
                         url: `${DefaultUrlSpotify}/track/${track?.id}`,
                         author: (await Promise.all([getAuthorTrack(track.artists[0].external_urls.spotify)]))[0],
@@ -144,7 +140,6 @@ function getAlbum(url: string, options: {limit: number} = {limit: 101}): Promise
                 title: result.name,
                 items: await Promise.all(result.tracks.items.map(async (track: SpotifyTrack) => {
                     return {
-                        //id: track.id,
                         title: track.name,
                         url: `${DefaultUrlSpotify}/track/${track.id}`,
                         author: (await Promise.all([getAuthorTrack(track.artists[0].external_urls.spotify)]))[0],
@@ -181,11 +176,9 @@ function SearchTracks(search: string, options: {limit: number} = {limit: 15}): P
             return resolve({
                 items: await Promise.all(result.tracks.items.map(async (track: SpotifyTrack) => {
                     return {
-                        //id: track.id,
                         title: track.name,
                         url: `${DefaultUrlSpotify}/track/${track.id}`,
                         author: {
-                            //id: track.artists[0].id,
                             url: `${DefaultUrlSpotify}/artist/${track.artists[0].id}`,
                             title: track.artists[0].name,
                             image: null,

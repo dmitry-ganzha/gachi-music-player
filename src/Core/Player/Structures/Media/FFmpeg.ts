@@ -10,7 +10,7 @@ let FFmpegName: string;
 const FFmpegCheck = () => {
     for (let source of FFmpegConfiguration.Names) {
         try {
-            const result = spawnSync(source, ['-h'], {windowsHide: true, shell: false});
+            const result = spawnSync(source, ["-h"], {windowsHide: true, shell: false});
             if (result.error) continue;
             return FFmpegName = source;
         } catch {/* Nothing */}
@@ -43,7 +43,7 @@ export class FFmpeg extends Duplex {
         this.#Binding(["read", "setEncoding", "pipe", "unpipe"], this.#Input);
 
         //Используется для загрузки потока в ffmpeg. Неообходимо не указывать параметр -i
-        if (!args.includes('-i')) this.#Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
+        if (!args.includes("-i")) this.#Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
     };
     //====================== ====================== ====================== ======================
     /**

@@ -104,9 +104,11 @@ function getClientID(): Promise<string> {
         if (clientID) return resolve(clientID);
 
         const body = await httpsClient.parseBody("https://soundcloud.com/", {
-            options: {
-                english: true,
-                zLibEncode: true
+            request: {
+                headers: {
+                    "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
+                    "accept-encoding": "gzip, deflate, br"
+                }
             }
         });
         const BodySplit = body.split("<script crossorigin src=\"");

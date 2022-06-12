@@ -44,29 +44,10 @@ export class FFmpegDecoder {
     public constructor(parameters: Parameters) {
         setImmediate(() => this.#TimeFrame = this.#TimeFrame * FFmpegTimer(parameters?.Filters) || 20);
         //Даем FFmpeg'у, ссылку с которой надо скачать поток
-        if (typeof parameters.stream === "string") {
-            this.#FFmpeg = new FFmpeg(CreateArguments(parameters.stream, parameters?.Filters, parameters?.seek));
-            this.playStream = new opus.OggDemuxer(OptionsPrism);
+        this.#FFmpeg = new FFmpeg(CreateArguments(parameters.url, parameters?.Filters, parameters?.seek));
+        this.playStream = new opus.OggDemuxer(OptionsPrism);
 
-            this.#FFmpeg.pipe(this.playStream);
-        } else {
-            //Расшифровываем входной поток, добавляем аргументы если они есть, пропускаем время в песне!
-            if (parameters.Filters || parameters.seek || parameters.type === "any") {
-                this.#FFmpeg = new FFmpeg(CreateArguments(null, parameters?.Filters, parameters?.seek));
-                this.playStream = new opus.OggDemuxer(OptionsPrism);
-
-                parameters.stream.pipe(this.#FFmpeg);
-                this.#FFmpeg.pipe(this.playStream);
-                //Расшифровываем из ogg/opus в opus, без фильтров и пропуска
-            } else if (parameters.type === "ogg/opus") {
-                this.playStream = new opus.OggDemuxer(OptionsPrism);
-                parameters.stream.pipe(this.playStream);
-                //Расшифровываем из webm/opus в opus, без фильтров и пропуска
-            } else if (parameters.type === "webm/opus") {
-                this.playStream = new opus.WebmDemuxer(OptionsPrism);
-                parameters.stream.pipe(this.playStream);
-            }
-        }
+        this.#FFmpeg.pipe(this.playStream);
 
         this.playStream.once("readable", () => (this.#started = true));
         ["end", "close", "error"].forEach((event) => this.playStream.once(event, this.destroy));
@@ -157,10 +138,9 @@ function FFmpegTimer(AudioFilters: AudioFilters) {
  */
 type SupportTypeStream = "ogg/opus" | "webm/opus" | "any";
 interface Parameters {
-    stream: Readable | string;
+    url: string;
     seek?: number;
     Filters?: AudioFilters;
-    type?: SupportTypeStream;
 }
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================

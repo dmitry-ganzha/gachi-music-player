@@ -1,10 +1,8 @@
 import {BrotliDecompress, createBrotliDecompress, createDeflate, createGunzip, Deflate, Gunzip} from 'node:zlib';
 import {IncomingMessage} from "http";
+import {request, RequestOptions} from "https";
 import {getCookies, uploadCookie} from "../Platforms/src/youtube/Cookie";
 import UserAgents from "./UserAgents.json";
-import {Dispatcher, request} from "undici";
-import {RequestOptions} from "undici/types/dispatcher";
-import BodyReadable from "undici/types/readable";
 
 export const httpsClient = {Request, parseBody, parseJson};
 
@@ -13,9 +11,32 @@ export const httpsClient = {Request, parseBody, parseJson};
  * @param url {string} Ссылка
  * @param options {httpsClientOptions} Настройки запроса
  */
-function Request(url: string, options?: httpsClientOptions) {
+function Request(url: string, options?: httpsClientOptions): Promise<IncomingMessage> {
     if (options) ChangeReqOptions(options);
-    return request(url, options?.request);
+
+    return new Promise((resolve, reject) => {
+        const Link = new URL(url);
+        const Options: RequestOptions = {
+            host: Link.hostname,
+            path: Link.pathname + Link.search,
+            headers: options.request?.headers ?? {},
+            method: options.request?.method ?? "GET"
+        };
+
+        const Requesting = request(Options, resolve);
+        Requesting.on("error", (err) => reject(err));
+        if (options.request?.method === "POST") Requesting.write(options.request?.body);
+        Requesting.end();
+    });
+}
+function AutoRedirect(url: string, options?: httpsClientOptions): Promise<IncomingMessage> {
+    return new Promise(async (resolve, reject) => {
+        const res = await Request(url, options).catch((err: Error) => err);
+        if (res instanceof Error) return reject(res);
+
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location !== undefined) return AutoRedirect(res.headers.location, options);
+        return resolve(res);
+    });
 }
 //====================== ====================== ====================== ======================
 /**
@@ -24,22 +45,28 @@ function Request(url: string, options?: httpsClientOptions) {
  * @param options {httpsClientOptions} Настройки запроса
  */
 function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
-    return Request(url, options).then((res) => {
-        let decoder: BrotliDecompress | Gunzip | Deflate | null = null;
+    return new Promise(async (resolve) => {
+        const res = await AutoRedirect(url, options);
         const encoding = res.headers["content-encoding"];
+        let decoder: BrotliDecompress | Gunzip | Deflate | null = null;
+        let data: string[] = [];
 
         if (encoding === "gzip") decoder = createGunzip();
         else if (encoding === "br") decoder = createBrotliDecompress();
         else if (encoding === "deflate") decoder = createDeflate();
 
-        setImmediate(() => EditCookie(res.headers, url));
+        if (options.options?.cookie && res.headers && res.headers["set-cookie"]) uploadCookie(res.headers["set-cookie"]);
 
         if (decoder) {
-            res.body.pipe(decoder);
-            return DecodePage(decoder);
+            res.pipe(decoder);
+            decoder.setEncoding("utf-8");
+            decoder.on("data", (c) => data.push(c));
+            decoder.once("end", () => resolve(data.join("")));
+        } else {
+            res.setEncoding("utf-8");
+            res.on("data", (c) => data.push(c));
+            res.once("end", () => resolve(data.join("")));
         }
-
-        return DecodePage(res.body);
     });
 }
 //====================== ====================== ====================== ======================
@@ -49,14 +76,15 @@ function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
  * @param options {httpsClientOptions} Настройки запроса
  */
 function parseJson(url: string, options?: httpsClientOptions): Promise<null | any> {
-    return parseBody(url, options).then((body: string) => {
-        if (!body) return null;
+    return new Promise(async (resolve) => {
+        const body = await parseBody(url, options);
+        if (!body) return resolve(null);
 
         try {
-            return JSON.parse(body);
+            return resolve(JSON.parse(body));
         } catch (e) {
             console.log(`Invalid json response body at ${url} reason: ${e.message}`);
-            return null;
+            return resolve(null);
         }
     });
 }
@@ -75,7 +103,6 @@ function GetUserAgent(): {Agent: string, Version: string} {
 
     //Сам агент
     const Agent = UserAgents[Math.floor(Math.random() * (MaxAgents - MinAgents + 1)) + MinAgents];
-
     //Версия агента
     const Version = Agent.split("Chrome/")[1].split(" ")[0];
 
@@ -87,7 +114,7 @@ function GetUserAgent(): {Agent: string, Version: string} {
  * @param options {httpsClientOptions} Настройки запроса
  */
 function ChangeReqOptions(options: httpsClientOptions): void {
-    if (!options.request?.headers) options.request = {...options.request, headers: {}};
+    if (!options.request || !options.request?.headers) options.request = {...options.request, headers: {}};
 
     if (options.request?.headers) {
         if (options.options?.userAgent) {
@@ -95,51 +122,11 @@ function ChangeReqOptions(options: httpsClientOptions): void {
             options.request.headers = {...options.request.headers, "user-agent": Agent};
             if (Version) options.request.headers = {...options.request.headers, "sec-ch-ua-full-version": Version};
         }
-        if (options.options?.zLibEncode) options.request.headers = {...options.request.headers, "accept-encoding": "gzip, deflate, br"};
-        if (options.options?.english) options.request.headers = {...options.request.headers, "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7"};
-
-        if (options.options?.cookie || options.Token) {
+        if (options.options?.cookie) {
             const cookie = getCookies();
             if (cookie) options.request.headers = {...options.request.headers, "cookie": cookie};
         }
-
-        if (options.options?.YouTubeClient || options.Token) {
-            if (options.Token) options.request.headers = {"x-youtube-identity-token": options.Token?.split("\\")[0], ...options.request.headers};
-
-            options.request.headers = {
-                "x-youtube-client-name": "1",
-                "x-youtube-client-version": "2.20201021.03.00",
-                ...options.request.headers,
-            };
-        }
     }
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Отправляем данные которые надо заменить в куки для работоспособности
- * @param headers {IncomingHttpHeaders} Заголовки
- * @param url {string} Ссылка
- * @constructor
- */
-function EditCookie(headers: IncomingHeaders, url: string): void {
-    if (headers && headers["set-cookie"] && url.match(/watch/)) {
-        setImmediate(() => uploadCookie(headers["set-cookie"]));
-    }
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Начинаем декодирование
- * @param decoder {ZlibDecoder | DefaultDecoder} Тип, из чего выгружаем данные
- * @constructor
- */
-function DecodePage(decoder: ZlibDecoder | DefaultDecoder): Promise<string> {
-    let data: string[] = [];
-
-    return new Promise((resolve) => {
-        decoder.setEncoding("utf-8");
-        decoder.on("data", (c) => data.push(c));
-        decoder.once("end", () => resolve(data.join("")));
-    });
 }
 //====================== ====================== ====================== ======================
 // @ts-ignore
@@ -147,18 +134,10 @@ interface ReqOptions extends RequestOptions {
     path?: string,
     body?: string
 }
-type ZlibDecoder =  BrotliDecompress | Gunzip | Deflate;
-type DefaultDecoder = BodyReadable & Dispatcher.BodyMixin;
-
 export interface httpsClientOptions {
     request?: ReqOptions;
     options?: {
         userAgent?: boolean;
-        zLibEncode?: boolean;
-        english?: boolean;
-        YouTubeClient?: boolean;
         cookie?: boolean;
     };
-    Token?: string;
 }
-type IncomingHeaders = IncomingMessage["headers"];

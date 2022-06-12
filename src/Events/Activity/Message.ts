@@ -22,21 +22,22 @@ export class GuildMessage {
         const command = this.#getCommand(message, prefix);
         const CoolDownFind = CoolDownBase.get(message.author.id);
 
-        if (Helper.isOwner(true, message.author.id)) {
-            if (CoolDownFind) return message.client.Send({ text: `${message.author.username}, Воу воу, ты слишком быстро отправляешь сообщения. Подожди ${ParseTimeString(CoolDownFind.time)}`, message, type: "css" });
-            else {
-                CoolDownBase.set(message.author.id, {
-                    time: command?.CoolDown ?? 5
-                });
-                setTimeout(async () => CoolDownBase.delete(message.author.id), (command?.CoolDown ?? 5) * 1e3 ?? 5e3);
-            }
+        if (isOwner(true, message.author.id)) {
+            if (CoolDownFind) return message.client.Send({
+                text: `${message.author.username}, Воу воу, ты слишком быстро отправляешь сообщения. Подожди ${ParseTimeString(CoolDownFind.time)}`,
+                message,
+                type: "css"
+            });
+
+            CoolDownBase.set(message.author.id, {time: command?.CoolDown ?? 5});
+            setTimeout(() => CoolDownBase.delete(message.author.id), (command?.CoolDown ?? 5) * 1e3 ?? 5e3);
         }
 
         if (command) {
-            Helper.DeleteMessage(message, 12e3);
+            DeleteMessage(message, 12e3);
 
-            if (Helper.isOwner(command?.isOwner, message.author.id)) return message.client.Send({ text: `${message.author}, Эта команда не для тебя!`, message, color: "RED"})
-            if (Helper.isPermissions(command?.permissions, message)) return;
+            if (isOwner(command?.isOwner, message.author.id)) return message.client.Send({ text: `${message.author}, Эта команда не для тебя!`, message, color: "RED"})
+            if (isPermissions(command?.permissions, message)) return;
 
             return command.run(message, args);
         }
@@ -47,23 +48,6 @@ export class GuildMessage {
         let cmd = content.slice(prefix.length).trim().split(/ +/g).shift().toLowerCase();
         return client.commands.get(cmd) ?? client.commands.get(client.aliases.get(cmd));
     };
-}
-
-export class Helper {
-    // Пользователь owner?
-    public static isOwner = (isOwner: CommandIsOwner, AuthorID: string) => {
-        if (isOwner) return !cfg.Bot.OwnerIDs.includes(AuthorID);
-        return false;
-    };
-    // У пользователя есть ограничения?
-    public static isPermissions = (permissions: CommandPermission, message: ClientMessage): boolean => {
-        let isEnablePermissions = false;
-        if (permissions) {
-            if ((permissions?.user || permissions?.client)?.length > 0) isEnablePermissions = new Permissions().PermissionSize(permissions, message);
-        }
-        return isEnablePermissions;
-    };
-    public static DeleteMessage = (message: ClientMessage, time: number = 2e3): NodeJS.Timeout => setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, time);
 }
 
 class Permissions {
@@ -111,7 +95,7 @@ class Permissions {
         return resp;
     };
     // Отправляем сообщение о том каких прав нет у пользователя или бота
-    #SendMessage = (embed: EmbedConstructor, channel: Channel): Promise<NodeJS.Timeout> => channel.send({embeds: [embed as any]}).then((msg: any) => Helper.DeleteMessage(msg, 12e3));
+    #SendMessage = (embed: EmbedConstructor, channel: Channel): Promise<void> => channel.send({embeds: [embed as any]}).then((msg: any) => DeleteMessage(msg, 12e3));
 }
 
 //Embed сообщение
@@ -124,5 +108,22 @@ function NotPermissions({author, client}: ClientMessage, name: string, text: str
         timestamp: new Date() as any
     }
 }
+// Пользователь owner?
+export function isOwner(isOwner: CommandIsOwner, AuthorID: string) {
+    if (isOwner) return !cfg.Bot.OwnerIDs.includes(AuthorID);
+    return false;
+}
+// У пользователя есть ограничения?
+function isPermissions(permissions: CommandPermission, message: ClientMessage): boolean {
+    let isEnablePermissions = false;
+    if (permissions) {
+        if ((permissions?.user || permissions?.client)?.length > 0) isEnablePermissions = new Permissions().PermissionSize(permissions, message);
+    }
+    return isEnablePermissions;
+}
+function DeleteMessage(message: ClientMessage, time: number = 2e3): void {
+    setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, time);
+}
+
 
 export const CoolDownBase = new Map();
