@@ -47,9 +47,7 @@ function PlayerEnd(message: ClientMessage): void {
     const {client, guild} = message;
     const {player}: Queue = client.queue.get(guild.id);
 
-    if (StatusPlayerHasSkipped.has(player.state.status)) {
-        setTimeout(player.stop, 300);
-    }
+    if (StatusPlayerHasSkipped.has(player.state.status)) setTimeout(player.stop, 300);
     return;
 }
 //====================== ====================== ====================== ======================

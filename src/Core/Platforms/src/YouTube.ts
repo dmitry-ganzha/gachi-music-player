@@ -43,18 +43,17 @@ function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
 function getVideo(url: string, options: Options = {onlyFormats: false}): Promise<InputTrack | InputFormat> {
     return new Promise(async (resolve, reject) => {
         const VideoID = new Utils().getID(url);
-        const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/watch?v=${VideoID}&has_verified=1`, {
+        const body = await httpsClient.parseBody(`${DefaultLinkYouTube}/watch?v=${VideoID}&has_verified=1`, {
             options: { userAgent: true, zLibEncode: true, english: true, cookie: true }
-        })]))[0];
+        });
 
         if (body.includes("Our systems have detected unusual traffic from your computer network.")) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));
 
-        let Token = body.match(/(["'])ID_TOKEN\1[:,]\s?"([^"]+)"/);
-
-        const VideoRes: any[] = (await Promise.all([httpsClient.parseJson(`${DefaultLinkYouTube}/watch?v=${VideoID}?flow=grid&view=0&pbj=1`, {
+        const Token = body.match(/(["'])ID_TOKEN\1[:,]\s?"([^"]+)"/);
+        const VideoRes: any[] = await httpsClient.parseJson(`${DefaultLinkYouTube}/watch?v=${VideoID}?flow=grid&view=0&pbj=1`, {
             options: {YouTubeClient: true, cookie: true}, Token: Token.length >= 3 ? Token[2] : null
-        })]))[0];
-        const VideoFinalData = VideoRes?.filter((d) => d.playerResponse !== undefined)[0]?.playerResponse;
+        })
+        const VideoFinalData = VideoRes?.find((d) => d.playerResponse !== undefined)?.playerResponse;
 
         if (!VideoFinalData) throw reject(new Error("Данные на странице не были найдены"));
         if (VideoFinalData.playabilityStatus?.status !== "OK") throw reject(new Error(`Не удалось получить данные из-за: ${VideoFinalData.playabilityStatus.status}`));
@@ -77,13 +76,12 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
 
         if (options?.onlyFormats) return resolve(format.pop());
 
-        const authorVideo = (await Promise.all([getChannel({ id: videoDetails.channelId, name: videoDetails.author })]))[0];
         const VideoData: InputTrack = {
             url: `${DefaultLinkYouTube}/watch?v=${VideoID}`,
             title: videoDetails.title,
             duration: {seconds: videoDetails.lengthSeconds},
             image: videoDetails.thumbnail.thumbnails.pop(),
-            author: authorVideo,
+            author: (await Promise.all([getChannel({ id: videoDetails.channelId, name: videoDetails.author })]))[0],
             isLive: videoDetails.isLiveContent,
             isPrivate: videoDetails.isPrivate,
         };

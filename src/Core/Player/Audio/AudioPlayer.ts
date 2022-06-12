@@ -96,10 +96,10 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
-        setImmediate(() => CreateResource(queue.songs[0], queue.audioFilters, seek).then((stream: PlayerResource) => {
+        CreateResource(queue.songs[0], queue.audioFilters, seek).then((stream: PlayerResource) => {
             this.#play(stream);
             if (seek) this.#CurrentTime = seek;
-        }));
+        });
     };
     //====================== ====================== ====================== ======================
     /**
@@ -112,11 +112,11 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
         if (!queue || !queue.songs || !queue.songs.length) return void queue?.events?.queue?.emit("DestroyQueue", queue, message);
 
-        setImmediate(() => CreateResource(queue.songs[0], queue.audioFilters).then((stream: PlayerResource) => {
+        CreateResource(queue.songs[0], queue.audioFilters).then((stream: PlayerResource) => {
             client.console(`[Queue]: [GuildID: ${guild.id}, Type: ${queue.songs[0].type}, Status: Playing]: [${queue.songs[0].title}]`);
             if (stream instanceof FFmpegDecoder) PlaySongMessage(queue.channels.message);
             return this.#play(stream);
-        }));
+        });
     };
     //====================== ====================== ====================== ======================
     /**
@@ -218,19 +218,21 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
             if (this.state.status !== "idle" && this.state.resource === resource) this.state = { status: "idle" };
         };
 
-        if (resource.hasStarted) this.state = { status: "playing", resource, onStreamError };
-        else {
-            const onReadableCallback = () => {
-                if (this.state.status === "buffering" && this.state.resource === resource) this.state = { status: "playing", resource, onStreamError };
-            };
-            const onFailureCallback = () => {
-                if (this.state.status === "buffering" && this.state.resource === resource) this.state = { status: "idle" };
-            };
-
-            resource.playStream.once("readable", onReadableCallback);
-            ["end", "close", "finish"].forEach((event: string) => resource.playStream.once(event, onFailureCallback));
-            this.state = { status: "buffering", resource, onReadableCallback, onFailureCallback, onStreamError };
+        if (resource.hasStarted) {
+            this.state = { status: "playing", resource, onStreamError };
+            return;
         }
+
+        const onReadableCallback = () => {
+            if (this.state.status === "buffering" && this.state.resource === resource) this.state = { status: "playing", resource, onStreamError };
+        };
+        const onFailureCallback = () => {
+            if (this.state.status === "buffering" && this.state.resource === resource) this.state = { status: "idle" };
+        };
+
+        resource.playStream.once("readable", onReadableCallback);
+        ["end", "close", "finish"].forEach((event: string) => resource.playStream.once(event, onFailureCallback));
+        this.state = { status: "buffering", resource, onReadableCallback, onFailureCallback, onStreamError };
     };
     //====================== ====================== ====================== ======================
     /**
@@ -256,14 +258,12 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
-        setImmediate(() => {
-            setTimeout(() => {
-                if (queue?.songs) isRemoveSong(queue);
-                if (queue?.options?.random) client.queue.swap(0, Math.floor(Math.random() * queue.songs.length), "songs", guild.id);
+        setTimeout(() => {
+            if (queue?.songs) isRemoveSong(queue);
+            if (queue?.options?.random) client.queue.swap(0, Math.floor(Math.random() * queue.songs.length), "songs", guild.id);
 
-                return this.PlayCallback(message);
-            }, 700);
-        });
+            return this.PlayCallback(message);
+        }, 700);
     };
     //====================== ====================== ====================== ======================
     /**
@@ -288,6 +288,8 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     #onAutoPaused = (message: ClientMessage) => {
         const queue: Queue = message.client.queue.get(message.guild.id);
         const connection = JoinVoiceChannel(queue.channels.voice);
+
+        if (!this.state.resource.hasStarted) return;
 
         if (this.#subscribers.length > 0) {
             const subscribe = this.#subscribers.find((sub) => sub.connection === connection);
@@ -320,18 +322,13 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
     return new Promise((resolve) => {
         if (req > 4) return resolve(null);
 
-        FindResource(song).catch(() => {
-            req++;
-            return CreateResource(song, audioFilters, seek, req);
-        }).then(() => {
+        FindResource(song).catch(() => CreateResource(song, audioFilters, seek, req++)).then(() => {
             if (!song.format?.url) return CreateResource;
+            let Params: any = {stream: song.format.url};
 
-            if (song.isLive) return resolve(new FFmpegDecoder({
-                stream: song.format.url
-            }));
-            return resolve(new FFmpegDecoder({
-                stream: song.format.url, seek, Filters: audioFilters
-            }));
+            if (!song.isLive) Params = {...Params, seek: seek, Filters: audioFilters}
+
+            return resolve(new FFmpegDecoder(Params));
         });
     });
 }

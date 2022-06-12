@@ -11,49 +11,38 @@ const GlobalOptions: httpsClientOptions = {request: {maxRedirections: 10, method
  * @description Заготавливаем необходимые данные для создания потока
  */
 export async function FindResource(song: Song): Promise<void> {
-    if (!song.format || !song.format.url) {
-        let format = await getLinkFormat(song);
+    if (!song.format || !song.format?.url) {
+        let format = await getFormatSong(song);
 
         if (!format || !format?.url) throw Error("Has not found format");
 
         //Подгоняем под общую сетку
         song.format = ConstFormat(format);
-
-        //Проверяем можно ли скачивать с ресурса
-        const resource = await httpsClient.Request(song.format?.url, GlobalOptions);
-
-        if (resource instanceof Error) {
-            delete song.format;
-            throw Error(`Failed checking link resource. Code: ${resource.statusCode}`);
-        }
-
-        if (resource?.statusCode === 200) {
-            song.format.work = true;
-            return;
-        }
-        //Если этот формат невозможно включить прогоняем по новой
-        if (resource?.statusCode >= 400 && resource?.statusCode <= 500) return FindResource(song);
     }
 
-    const resource = await httpsClient.Request(song.format?.url, GlobalOptions);
-
-    if (resource instanceof Error) {
-        delete song.format;
-        throw Error(`Failed checking link resource. Code: ${resource.statusCode}`);
-    }
-
-    if (resource.statusCode >= 200 && resource.statusCode < 400) song.format.work = true;
-    else {
-        delete song.format;
-        throw Error(`Failed checking link resource. Code: ${resource.statusCode}`);
-    }
+    const resource = await CheckLink(song.format?.url);
+    if (resource === "Fail") throw Error("Has fail checking resource link");
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Проверяем ссылку
+ * @param url {string} Ссылка
+ * @constructor
+ */
+function CheckLink(url: string) {
+    if (!url) return "Fail";
+     return httpsClient.Request(url, GlobalOptions).then((resource) => {
+         if (resource instanceof Error) return "Fail";
+         if (resource.statusCode >= 200 && resource.statusCode < 400) return "OK";
+         return "Fail";
+     });
 }
 //====================== ====================== ====================== ======================
 /**
  * @description Получаем данные формата
  * @param song {Song} Трек
  */
-function getLinkFormat({type, url, title, author, duration}: Song): Promise<InputFormat> {
+function getFormatSong({type, url, title, author, duration}: Song): Promise<InputFormat> {
     try {
         switch (type) {
             case "SPOTIFY": return FindTrack(`${author.title} - ${title}`, duration.seconds);
