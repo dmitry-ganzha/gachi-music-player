@@ -50,6 +50,12 @@ export class CommandSeek extends Command {
             color: "RED"
         });
 
+        if (!queue.player.hasChangeStream) return message.client.Send({
+            text: `${message.author}, в данный момент это действие невозможно!`,
+            message,
+            color: "RED"
+        });
+
         if (!ArgDuration) return message.client.Send({
             text: `${message.author}, Укажи время, пример 00:00:00!`,
             message,
