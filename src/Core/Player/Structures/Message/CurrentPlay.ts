@@ -29,9 +29,8 @@ export function CurrentPlay(client: WatKLOK, song: Song, queue: Queue): EmbedCon
         image: {
             url: song.image?.url ?? null
         },
-        //timestamp: new Date(),
         footer: {
-            text: `${song.requester.username} | ${TimeInArray(queue)} | 🎶: ${queue.songs.length} | Повтор: ${queue.options.loop}`,
+            text: `${song.requester.username} | ${TimeInArray(queue)} | 🎶: ${queue.songs.length}`,
             iconURL: song.requester.displayAvatarURL(),
         }
     };

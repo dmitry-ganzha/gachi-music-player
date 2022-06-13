@@ -1,8 +1,8 @@
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle} from "discord.js";
 
-const Ver = "https://cdn.discordapp.com/attachments/860113484493881365/985996429954797668/NewIconSuc_x72.png";
-const NotVer = "https://cdn.discordapp.com/attachments/860113484493881365/985996897804255332/NewIconNot_x72.png";
-const NotFound = "https://cdn.discordapp.com/attachments/860113484493881365/985996897464512592/NewIconWTF_x72.png";
+const Ver = "https://cdn.discordapp.com/attachments/860113484493881365/986005795038715904/Ok.png";
+const NotVer = "https://cdn.discordapp.com/attachments/860113484493881365/986005794849980486/Not.png";
+const NotFound = "https://cdn.discordapp.com/attachments/860113484493881365/986005794627670086/WTF.png";
 const NotImage = "https://cdn.discordapp.com/attachments/860113484493881365/940926476746883082/MusciNote.png";
 const Button = new ActionRowBuilder().addComponents([
     new ButtonBuilder().setCustomId("last").setEmoji({id: "963787068264288346"}).setStyle(ButtonStyle.Secondary),

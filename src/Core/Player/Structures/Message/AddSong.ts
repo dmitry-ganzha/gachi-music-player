@@ -15,9 +15,10 @@ import {TimeInArray} from "../../Manager/DurationUtils";
  * @param url {Song<url>} Ссылка на трек
  * @param duration {Song<duration>} Длительность трека
  * @param requester {Song<requester>} Кто включил трек
+ * @param type {string} Платформа где была взята музыка
  * @param songs {Queue<songs>} Все треки
  */
-export function AddSong(client: WatKLOK, {color, author, image, title, url, duration, requester}: Song, {songs}: Queue): EmbedConstructor {
+export function AddSong(client: WatKLOK, {color, author, image, title, url, duration, requester, type}: Song, {songs}: Queue): EmbedConstructor {
     return {
         color,
         author: {
@@ -32,7 +33,6 @@ export function AddSong(client: WatKLOK, {color, author, image, title, url, dura
             name: "Добавлено в очередь",
             value: `**❯** [${client.ConvertedText(title, 40, true)}](${url}})\n**❯** [${duration.StringTime}]`
         }],
-        //timestamp: new Date(),
         footer: {
             text: `${requester.username} | ${TimeInArray(songs)} | 🎶: ${songs.length}`,
             iconURL: requester.displayAvatarURL(),

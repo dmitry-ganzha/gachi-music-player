@@ -15,10 +15,11 @@ import {TimeInArray} from "../../Manager/DurationUtils";
  * @param url {Song<url>} Ссылка на трек
  * @param duration {Song<duration>} Длительность трека
  * @param requester {Song<requester>} Кто включил трек
+ * @param type {string} Платформа где была взята музыка
  * @param songs {Queue<songs>} Все треки
  * @param err {Error} Ошибка выданная плеером
  */
-export function Warning(client: WatKLOK, {color, author, image, title, url, duration, requester}: Song, {songs}: Queue, err: Error | string): EmbedConstructor {
+export function Warning(client: WatKLOK, {color, author, image, title, url, duration, requester, type}: Song, {songs}: Queue, err: Error | string): EmbedConstructor {
     return {
         color,
         description: `\n[${title}](${url})\n\`\`\`js\n${err}...\`\`\``,
