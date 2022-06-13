@@ -47,7 +47,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @description Проверка играет ли сейчас плеер
      */
     public get checkPlayable(): boolean {
-        if (this.state.status === "idle") return false;
+        if (this.state.status === "idle" || this.state.status === "buffering") return false;
 
         //Если невозможно прочитать поток выдать false
         if (!this.state.resource?.readable) {
@@ -101,7 +101,10 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
-        CreateResource(queue.songs[0], queue.audioFilters, seek).then((stream: PlayerResource) => this.#play(stream, seek));
+        CreateResource(queue.songs[0], queue.audioFilters, seek).then((stream: PlayerResource) => {
+            this.#play(stream);
+            if (seek) this.#CurrentTime = seek;
+        });
     };
     //====================== ====================== ====================== ======================
     /**
@@ -179,7 +182,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      */
     protected CheckStatusPlayer = (): void => {
         //Если статус (idle или buffering) прекратить выполнение функции
-        if (this.state.status === "idle" || this.state.status === "paused") return;
+        if (this.state.status === "idle" || this.state.status === "buffering" || this.state.status === "paused") return;
 
         //Голосовые каналы к которым подключен плеер
         const Receivers = this.#VoiceChannels;
@@ -209,10 +212,9 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     /**
      * @description Что бот будет отправлять в гс
      * @param resource {PlayerResource} Поток
-     * @param seek
      * @private
      */
-    #play = (resource: PlayerResource, seek: number = 0): void => {
+    #play = (resource: PlayerResource): void => {
         if (!resource) return void this.emit("error", "[AudioResource]: has not found!");
         if (resource?.ended) return void this.emit("error", "[AudioPlayer]: [Message: Fail to load stream]");
 
@@ -224,18 +226,15 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (resource.hasStarted) this.state = { status: "playing", resource, onStreamError };
         else {
             const onReadableCallback = () => {
-                this.state = { status: "playing", resource, onStreamError };
-                if (seek) this.#CurrentTime = seek;
-                this.#_hasChangeStream = true;
+                if (this.state.status === "buffering" && this.state.resource === resource) this.state = { status: "playing", resource, onStreamError };
             };
             const onFailureCallback = () => {
-                this.state = {status: "idle"};
-                this.#_hasChangeStream = true;
+                if (this.state.status === "buffering" && this.state.resource === resource) this.state = { status: "idle" };
             };
 
-            this.#_hasChangeStream = false;
-            resource.playStream.once("readable", onReadableCallback);
-            ["end", "close", "finish"].forEach((event: string) => resource.playStream.once(event, onFailureCallback));
+            resource.playStream.once('readable', onReadableCallback);
+            ['end', 'close', 'finish'].forEach((event: string) => resource.playStream.once(event, onFailureCallback));
+            this.state = { status: "buffering", resource, onReadableCallback, onFailureCallback, onStreamError };
         }
     };
     //====================== ====================== ====================== ======================
@@ -360,7 +359,7 @@ function isRemoveSong({options, songs}: Queue): void {
 /**
  * @description Все статусы
  */
-type PlayerState = PlayerStateIdle | PlayerStatePaused | PlayerStatePlaying;
+type PlayerState = PlayerStateBuffering | PlayerStateIdle | PlayerStatePaused | PlayerStatePlaying;
 type PlayerResource = FFmpegDecoder;
 
 /**
@@ -389,12 +388,24 @@ interface PlayerStatePaused {
     onStreamError: (error: any) => void;
 }
 /**
+ * @description Статус при котором плеер готовится к отправке пакетов
+ */
+interface PlayerStateBuffering {
+    status: "buffering";
+    resource: PlayerResource;
+
+    onReadableCallback: () => void;
+    onFailureCallback: () => void;
+    onStreamError: (error: any) => void;
+}
+/**
  * @description Ивенты плеера
  */
 type PlayerEvents = {
     //Отслеживаемые ивенты
     idle: (oldState: PlayerState, newState: PlayerState) => void;
     paused: (oldState: PlayerState, newState: PlayerState) => void;
+    buffering: (oldState: PlayerState, newState: PlayerState) => void;
     autoPaused: (oldState: PlayerState, newState: PlayerState) => void;
     playing: (oldState: PlayerState, newState: PlayerState) => void;
     error: (error: any) => void;
