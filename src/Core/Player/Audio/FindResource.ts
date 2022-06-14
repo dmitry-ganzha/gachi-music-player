@@ -22,6 +22,7 @@ export async function FindResource(song: Song): Promise<void> {
 
     const resource = await CheckLink(song.format?.url);
     if (resource === "Fail") throw Error("Has fail checking resource link");
+    return;
 }
 //====================== ====================== ====================== ======================
 /**

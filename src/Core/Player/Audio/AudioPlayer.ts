@@ -325,7 +325,10 @@ async function CreateResource(song: Song, audioFilters: AudioFilters = null, see
     return new Promise((resolve) => {
         if (req > 4) return resolve(null);
 
-        FindResource(song).catch(() => CreateResource(song, audioFilters, seek, req++)).then(() => {
+        FindResource(song).catch(() => {
+            req++;
+            return CreateResource(song, audioFilters, seek, req);
+        }).then(() => {
             if (!song.format?.url) return CreateResource;
             let Params: any = {url: song.format.url};
 
