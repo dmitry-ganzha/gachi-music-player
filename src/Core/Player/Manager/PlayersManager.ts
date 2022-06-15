@@ -1,7 +1,6 @@
-//База с плеерами
 import {AudioPlayer} from "../Audio/AudioPlayer";
 
-const audioPlayers: AudioPlayer[] = [];
+const audioPlayers: AudioPlayer[] = []; //База с плеерами
 let AudioCycleTimer: NodeJS.Timeout | undefined;
 let TimeToFrame = -1;
 

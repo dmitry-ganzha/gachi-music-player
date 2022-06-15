@@ -279,8 +279,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         ErrorPlayerMessage(message, queue.songs[0], err);
-        queue.songs.shift();
-        return this.PlayCallback(message);
+        return this.stop();
     };
     //====================== ====================== ====================== ======================
     /**

@@ -189,8 +189,8 @@ async function getPlaylist(url: string): Promise<InputPlaylist> {
             image: {
                 url: playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer?.thumbnail.thumbnails?.pop().url?.split("?sqp=")[0]
             }
-        })
-    })
+        });
+    });
 }
 function _parsingVideos(parsed: any[], finder: InputTrack[] = []): InputTrack[] {
     let num = 0;
@@ -231,7 +231,7 @@ Interface getChannel
 */
 interface ChannelPageBase {
     id: string;
-    name?: string
+    name?: string;
 }
 interface YouTubeChannelParse {
     page: "channel",

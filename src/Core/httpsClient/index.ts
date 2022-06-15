@@ -24,7 +24,7 @@ function Request(url: string, options?: httpsClientOptions): Promise<IncomingMes
         };
 
         const Requesting = request(Options, resolve);
-        Requesting.on("error", (err) => reject(err));
+        Requesting.on("error", reject);
         if (options.request?.method === "POST") Requesting.write(options.request?.body);
         Requesting.end();
     });
