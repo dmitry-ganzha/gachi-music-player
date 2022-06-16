@@ -54,7 +54,7 @@ export class CommandSeek extends Command {
             text: `${message.author}, Укажи время, пример 00:00:00!`,
             message,
             color: "RED"
-        })
+        });
         else if (ArgDuration.length > 1) {
             if (!ArgDuration[2]) EndDuration = (ArgDuration[0] * 60) + (ArgDuration[1] % 60000);
             else EndDuration = (ArgDuration[0] * 60 * 60) + (ArgDuration[1] * 60) + (ArgDuration[2] % 60000);

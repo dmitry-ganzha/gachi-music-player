@@ -3,6 +3,7 @@ import {ChildProcessWithoutNullStreams, spawn, spawnSync} from "child_process";
 import FFmpegConfiguration from "../../../../../DataBase/FFmpeg.json";
 import {AudioFilters} from "../Queue/Queue";
 
+export type FFmpegArgs = (string | number)[] | string[];
 let FFmpegName: string;
 /**
  * @description
@@ -18,9 +19,6 @@ const FFmpegCheck = () => {
     throw Error("FFmpeg not found!");
 };
 if (FFmpegName === undefined) Promise.all([FFmpegCheck()]).catch();
-
-
-export type FFmpegArgs = (string | number)[] | string[];
 
 
 /**

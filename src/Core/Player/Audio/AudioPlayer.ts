@@ -197,7 +197,7 @@ export class AudioPlayer extends EventEmitter {
 
         //Отправка музыкального пакета
         if (this.state.status === "playing") {
-            const packet: Buffer | null = this.state.resource?.read(320);
+            const packet: Buffer | null = this.state.resource?.read();
 
             if (packet) return this.#playOpusPacket(packet, Receivers);
             this.#signalStopSpeaking();

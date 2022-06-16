@@ -5,7 +5,7 @@ let FFprobeName: string
  * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a и для <FFprobeName> задаем название для FFprobe, если они будут найдены!
  */
 const FFprobeCheck = () => {
-    for (let source of ["ffprobe"]) {
+    for (let source of ["ffprobe", "./FFmpeg/ffprobe"]) {
         try {
             const result = spawnSync(source, ["-h"], {windowsHide: true, shell: false});
             if (result.error) continue;

@@ -56,8 +56,8 @@ export class FFmpegDecoder {
     /**
      * @description Получаем пакет и проверяем не пустой ли он если не пустой к таймеру добавляем 20 мс
      */
-    public read = (size: number = 128): Buffer | null => {
-        const packet: Buffer = this.playStream?.read(size);
+    public read = (): Buffer | null => {
+        const packet: Buffer = this.playStream?.read();
         if (packet) this.playbackDuration += this.#TimeFrame;
 
         return packet;
