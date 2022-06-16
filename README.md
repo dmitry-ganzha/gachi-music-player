@@ -17,9 +17,7 @@
 
 ## Гайд по запуску
 1. [`Node.js`](https://nodejs.org/ru/) 16 - 18
-2. FFmpeg & FFprobe (на выбор)
-    - [`FFmpeg`](https://ffmpeg.org/) (рекомендуется)
-    - `ffmpeg-static`: ^4.2.7 (npm install)
+2. [`FFmpeg & FFprobe`](https://ffmpeg.org/)
 3. Библиотеки шифрования (на выбор)
     - `sodium-native`: ^3.3.0 (рекомендуется)
     - `sodium`: ^3.0.2
