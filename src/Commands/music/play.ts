@@ -487,7 +487,7 @@ function Reaction(msg: ClientMessage | any, message: ClientMessage, emoji: strin
         msg.react(emoji).then(() => {
             msg.createReactionCollector({
                 filter: (reaction: MessageReaction, user: User) => (reaction.emoji.name === emoji && user.id !== message.client.user.id),
-                max: 1, time: 25e3
+                max: 1
             }).once("collect", callback);
         });
     });

@@ -52,12 +52,6 @@ export class CommandLoop extends Command {
             color: "RED"
         });
 
-        if (!queue.player.hasChangeStream) return message.client.Send({
-            text: `${message.author}, в данный момент это действие невозможно!`,
-            message,
-            color: "RED"
-        });
-
         const song = queue.songs[0];
         const argsNum = Number(args[1]);
         const SendArg: {color: number, type: "css", message: ClientMessage} = {color: song.color, type: "css", message};

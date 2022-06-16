@@ -30,12 +30,11 @@ function Request(url: string, options?: httpsClientOptions): Promise<IncomingMes
     });
 }
 function AutoRedirect(url: string, options?: httpsClientOptions): Promise<IncomingMessage> {
-    return new Promise(async (resolve, reject) => {
-        const res = await Request(url, options).catch((err: Error) => err);
-        if (res instanceof Error) return reject(res);
+    return Request(url, options).then((res) => {
+        if (res instanceof Error) return res;
 
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location !== undefined) return AutoRedirect(res.headers.location, options);
-        return resolve(res);
+        return res;
     });
 }
 //====================== ====================== ====================== ======================
@@ -45,28 +44,29 @@ function AutoRedirect(url: string, options?: httpsClientOptions): Promise<Incomi
  * @param options {httpsClientOptions} Настройки запроса
  */
 function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
-    return new Promise(async (resolve) => {
-        const res = await AutoRedirect(url, options);
-        const encoding = res.headers["content-encoding"];
-        let decoder: BrotliDecompress | Gunzip | Deflate | null = null;
-        let data: string[] = [];
+    return new Promise((resolve) => {
+        AutoRedirect(url, options).then((res) => {
+            const encoding = res.headers["content-encoding"];
+            let decoder: BrotliDecompress | Gunzip | Deflate | null = null;
+            let data: string[] = [];
 
-        if (encoding === "gzip") decoder = createGunzip();
-        else if (encoding === "br") decoder = createBrotliDecompress();
-        else if (encoding === "deflate") decoder = createDeflate();
+            if (encoding === "gzip") decoder = createGunzip();
+            else if (encoding === "br") decoder = createBrotliDecompress();
+            else if (encoding === "deflate") decoder = createDeflate();
 
-        if (options.options?.cookie && res.headers && res.headers["set-cookie"]) uploadCookie(res.headers["set-cookie"]);
+            if (options.options?.cookie && res.headers && res.headers["set-cookie"]) uploadCookie(res.headers["set-cookie"]);
 
-        if (decoder) {
-            res.pipe(decoder);
-            decoder.setEncoding("utf-8");
-            decoder.on("data", (c) => data.push(c));
-            decoder.once("end", () => resolve(data.join("")));
-        } else {
-            res.setEncoding("utf-8");
-            res.on("data", (c) => data.push(c));
-            res.once("end", () => resolve(data.join("")));
-        }
+            if (decoder) {
+                res.pipe(decoder);
+                decoder.setEncoding("utf-8");
+                decoder.on("data", (c) => data.push(c));
+                decoder.once("end", () => resolve(data.join("")));
+            } else {
+                res.setEncoding("utf-8");
+                res.on("data", (c) => data.push(c));
+                res.once("end", () => resolve(data.join("")));
+            }
+        });
     });
 }
 //====================== ====================== ====================== ======================
@@ -76,15 +76,14 @@ function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
  * @param options {httpsClientOptions} Настройки запроса
  */
 function parseJson(url: string, options?: httpsClientOptions): Promise<null | any> {
-    return new Promise(async (resolve) => {
-        const body = await parseBody(url, options);
-        if (!body) return resolve(null);
+    return parseBody(url, options).then((body) => {
+        if (!body) return null;
 
         try {
-            return resolve(JSON.parse(body));
+            return JSON.parse(body);
         } catch (e) {
             console.log(`Invalid json response body at ${url} reason: ${e.message}`);
-            return resolve(null);
+            return null;
         }
     });
 }

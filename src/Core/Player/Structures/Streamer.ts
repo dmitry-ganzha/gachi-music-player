@@ -4,7 +4,6 @@ import FFmpegConfiguration from "../../../../DataBase/FFmpeg.json";
 import {CreateFilters, FFmpeg, FFmpegArgs} from "./Media/FFmpeg";
 import {AudioFilters} from "./Queue/Queue";
 
-const OptionsPrism = {autoDestroy: true, objectMode: true};
 /**
  * @name FFmpegDecoder
  * @description
@@ -41,11 +40,11 @@ export class FFmpegDecoder {
      * @description
      * @param parameters {Options}
      */
-    public constructor(parameters: Parameters) {
+    public constructor(parameters: {url: string, seek?: number, Filters?: AudioFilters}) {
         setImmediate(() => this.#TimeFrame = this.#TimeFrame * FFmpegTimer(parameters?.Filters) || 20);
         //Даем FFmpeg'у, ссылку с которой надо скачать поток
         this.#FFmpeg = new FFmpeg(CreateArguments(parameters.url, parameters?.Filters, parameters?.seek));
-        this.playStream = new opus.OggDemuxer(OptionsPrism);
+        this.playStream = new opus.OggDemuxer({autoDestroy: true, objectMode: true});
 
         this.#FFmpeg.pipe(this.playStream);
 
@@ -57,8 +56,8 @@ export class FFmpegDecoder {
     /**
      * @description Получаем пакет и проверяем не пустой ли он если не пустой к таймеру добавляем 20 мс
      */
-    public read = (): Buffer | null => {
-        const packet: Buffer = this.playStream?.read();
+    public read = (size: number = 128): Buffer | null => {
+        const packet: Buffer = this.playStream?.read(size);
         if (packet) this.playbackDuration += this.#TimeFrame;
 
         return packet;
@@ -131,16 +130,3 @@ function FFmpegTimer(AudioFilters: AudioFilters) {
     }
     return NumberDuration;
 }
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-/**
- * @description Поддерживаемые форматы
- */
-type SupportTypeStream = "ogg/opus" | "webm/opus" | "any";
-interface Parameters {
-    url: string;
-    seek?: number;
-    Filters?: AudioFilters;
-}
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================

@@ -1,4 +1,4 @@
-import {TypedEmitter} from 'tiny-typed-emitter';
+import {EventEmitter} from "node:events";
 import {Controller} from "./Audio/Controller";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../Client";
@@ -6,7 +6,7 @@ import {InputPlaylist, InputTrack} from "../Utils/TypeHelper";
 import {CreateQueue} from "./Manager/Queue";
 import {PlayList} from "./Manager/PlaylistManager";
 
-type Events = {
+export interface PlayerEmitter extends EventEmitter{
     play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack | InputTrack[]) => boolean | void | Promise<void | ClientMessage | NodeJS.Timeout>;
     pause: (message: ClientMessage) => void;
     resume: (message: ClientMessage) => void;
@@ -17,12 +17,12 @@ type Events = {
     seek: (message: ClientMessage, seek: number) => void;
 
     playlist: (message: ClientMessage, playlist: InputPlaylist, VoiceChannel: VoiceChannel |  StageChannel) => void;
-};
+}
 
 /**
  * @description Запускаем все функции плеера
  */
-export class PlayerEmitter extends TypedEmitter<Events> {
+export class PlayerEmitter extends EventEmitter {
     public constructor() {
         super();
         this.on("play", CreateQueue);

@@ -34,12 +34,6 @@ export class CommandReplay extends Command {
             color: "RED"
         });
 
-        if (!queue.player.hasChangeStream) return message.client.Send({
-            text: `${message.author}, в данный момент это действие невозможно!`,
-            message,
-            color: "RED"
-        });
-
         return void message.client.player.emit("replay", message);
     };
 }

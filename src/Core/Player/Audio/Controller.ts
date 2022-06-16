@@ -65,8 +65,6 @@ function PlayerRemove(message: ClientMessage, args: number): boolean | void {
 
     if (!StatusPlayerHasSkipped.has(player.state.status)) return client.Send({text: `${author}, ⚠ Музыка еще не играет. Текущий статус плеера - [${player.state.status}]`, message, color: "RED"});
 
-    if (!player.hasChangeStream && args === 1 && songs.length === 1) return client.Send({text: `${author}, в данный момент это действие невозможно!`, message, color: "RED"});
-
     if (songs.length <= 1) return PlayerEnd(message);
 
     if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {

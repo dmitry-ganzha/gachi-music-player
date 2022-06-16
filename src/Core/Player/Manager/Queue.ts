@@ -5,11 +5,11 @@ import {Song} from "../Structures/Queue/Song";
 import {Disconnect, JoinVoiceChannel} from "./Voice/VoiceManager";
 import {PushSongMessage} from "./MessagePlayer";
 import {VoiceChannel} from "discord.js";
-import {TypedEmitter} from "tiny-typed-emitter";
+import {EventEmitter} from "node:events";
 
-type EventsQueue = {
+export interface QueueEvents extends EventEmitter {
     DestroyQueue: (queue: Queue, message: ClientMessage, sendDelQueue?: boolean) => boolean | void,
-};
+}
 export type Queue_Channels = Queue["channels"];
 export type Queue_Options = Queue["options"];
 
@@ -91,7 +91,7 @@ export function PushSong(queue: Queue, song: Song, sendMessage: boolean = true):
 /**
  * @description Нужно только для того что-бы удалить очередь один раз)
  */
-export class QueueEvents extends TypedEmitter<EventsQueue> {
+export class QueueEvents extends EventEmitter {
     public constructor() {
         super();
         this.once("DestroyQueue", onDestroyQueue);

@@ -1,7 +1,7 @@
+import {EventEmitter} from "node:events";
 import {FindResource} from "./FindResource";
 import {AudioFilters, Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
-import {TypedEmitter} from "tiny-typed-emitter";
 import {ClientMessage} from "../../Client";
 import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 import {addAudioPlayer, deleteAudioPlayer} from "../Manager/PlayersManager";
@@ -14,16 +14,12 @@ export const StatusPlayerHasSkipped: Set<string> = new Set(["playing", "paused",
 const EmptyFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe]);
 
 /**
- * @description Плеер. За основу взять с <discordjs/voice>. Немного изменен!
+ * @description Плеер. За основу взять с <discordjs voice>. Немного изменен!
  */
-export class AudioPlayer extends TypedEmitter<PlayerEvents> {
+export class AudioPlayer extends EventEmitter {
     #_state: PlayerState = { status: "idle" };
-    #_hasChangeStream = true;
     #subscribers: PlayerSubscription[] = [];
 
-    public get hasChangeStream() {
-        return this.#_hasChangeStream;
-    };
     //====================== ====================== ====================== ======================
     /**
      * @description Текущее время плеера в мс
@@ -201,7 +197,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
         //Отправка музыкального пакета
         if (this.state.status === "playing") {
-            const packet: Buffer | null = this.state.resource?.read();
+            const packet: Buffer | null = this.state.resource?.read(320);
 
             if (packet) return this.#playOpusPacket(packet, Receivers);
             this.#signalStopSpeaking();
@@ -403,7 +399,7 @@ interface PlayerStateBuffering {
 /**
  * @description Ивенты плеера
  */
-type PlayerEvents = {
+export interface AudioPlayer extends EventEmitter {
     //Отслеживаемые ивенты
     idle: (oldState: PlayerState, newState: PlayerState) => void;
     paused: (oldState: PlayerState, newState: PlayerState) => void;

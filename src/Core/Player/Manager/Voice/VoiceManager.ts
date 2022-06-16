@@ -1,13 +1,13 @@
+import {EventEmitter} from "node:events";
 import { InternalDiscordGatewayAdapterCreator, StageChannel, VoiceChannel, ChannelType, GuildMember } from "discord.js";
 import { DiscordGatewayAdapterCreator, getVoiceConnection, joinVoiceChannel, VoiceConnection } from "@discordjs/voice";
-import {TypedEmitter} from "tiny-typed-emitter";
 import {Queue} from "../../Structures/Queue/Queue";
 import {AudioPlayer} from "../../Audio/AudioPlayer";
 
-type Events = {
+export interface Voice extends EventEmitter {
     StartQueueDestroy: (queue: Queue) => void,
     CancelQueueDestroy: (player: AudioPlayer) => boolean | void
-};
+}
 
 /**
  * @description Отключение от голосового канала
@@ -51,7 +51,7 @@ function SpeakStateChannel(me: GuildMember, type: ChannelType.GuildVoice | Chann
 /**
  * @description Система <QueueDestroy> для удаления очереди и отключения бота от гс!
  */
-export class Voice extends TypedEmitter<Events> {
+export class Voice extends EventEmitter {
     #Timer: NodeJS.Timeout;
     #state: boolean;
 
