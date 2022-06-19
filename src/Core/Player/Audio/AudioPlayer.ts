@@ -323,11 +323,12 @@ async function CreateResource(song: Song, audioFilters: AudioFilters = null, see
         FindResource(song).catch(() => {
             req++;
             return CreateResource(song, audioFilters, seek, req);
-        }).then(() => {
-            if (!song.format?.url) return CreateResource;
+        //@ts-ignore
+        }).then(() => { //@ts-ignore
+            if (!song.format?.url) return CreateResource(song, audioFilters, seek, req++);
             let Params: any = {url: song.format.url};
 
-            if (!song.isLive) Params = {...Params, seek: seek, Filters: audioFilters}
+            if (!song.isLive) Params = {...Params, seek: seek, Filters: audioFilters};
 
             return resolve(new FFmpegDecoder(Params));
         });

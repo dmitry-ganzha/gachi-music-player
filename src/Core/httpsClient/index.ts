@@ -30,11 +30,16 @@ function Request(url: string, options?: httpsClientOptions): Promise<IncomingMes
     });
 }
 function AutoRedirect(url: string, options?: httpsClientOptions): Promise<IncomingMessage> {
-    return Request(url, options).then((res) => {
-        if (res instanceof Error) return res;
+    return new Promise((resolve) => {
+        return Request(url, options).then((res: IncomingMessage) => {
+            if (res instanceof Error) {
+                resolve(res);
+                return;
+            }
 
-        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location !== undefined) return AutoRedirect(res.headers.location, options);
-        return res;
+            if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location !== undefined) return AutoRedirect(res.headers.location, options);
+            resolve(res);
+        });
     });
 }
 //====================== ====================== ====================== ======================

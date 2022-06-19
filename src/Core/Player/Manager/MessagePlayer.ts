@@ -18,7 +18,7 @@ let MessageTimer: NodeJS.Timeout = null;
 export function PlaySongMessage(message: ClientMessage) {
     if (Message.get(message.channelId)) removeMessage(message);
 
-    AddInQueueMessage(message).then((msg) => setImmediate(() => addMessage(msg)));
+    AddInQueueMessage(message).then(addMessage);
 }
 //====================== ====================== ====================== ======================
 /**

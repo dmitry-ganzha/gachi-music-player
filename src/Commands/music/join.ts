@@ -36,12 +36,17 @@ export class CommandJoin extends Command {
             color: "RED"
         });
 
-        if (queue) {
-            const connection = JoinVoiceChannel(voiceChannel);
-            queue.channels = {message, voice: voiceChannel, connection};
+        if (queue) { //Если есть очередь, то
+            const connection = JoinVoiceChannel(voiceChannel); //Подключаемся к Vc
+            queue.channels = {message, voice: voiceChannel, connection}; //Записываем необходимые данные в очередь
+            queue.player.subscribe(connection); //Подключаем Vc к плееру
+            queue.player.resume(); //Продолжаем воспроизведение
+
+            queue.events.helper.emit("CancelQueueDestroy", queue.player); //Отменяем удаление очереди
+            return;
         }
 
-        JoinVoiceChannel(voiceChannel)
+        JoinVoiceChannel(voiceChannel); //Просто подключаемся к Vc
         return;
     };
 }

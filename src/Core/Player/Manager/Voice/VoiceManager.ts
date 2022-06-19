@@ -4,6 +4,9 @@ import { DiscordGatewayAdapterCreator, getVoiceConnection, joinVoiceChannel, Voi
 import {Queue} from "../../Structures/Queue/Queue";
 import {AudioPlayer} from "../../Audio/AudioPlayer";
 
+const VoiceDestroyTime = 30; //Через N секунд будет удалена очередь
+
+
 export interface Voice extends EventEmitter {
     StartQueueDestroy: (queue: Queue) => void,
     CancelQueueDestroy: (player: AudioPlayer) => boolean | void
@@ -71,7 +74,7 @@ export class Voice extends EventEmitter {
 
         const {player, events, channels} = queue;
 
-        if (!this.#Timer) this.#Timer = setTimeout(() => events.queue.emit("DestroyQueue", queue, channels.message, false), 15e3);
+        if (!this.#Timer) this.#Timer = setTimeout(() => events.queue.emit("DestroyQueue", queue, channels.message, false), VoiceDestroyTime * 1e3);
         this.#state = true;
         player.pause();
     };

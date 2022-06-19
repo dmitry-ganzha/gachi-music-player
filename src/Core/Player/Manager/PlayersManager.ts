@@ -15,7 +15,7 @@ export function addAudioPlayer(player: AudioPlayer): void {
 
     if (audioPlayers.length === 1) {
         TimeToFrame = Date.now();
-        setImmediate(audioCycleStep);
+        setImmediate(playerCycleStep);
     }
 }
 //====================== ====================== ====================== ======================
@@ -35,31 +35,31 @@ export function deleteAudioPlayer(player: AudioPlayer): void {
 }
 //====================== ====================== ====================== ======================
 /**
- * @description Проверяем плееры на возможность включить музыку в голосовые каналы
+ * @description Цикл жизни плеера
+ * @param players {AudioPlayer[]} Плееры
  */
-function audioCycleStep(): void {
-    if (TimeToFrame === -1) return;
+function playerCycleStep(players: AudioPlayer[] = null): void {
+    //Проверяем плееры на возможность включить музыку в голосовые каналы
+    if (players === null) {
+        if (TimeToFrame === -1) return;
 
-    TimeToFrame += 20;
-    const available = audioPlayers.filter((player) => player.checkPlayable);
+        TimeToFrame += 20;
+        const available = audioPlayers.filter((player) => player.checkPlayable);
+        return playerCycleStep(available);
+    }
 
-    return prepareNextAudioFrame(available);
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Подготавливаем пакет с музыкой и отправляем в голосовой канал
- * @param players {AudioPlayer}
- */
-function prepareNextAudioFrame(players: AudioPlayer[]): void {
+    //Подготавливаем пакет с музыкой и отправляем в голосовой канал
     const nextPlayer = players.shift();
 
     if (!nextPlayer) {
-        if (TimeToFrame !== -1) AudioCycleTimer = setTimeout(audioCycleStep, TimeToFrame - Date.now());
+        if (TimeToFrame !== -1) {
+            AudioCycleTimer = setTimeout(playerCycleStep, TimeToFrame - Date.now());
+        }
         return;
     }
 
     nextPlayer["CheckStatusPlayer"]();
 
-    setImmediate(() => prepareNextAudioFrame(players));
+    setImmediate(() => playerCycleStep(players));
 }
 //====================== ====================== ====================== ======================

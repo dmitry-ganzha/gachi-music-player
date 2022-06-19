@@ -12,7 +12,7 @@ const FFprobeCheck = () => {
             return FFprobeName = source;
         } catch {/* Nothing */}
     }
-    throw new Error("FFprobe not found!");
+    return new Error("FFprobe not found!");
 };
 if (FFprobeName === undefined) Promise.all([FFprobeCheck()]).catch();
 

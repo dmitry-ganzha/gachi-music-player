@@ -16,7 +16,7 @@ const FFmpegCheck = () => {
             return FFmpegName = source;
         } catch {/* Nothing */}
     }
-    throw Error("FFmpeg not found!");
+    return Error("FFmpeg not found!");
 };
 if (FFmpegName === undefined) Promise.all([FFmpegCheck()]).catch();
 
