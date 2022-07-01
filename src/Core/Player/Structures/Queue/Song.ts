@@ -64,10 +64,11 @@ function ConstDuration(duration: InputTrackDuration): { StringTime: string | "Li
  */
 function Color(type: string): number {
     switch (type) {
-        case "YOUTUBE": return Colors.RED
-        case "SPOTIFY": return Colors.GREEN
-        case "SOUNDCLOUD": return Colors.ORANGE
-        default: return Colors.BLUE
+        case "YOUTUBE": return Colors.RED;
+        case "SPOTIFY": return Colors.GREEN;
+        case "SOUNDCLOUD": return Colors.ORANGE;
+        case "VK": return Colors.BLUE_DARK;
+        default: return Colors.BLUE;
     }
 }
 //====================== ====================== ====================== ======================

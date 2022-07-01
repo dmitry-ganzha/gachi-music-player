@@ -9,7 +9,7 @@ import {TimeInArray, ParseTimeString} from "../../Manager/DurationUtils";
 const ProgressBarValue: boolean = true;
 
 /**
- * @description Embed сообщение о текущем треке
+ * @description Message сообщение о текущем треке
  * @param client {WatKLOK} Клиент
  * @param song {Song} Текущий трек
  * @param queue {Queue} Очередь
@@ -37,7 +37,7 @@ export function CurrentPlay(client: WatKLOK, song: Song, queue: Queue): EmbedCon
 }
 //====================== ====================== ====================== ======================
 /**
- * @description Создаем Embed<Fields>
+ * @description Создаем Message<Fields>
  * @param song {Song} Трек
  * @param player {Queue<player>} Плеер
  * @param songs {Queue<songs>>} Все треки
@@ -94,11 +94,15 @@ function ConvertCurrentTime({state}: AudioPlayer, filters: AudioFilters): number
  * @param size {number} Кол-во символов
  */
 function ProgressBar(currentTime: number, maxTime: number, size: number = 15): string {
-    const progressSize = Math.round(size * (currentTime / maxTime));
-    const emptySize = size - progressSize;
+    if (currentTime < maxTime) {
+        const progressSize = Math.round(size * (currentTime / maxTime));
+        const emptySize = size - progressSize;
+        const progressText = "─".repeat(progressSize);
+        const emptyText = "─".repeat(emptySize || size);
 
-    const progressText = "─".repeat(progressSize); //Old: "█"
-    const emptyText = "─".repeat(emptySize); //Old:
+        return `${progressText}⚪${emptyText}`;
+    }
+    const progressText = "─".repeat(size);
 
-    return `${progressText}⚪${emptyText}`;
+    return `${progressText}⚪`;
 }

@@ -15,7 +15,7 @@ export function NumberString(duration: string | number): string | number {
  * @param queue {Queue | any[]} Очередь
  * @constructor
  */
-export function TimeInArray (queue: Queue | any[]): string {
+export function TimeInArray(queue: Queue | any[]): string {
     let Timer: number = 0;
 
     if (queue instanceof Queue) queue.songs.map((song: Song) => Timer += song.duration.seconds);
@@ -29,7 +29,7 @@ export function TimeInArray (queue: Queue | any[]): string {
  * @param duration {number} Число
  * @constructor
  */
-export function ParseTimeString (duration: number ): string {
+export function ParseTimeString(duration: number): string {
     let days = toStringTime(duration / ((60 * 60) * 24) % 24);
     let hours = toStringTime(duration / (60 * 60) % 24);
     let minutes = toStringTime((duration / 60) % 60);

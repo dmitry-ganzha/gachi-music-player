@@ -32,7 +32,7 @@ function SendMessage(message: ClientMessage, playlist: InputPlaylist): Promise<N
 }
 //====================== ====================== ====================== ======================
 /**
- * @description Создаем Embed сообщение для отправки в чат
+ * @description Создаем Message сообщение для отправки в чат
  * @param client {WatKLOK} Бот
  * @param DisAuthor {ClientMessage.author} Автор сообщения
  * @param author {InputPlaylist.author} Автор плейлиста

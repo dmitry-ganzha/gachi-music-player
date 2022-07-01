@@ -30,10 +30,10 @@ function getTrack(url: string): Promise<null | InputTrack> {
             author: {
                 url: ReplaceAuthorUrl(track.artist),
                 title: track.artist,
-                image: {url: image?.photo_1200 ?? image?.photo_600 ?? image?.photo_300 ?? image?.photo_270 ?? undefined},
+                image: null,
                 isVerified: track.is_licensed
             },
-            image: undefined,
+            image: {url: image?.photo_1200 ?? image?.photo_600 ?? image?.photo_300 ?? image?.photo_270 ?? undefined},
             duration: {
                 seconds: track.duration.toFixed(0)
             },
@@ -113,10 +113,10 @@ function getPlaylist(url: string, options = {limit: 50}): Promise<null | InputPl
                     author: {
                         url: ReplaceAuthorUrl(track.artist),
                         title: track.artist,
-                        image: {url: image?.photo_1200 ?? image?.photo_600 ?? image?.photo_300 ?? image?.photo_270 ?? undefined},
+                        image: null,
                         isVerified: track.is_licensed
                     },
-                    image: undefined,
+                    image: {url: image?.photo_1200 ?? image?.photo_600 ?? image?.photo_300 ?? image?.photo_270 ?? undefined},
                     duration: {seconds: track.duration.toFixed(0)},
                 };
             }),

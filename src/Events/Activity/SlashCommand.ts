@@ -5,7 +5,7 @@ import {ParseTimeString} from "../../Core/Player/Manager/DurationUtils";
 
 const CustomID = new Set(["skip", "resume_pause", "replay", "last"]);
 
-export class SlashCommandN {
+export class SlashCommand {
     public readonly name: string = "interactionCreate";
     public readonly enable: boolean = true;
 
@@ -30,9 +30,9 @@ export class SlashCommandN {
         //
 
         setImmediate(() => {
-            if (interaction.isChatInputCommand() || interaction.isContextMenuCommand()) return RunCommand(client, interaction);
+            if (interaction.commandName || interaction.commandId) return RunCommand(client, interaction);
             else if (CustomID.has(interaction.customId) && client.queue.get(interaction.guildId)) {
-                if (!interaction.member.voice.channel) return;
+                if (!interaction.member?.voice?.channel) return;
                 return PlayerButtons(client, interaction);
             }
         });
@@ -70,7 +70,7 @@ function RunCommand(client: WatKLOK, interaction: ClientInteraction) {
 
 // Получаем команду из client.commands
 function getCommand(client: WatKLOK, name: string) {
-    return client.commands.get(name)
+    return client.commands.get(name);
 }
 
 //Парсим аргументы выданные дискордом
@@ -90,13 +90,11 @@ function DeleteInteraction(interaction: ClientInteraction) {
 function editInteraction(interaction: ClientInteraction): void {
     interaction.author = interaction.member.user;
     interaction.delete = (): null => null;
-
-    delete interaction.user;
 }
 
 // Если нет такой команды удаляем из взаимодействия
 function DeleteCommandInInteraction(client: WatKLOK, interaction: ClientInteraction): void | Promise<ApplicationCommand<{guild: GuildResolvable}>> {
     if (!interaction.commandId) return;
 
-    return client.application?.commands.delete(interaction.commandId)
+    return client.application?.commands.delete(interaction.commandId);
 }

@@ -3,7 +3,7 @@ import {FindResource} from "./FindResource";
 import {AudioFilters, Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
 import {ClientMessage} from "../../Client";
-import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
+import {getVoiceConnection, PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 import {addAudioPlayer, deleteAudioPlayer} from "../Manager/PlayersManager";
 import {JoinVoiceChannel} from "../Manager/Voice/VoiceManager";
 import {ErrorPlayerMessage, PlaySongMessage} from "../Manager/MessagePlayer";
@@ -61,7 +61,7 @@ export class AudioPlayer extends EventEmitter {
         const OldState = this.#_state; //Старая статистика плеера
         const newResource = newState?.resource; //Новый поток. Есть ли он?
 
-        if (OldState.status !== "idle" && OldState.resource !== newResource) setImmediate(() => OldState.resource.destroy());
+        if (OldState.status !== "idle" && OldState.resource !== newResource) setImmediate(OldState.resource.destroy);
 
         //Удаляем плеер если статус "idle"
         if (newState.status === "idle") {
@@ -97,7 +97,7 @@ export class AudioPlayer extends EventEmitter {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
-        CreateResource(queue.songs[0], queue.audioFilters, seek).then((stream: PlayerResource) => {
+        CreateResource(queue.songs[0], queue.audioFilters, seek).then(stream => {
             this.#play(stream);
             if (seek) this.#CurrentTime = seek;
         });
@@ -113,7 +113,7 @@ export class AudioPlayer extends EventEmitter {
 
         if (!queue || !queue.songs || !queue.songs.length) return void queue?.events?.queue?.emit("DestroyQueue", queue, message);
 
-        CreateResource(queue.songs[0], queue.audioFilters).then((stream: PlayerResource) => {
+        CreateResource(queue.songs[0], queue.audioFilters).then(stream => {
             client.console(`[Queue]: [GuildID: ${guild.id}, Type: ${queue.songs[0].type}, Status: Playing]: [${queue.songs[0].title}]`);
             if (stream instanceof FFmpegDecoder) PlaySongMessage(queue.channels.message);
             return this.#play(stream);
@@ -151,6 +151,7 @@ export class AudioPlayer extends EventEmitter {
     public subscribe = (connection: VoiceConnection): void => {
         const FindVoiceChannel = this.#subscribers.find((sub) => sub.connection === connection);
 
+        //Если не найден в <this.#subscribers> то добавляем
         if (!FindVoiceChannel) {
             const PlayerSub = new PlayerSubscription(connection, this as any);
             this.#subscribers.push(PlayerSub);
@@ -165,9 +166,9 @@ export class AudioPlayer extends EventEmitter {
         if (!subscription) return void (this.#subscribers = null);
 
         const index = this.#subscribers.indexOf(subscription);
-        const FindInIndex = index !== -1;
 
-        if (FindInIndex) {
+        //Если был найден отключаемый голосовой канал, то удаляем из <this.#subscribers>
+        if (index !== -1) {
             this.#subscribers.splice(index, 1);
             subscription.connection.setSpeaking(false);
         }
@@ -214,16 +215,21 @@ export class AudioPlayer extends EventEmitter {
         if (!resource) return void this.emit("error", "[AudioResource]: has not found!");
         if (resource?.ended) return void this.emit("error", "[AudioPlayer]: [Message: Fail to load stream]");
 
+        //Если произойдет ошибка в чтении потока
         const onStreamError = (error: Error) => {
             if (this.state.status !== "idle") void this.emit("error", error);
             if (this.state.status !== "idle" && this.state.resource === resource) this.state = { status: "idle" };
         };
 
+        //Если можно включить поток
         if (resource.hasStarted) this.state = { status: "playing", resource, onStreamError };
-        else {
+        else { //Сделаем это с задержкой
+
+            //Как только можно будет прочитать поток
             const onReadableCallback = () => {
                 if (this.state.status === "buffering" && this.state.resource === resource) this.state = { status: "playing", resource, onStreamError };
             };
+            //Если невозможно прочитать поток
             const onFailureCallback = () => {
                 if (this.state.status === "buffering" && this.state.resource === resource) this.state = { status: "idle" };
             };
@@ -258,10 +264,10 @@ export class AudioPlayer extends EventEmitter {
         const queue: Queue = client.queue.get(guild.id);
 
         setTimeout(() => {
-            if (queue?.songs) isRemoveSong(queue);
+            if (queue?.songs) isRemoveSong(queue); //Определяем тип loop
             if (queue?.options?.random) client.queue.swap(0, Math.floor(Math.random() * queue.songs.length), "songs", guild.id);
 
-            return this.PlayCallback(message);
+            return this.PlayCallback(message); //Включаем трек
         }, 700);
     };
     //====================== ====================== ====================== ======================
@@ -285,19 +291,28 @@ export class AudioPlayer extends EventEmitter {
      */
     #onAutoPaused = (message: ClientMessage) => {
         const queue: Queue = message.client.queue.get(message.guild.id);
+        const VoiceChannel = getVoiceConnection(message.guildId);
+
+        //Бота принудительно отключили, не подключаемся
+        if (!VoiceChannel) {
+            queue.events.queue.DestroyQueue(queue, message, true);
+            return;
+        }
+
+        //Подключаемся к прошлому голосовому каналу
         const connection = JoinVoiceChannel(queue.channels.voice);
 
+        //Если поток еще не читаемый
         if (!this.state.resource.hasStarted) return;
 
+        //Если голосовых каналов подключенных к плееру более 1
         if (this.#subscribers.length > 0) {
             const subscribe = this.#subscribers.find((sub) => sub.connection === connection);
             if (subscribe) this.unsubscribe(subscribe);
         }
 
-        this.subscribe(connection);
-        queue.channels.connection = connection;
-
-        if (!this.state.resource.hasStarted) return this.seek(message, this.CurrentTime);
+        this.subscribe(connection); //Добавляем голосовой канал
+        queue.channels.connection = connection; //Записываем данные подключения в очередь
     };
     //====================== ====================== ====================== ======================
     /**
@@ -316,7 +331,7 @@ export class AudioPlayer extends EventEmitter {
  * @param seek {number} Пропуск музыки до 00:00:00
  * @param req
  */
-async function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0, req: number = 0): Promise<PlayerResource> {
+function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0, req: number = 0): Promise<PlayerResource> {
     return new Promise((resolve) => {
         if (req > 4) return resolve(null);
 
@@ -401,11 +416,16 @@ interface PlayerStateBuffering {
  * @description Ивенты плеера
  */
 export interface AudioPlayer extends EventEmitter {
-    //Отслеживаемые ивенты
+    //Плеер ожидает дальнейших действий
     idle: (oldState: PlayerState, newState: PlayerState) => void;
+    //Плеер ожидает
     paused: (oldState: PlayerState, newState: PlayerState) => void;
+    //Плеер загружает аудио поток
     buffering: (oldState: PlayerState, newState: PlayerState) => void;
+    //Плеер ставит сам себя на паузу
     autoPaused: (oldState: PlayerState, newState: PlayerState) => void;
+    //Плеер воспроизводит музыку в голосовой канал
     playing: (oldState: PlayerState, newState: PlayerState) => void;
+    //Плеер не может продолжить воспроизведение музыки из-за ошибки
     error: (error: any) => void;
 }

@@ -6,7 +6,7 @@ import {EmbedConstructor} from "../../../Utils/TypeHelper";
 import {TimeInArray} from "../../Manager/DurationUtils";
 
 /**
- * @description Embed сообщение о добавленном треке
+ * @description Message сообщение о добавленном треке
  * @param client {WatKLOK} Клиент
  * @param color {Song<color>} Цвет
  * @param author {Song<author>} Автор трека

@@ -1,4 +1,14 @@
-import { ActivityType, Client, GuildMember, IntentsBitField, Interaction, Message, MessageEditOptions, User, Options } from "discord.js";
+import {
+    ActivityType,
+    Client,
+    GuildMember,
+    IntentsBitField,
+    BaseInteraction,
+    Message,
+    MessageEditOptions,
+    User,
+    Options,
+} from "discord.js";
 import {FileSystemLoad} from "./FileSystem";
 import {Channel, MessageChannel, sendType} from "./Utils/TypeHelper";
 import {PlayerEmitter} from "./Player/execute";
@@ -46,7 +56,7 @@ export class WatKLOK extends Client {
             intents: (Object.keys(IntentsBitField.Flags)) as any,
             ws: {
                 properties: {
-                    $browser: "Web" as "Discord iOS" | "Web"
+                    browser: "Web" as "Discord iOS" | "Web"
                 }
             },
             presence: {
@@ -65,7 +75,7 @@ export class WatKLOK extends Client {
 }
 
 // @ts-ignore
-export class ClientMessage extends Message {
+export interface ClientMessage extends Message {
     client: WatKLOK;
     // @ts-ignore
     edit(content: sendType | MessageEditOptions): Promise<ClientMessage>
@@ -75,7 +85,8 @@ export class ClientMessage extends Message {
     } & Channel
 }
 
-export class ClientInteraction extends Interaction {
+// @ts-ignore
+export interface ClientInteraction extends BaseInteraction {
     member: GuildMember;
     customId: string;
     commandName: string;

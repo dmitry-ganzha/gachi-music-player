@@ -9,6 +9,7 @@ const Colors = {
     RED: 0xed4245,
     GREEN: 1420288,
     BLUE: 258300,
+    BLUE_DARK: 30719,
     WHITE: 0xffffff,
     BLACK: 0x000000,
     RANDOM: 0,

@@ -98,7 +98,7 @@ class Permissions {
     #SendMessage = (embed: EmbedConstructor, channel: Channel): Promise<void> => channel.send({embeds: [embed as any]}).then((msg: any) => DeleteMessage(msg, 12e3));
 }
 
-//Embed сообщение
+//Message сообщение
 function NotPermissions({author, client}: ClientMessage, name: string, text: string): EmbedConstructor {
     return {
         color: Colors.BLUE,

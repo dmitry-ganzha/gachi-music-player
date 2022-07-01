@@ -50,7 +50,7 @@ function AutoRedirect(url: string, options?: httpsClientOptions): Promise<Incomi
  */
 function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
     return new Promise((resolve) => {
-        AutoRedirect(url, options).then((res) => {
+        AutoRedirect(url, options).then((res: IncomingMessage) => {
             const encoding = res.headers["content-encoding"];
             let decoder: BrotliDecompress | Gunzip | Deflate | null = null;
             let data: string[] = [];
@@ -81,7 +81,7 @@ function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
  * @param options {httpsClientOptions} Настройки запроса
  */
 function parseJson(url: string, options?: httpsClientOptions): Promise<null | any> {
-    return parseBody(url, options).then((body) => {
+    return parseBody(url, options).then((body: string) => {
         if (!body) return null;
 
         try {
