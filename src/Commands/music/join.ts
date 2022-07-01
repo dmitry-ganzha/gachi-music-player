@@ -2,7 +2,7 @@ import {Command} from "../Constructor";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
-import {JoinVoiceChannel} from "../../Core/Player/Manager/Voice/VoiceManager";
+import {JoinVoiceChannel} from "../../Core/Player/Structures/Voice";
 
 export class CommandJoin extends Command {
     public constructor() {
@@ -42,7 +42,7 @@ export class CommandJoin extends Command {
             queue.player.subscribe(connection); //Подключаем Vc к плееру
             queue.player.resume(); //Продолжаем воспроизведение
 
-            queue.events.helper.emit("CancelQueueDestroy", queue.player); //Отменяем удаление очереди
+            queue.events.voice.emit("CancelQueueDestroy", queue.player); //Отменяем удаление очереди
             return;
         }
 

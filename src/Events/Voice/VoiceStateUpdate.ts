@@ -2,7 +2,7 @@ import {Guild, VoiceState} from "discord.js";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {WatKLOK} from "../../Core/Client";
 import {getVoiceConnection} from "@discordjs/voice";
-import {Disconnect} from "../../Core/Player/Manager/Voice/VoiceManager";
+import {DisconnectVoiceChannel} from "../../Core/Player/Structures/Voice";
 
 export class voiceStateUpdate {
     public readonly name: string = "voiceStateUpdate";
@@ -18,15 +18,15 @@ export class voiceStateUpdate {
             if (FilterVoiceChannel.length >= 1) return; //Если есть один пользователь в голосовом канале, нечего не делаем!
 
             setTimeout(() => {
-                Disconnect(VoiceConnection.joinConfig.guildId); //Отключаемся от голосового канала поскольку в нем нет пользователей
+                DisconnectVoiceChannel(VoiceConnection.joinConfig.guildId); //Отключаемся от голосового канала поскольку в нем нет пользователей
             }, 700);
         }
         const FindBotVoiceChannel = this.#FilterVoiceChannel(client, newState.guild).find((fn: VoiceState) => fn.id === client.user.id); //Есть ли бот в гс
 
         //Если есть очередь сервера, используем с пользой
         if (queue) {
-            if (!FindBotVoiceChannel) return void queue.events?.helper?.emit("StartQueueDestroy", queue); //Если нет слушателей, удаляем очередь
-            queue.events?.helper?.emit("CancelQueueDestroy", queue.player); //Выключаем таймер, чтоб очередь жила дальше
+            if (!FindBotVoiceChannel) return void queue.events?.voice?.emit("StartQueueDestroy", queue); //Если нет слушателей, удаляем очередь
+            queue.events?.voice?.emit("CancelQueueDestroy", queue.player); //Выключаем таймер, чтоб очередь жила дальше
         }
 
     };

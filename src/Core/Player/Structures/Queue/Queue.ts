@@ -4,16 +4,16 @@ import {Song} from "./Song";
 import {ClientMessage} from "../../../Client";
 import {VoiceConnection} from "@discordjs/voice";
 import {QueueEvents} from "../../Manager/Queue";
-import {Voice} from "../../Manager/Voice/VoiceManager";
+import {AutoDisconnectVoiceChannel} from "../Voice";
 
 export type LoopType = "song" | "songs" | "off";
 export type AudioFilters = string[] | (string | number)[];
 
 export class Queue {
     public player: AudioPlayer;
-    public events: { queue: QueueEvents, helper: Voice } = {
+    public events: { queue: QueueEvents, voice: AutoDisconnectVoiceChannel } = {
         queue: new QueueEvents(),
-        helper: new Voice()
+        voice: new AutoDisconnectVoiceChannel()
     };
     public channels: { message: ClientMessage, voice: VoiceChannel | StageChannel, connection: VoiceConnection };
     public options: { random: boolean, loop: LoopType, stop: boolean } = {

@@ -2,7 +2,7 @@ import {ClientMessage} from "../../Client";
 import {InputTrack} from "../../Utils/TypeHelper";
 import {Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
-import {JoinVoiceChannel} from "./Voice/VoiceManager";
+import {JoinVoiceChannel} from "../Structures/Voice";
 import {PushSongMessage} from "./MessagePlayer";
 import {VoiceChannel} from "discord.js";
 import {EventEmitter} from "node:events";
@@ -118,7 +118,7 @@ function onDestroyQueue(queue: Queue, message: ClientMessage, sendDelQueue: bool
     delete queue.options;
     delete queue.channels;
 
-    queue.events.helper.destroy();
+    queue.events.voice.destroy();
     delete queue.events;
 
     return DeleteQueue(message);

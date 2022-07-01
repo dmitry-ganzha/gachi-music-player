@@ -5,7 +5,7 @@ import {Song} from "../Structures/Queue/Song";
 import {ClientMessage} from "../../Client";
 import {getVoiceConnection, PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 import {addAudioPlayer, deleteAudioPlayer} from "../Manager/PlayersManager";
-import {JoinVoiceChannel} from "../Manager/Voice/VoiceManager";
+import {JoinVoiceChannel} from "../Structures/Voice";
 import {ErrorPlayerMessage, PlaySongMessage} from "../Manager/MessagePlayer";
 import {FFmpegDecoder} from "../Structures/Streamer";
 
