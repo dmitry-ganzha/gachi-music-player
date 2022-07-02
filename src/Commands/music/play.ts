@@ -327,7 +327,10 @@ export class CommandPlay extends Command {
         } catch (e) {
             console.log(`[PlayCommand]: [ERROR] -> `, e);
             return message.client.Send({
-                text: `${message.author.username} | Произошла ошибка: ${e}`, message, color: "RED", type: "css"
+                text: `${message.author.username} | Произошла ошибка: ${e}`,
+                message,
+                color: "RED",
+                type: "css"
             });
         }
     };

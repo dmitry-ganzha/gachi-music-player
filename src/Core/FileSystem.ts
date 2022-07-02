@@ -3,6 +3,12 @@ import {ClientEvents} from "discord.js";
 import {Command} from "../Commands/Constructor";
 import {WatKLOK} from "./Client";
 
+const BaseLoader = {
+    total: 0,
+    fail: 0,
+    ok: 0
+}
+
 class MultiLoader {
     protected readonly name: string;
     protected readonly path: string;
@@ -28,6 +34,7 @@ class MultiLoader {
      * @description Загружаем файлы находящиеся в dir
      * @param Files {string[]} Все файлы в этой директории
      * @param dir {string} Директория из которой загружаем файлы
+     * @private
      */
     #ForLoad = async (Files: string[], dir: string): Promise<void> => {
         for (let file of Files) {
@@ -37,6 +44,7 @@ class MultiLoader {
                 pull = await this.#getFile(`../${this.path}/${dir}/${file}`);
 
                 pull.type = dir;
+                BaseLoader.total++;
 
                 if (!pull.enable) continue;
             } catch (e) {
@@ -74,8 +82,10 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
                 if (pull.name) {
                     client.commands.set(pull.name, pull);
                     if (!ClientShard) SendLog(file, `./Commands/${dir}/${file}`, "✔️");
+                    BaseLoader.ok++;
                 } else {
                     if (!ClientShard) SendLog(file, `./Commands/${dir}/${file}`, "✖️");
+                    BaseLoader.fail++;
                 }
                 if (pull.aliases && Array.isArray(pull.aliases)) pull.aliases.forEach((alias: string) => client.aliases.set(alias, pull.name));
             }
@@ -90,8 +100,10 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
                 if (pull) {
                     client.on(pull.name as any, async (ev: any, ev2: any) => pull.run(ev, ev2, client));
                     if (!ClientShard) SendLog(file, `./Events/${dir}/${file}`, "✔️");
+                    BaseLoader.ok++;
                 } else {
                     if (!ClientShard) SendLog(file, `./Events/${dir}/${file}`, "✖️");
+                    BaseLoader.fail++;
                 }
             }
         }).readdirSync(),
@@ -105,13 +117,15 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
                 if (pull) {
                     pull.run(client);
                     if (!ClientShard) SendLog(file, `./Modules/${dir}/${file}`, "✔️");
+                    BaseLoader.ok++;
                 } else {
                     if (!ClientShard) SendLog(file, `./Modules/${dir}/${file}`, "✖️");
+                    BaseLoader.fail++;
                 }
             }
         }).readdirSync(),
         setImmediate(() => {
-            if (!ClientShard) console.log("----------------------------> [FileSystem Ending loading] <----------------------------");
+            if (!ClientShard) console.log(`[FileSystem] ->  Status: [Total: ${BaseLoader.total} | Success: ${BaseLoader.ok} | Fail: ${BaseLoader.fail}]\n\nProcess Log:`);
         })
     ]);
 }
@@ -119,10 +133,10 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
 function FileType(file: string): string {
     return file.endsWith(".ts") ? "TS" : "JS";
 }
-function AddTime(): string {
+function NameFilesSystem(): string {
     return "[FileSystem]";
 }
 function SendLog(File: string, Path: string, status: "✖️" | "✔️") {
-    return console.log(`${AddTime()} ->  Status: [${status}] | Type: [${FileType(File)}] | Path: [${Path}]`);
+    return console.log(`${NameFilesSystem()} ->  Status: [${status}] | Type: [${FileType(File)}] | Path: [${Path}]`);
 }
 //
