@@ -24,7 +24,7 @@ class MultiLoader {
      * @description Открываем директорию (папку) и смотрим что в ней, проверяем что-бы были файлы js или ts. Загружаем...
      */
     public readdirSync = async (): Promise<void> => readdirSync(`./src/${this.path}`).forEach((dir: string) => {
-        if (dir.endsWith(".js") || dir.endsWith(".ts")) return null;
+        if (dir.endsWith(".js") || dir.endsWith(".ts")) return;
 
         const Files = readdirSync(`./src/${this.path}/${dir}/`).filter((file: string) => (file.endsWith(".js") || file.endsWith(".ts")));
         return this.#ForLoad(Files, dir);
@@ -46,7 +46,10 @@ class MultiLoader {
                 pull.type = dir;
                 BaseLoader.total++;
 
-                if (!pull.enable) continue;
+                if (!pull.enable) {
+                    BaseLoader.fail++;
+                    continue;
+                }
             } catch (e) {
                 console.log(e);
                 continue;

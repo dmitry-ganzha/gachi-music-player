@@ -44,7 +44,7 @@ export function DisconnectVoiceChannel(channel: VoiceChannels | string) {
 
 export class AutoDisconnectVoiceChannel extends EventEmitter {
     #Timer: NodeJS.Timeout;
-    #state: boolean;
+    #hasDestroying: boolean;
 
     public constructor() {
         super();
@@ -63,7 +63,7 @@ export class AutoDisconnectVoiceChannel extends EventEmitter {
         const {player, events, channels} = queue;
 
         if (!this.#Timer) this.#Timer = setTimeout(() => events.queue.emit("DestroyQueue", queue, channels.message, false), VoiceDestroyTime * 1e3);
-        this.#state = true;
+        this.#hasDestroying = true;
         player.pause();
     };
     //====================== ====================== ====================== ======================
@@ -72,8 +72,8 @@ export class AutoDisconnectVoiceChannel extends EventEmitter {
      * @param player {AudioPlayer} Плеер
      */
     #onCancelQueueDestroy = (player: AudioPlayer): boolean | void => {
-        if (this.#state) {
-            this.#state = false;
+        if (this.#hasDestroying) {
+            this.#hasDestroying = false;
 
             if (this.#Timer) clearTimeout(this.#Timer);
             player.resume();

@@ -1,8 +1,8 @@
 import {Readable, Writable} from "stream";
-import {opus} from "prism-media";
 import FFmpegConfiguration from "../../../../DataBase/FFmpeg.json";
 import {CreateFilters, FFmpeg, FFmpegArgs} from "./Media/FFmpeg";
 import {AudioFilters} from "./Queue/Queue";
+import {OggDemuxer} from "./Media/OggDemuxer";
 
 /**
  * @name FFmpegDecoder
@@ -44,7 +44,7 @@ export class FFmpegDecoder {
         setImmediate(() => this.#TimeFrame = this.#TimeFrame * FFmpegTimer(parameters?.Filters) || 20);
         //Даем FFmpeg'у, ссылку с которой надо скачать поток
         this.#FFmpeg = new FFmpeg(CreateArguments(parameters.url, parameters?.Filters, parameters?.seek));
-        this.playStream = new opus.OggDemuxer({autoDestroy: true, objectMode: true});
+        this.playStream = new OggDemuxer({autoDestroy: true, objectMode: true});
 
         this.#FFmpeg.pipe(this.playStream);
 

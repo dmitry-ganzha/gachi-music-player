@@ -14,7 +14,7 @@ export class Command {
     public type: string;
     public run: (message: ClientMessage | ClientInteraction, args?: string[]) => Promise<void | any> | void | any;
 
-    public constructor(
+    public constructor (
         {
             name = "" as string,
             aliases = [] as string[],

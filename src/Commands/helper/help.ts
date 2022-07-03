@@ -14,7 +14,7 @@ export class CommandHelp extends Command {
             slash: true,
             enable: true,
             CoolDown: 35
-        })
+        });
     };
 
     public run = (message: ClientMessage): void => {
