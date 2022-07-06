@@ -5,6 +5,7 @@ import {getCookies, uploadCookie} from "../Platforms/src/youtube/Cookie";
 import UserAgents from "./UserAgents.json";
 
 export const httpsClient = {Request, parseBody, parseJson};
+let Cookie = getCookies(); //Получаем куки если он был указан в файле
 
 /**
  * @description Создаем запрос по ссылке, модифицируем по необходимости
@@ -59,8 +60,6 @@ function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
             else if (encoding === "br") decoder = createBrotliDecompress();
             else if (encoding === "deflate") decoder = createDeflate();
 
-            if (options.options?.cookie && res.headers && res.headers["set-cookie"]) uploadCookie(res.headers["set-cookie"]);
-
             if (decoder) {
                 res.pipe(decoder);
                 decoder.setEncoding("utf-8");
@@ -71,6 +70,15 @@ function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
                 res.on("data", (c) => data.push(c));
                 res.once("end", () => resolve(data.join("")));
             }
+
+            setImmediate(() => {
+                if (options.options?.cookie && res.headers && res.headers["set-cookie"]) {
+                    uploadCookie(res.headers["set-cookie"]);
+
+                    //Обновляем куки вне запроса что-бы снизить задержки!
+                    if (Cookie) Cookie = getCookies();
+                }
+            });
         });
     });
 }
@@ -127,8 +135,7 @@ function ChangeReqOptions(options: httpsClientOptions): void {
             if (Version) options.request.headers = {...options.request.headers, "sec-ch-ua-full-version": Version};
         }
         if (options.options?.cookie) {
-            const cookie = getCookies();
-            if (cookie) options.request.headers = {...options.request.headers, "cookie": cookie};
+            if (Cookie) options.request.headers = {...options.request.headers, "cookie": Cookie};
         }
     }
 }

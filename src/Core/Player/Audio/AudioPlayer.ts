@@ -84,7 +84,7 @@ export class AudioPlayer extends EventEmitter {
         super();
         this.on("idle", () => this.#onIdlePlayer(msg));
         this.on("error", (err: any) => this.#onErrorPlayer(err, msg));
-        this.on("autoPaused", () => this.#onAutoPaused(msg));
+        //this.on("autoPaused", () => this.#onAutoPaused(msg));
         this.setMaxListeners(3);
     };
     //====================== ====================== ====================== ======================
