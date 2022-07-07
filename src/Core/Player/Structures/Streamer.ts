@@ -10,8 +10,8 @@ import {OggDemuxer} from "./Media/OggDemuxer";
  */
 export class FFmpegDecoder {
     public playbackDuration = 0;
-    public playStream: Readable & Writable;
-    #FFmpeg: FFmpeg;
+    public readonly playStream: Readable & Writable;
+    readonly #FFmpeg: FFmpeg;
     #started = false;
     #TimeFrame = 20;
     //====================== ====================== ====================== ======================
@@ -77,7 +77,6 @@ export class FFmpegDecoder {
                 this.playStream?.removeAllListeners();
                 this.playStream?.destroy();
             }
-            delete this.playStream;
         }, 125);
     };
 }

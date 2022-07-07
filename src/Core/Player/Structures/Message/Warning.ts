@@ -34,7 +34,7 @@ export function Warning(client: WatKLOK, {color, author, image, title, url, dura
         timestamp: new Date(),
         footer: {
             text: `${requester.username} | ${TimeInArray(songs)} | 🎶: ${songs.length}`,
-            iconURL: requester.displayAvatarURL() ? requester.displayAvatarURL() : client.user.displayAvatarURL(),
+            iconURL: requester?.avatarURL() ?? client.user.displayAvatarURL(),
         }
     }
 }

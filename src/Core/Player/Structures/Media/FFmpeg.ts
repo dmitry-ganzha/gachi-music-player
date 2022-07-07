@@ -29,7 +29,7 @@ if (FFmpegName === undefined) Promise.all([FFmpegCheck()]).catch();
  * As a general rule, options are applied to the next specified file. Therefore, order is important, and you can have the same option on the command line multiple times. Each occurrence is then applied to the next input or output file. Exceptions from this rule are the global options (e.g. verbosity level), which should be specified first.
  */
 export class FFmpeg extends Duplex {
-    #process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
+    readonly #process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
     get #Input() { return this.#process.stdout; };
     get #Output() { return this.#process.stdin; };
     //====================== ====================== ====================== ======================

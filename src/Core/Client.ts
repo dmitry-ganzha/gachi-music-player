@@ -22,15 +22,15 @@ export class WatKLOK extends Client {
     public commands = new CollectionMap<string, Command>();
     public aliases = new CollectionMap<string, string>();
     public queue = new CollectionMap<string, Queue>();
-    public cfg = require("../../DataBase/Config.json");
+    public readonly cfg = require("../../DataBase/Config.json");
 
-    public Send = MessageChannelSend;
-    public ConvertedText = ConvertedText;
-    public console: (text: string) => NodeJS.Timeout;
-    public connections = Connections;
-    public player = new PlayerEmitter();
+    public readonly Send = MessageChannelSend;
+    public readonly ConvertedText = ConvertedText;
+    public readonly console: (text: string) => NodeJS.Timeout;
+    public readonly connections = Connections;
+    public readonly player = new PlayerEmitter();
 
-    public ShardID: number | null;
+    public readonly ShardID: number | null;
 
     public constructor() {
         super({

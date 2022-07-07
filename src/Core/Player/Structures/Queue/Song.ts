@@ -12,36 +12,104 @@ import {ParseTimeString} from "../../Manager/DurationUtils";
 
 type SongType = "SPOTIFY" | "YOUTUBE" | "VK" | "SOUNDCLOUD" | "UNKNOWN";
 
+/**
+ * @description Какие данные доступны в <song>.requester
+ */
+interface SongRequester {
+    id: string;
+    username: string;
+    avatarURL: () => string | null;
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Создаем трек для внутреннего использования
+ */
 export class Song {
-    public title: string;
-    public url: string;
-    public author: InputTrackAuthor;
-    public duration: {
+    readonly #_title: string;
+    readonly #_url: string;
+    readonly #_author: InputTrackAuthor;
+    readonly #_duration: {
         seconds: number,
         StringTime: string
     };
-    public image: InputTrackImage;
-    public requester: User;
-    public isLive: boolean;
-    public color: number;
-    public type: SongType;
-    public format: FFmpegFormat;
+    readonly #_image: InputTrackImage;
+    readonly #_requester: SongRequester;
+    readonly #_isLive: boolean;
+    readonly #_color: number;
+    readonly #_type: SongType;
+    #_format: FFmpegFormat;
 
     public constructor(track: InputTrack, {author}: ClientMessage) {
         const type = Type(track.url);
 
-        this.title = track.title;
-        this.url = track.url;
-        this.author = {
+        this.#_title = track.title;
+        this.#_url = track.url;
+        this.#_author = {
             url: track.author.url, title: track.author.title, image: track.author.image, isVerified: track.author.isVerified
         };
-        this.duration = ConstDuration(track.duration);
-        this.image = track.image;
-        this.requester = author;
-        this.isLive = track.isLive;
-        this.color = Color(type);
-        this.type = type;
+        this.#_duration = ConstDuration(track.duration);
+        this.#_image = track.image;
+        this.#_requester = ConstRequester(author);
+        this.#_isLive = track.isLive;
+        this.#_color = Color(type);
+        this.#_type = type;
         this.format = ConstFormat(track.format);
+    }
+    //Название трека
+    public get title() {
+        return this.#_title;
+    };
+    //Ссылка на трек
+    public get url() {
+        return this.#_url;
+    };
+    //Автор трека
+    public get author() {
+        return this.#_author;
+    };
+    //Время трека
+    public get duration() {
+        return this.#_duration;
+    };
+    //Картинки трека
+    public get image() {
+        return this.#_image;
+    };
+    //Пользователь включивший трек
+    public get requester() {
+        return this.#_requester;
+    };
+    //Этот трек потоковый
+    public get isLive() {
+        return this.#_isLive;
+    };
+    //Цвет трека
+    public get color() {
+        return this.#_color;
+    };
+    //Тип трека
+    public get type() {
+        return this.#_type;
+    };
+    //Исходные данные на ресурс трека
+    public get format() {
+        return this.#_format;
+    };
+    public set format(format) {
+        this.#_format = format;
+    };
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Уменьшаем <message.author>, для экономии ОЗУ
+ * @param id {string} ID пользователя
+ * @param username {string} Ник пользователя
+ * @param avatarURL {string} Иконка пользователя
+ * @constructor
+ */
+function ConstRequester({id, username, avatar}: User) {
+    return {
+        username, id, avatarURL: () => `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp`
     };
 }
 //====================== ====================== ====================== ======================

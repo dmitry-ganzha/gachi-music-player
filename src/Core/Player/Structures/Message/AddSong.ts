@@ -35,7 +35,7 @@ export function AddSong(client: WatKLOK, {color, author, image, title, url, dura
         }],
         footer: {
             text: `${requester.username} | ${TimeInArray(songs)} | 🎶: ${songs.length}`,
-            iconURL: requester.displayAvatarURL(),
+            iconURL: requester.avatarURL(),
         }
     }
 }

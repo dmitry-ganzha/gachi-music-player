@@ -14,20 +14,20 @@ export class CommandEval extends Command {
         })
     };
 
-    public run = async (message: ClientMessage, args: string[]): Promise<number | NodeJS.Timeout> => {
+    public readonly run = (message: ClientMessage, args: string[]): void => {
         let code: string = args.join(" "),
             StartTime: number = new Date().getMilliseconds(),
             RunEval: any;
 
         try {
             RunEval = eval(code);
-            return this.#MessageSend(message, RunEval, Colors.GREEN, "[Status: Work]", code, StartTime);
+            this.#MessageSend(message, RunEval, Colors.GREEN, "[Status: Work]", code, StartTime);
         } catch (err) {
-            await this.#MessageSend(message, err.code ? err.code : err, Colors.RED, "[Status: Fail]", code, StartTime);
-            return message.client.console(`[EVAL]: [ERROR: ${err.code ? err.code : err}]`);
+            this.#MessageSend(message, err.code ? err.code : err, Colors.RED, "[Status: Fail]", code, StartTime);
+            message.client.console(`[EVAL]: [ERROR: ${err.code ? err.code : err}]`);
         }
     };
-    #MessageSend = (message: ClientMessage, response: string, color: number, type: string, code: string, StartTime: number): Promise<number | NodeJS.Timeout> => {
+    #MessageSend = (message: ClientMessage, response: string, color: number, type: string, code: string, StartTime: number): void => {
         const EndTime = new Date().getMilliseconds();
         let embed: EmbedConstructor = {
             color,
@@ -48,6 +48,6 @@ export class CommandEval extends Command {
                 text: `Time: ${EndTime - StartTime} ms`
             }
         }
-        return message.channel.send({embeds: [embed]}).then((msg: ClientMessage) => Command.DeleteMessage(msg, 30e3));
+        message.channel.send({embeds: [embed]}).then((msg: ClientMessage) => Command.DeleteMessage(msg, 30e3));
     };
 }

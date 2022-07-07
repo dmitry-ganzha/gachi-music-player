@@ -300,7 +300,7 @@ export class CommandPlay extends Command {
         })
     };
 
-    public run = (message: ClientMessage, args: string[]): void => {
+    public readonly run = (message: ClientMessage, args: string[]): void => {
         const voiceChannel: VoiceChannel | StageChannel = message.member.voice.channel, search: string = args.join(" "),
             queue: Queue = message.client.queue.get(message.guild.id);
 

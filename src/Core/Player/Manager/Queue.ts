@@ -108,11 +108,15 @@ export class QueueEvents extends EventEmitter {
 function onDestroyQueue(queue: Queue, message: ClientMessage, sendDelQueue: boolean = true): boolean | void {
     if (!queue) return;
 
+    //Удаляем сообщение, текущего трека
     DeleteMessage(queue.channels);
-    //Disconnect(queue?.channels?.message?.guild.id);
+    //Удаляем плеер
     CleanPlayer(queue);
+
+    //Отправляем сообщение о завершении проигрывания
     if (sendDelQueue) SendChannelToEnd(queue.options, message);
 
+    //Удаляем все
     delete queue.songs;
     delete queue.audioFilters;
     delete queue.options;
@@ -121,6 +125,7 @@ function onDestroyQueue(queue: Queue, message: ClientMessage, sendDelQueue: bool
     queue.events.voice.destroy();
     delete queue.events;
 
+    //Удаляем очередь из <client>.queue
     return DeleteQueue(message);
 }
 //====================== ====================== ====================== ======================
@@ -137,7 +142,6 @@ function CleanPlayer(queue: Queue): void {
         queue.player.unsubscribe(null);
         queue.player?.removeAllListeners();
         queue.player.destroy();
-        delete queue.player;
     });
 }
 //====================== ====================== ====================== ======================

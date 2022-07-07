@@ -10,8 +10,8 @@ export type LoopType = "song" | "songs" | "off";
 export type AudioFilters = string[] | (string | number)[];
 
 export class Queue {
-    public player: AudioPlayer;
-    public events: { queue: QueueEvents, voice: AutoDisconnectVoiceChannel } = {
+    readonly #_player: AudioPlayer;
+    events: { queue: QueueEvents, voice: AutoDisconnectVoiceChannel } = {
         queue: new QueueEvents(),
         voice: new AutoDisconnectVoiceChannel()
     };
@@ -25,7 +25,11 @@ export class Queue {
     public songs: Song[] = [];
 
     public constructor(message: ClientMessage, voice: VoiceChannel) {
-        this.player = new AudioPlayer(message);
+        this.#_player = new AudioPlayer(message);
         this.channels = { message, voice, connection: null};
+    };
+
+    public get player() {
+        return this.#_player;
     };
 }

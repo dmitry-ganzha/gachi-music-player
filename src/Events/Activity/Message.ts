@@ -13,7 +13,7 @@ export class GuildMessage {
     public readonly name: string = "messageCreate";
     public readonly enable: boolean = true;
 
-    public run = (message: ClientMessage) => {
+    public readonly run = (message: ClientMessage) => {
         const prefix = message.client.cfg.Bot.prefix;
 
         if (message.author.bot || !message.content.startsWith(prefix) || message.channel.type === ChannelType.DM) return;

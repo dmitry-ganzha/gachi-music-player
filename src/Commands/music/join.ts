@@ -20,7 +20,7 @@ export class CommandJoin extends Command {
         });
     };
 
-    public run = (message: ClientMessage): void => {
+    public readonly run = (message: ClientMessage): void => {
         const voiceChannel: VoiceChannel | StageChannel = message.member.voice.channel;
         const queue: Queue = message.client.queue.get(message.guild.id);
 

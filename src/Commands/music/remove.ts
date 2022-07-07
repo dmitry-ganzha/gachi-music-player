@@ -23,7 +23,7 @@ export class CommandRemove extends Command {
         })
     };
 
-    public run = (message: ClientMessage, args: string[]): void => {
+    public readonly run = (message: ClientMessage, args: string[]): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
         const argsNum = args[0] ? parseInt(args[0]) : 1;
 

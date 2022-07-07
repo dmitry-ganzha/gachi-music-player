@@ -15,7 +15,7 @@ export class CommandStop extends Command {
         });
     };
 
-    public run = (message: ClientMessage): void => {
+    public readonly run = (message: ClientMessage): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
         if (queue) {
             DisconnectVoiceChannel(message.guild.id);

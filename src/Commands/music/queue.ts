@@ -18,7 +18,7 @@ export class CommandQueue extends Command {
         })
     };
 
-    public run = (message: ClientMessage): Promise<ReactionCollector> | void => {
+    public readonly run = (message: ClientMessage): Promise<ReactionCollector> | void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         if (!queue) return message.client.Send({

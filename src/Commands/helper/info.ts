@@ -26,7 +26,7 @@ export class CommandInfo extends Command {
         });
     };
 
-    public run = async (message: ClientMessage): Promise<void> => {
+    public readonly run = async (message: ClientMessage): Promise<void> => {
         //Если запущен ShardManager
         if (message.client.shard) {
             let queue = message.client.queue.size, guilds = message.client.guilds.cache.size, channels = message.client.channels.cache.size;

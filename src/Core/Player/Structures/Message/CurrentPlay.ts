@@ -31,7 +31,7 @@ export function CurrentPlay(client: WatKLOK, song: Song, queue: Queue): EmbedCon
         },
         footer: {
             text: `${song.requester.username} | ${TimeInArray(queue)} | 🎶: ${queue.songs.length}`,
-            iconURL: song.requester.displayAvatarURL(),
+            iconURL: song.requester.avatarURL(),
         }
     };
 }

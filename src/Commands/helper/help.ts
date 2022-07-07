@@ -17,7 +17,7 @@ export class CommandHelp extends Command {
         });
     };
 
-    public run = (message: ClientMessage): void => {
+    public readonly run = (message: ClientMessage): void => {
         const Commands: Command[] = message.client.commands.Array;
 
         // @ts-ignore

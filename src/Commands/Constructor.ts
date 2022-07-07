@@ -12,7 +12,7 @@ export class Command {
     public readonly enable: boolean;
     public readonly CoolDown: number
     public type: string;
-    public run: (message: ClientMessage | ClientInteraction, args?: string[]) => Promise<void | any> | void | any;
+    public readonly run: (message: ClientMessage | ClientInteraction, args?: string[]) => Promise<void | any> | void | any;
 
     public constructor (
         {

@@ -22,7 +22,7 @@ export class CommandSeek extends Command {
         });
     };
 
-    public run = (message: ClientMessage, args: string[]): void => {
+    public readonly run = (message: ClientMessage, args: string[]): void => {
         const queue: Queue = message.client.queue.get(message.guild.id), ArgDuration: any[] = args.join(" ").split(":");
         let EndDuration: number;
 

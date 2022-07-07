@@ -9,7 +9,7 @@ export class guildCreate {
     public readonly name: string = "guildCreate";
     public readonly enable: boolean = true;
 
-    public run = (guild: Guild, f2: null, client: WatKLOK): void | Promise<Message> => {
+    public readonly run = (guild: Guild, f2: null, client: WatKLOK): void | Promise<Message> => {
         if (!guild.systemChannel) return;
 
         setImmediate(() => {

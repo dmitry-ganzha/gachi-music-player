@@ -15,7 +15,7 @@ export class CommandRestart extends Command {
         });
     };
 
-    public run = (message: ClientMessage): Promise<ReactionCollector | boolean | void> | void => {
+    public readonly run = (message: ClientMessage): Promise<ReactionCollector | boolean | void> | void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         if (!queue) return message.client.Send({ text: `${message.author}, ⚠ | Музыка щас не играет.`, message, color: "RED" });

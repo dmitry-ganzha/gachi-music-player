@@ -24,7 +24,7 @@ if (FFprobeName === undefined) Promise.all([FFprobeCheck()]).catch();
  * ffprobe may be employed both as a standalone application or in combination with a textual filter, which may perform more sophisticated processing, e.g. statistical processing or plotting.
  * Options are used to list some formats supported by ffprobe or for specifying which information to display, and for setting how ffprobe will show it.
  * ffprobe output is designed to be easily parsable by a textual filter, and consists of one or more sections of a form defined by the selected writer, which is specified by the print_format option.
- * Sections may contain other nested sections, and are identified by a name (which may be shared by other sections), and an unique name. See the output of sections.
+ * Sections may contain other nested sections, and are identified by a name (which may be shared by other sections), and a unique name. See the output of sections.
  * Metadata tags stored in the container or in the streams are recognized and printed in the corresponding "FORMAT", "STREAM" or "PROGRAM_STREAM" section.
  */
 export class FFprobe {

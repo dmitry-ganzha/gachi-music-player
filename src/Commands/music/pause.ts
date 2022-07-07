@@ -13,7 +13,7 @@ export class CommandPause extends Command {
         })
     };
 
-    public run = (message: ClientMessage): void => {
+    public readonly run = (message: ClientMessage): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         if (!queue.player) return message.client.Send({

@@ -7,7 +7,7 @@ export class Ready {
     public readonly name: string = "ready";
     public readonly enable: boolean = false;
 
-    public run = (f1: null, f2: null, client: WatKLOK): Promise<ClientMessage> | null => {
+    public readonly run = (f1: null, f2: null, client: WatKLOK): Promise<ClientMessage> | null => {
         let channel = client.channels.cache.get(cfg.Channels.Start) as MessageChannel;
 
         if (channel && !client.shard) return channel.send({embeds: [MessageEmbed(client)]});

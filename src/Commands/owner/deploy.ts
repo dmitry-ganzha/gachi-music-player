@@ -12,7 +12,7 @@ export class CommandDeploy extends Command {
         })
     };
 
-    public run = (message: ClientMessage): void => {
+    public readonly run = (message: ClientMessage): void => {
         let TotalCommands: number = 0;
         message.client.commands.forEach((cmd: Command) => {
             if (cmd.isOwner || !cmd.slash) return null;

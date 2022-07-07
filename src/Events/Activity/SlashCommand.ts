@@ -9,7 +9,7 @@ export class SlashCommand {
     public readonly name: string = "interactionCreate";
     public readonly enable: boolean = true;
 
-    public run = (interaction: ClientInteraction, f2: any, client: WatKLOK): Promise<void | NodeJS.Timeout> | void => {
+    public readonly run = (interaction: ClientInteraction, f2: any, client: WatKLOK): Promise<void | NodeJS.Timeout> | void => {
         if (!interaction.guildId) return;
 
         DeleteInteraction(interaction);

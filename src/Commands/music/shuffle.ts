@@ -22,7 +22,7 @@ export class CommandShuffle extends Command {
         });
     };
 
-    public run = (message: ClientMessage): void => {
+    public readonly run = (message: ClientMessage): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         if (!queue) return message.client.Send({
