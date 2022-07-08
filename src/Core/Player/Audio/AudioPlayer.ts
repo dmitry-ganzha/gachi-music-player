@@ -339,8 +339,12 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
             req++;
             return CreateResource(song, audioFilters, seek, req);
         //@ts-ignore
-        }).then(() => { //@ts-ignore
-            if (!song.format?.url) return CreateResource(song, audioFilters, seek, req++);
+        }).then(() => {
+            if (!song.format?.url) {
+                req++;
+                return CreateResource(song, audioFilters, seek, req);
+            }
+
             let Params: any = {url: song.format.url};
 
             if (!song.isLive) Params = {...Params, seek: seek, Filters: audioFilters};

@@ -1,5 +1,5 @@
 import {Readable, Writable} from "stream";
-import FFmpegConfiguration from "../../../../DataBase/FFmpeg.json";
+import {Args, FilterConfigurator} from "../../../../DataBase/FFmpeg.json";
 import {CreateFilters, FFmpeg, FFmpegArgs} from "./Media/FFmpeg";
 import {AudioFilters} from "./Queue/Queue";
 import {OggDemuxer} from "./Media/OggDemuxer";
@@ -12,8 +12,8 @@ export class FFmpegDecoder {
     public playbackDuration = 0;
     public readonly playStream: Readable & Writable;
     readonly #FFmpeg: FFmpeg;
+    readonly #TimeFrame: number;
     #started = false;
-    #TimeFrame = 20;
     //====================== ====================== ====================== ======================
     /**
      * @description Проверяем можно ли читать поток
@@ -37,18 +37,22 @@ export class FFmpegDecoder {
     };
     //====================== ====================== ====================== ======================
     /**
-     * @description
+     * @description Декодируем в opus
      * @param parameters {Options}
      */
     public constructor(parameters: {url: string, seek?: number, Filters?: AudioFilters}) {
-        setImmediate(() => this.#TimeFrame = this.#TimeFrame * FFmpegTimer(parameters?.Filters) || 20);
+        //Проверяем сколько времени длится пакет
+        this.#TimeFrame = FFmpegTimer(parameters?.Filters);
         //Даем FFmpeg'у, ссылку с которой надо скачать поток
         this.#FFmpeg = new FFmpeg(CreateArguments(parameters.url, parameters?.Filters, parameters?.seek));
+        //Декодируем в чистый opus
         this.playStream = new OggDemuxer({autoDestroy: true, objectMode: true});
 
-        this.#FFmpeg.pipe(this.playStream);
+        this.#FFmpeg.pipe(this.playStream); //Загружаем из FFmpeg'a в декодер
 
-        this.playStream.once("readable", () => (this.#started = true));
+        this.playStream.once("readable", () => (this.#started = true)); //Запишем когда можно брать пакеты
+
+        //Если в <this.playStream> будет один из этих статусов, чистим память!
         ["end", "close", "error"].forEach((event) => this.playStream.once(event, this.destroy));
         return;
     };
@@ -69,9 +73,9 @@ export class FFmpegDecoder {
     public destroy = (): void => {
         if (this.#FFmpeg) this.#FFmpeg.destroy();
 
-        //Delete other
         delete this.playbackDuration;
 
+        //Удаляем с задержкой (чтоб убрать некоторые ошибки)
         setTimeout(() => {
             if (this.playStream && !this.playStream?.destroyed) {
                 this.playStream?.removeAllListeners();
@@ -89,12 +93,11 @@ export class FFmpegDecoder {
  * @constructor
  */
 function CreateArguments (url: string, AudioFilters: AudioFilters, seek: number): FFmpegArgs {
-    let Arg = [...FFmpegConfiguration.Args.Reconnect, "-vn", ...FFmpegConfiguration.Args.Seek, seek ?? 0];
+    let thisArgs = [...Args.Reconnect, "-vn", ...Args.Seek, seek ?? 0];
+    if (url) thisArgs = [...thisArgs, "-i", url];
 
-    if (url) Arg = [...Arg, "-i", url];
-
-    if (AudioFilters) return [...Arg, "-af", CreateFilters(AudioFilters), ...FFmpegConfiguration.Args.OggOpus, ...FFmpegConfiguration.Args.DecoderPreset];
-    return [...Arg, ...FFmpegConfiguration.Args.OggOpus, ...FFmpegConfiguration.Args.DecoderPreset];
+    //Всегда есть один фильтр <AudioFade>
+    return [...thisArgs, "-af", CreateFilters(AudioFilters), ...Args.OggOpus, ...Args.DecoderPreset];
 }
 //====================== ====================== ====================== ======================
 /**
@@ -104,28 +107,31 @@ function CreateArguments (url: string, AudioFilters: AudioFilters, seek: number)
  */
 function FFmpegTimer(AudioFilters: AudioFilters) {
     if (!AudioFilters) return null;
-    let NumberDuration = 0;
+    let NumberDuration = 20;
 
+    //Фильтр <nightcore>
     if (AudioFilters.indexOf("nightcore") >= 0) {
-        const Arg = FFmpegConfiguration.FilterConfigurator["nightcore"].arg;
+        const Arg = FilterConfigurator["nightcore"].arg;
         const number = Arg.split("*")[1].split(",")[0];
 
-        NumberDuration += Number(number);
+        NumberDuration *= Number(number);
     }
 
+    //Фильтр <speed>
     if (AudioFilters.indexOf("speed") >= 0) {
         const Index = AudioFilters.indexOf("speed") + 1;
         const number = AudioFilters.slice(Index);
 
-        NumberDuration += Number(number);
+        NumberDuration *= Number(number);
     }
 
+    //Фильтр <vaporwave>
     if (AudioFilters.indexOf("vaporwave")) {
-        const Arg = FFmpegConfiguration.FilterConfigurator["vaporwave"].arg;
+        const Arg = FilterConfigurator["vaporwave"].arg;
         const number1 = Arg.split("*")[1].split(",")[0];
         const number2 = Arg.split(",atempo=")[1];
 
-        NumberDuration += Number(number1 + number2);
+        NumberDuration *= Number(number1 + number2);
     }
     return NumberDuration;
 }

@@ -30,18 +30,21 @@ if (FFmpegName === undefined) Promise.all([FFmpegCheck()]).catch();
  */
 export class FFmpeg extends Duplex {
     readonly #process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
-    get #Input() { return this.#process.stdout; };
-    get #Output() { return this.#process.stdin; };
+    get #input() { return this.#process.stdout; };
+    get #output() { return this.#process.stdin; };
     //====================== ====================== ====================== ======================
     public constructor(args: FFmpegArgs) {
         super({autoDestroy: true, objectMode: true});
-        this.#process = this.#SpawnFFmpeg(args);
-
-        this.#Binding(["write", "end"], this.#Output);
-        this.#Binding(["read", "setEncoding", "pipe", "unpipe"], this.#Input);
 
         //Используется для загрузки потока в ffmpeg. Неообходимо не указывать параметр -i
-        if (!args.includes("-i")) this.#Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
+        if (!args.includes("-i")) {
+            args.unshift("-i", "-");
+            this.#Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
+        }
+
+        this.#process = this.#SpawnFFmpeg(args);
+        this.#Binding(["write", "end"], this.#output);
+        this.#Binding(["read", "setEncoding", "pipe", "unpipe"], this.#input);
     };
     //====================== ====================== ====================== ======================
     /**
@@ -54,12 +57,12 @@ export class FFmpeg extends Duplex {
     #Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
     #Calling = (methods: string[]) => {
         const EVENTS = {
-            readable: this.#Input,
-            data: this.#Input,
-            end: this.#Input,
-            unpipe: this.#Input,
-            finish: this.#Output,
-            drain: this.#Output,
+            readable: this.#input,
+            data: this.#input,
+            end: this.#input,
+            unpipe: this.#input,
+            finish: this.#output,
+            drain: this.#output,
         };
 
         // @ts-ignore
@@ -70,12 +73,7 @@ export class FFmpeg extends Duplex {
      * @description Запускаем FFmpeg
      * @param Arguments {FFmpegArgs} Указываем аргументы для запуска
      */
-    #SpawnFFmpeg = (Arguments: FFmpegArgs): any => {
-        const Args = [...Arguments, "pipe:1"];
-        if (!Args.includes("-i")) Args.unshift("-i", "-");
-
-        return spawn(FFmpegName, Args as any, { shell: false, windowsHide: true });
-    };
+    #SpawnFFmpeg = (Arguments: FFmpegArgs): any => spawn(FFmpegName, [...Arguments, "pipe:1"] as any, { shell: false, windowsHide: true });
     //====================== ====================== ====================== ======================
     /**
      * @description Удаляем все что не нужно

@@ -126,7 +126,7 @@ function ConstDuration(duration: InputTrackDuration): { StringTime: string | "Li
 }
 //====================== ====================== ====================== ======================
 /**
- * @description Подготавливаем цвет трека
+ * @description Цвет трека из названия платформы
  * @param type {string}
  * @constructor
  */

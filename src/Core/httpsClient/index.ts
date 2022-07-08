@@ -23,10 +23,15 @@ function Request(url: string, options?: httpsClientOptions): Promise<IncomingMes
             headers: options.request?.headers ?? {},
             method: options.request?.method ?? "GET"
         };
-
         const Requesting = request(Options, resolve);
+
+        //Если возникла ошибка
         Requesting.on("error", reject);
+
+        //Если запрос POST, отправляем ответ на сервер
         if (options.request?.method === "POST") Requesting.write(options.request?.body);
+
+        //Заканчиваем запрос
         Requesting.end();
     });
 }
@@ -51,15 +56,16 @@ function AutoRedirect(url: string, options?: httpsClientOptions): Promise<Incomi
  */
 function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
     return new Promise((resolve) => {
-        AutoRedirect(url, options).then((res: IncomingMessage) => {
+        return AutoRedirect(url, options).then((res: IncomingMessage) => {
             const encoding = res.headers["content-encoding"];
+            const data: string[] = [];
             let decoder: BrotliDecompress | Gunzip | Deflate | null = null;
-            let data: string[] = [];
 
             if (encoding === "gzip") decoder = createGunzip();
             else if (encoding === "br") decoder = createBrotliDecompress();
             else if (encoding === "deflate") decoder = createDeflate();
 
+            //Нужно ли использовать декодер (без декодера могут быть символы вместо букв или цифр)
             if (decoder) {
                 res.pipe(decoder);
                 decoder.setEncoding("utf-8");
@@ -71,6 +77,7 @@ function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
                 res.once("end", () => resolve(data.join("")));
             }
 
+            //Обновляем куки в конце
             setImmediate(() => {
                 if (options.options?.cookie && res.headers && res.headers["set-cookie"]) {
                     uploadCookie(res.headers["set-cookie"]);
@@ -128,15 +135,16 @@ function GetUserAgent(): {Agent: string, Version: string} {
 function ChangeReqOptions(options: httpsClientOptions): void {
     if (!options.request || !options.request?.headers) options.request = {...options.request, headers: {}};
 
-    if (options.request?.headers) {
-        if (options.options?.userAgent) {
-            const {Agent, Version} = GetUserAgent();
-            options.request.headers = {...options.request.headers, "user-agent": Agent};
-            if (Version) options.request.headers = {...options.request.headers, "sec-ch-ua-full-version": Version};
-        }
-        if (options.options?.cookie) {
-            if (Cookie) options.request.headers = {...options.request.headers, "cookie": Cookie};
-        }
+    //Добавляем User-Agent
+    if (options.options?.userAgent) {
+        const {Agent, Version} = GetUserAgent();
+        options.request.headers = {...options.request.headers, "user-agent": Agent};
+        if (Version) options.request.headers = {...options.request.headers, "sec-ch-ua-full-version": Version};
+    }
+
+    //Добавляем куки
+    if (options.options?.cookie) {
+        if (Cookie) options.request.headers = {...options.request.headers, "cookie": Cookie};
     }
 }
 //====================== ====================== ====================== ======================

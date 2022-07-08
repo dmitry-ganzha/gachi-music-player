@@ -28,7 +28,7 @@ if (FFprobeName === undefined) Promise.all([FFprobeCheck()]).catch();
  * Metadata tags stored in the container or in the streams are recognized and printed in the corresponding "FORMAT", "STREAM" or "PROGRAM_STREAM" section.
  */
 export class FFprobe {
-    #process: ChildProcessWithoutNullStreams;
+    readonly #process: ChildProcessWithoutNullStreams;
     //====================== ====================== ====================== ======================
     /**
      * @description Запуск FFprobe

@@ -13,6 +13,7 @@ export function addAudioPlayer(player: AudioPlayer): void {
     if (audioPlayers.includes(player)) return;
     audioPlayers.push(player);
 
+    //Запускаем систему
     if (audioPlayers.length === 1) {
         TimeToFrame = Date.now();
         setImmediate(playerCycleStep);
@@ -28,6 +29,7 @@ export function deleteAudioPlayer(player: AudioPlayer): void {
     if (index === -1) return;
     audioPlayers.splice(index, 1);
 
+    //Чистим систему
     if (audioPlayers.length === 0) {
         TimeToFrame = -1;
         if (typeof AudioCycleTimer !== "undefined") clearTimeout(AudioCycleTimer);
@@ -44,13 +46,15 @@ function playerCycleStep(players: AudioPlayer[] = null): void {
         if (TimeToFrame === -1) return;
 
         TimeToFrame += 20;
+
+        //Фильтруем какой плеер готов проигрывать музыку
         const available = audioPlayers.filter((player) => player.checkPlayable);
         return playerCycleStep(available);
     }
 
-    //Подготавливаем пакет с музыкой и отправляем в голосовой канал
     const nextPlayer = players.shift();
 
+    //Если Array<AudioPLayer> пуст, то запрашиваем новый Array
     if (!nextPlayer) {
         if (TimeToFrame !== -1) {
             AudioCycleTimer = setTimeout(playerCycleStep, TimeToFrame - Date.now());
@@ -58,6 +62,7 @@ function playerCycleStep(players: AudioPlayer[] = null): void {
         return;
     }
 
+    //Подготавливаем пакет с музыкой и отправляем в голосовой канал
     nextPlayer["CheckStatusPlayer"]();
 
     setImmediate(() => playerCycleStep(players));

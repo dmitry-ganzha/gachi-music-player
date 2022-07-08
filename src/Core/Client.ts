@@ -19,9 +19,9 @@ import {CollectionMap, Connections, MessageChannelSend, ConvertedText, ConsoleLo
 const keepOverLimit = (value: any): boolean => value.id !== value.client.user.id;
 
 export class WatKLOK extends Client {
-    public commands = new CollectionMap<string, Command>();
-    public aliases = new CollectionMap<string, string>();
-    public queue = new CollectionMap<string, Queue>();
+    public readonly commands = new CollectionMap<string, Command>();
+    public readonly aliases = new CollectionMap<string, string>();
+    public readonly queue = new CollectionMap<string, Queue>();
     public readonly cfg = require("../../DataBase/Config.json");
 
     public readonly Send = MessageChannelSend;
@@ -70,7 +70,7 @@ export class WatKLOK extends Client {
         this.console = (text: string) => {
             if (this.ShardID !== undefined) return ConsoleLog(`[ShardID: ${this.ShardID}] -> ` + text);
             return ConsoleLog(text);
-        }
+        };
     };
 }
 

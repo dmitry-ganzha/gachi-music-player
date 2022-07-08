@@ -5,8 +5,9 @@ import {WatKLOK} from "./Client";
 
 const BaseLoader = {
     total: 0,
-    fail: 0,
-    ok: 0
+    skip: 0,
+    ok: 0,
+    error: 0
 }
 
 class MultiLoader {
@@ -47,7 +48,7 @@ class MultiLoader {
                 BaseLoader.total++;
 
                 if (!pull.enable) {
-                    BaseLoader.fail++;
+                    BaseLoader.skip++;
                     continue;
                 }
             } catch (e) {
@@ -88,7 +89,7 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
                     BaseLoader.ok++;
                 } else {
                     if (!ClientShard) SendLog(file, `./Commands/${dir}/${file}`, "✖️");
-                    BaseLoader.fail++;
+                    BaseLoader.error++;
                 }
                 if (pull.aliases && Array.isArray(pull.aliases)) pull.aliases.forEach((alias: string) => client.aliases.set(alias, pull.name));
             }
@@ -106,7 +107,7 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
                     BaseLoader.ok++;
                 } else {
                     if (!ClientShard) SendLog(file, `./Events/${dir}/${file}`, "✖️");
-                    BaseLoader.fail++;
+                    BaseLoader.error++;
                 }
             }
         }).readdirSync(),
@@ -123,12 +124,13 @@ export async function FileSystemLoad (client: WatKLOK): Promise<void> {
                     BaseLoader.ok++;
                 } else {
                     if (!ClientShard) SendLog(file, `./Modules/${dir}/${file}`, "✖️");
-                    BaseLoader.fail++;
+                    BaseLoader.error++;
                 }
             }
         }).readdirSync(),
         setImmediate(() => {
-            if (!ClientShard) console.log(`[FileSystem] ->  Status: [Total: ${BaseLoader.total} | Success: ${BaseLoader.ok} | Fail: ${BaseLoader.fail}]\n\nProcess Log:`);
+            if (!ClientShard) console.log(`[FileSystem] ->  Status: [Total: ${BaseLoader.total} | Success: ${BaseLoader.ok} | Skip: ${BaseLoader.skip} | Error: ${BaseLoader.error}]
+            \n\nProcess Log:`);
         })
     ]);
 }

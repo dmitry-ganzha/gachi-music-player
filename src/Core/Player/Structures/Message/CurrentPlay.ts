@@ -57,7 +57,7 @@ function createFields(song: Song, {player, songs, audioFilters}: Queue, client: 
 }
 //====================== ====================== ====================== ======================
 /**
- * @description
+ * @description Создаем визуал таймера трека
  * @param isLive {Song<isLive>} Текущий трек, стрим?
  * @param duration {Song<duration>} Продолжительность трека
  * @param curTime {number | string} Текущее время проигрывания трека
@@ -102,7 +102,7 @@ function ProgressBar(currentTime: number, maxTime: number, size: number = 15): s
 
         return `${progressText}⚪${emptyText}`;
     }
-    const progressText = "─".repeat(size);
+    const progressText = "─".repeat(15);
 
     return `${progressText}⚪`;
 }

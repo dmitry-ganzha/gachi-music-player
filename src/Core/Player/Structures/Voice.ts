@@ -25,6 +25,7 @@ export function JoinVoiceChannel({id, guild, type}: VoiceChannels) {
     });
     const me = guild.members?.me;
 
+    //Для голосовых трибун
     if (type !== ChannelType.GuildVoice && me) me?.voice?.setRequestToSpeak(true).catch(() => undefined);
 
     return JoinVoice;
@@ -38,6 +39,7 @@ export function JoinVoiceChannel({id, guild, type}: VoiceChannels) {
 export function DisconnectVoiceChannel(channel: VoiceChannels | string) {
     const VoiceConnection = getVoiceConnection(typeof channel === "string" ? channel : channel.id);
 
+    //Если бот подключен к голосовому каналу, то отключаемся!
     if (VoiceConnection) VoiceConnection.disconnect();
 }
 //====================== ====================== ====================== ======================
@@ -62,6 +64,7 @@ export class AutoDisconnectVoiceChannel extends EventEmitter {
 
         const {player, events, channels} = queue;
 
+        //Если нет таймера добавим его!
         if (!this.#Timer) this.#Timer = setTimeout(() => events.queue.emit("DestroyQueue", queue, channels.message, false), VoiceDestroyTime * 1e3);
         this.#hasDestroying = true;
         player.pause();
@@ -75,6 +78,7 @@ export class AutoDisconnectVoiceChannel extends EventEmitter {
         if (this.#hasDestroying) {
             this.#hasDestroying = false;
 
+            //Если есть таймер уничтожим его
             if (this.#Timer) clearTimeout(this.#Timer);
             player.resume();
         }
