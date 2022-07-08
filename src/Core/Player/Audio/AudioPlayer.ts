@@ -114,9 +114,10 @@ export class AudioPlayer extends EventEmitter {
         if (!queue || !queue.songs || !queue.songs.length) return void queue?.events?.queue?.emit("DestroyQueue", queue, message);
 
         CreateResource(queue.songs[0], queue.audioFilters).then(stream => {
+            this.#play(stream);
             client.console(`[Queue]: [GuildID: ${guild.id}, Type: ${queue.songs[0].type}, Status: Playing]: [${queue.songs[0].title}]`);
+
             if (stream instanceof FFmpegDecoder) PlaySongMessage(queue.channels.message);
-            return this.#play(stream);
         });
     };
     //====================== ====================== ====================== ======================

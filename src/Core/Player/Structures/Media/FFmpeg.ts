@@ -1,6 +1,6 @@
 import {Duplex, Readable, Writable} from "stream";
 import {ChildProcessWithoutNullStreams, spawn, spawnSync} from "child_process";
-import FFmpegConfiguration from "../../../../../DataBase/FFmpeg.json";
+import JsonFFmpeg from "../../../../../DataBase/FFmpeg.json";
 import {AudioFilters} from "../Queue/Queue";
 
 export type FFmpegArgs = (string | number)[] | string[];
@@ -9,7 +9,7 @@ let FFmpegName: string;
  * @description
  */
 const FFmpegCheck = () => {
-    for (let source of FFmpegConfiguration.Names) {
+    for (let source of JsonFFmpeg.Names) {
         try {
             const result = spawnSync(source, ["-h"], {windowsHide: true, shell: false});
             if (result.error) continue;
@@ -35,7 +35,6 @@ export class FFmpeg extends Duplex {
     //====================== ====================== ====================== ======================
     public constructor(args: FFmpegArgs) {
         super({autoDestroy: true, objectMode: true});
-
         //Используется для загрузки потока в ffmpeg. Неообходимо не указывать параметр -i
         if (!args.includes("-i")) {
             args.unshift("-i", "-");
@@ -102,7 +101,7 @@ export function CreateFilters(AudioFilters: AudioFilters): string {
         if (typeof name === "number") return;
 
         // @ts-ignore
-        const Filter = FFmpegConfiguration.FilterConfigurator[name];
+        const Filter = JsonFFmpeg.FilterConfigurator[name];
         if (!Filter) return;
         if (Filter.value === false) return response.push(Filter.arg);
 
@@ -113,7 +112,7 @@ export function CreateFilters(AudioFilters: AudioFilters): string {
         return;
     });
 
-    response.push(FFmpegConfiguration.Args.Filters.AudioFade);
+    response.push(JsonFFmpeg.Args.Filters.AudioFade);
 
     return response.join(",");
 }

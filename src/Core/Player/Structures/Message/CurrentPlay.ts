@@ -100,6 +100,8 @@ function ProgressBar(currentTime: number, maxTime: number, size: number = 15): s
         const progressText = "─".repeat(progressSize);
         const emptyText = "─".repeat(emptySize || size);
 
+        if (progressText.length === emptyText.length) return `${progressText}⚪`;
+
         return `${progressText}⚪${emptyText}`;
     }
     const progressText = "─".repeat(15);

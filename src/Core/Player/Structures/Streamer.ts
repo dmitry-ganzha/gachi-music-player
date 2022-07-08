@@ -1,5 +1,5 @@
 import {Readable, Writable} from "stream";
-import {Args, FilterConfigurator} from "../../../../DataBase/FFmpeg.json";
+import JsonFFmpeg from "../../../../DataBase/FFmpeg.json";
 import {CreateFilters, FFmpeg, FFmpegArgs} from "./Media/FFmpeg";
 import {AudioFilters} from "./Queue/Queue";
 import {OggDemuxer} from "./Media/OggDemuxer";
@@ -93,11 +93,11 @@ export class FFmpegDecoder {
  * @constructor
  */
 function CreateArguments (url: string, AudioFilters: AudioFilters, seek: number): FFmpegArgs {
-    let thisArgs = [...Args.Reconnect, "-vn", ...Args.Seek, seek ?? 0];
+    let thisArgs = [...JsonFFmpeg.Args.Reconnect, "-vn", ...JsonFFmpeg.Args.Seek, seek ?? 0];
     if (url) thisArgs = [...thisArgs, "-i", url];
 
     //Всегда есть один фильтр <AudioFade>
-    return [...thisArgs, "-af", CreateFilters(AudioFilters), ...Args.OggOpus, ...Args.DecoderPreset];
+    return [...thisArgs, "-af", CreateFilters(AudioFilters), ...JsonFFmpeg.Args.OggOpus, ...JsonFFmpeg.Args.DecoderPreset];
 }
 //====================== ====================== ====================== ======================
 /**
@@ -110,15 +110,15 @@ function FFmpegTimer(AudioFilters: AudioFilters) {
     let NumberDuration = 20;
 
     //Фильтр <nightcore>
-    if (AudioFilters.indexOf("nightcore") >= 0) {
-        const Arg = FilterConfigurator["nightcore"].arg;
+    if (AudioFilters.includes("nightcore")) {
+        const Arg = JsonFFmpeg.FilterConfigurator["nightcore"].arg;
         const number = Arg.split("*")[1].split(",")[0];
 
         NumberDuration *= Number(number);
     }
 
     //Фильтр <speed>
-    if (AudioFilters.indexOf("speed") >= 0) {
+    if (AudioFilters.includes("speed")) {
         const Index = AudioFilters.indexOf("speed") + 1;
         const number = AudioFilters.slice(Index);
 
@@ -126,12 +126,13 @@ function FFmpegTimer(AudioFilters: AudioFilters) {
     }
 
     //Фильтр <vaporwave>
-    if (AudioFilters.indexOf("vaporwave")) {
-        const Arg = FilterConfigurator["vaporwave"].arg;
+    if (AudioFilters.includes("vaporwave")) {
+        const Arg = JsonFFmpeg.FilterConfigurator["vaporwave"].arg;
         const number1 = Arg.split("*")[1].split(",")[0];
         const number2 = Arg.split(",atempo=")[1];
 
         NumberDuration *= Number(number1 + number2);
     }
+
     return NumberDuration;
 }
