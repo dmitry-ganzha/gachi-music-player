@@ -35,6 +35,13 @@ function Request(url: string, options?: httpsClientOptions): Promise<IncomingMes
         Requesting.end();
     });
 }
+//====================== ====================== ====================== ======================
+/**
+ * @description Автоматическая переадресация
+ * @param url {string} Ссылка
+ * @param options {httpsClientOptions} Настройки запроса
+ * @constructor
+ */
 function AutoRedirect(url: string, options?: httpsClientOptions): Promise<IncomingMessage> {
     return new Promise((resolve) => {
         return Request(url, options).then((res: IncomingMessage) => {

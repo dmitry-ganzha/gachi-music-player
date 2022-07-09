@@ -26,8 +26,7 @@ export function addAudioPlayer(player: AudioPlayer): void {
  */
 export function deleteAudioPlayer(player: AudioPlayer): void {
     const index = audioPlayers.indexOf(player);
-    if (index === -1) return;
-    audioPlayers.splice(index, 1);
+    if (index != -1) audioPlayers.splice(index, 1);
 
     //Чистим систему
     if (audioPlayers.length === 0) {
