@@ -16,7 +16,7 @@ export async function FindResource(song: Song): Promise<void | Error> {
 
         if (!format || !format?.url) {
             song.format.url = null;
-            throw Error("Has not found format");
+            throw Error(`[FindResource]: [Song: ${song.title}]: Has not found format`);
         }
         //Добавляем ссылку в трек
         song.format = {url: format.url};
@@ -26,7 +26,7 @@ export async function FindResource(song: Song): Promise<void | Error> {
     const resource = await CheckLink(song.format?.url);
     if (resource === "Fail") { //Если выходит ошибка
         song.format.url = null;
-        throw Error("Has fail checking resource link");
+        throw Error(`[FindResource]: [Song: ${song.title}]: Has fail checking resource link`);
     }
     return;
 }
@@ -60,7 +60,7 @@ function getFormatSong({type, url, title, author, duration}: Song): Promise<Inpu
             default: return null
         }
     } catch {
-        console.log("[FindResource]: [Fail to found format]");
+        console.log("[FindResource]: Fail to found format");
         return null;
     }
 }

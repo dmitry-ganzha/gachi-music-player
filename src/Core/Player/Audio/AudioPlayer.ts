@@ -118,7 +118,7 @@ export class AudioPlayer extends EventEmitter {
         //Получаем исходный поток
         CreateResource(queue.songs[0], queue.audioFilters).then(stream => {
             this.#play(stream);
-            client.console(`[Queue]: [GuildID: ${guild.id}, Type: ${queue.songs[0].type}, Status: Playing]: [${queue.songs[0].title}]`);
+            client.console(`[QueueID: ${guild.id}]: ${queue.songs[0].title}`);
 
             //Если стрим не пустышка отправляем сообщение
             if (stream instanceof FFmpegDecoder) PlaySongMessage(queue.channels.message);
@@ -219,7 +219,7 @@ export class AudioPlayer extends EventEmitter {
      */
     #play = (resource: PlayerResource): void => {
         if (!resource) return void this.emit("error", "[AudioResource]: has not found!");
-        if (resource?.ended) return void this.emit("error", "[AudioPlayer]: [Message: Fail to load stream]");
+        if (resource?.ended) return void this.emit("error", "[AudioPlayer]: Message: Fail to load stream");
 
         //Если произойдет ошибка в чтении потока
         const onStreamError = (error: Error) => {
@@ -241,10 +241,12 @@ export class AudioPlayer extends EventEmitter {
             };
 
             //Когда возможно будет прочитать поток, включаем его в голосовой канал
-            resource.playStream.once('readable', onReadableCallback);
-            ['end', 'close', 'finish'].forEach((event: string) => resource.playStream.once(event, onFailureCallback));
+            resource.playStream.once("readable", onReadableCallback);
+            ["end", "close", "finish"].forEach((event: string) => resource.playStream.once(event, onFailureCallback));
             this.state = { status: "buffering", resource, onReadableCallback, onFailureCallback, onStreamError };
         }
+
+
     };
     //====================== ====================== ====================== ======================
     /**

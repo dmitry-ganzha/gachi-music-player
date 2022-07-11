@@ -68,7 +68,7 @@ function CreateQueueGuild(message: ClientMessage, VoiceChannel: VoiceChannel, so
 
     client.queue.set(guild.id, GuildQueue); //Записываем очередь в <client.queue>
 
-    client.console(`[Queue]: [GuildID: ${guild.id}, Status: Create]`);
+    client.console(`[QueueID: ${guild.id}]: Create`);
     return GuildQueue.player.PlayCallback(message); //Включаем трек
 }
 //====================== ====================== ====================== ======================
@@ -168,6 +168,6 @@ function SendChannelToEnd({stop}: Queue_Options, message: ClientMessage): void {
  * @param message {ClientMessage} Сообщение с сервера
  */
 function DeleteQueue(message: ClientMessage): boolean {
-    message.client.console(`[Queue]: [GuildID: ${message.guild.id}, Status: Delete]`);
+    message.client.console(`[QueueID: ${message.guild.id}]: Delete`);
     return message.client.queue.delete(message.guild.id);
 }

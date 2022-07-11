@@ -5,8 +5,130 @@ import {InputAuthor, InputFormat, InputPlaylist, InputTrack} from "../../Utils/T
 const VerAuthor = new Set(['Verified', 'Official Artist Channel']);
 const DefaultLinkYouTube = 'https://www.youtube.com';
 
-export const YouTube = {getVideo, getPlaylist, SearchVideos};
+export namespace YouTube {
+    /**
+     * @name getVideo
+     * @description Получаем данные о видео
+     * @param url {string} Ссылка на видео
+     * @param options {Options} настройки
+     */
+    export function getVideo(url: string, options: Options = {onlyFormats: false}): Promise<InputTrack | InputFormat> {
+        return new Promise(async (resolve, reject) => {
+            const VideoID = getYouTubeID(url);
+            const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/watch?v=${VideoID}&has_verified=1`, {
+                options: { userAgent: true, cookie: true }, request: {
+                    headers: {
+                        "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
+                        "accept-encoding": "gzip, deflate, br"
+                    }
+                }
+            })]))[0];
 
+            if (body.includes("Our systems have detected unusual traffic from your computer network.")) throw reject('Google понял что я бот! Это может занять много времени!');
+
+            const PlayerResponse = body.split('var ytInitialPlayerResponse = ')?.[1]?.split(';</script>')[0].split(/(?<=}}});\s*(var|const|let)\s/)[0];
+            if (!PlayerResponse) throw new Error("Данные на странице не были найдены");
+
+            const VideoFinalData = JSON.parse(PlayerResponse);
+            if (VideoFinalData.playabilityStatus?.status !== "OK") throw reject(new Error(`Не удалось получить данные из-за: ${VideoFinalData.playabilityStatus.status}`));
+
+            const html5player = `https://www.youtube.com${body.split('"jsUrl":"')[1].split('"')[0]}`;
+            const videoDetails = VideoFinalData.videoDetails;
+            let format: YouTubeFormat[];
+
+            const LiveData: LiveData = {
+                isLive: videoDetails.isLiveContent,
+                url: VideoFinalData.streamingData?.hlsManifestUrl ?? null //dashManifestUrl, hlsManifestUrl
+            };
+
+            const VideoFormats: YouTubeFormat[] = [...VideoFinalData.streamingData.formats ?? [], ...VideoFinalData.streamingData.adaptiveFormats ?? []].filter((d: any) => d?.mimeType?.match(/opus/) || d?.mimeType?.match(/audio/)) ?? [];
+
+            if (!LiveData.isLive) {
+                if (VideoFormats[0].signatureCipher || VideoFormats[0].cipher) format = (await Promise.all([Decipher(VideoFormats, html5player)]))[0];
+                else format = [...VideoFormats];
+            } else format = [{url: LiveData.url, work: true}];
+
+            if (options?.onlyFormats) return resolve(format.pop());
+
+            const VideoData: InputTrack = {
+                url: `${DefaultLinkYouTube}/watch?v=${VideoID}`,
+                title: videoDetails.title,
+                duration: {seconds: videoDetails.lengthSeconds},
+                image: videoDetails.thumbnail.thumbnails.pop(),
+                author: (await Promise.all([getChannel({ id: videoDetails.channelId, name: videoDetails.author })]))[0],
+                isLive: videoDetails.isLiveContent,
+                isPrivate: videoDetails.isPrivate,
+            };
+
+            return resolve({...VideoData, format: format.pop()});
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @name SearchVideos
+     * @description Поиск видео на youtube
+     * @param search {string} что ищем
+     * @param options {SearchOptions} Настройки
+     * @constructor
+     */
+    export function SearchVideos(search: string, options: SearchOptions = {limit: 15}): Promise<InputTrack[]> {
+        return new Promise(async (resolve, reject) => {
+            const SearchRes = (await Promise.all([httpsClient.parseJson(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}?flow=grid&view=0&pbj=1`, {
+                options: {userAgent: true}, request: {
+                    headers: {
+                        "x-youtube-client-name": "1",
+                        "x-youtube-client-version": "2.20201021.03.00",
+                        "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
+                        "accept-encoding": "gzip, deflate, br"
+                    }
+                }
+            })]))[0];
+
+            const SearchFinal = SearchRes.find((res: any) => res.response !== undefined).response;
+            const details = SearchFinal?.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents[0]?.itemSectionRenderer?.contents;
+
+            if (!details) throw reject(new Error(`Не удалось найти: ${search}`));
+
+            return resolve((await Promise.all([parseSearchVideos(details, options)]))[0]);
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @name getPlaylist
+     * @description Получаем данные о плейлисте
+     * @param url {string} Ссылка на плейлист
+     */
+    export async function getPlaylist(url: string): Promise<InputPlaylist> {
+        return new Promise(async (resolve, reject) => {
+            const playlistID = getYouTubeID(url, true);
+            const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/playlist?list=${playlistID}`, {
+                options: {userAgent: true, cookie: true}, request: {
+                    headers: {
+                        "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
+                        "accept-encoding": "gzip, deflate, br"
+                    }
+                }
+            })]))[0];
+
+            if (body.includes("Our systems have detected unusual traffic from your computer network.")) throw reject("Google понял что я бот! Это может занять много времени!");
+
+            const parsed = JSON.parse(`${body.split("{\"playlistVideoListRenderer\":{\"contents\":")[1].split("}],\"playlistId\"")[0]}}]`);
+            const playlistDetails = JSON.parse(body.split("{\"playlistSidebarRenderer\":")[1].split("}};</script>")[0]).items;
+            const playlistInfo = playlistDetails[0].playlistSidebarPrimaryInfoRenderer;
+            const channel = (playlistDetails[1] ?? playlistDetails[0])?.playlistSidebarSecondaryInfoRenderer?.videoOwner?.videoOwnerRenderer.title.runs[0] ?? null;
+
+            return resolve({
+                url: `${DefaultLinkYouTube}/playlist?list=${playlistID}`,
+                title: playlistInfo?.title?.runs[0]?.text ?? "Not found",
+                items: (await Promise.all([parsePlaylistVideos(parsed)]))[0],
+                author: channel === null ? null : (await Promise.all([getChannel({ id: channel.navigationEndpoint.browseEndpoint.browseId, name: channel.text })]))[0],
+                image: {
+                    url: playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer?.thumbnail.thumbnails?.pop().url?.split("?sqp=")[0]
+                }
+            });
+        });
+    }
+}
 //====================== ====================== ====================== ======================
 /**
  * @description Получаем ID
@@ -23,7 +145,6 @@ function getYouTubeID(url: string, isPlaylist = false) {
 }
 //====================== ====================== ====================== ======================
 /**
- * @name getChannel
  * @description Получаем данные о пользователе
  * @param id {string} ID канала
  * @param name {string} Название канала
@@ -55,105 +176,24 @@ function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
 }
 //====================== ====================== ====================== ======================
 /**
- * @name getVideo
- * @description Получаем данные о видео
- * @param url {string} Ссылка на видео
- * @param options {Options} настройки
+ * @description Парсим видео из поиска
+ * @param videos Array<Videos>
+ * @param limit Макс кол-во видео
  */
-function getVideo(url: string, options: Options = {onlyFormats: false}): Promise<InputTrack | InputFormat> {
-    return new Promise(async (resolve, reject) => {
-        const VideoID = getYouTubeID(url);
-        const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/watch?v=${VideoID}&has_verified=1`, {
-            options: { userAgent: true, cookie: true }, request: {
-                headers: {
-                    "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
-                    "accept-encoding": "gzip, deflate, br"
-                }
-            }
-        })]))[0];
+function parseSearchVideos(videos: any[], {limit}: SearchOptions): InputTrack[] {
+    let num = 0, VideosEnd: InputTrack[] = [];
 
-        if (body.includes("Our systems have detected unusual traffic from your computer network.")) throw reject('Google понял что я бот! Это может занять много времени!');
-
-        const PlayerResponse = body.split('var ytInitialPlayerResponse = ')?.[1]?.split(';</script>')[0].split(/(?<=}}});\s*(var|const|let)\s/)[0];
-        if (!PlayerResponse) throw new Error("Данные на странице не были найдены");
-
-        const VideoFinalData = JSON.parse(PlayerResponse);
-        if (VideoFinalData.playabilityStatus?.status !== "OK") throw reject(new Error(`Не удалось получить данные из-за: ${VideoFinalData.playabilityStatus.status}`));
-
-        const html5player = `https://www.youtube.com${body.split('"jsUrl":"')[1].split('"')[0]}`;
-        const videoDetails = VideoFinalData.videoDetails;
-        let format: YouTubeFormat[];
-
-        const LiveData: LiveData = {
-            isLive: videoDetails.isLiveContent,
-            url: VideoFinalData.streamingData?.hlsManifestUrl ?? null //dashManifestUrl, hlsManifestUrl
-        };
-
-        const VideoFormats: YouTubeFormat[] = [...VideoFinalData.streamingData.formats ?? [], ...VideoFinalData.streamingData.adaptiveFormats ?? []].filter((d: any) => d?.mimeType?.match(/opus/) || d?.mimeType?.match(/audio/)) ?? [];
-
-        if (!LiveData.isLive) {
-            if (VideoFormats[0].signatureCipher || VideoFormats[0].cipher) format = (await Promise.all([Decipher(VideoFormats, html5player)]))[0];
-            else format = [...VideoFormats];
-        } else format = [{url: LiveData.url, work: true}];
-
-        if (options?.onlyFormats) return resolve(format.pop());
-
-        const VideoData: InputTrack = {
-            url: `${DefaultLinkYouTube}/watch?v=${VideoID}`,
-            title: videoDetails.title,
-            duration: {seconds: videoDetails.lengthSeconds},
-            image: videoDetails.thumbnail.thumbnails.pop(),
-            author: (await Promise.all([getChannel({ id: videoDetails.channelId, name: videoDetails.author })]))[0],
-            isLive: videoDetails.isLiveContent,
-            isPrivate: videoDetails.isPrivate,
-        };
-
-        return resolve({...VideoData, format: format.pop()});
-    });
-}
-//====================== ====================== ====================== ======================
-/**
- * @name SearchVideos
- * @description Поиск видео на youtube
- * @param search {string} что ищем
- * @param options {SearchOptions} Настройки
- * @constructor
- */
-function SearchVideos(search: string, options: SearchOptions = {limit: 15}): Promise<InputTrack[]> {
-    return new Promise(async (resolve, reject) => {
-        const SearchRes = (await Promise.all([httpsClient.parseJson(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}?flow=grid&view=0&pbj=1`, {
-            options: {userAgent: true}, request: {
-                headers: {
-                    "x-youtube-client-name": "1",
-                    "x-youtube-client-version": "2.20201021.03.00",
-                    "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
-                    "accept-encoding": "gzip, deflate, br"
-                }
-            }
-        })]))[0];
-
-        const SearchFinal = SearchRes.find((res: any) => res.response !== undefined).response;
-        const details = SearchFinal?.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents[0]?.itemSectionRenderer?.contents;
-
-        if (!details) throw reject(new Error(`Не удалось найти: ${search}`));
-
-        return resolve((await Promise.all([parsingVideos(details, options)]))[0]);
-    });
-}
-function parsingVideos(details: any[], {limit}: SearchOptions, FakeBase: InputTrack[] = []): InputTrack[] {
-    let num = 0;
-
-    for (let i = 0; i < details.length; i++) {
+    for (let i = 0; i < videos.length; i++) {
         if (num >= limit) break;
-        if (!details[i] || !details[i].videoRenderer) continue;
+        if (!videos[i] || !videos[i].videoRenderer) continue;
 
-        const video = details[i].videoRenderer;
+        const video = videos[i].videoRenderer;
         const author = video.ownerBadges && video.ownerBadges[0];
 
         if (!video.videoId) continue;
         num++;
 
-        FakeBase.push({
+        VideosEnd.push({
             url: `https://www.youtube.com/watch?v=${video.videoId}`,
             title: video.title.runs[0].text,
             author: {
@@ -168,54 +208,23 @@ function parsingVideos(details: any[], {limit}: SearchOptions, FakeBase: InputTr
             image: video.thumbnail.thumbnails.pop()
         });
     }
-    return FakeBase;
+    return VideosEnd;
 }
 //====================== ====================== ====================== ======================
 /**
- * @name getPlaylist
- * @description Получаем данные о плейлисте
- * @param url {string} Ссылка на плейлист
+ * @description Парсим видео из плейлиста
+ * @param videos Array<Videos>
  */
-async function getPlaylist(url: string): Promise<InputPlaylist> {
-    return new Promise(async (resolve, reject) => {
-        const playlistID = getYouTubeID(url, true);
-        const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/playlist?list=${playlistID}`, {
-            options: {userAgent: true, cookie: true}, request: {
-                headers: {
-                    "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
-                    "accept-encoding": "gzip, deflate, br"
-                }
-            }
-        })]))[0];
-
-        if (body.includes("Our systems have detected unusual traffic from your computer network.")) throw reject("Google понял что я бот! Это может занять много времени!");
-
-        const parsed = JSON.parse(`${body.split("{\"playlistVideoListRenderer\":{\"contents\":")[1].split("}],\"playlistId\"")[0]}}]`);
-        const playlistDetails = JSON.parse(body.split("{\"playlistSidebarRenderer\":")[1].split("}};</script>")[0]).items;
-        const playlistInfo = playlistDetails[0].playlistSidebarPrimaryInfoRenderer;
-        const channel = (playlistDetails[1] ?? playlistDetails[0])?.playlistSidebarSecondaryInfoRenderer?.videoOwner?.videoOwnerRenderer.title.runs[0] ?? null;
-
-        return resolve({
-            url: `${DefaultLinkYouTube}/playlist?list=${playlistID}`,
-            title: playlistInfo?.title?.runs[0]?.text ?? "Not found",
-            items: (await Promise.all([_parsingVideos(parsed)]))[0],
-            author: channel === null ? null : (await Promise.all([getChannel({ id: channel.navigationEndpoint.browseEndpoint.browseId, name: channel.text })]))[0],
-            image: {
-                url: playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer?.thumbnail.thumbnails?.pop().url?.split("?sqp=")[0]
-            }
-        });
-    });
-}
-function _parsingVideos(parsed: any[], finder: InputTrack[] = []): InputTrack[] {
-    let num = 0;
-    for (let i in parsed) {
-        let video = parsed[i].playlistVideoRenderer;
+function parsePlaylistVideos(videos: any[]): InputTrack[] {
+    let num = 0, VideosEnd: InputTrack[] = [];
+    for (let i in videos) {
+        let video = videos[i].playlistVideoRenderer;
 
         if (num >= 100) break;
         if (!video || !video.isPlayable) continue;
         num++;
 
-        finder.push({
+        VideosEnd.push({
             title: video.title.runs[0].text,
             url: `${DefaultLinkYouTube}/watch?v=${video.videoId}`,
             duration: {
@@ -235,7 +244,7 @@ function _parsingVideos(parsed: any[], finder: InputTrack[] = []): InputTrack[] 
         });
     }
 
-    return finder;
+    return VideosEnd;
 }
 //====================== ====================== ====================== ======================
 

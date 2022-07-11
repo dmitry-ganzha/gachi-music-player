@@ -8,122 +8,122 @@ const connectString = `?access_token=${cfg.vk.token}`;
 type requestType = "get" | "getById" | "search" | "getPlaylistById" | "getPlaylist";
 type methodType = "audio" | "execute" | "catalog";
 
-export const VK = {getTrack, getPlaylist, SearchTracks};
+export namespace VK {
+    /**
+     * @description Делаем запрос к VK API (через account), получаем данные о треке
+     * @param url {string} Ссылка
+     */
+    export function getTrack(url: string): Promise<null | InputTrack> {
+        return new Promise<InputTrack | null>(async (resolve) => {
+            const TrackID = getID(url);
+            let Request = await RequestVK("audio", "getById", `&audios=${TrackID}`) as VK_track;
 
-/**
- * @description Делаем запрос к VK API (через account), получаем данные о треке
- * @param url {string} Ссылка
- */
-function getTrack(url: string): Promise<null | InputTrack> {
-    return new Promise<InputTrack | null>(async (resolve) => {
-        const TrackID = getID(url);
-        let Request = await RequestVK("audio", "getById", `&audios=${TrackID}`) as VK_track;
+            if (!Request || !Request?.response) return resolve(null);
 
-        if (!Request || !Request?.response) return resolve(null);
+            const track = Request?.response[0];
+            const image = track?.album?.thumb;
 
-        const track = Request?.response[0];
-        const image = track?.album?.thumb;
-
-        return resolve({
-            url: `https://vk.com/audio${TrackID}`,
-            title: track.title,
-            author: {
-                url: ReplaceAuthorUrl(track.artist),
-                title: track.artist,
-                image: null,
-                isVerified: track.is_licensed
-            },
-            image: {url: image?.photo_1200 ?? image?.photo_600 ?? image?.photo_300 ?? image?.photo_270 ?? undefined},
-            duration: {
-                seconds: track.duration.toFixed(0)
-            },
-            format: {
-                url: track.url
-            }
-        });
-    });
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Делаем запрос к VK API (через account), получаем данные о поиске
- * @param str {string} Что ищем
- * @param options {{limit: number}}
- */
-function SearchTracks(str: string, options: {limit: number} = {limit: 15}): Promise<null | {items: InputTrack[]}> {
-    return new Promise(async (resolve) => {
-        const items: InputTrack[] = [];
-        const Request = await RequestVK("audio","search", `&q=${str}`) as VK_Search;
-        let NumberTrack = 0;
-
-        if (!Request || !Request?.response) return null;
-
-        for (let i in Request.response.items) {
-            const track = Request.response.items[i];
-
-            if (options.limit <= NumberTrack) break;
-            NumberTrack++;
-
-            items.push({
-                url: `https://vk.com/audio${track.owner_id}_${track.id}`,
+            return resolve({
+                url: `https://vk.com/audio${TrackID}`,
                 title: track.title,
                 author: {
                     url: ReplaceAuthorUrl(track.artist),
                     title: track.artist,
+                    image: null,
                     isVerified: track.is_licensed
                 },
+                image: {url: image?.photo_1200 ?? image?.photo_600 ?? image?.photo_300 ?? image?.photo_270 ?? undefined},
                 duration: {
                     seconds: track.duration.toFixed(0)
+                },
+                format: {
+                    url: track.url
                 }
             });
-        }
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Делаем запрос к VK API (через account), получаем данные о поиске
+     * @param str {string} Что ищем
+     * @param options {{limit: number}}
+     */
+    export function SearchTracks(str: string, options: {limit: number} = {limit: 15}): Promise<null | {items: InputTrack[]}> {
+        return new Promise(async (resolve) => {
+            const items: InputTrack[] = [];
+            const Request = await RequestVK("audio","search", `&q=${str}`) as VK_Search;
+            let NumberTrack = 0;
 
-        return resolve({items});
-    });
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Делаем запрос к VK API (через account), получаем данные о плейлисте
- * @param url {string} Ссылка
- * @param options {{limit: number}}
- */
-function getPlaylist(url: string, options = {limit: 50}): Promise<null | InputPlaylist> {
-    return new Promise<InputPlaylist | null>(async (resolve) => {
-        const PlaylistFullID = getID(url).split("_");
-        const playlist_id = PlaylistFullID[1];
-        const owner_id = PlaylistFullID[0];
-        const key = PlaylistFullID[2];
+            if (!Request || !Request?.response) return null;
 
-        const Request = await RequestVK("audio", "getPlaylistById", `&owner_id=${owner_id}&playlist_id=${playlist_id}&access_key=${key}`) as VK_playlist;
-        const itemsPlaylist = await RequestVK("audio", "get", `&owner_id=${owner_id}&album_id=${playlist_id}&access_key=${key}&count=${options.limit}`) as VK_Search;
+            for (let i in Request.response.items) {
+                const track = Request.response.items[i];
 
-        if (!Request.response || !itemsPlaylist.response || !Request || !itemsPlaylist) return resolve(null);
+                if (options.limit <= NumberTrack) break;
+                NumberTrack++;
 
-        const PlaylistData = Request.response;
-        const PlaylistImage = PlaylistData?.thumbs?.length > 0 ? PlaylistData?.thumbs[0] : null;
-
-        return resolve({
-            url, title: PlaylistData.title,
-            items: itemsPlaylist.response.items.map((track) => {
-                const image = track?.album?.thumb ?? undefined;
-
-                return {
+                items.push({
                     url: `https://vk.com/audio${track.owner_id}_${track.id}`,
                     title: track.title,
                     author: {
                         url: ReplaceAuthorUrl(track.artist),
                         title: track.artist,
-                        image: null,
                         isVerified: track.is_licensed
                     },
-                    image: {url: image?.photo_1200 ?? image?.photo_600 ?? image?.photo_300 ?? image?.photo_270 ?? undefined},
-                    duration: {seconds: track.duration.toFixed(0)},
-                };
-            }),
-            image: {url: PlaylistImage?.photo_1200 ?? PlaylistImage?.photo_600 ?? PlaylistImage?.photo_300 ?? PlaylistImage?.photo_270 ?? undefined}
+                    duration: {
+                        seconds: track.duration.toFixed(0)
+                    }
+                });
+            }
+
+            return resolve({items});
         });
-    });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Делаем запрос к VK API (через account), получаем данные о плейлисте
+     * @param url {string} Ссылка
+     * @param options {{limit: number}}
+     */
+    export function getPlaylist(url: string, options = {limit: 50}): Promise<null | InputPlaylist> {
+        return new Promise<InputPlaylist | null>(async (resolve) => {
+            const PlaylistFullID = getID(url).split("_");
+            const playlist_id = PlaylistFullID[1];
+            const owner_id = PlaylistFullID[0];
+            const key = PlaylistFullID[2];
+
+            const Request = await RequestVK("audio", "getPlaylistById", `&owner_id=${owner_id}&playlist_id=${playlist_id}&access_key=${key}`) as VK_playlist;
+            const itemsPlaylist = await RequestVK("audio", "get", `&owner_id=${owner_id}&album_id=${playlist_id}&access_key=${key}&count=${options.limit}`) as VK_Search;
+
+            if (!Request.response || !itemsPlaylist.response || !Request || !itemsPlaylist) return resolve(null);
+
+            const PlaylistData = Request.response;
+            const PlaylistImage = PlaylistData?.thumbs?.length > 0 ? PlaylistData?.thumbs[0] : null;
+
+            return resolve({
+                url, title: PlaylistData.title,
+                items: itemsPlaylist.response.items.map((track) => {
+                    const image = track?.album?.thumb ?? undefined;
+
+                    return {
+                        url: `https://vk.com/audio${track.owner_id}_${track.id}`,
+                        title: track.title,
+                        author: {
+                            url: ReplaceAuthorUrl(track.artist),
+                            title: track.artist,
+                            image: null,
+                            isVerified: track.is_licensed
+                        },
+                        image: {url: image?.photo_1200 ?? image?.photo_600 ?? image?.photo_300 ?? image?.photo_270 ?? undefined},
+                        duration: {seconds: track.duration.toFixed(0)},
+                    };
+                }),
+                image: {url: PlaylistImage?.photo_1200 ?? PlaylistImage?.photo_600 ?? PlaylistImage?.photo_300 ?? PlaylistImage?.photo_270 ?? undefined}
+            });
+        });
+    }
+    //====================== ====================== ====================== ======================
 }
-//====================== ====================== ====================== ======================
 /**
  * @description Делаем запрос к VK API
  * @param method {string} Метод, к примеру audio.getById (где audio метод, getById тип)

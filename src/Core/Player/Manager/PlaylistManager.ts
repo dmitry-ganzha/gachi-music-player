@@ -18,7 +18,7 @@ export function PlayList(message: ClientMessage, playlist: InputPlaylist, VoiceC
         color: "RED"
     });
 
-    SendMessage(message, playlist).catch((err: DiscordAPIError) => console.log(`[Discord Error]: [Send message]: ${err}`));
+    SendMessage(message, playlist).catch((err: DiscordAPIError) => console.log(`[PlaylistManager]: [fail send message]: ${err}`));
     return void message.client.player.emit("play", message, VoiceChannel, playlist.items);
 }
 //====================== ====================== ====================== ======================

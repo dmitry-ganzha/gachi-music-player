@@ -3,99 +3,100 @@ import {FFmpegFormat, InputPlaylist, InputTrack} from "../../../Utils/TypeHelper
 
 const APiLink = "https://api-v2.soundcloud.com";
 const clientID = '';
-export const SoundCloud = {getTrack, getPlaylist, SearchTracks};
 
-/**
- * @description Получаем трек
- * @param url {string} Ссылка на трек
- */
-function getTrack(url: string): Promise<InputTrack> {
-    return new Promise<InputTrack>(async (resolve) => {
-        const ClientID = await getClientID();
-        const result = await httpsClient.parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
+export namespace SoundCloud {
+    /**
+     * @description Получаем трек
+     * @param url {string} Ссылка на трек
+     */
+    export function getTrack(url: string): Promise<InputTrack> {
+        return new Promise<InputTrack>(async (resolve) => {
+            const ClientID = await getClientID();
+            const result = await httpsClient.parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
 
-        if (!result?.id || !result) return resolve(null);
+            if (!result?.id || !result) return resolve(null);
 
-        return resolve({
-            id: result.id, url,
-            title: result.title,
-            author: {
-                id: result.user.id,
-                url: result.user.permalink_url,
-                title: result.user.username,
-                image: ParseImageToFull(result.user.avatar_url),
-                isVerified: result.user.verified
-            },
-            image: ParseImageToFull(result.artwork_url),
-            duration: {
-                seconds: (result.duration / 1e3).toFixed(0)
-            },
-            format: await getFormat(result.media.transcodings, ClientID),
+            return resolve({
+                id: result.id, url,
+                title: result.title,
+                author: {
+                    id: result.user.id,
+                    url: result.user.permalink_url,
+                    title: result.user.username,
+                    image: ParseImageToFull(result.user.avatar_url),
+                    isVerified: result.user.verified
+                },
+                image: ParseImageToFull(result.artwork_url),
+                duration: {
+                    seconds: (result.duration / 1e3).toFixed(0)
+                },
+                format: await getFormat(result.media.transcodings, ClientID),
+            });
         });
-    });
-}
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Получаем плейлист
+     * @param url {string} Ссылка на плейлист
+     */
+    export function getPlaylist(url: string): Promise<InputPlaylist> {
+        return new Promise<InputPlaylist>(async (resolve) => {
+            const ClientID = await getClientID();
+            const result = await httpsClient.parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
+            const PlaylistItems: InputTrack[] = [];
 
-/**
- * @description Получаем плейлист
- * @param url {string} Ссылка на плейлист
- */
-function getPlaylist(url: string): Promise<InputPlaylist> {
-    return new Promise<InputPlaylist>(async (resolve) => {
-        const ClientID = await getClientID();
-        const result = await httpsClient.parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
-        const PlaylistItems: InputTrack[] = [];
+            if (!result?.id || !result) return resolve(null);
 
-        if (!result?.id || !result) return resolve(null);
+            for (let i in result.tracks) {
+                const track = result.tracks[i];
 
-        for (let i in result.tracks) {
-            const track = result.tracks[i];
+                if (!track.user) continue;
 
-            if (!track.user) continue;
+                PlaylistItems.push(CreateInfoTrack(track));
+            }
 
-            PlaylistItems.push(CreateInfoTrack(track));
-        }
-
-        return resolve({
-            id: result.id, url,
-            title: result.title,
-            author: {
-                id: result.user.id,
-                url: result.user.permalink_url,
-                title: result.user.username,
-                image: ParseImageToFull(result.user.avatar_url),
-                isVerified: result.user.verified
-            },
-            image: ParseImageToFull(result.artwork_url),
-            items: PlaylistItems
+            return resolve({
+                id: result.id, url,
+                title: result.title,
+                author: {
+                    id: result.user.id,
+                    url: result.user.permalink_url,
+                    title: result.user.username,
+                    image: ParseImageToFull(result.user.avatar_url),
+                    isVerified: result.user.verified
+                },
+                image: ParseImageToFull(result.artwork_url),
+                items: PlaylistItems
+            });
         });
-    });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Ищем треки в soundcloud
+     * @param search {string} Что ищем
+     * @param options {limit: number} Кол-во выдаваемых треков
+     * @constructor
+     */
+    export function SearchTracks(search: string, options = {limit: 15}): Promise<InputTrack[]> {
+        return new Promise<InputTrack[]>(async (resolve) => {
+            const result = await httpsClient.parseJson(`${APiLink}/search/tracks?q=${search}&client_id=${await getClientID()}&limit=${options.limit}`);
+            const Items: InputTrack[] = [];
+
+            if (!result) return resolve(null);
+
+            for (let i in result.collection) {
+                const track = result.collection[i];
+
+                if (!track.user) continue;
+
+                Items.push(CreateInfoTrack(track));
+            }
+
+            return resolve(Items);
+        });
+    }
 }
-
-/**
- * @description Ищем треки в soundcloud
- * @param search {string} Что ищем
- * @param options {limit: number} Кол-во выдаваемых треков
- * @constructor
- */
-function SearchTracks(search: string, options = {limit: 15}): Promise<InputTrack[]> {
-    return new Promise<InputTrack[]>(async (resolve) => {
-        const result = await httpsClient.parseJson(`${APiLink}/search/tracks?q=${search}&client_id=${await getClientID()}&limit=${options.limit}`);
-        const Items: InputTrack[] = [];
-
-        if (!result) return resolve(null);
-
-        for (let i in result.collection) {
-            const track = result.collection[i];
-
-            if (!track.user) continue;
-
-            Items.push(CreateInfoTrack(track));
-        }
-
-        return resolve(Items);
-    });
-}
-
+//====================== ====================== ====================== ======================
 /**
  * @description Получаем ClientID, без регистрации
  */
@@ -122,8 +123,7 @@ function getClientID(): Promise<string> {
         return resolve(body2.split(",client_id:\"")[1].split("\"")[0]);
     });
 }
-
-
+//====================== ====================== ====================== ======================
 /**
  * @description Пример данных на выходе
  * @param result {any} Данные полученные от soundcloud
@@ -147,7 +147,7 @@ function CreateInfoTrack(result: any): InputTrack {
         }
     }
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Проходим все этапы для получения ссылки на поток трека
  * @param formats {SoundCloudFormat[]} Зашифрованные форматы аудио
@@ -163,7 +163,7 @@ function getFormat(formats: SoundCloudFormat[], ClientID: string): Promise<FFmpe
         });
     });
 }
-
+//====================== ====================== ====================== ======================
 /**
  * @description Получаем картинку в исходном качестве
  * @param image {string} Ссылка на картинку
