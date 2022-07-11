@@ -168,7 +168,7 @@ function PlayerReplay(message: ClientMessage): void {
 function PlayerFilter(message: ClientMessage): void {
     const {client, guild, author} = message;
     const {player}: Queue = client.queue.get(guild.id);
-    const seek: number = player.CurrentTime;
+    const seek: number = player.playbackDuration;
 
     try {
         return player.seek(message, seek);

@@ -13,15 +13,15 @@ let Cookie = getCookies(); //Получаем куки если он был ук
  * @param options {httpsClientOptions} Настройки запроса
  */
 function Request(url: string, options?: httpsClientOptions): Promise<IncomingMessage> {
-    if (options) ChangeReqOptions(options);
+    ChangeReqOptions(options);
 
     return new Promise((resolve, reject) => {
         const Link = new URL(url);
         const Options: RequestOptions = {
             host: Link.hostname,
             path: Link.pathname + Link.search,
-            headers: options.request?.headers ?? {},
-            method: options.request?.method ?? "GET"
+            headers: options?.request?.headers ?? {},
+            method: options?.request?.method ?? "GET"
         };
         const Requesting = request(Options, resolve);
 
@@ -29,7 +29,7 @@ function Request(url: string, options?: httpsClientOptions): Promise<IncomingMes
         Requesting.on("error", reject);
 
         //Если запрос POST, отправляем ответ на сервер
-        if (options.request?.method === "POST") Requesting.write(options.request?.body);
+        if (options?.request?.method === "POST") Requesting.write(options.request?.body);
 
         //Заканчиваем запрос
         Requesting.end();
@@ -86,7 +86,7 @@ function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
 
             //Обновляем куки в конце
             setImmediate(() => {
-                if (options.options?.cookie && res.headers && res.headers["set-cookie"]) {
+                if (options?.options?.cookie && res.headers && res.headers["set-cookie"]) {
                     uploadCookie(res.headers["set-cookie"]);
 
                     //Обновляем куки вне запроса что-бы снизить задержки!
@@ -140,7 +140,8 @@ function GetUserAgent(): {Agent: string, Version: string} {
  * @param options {httpsClientOptions} Настройки запроса
  */
 function ChangeReqOptions(options: httpsClientOptions): void {
-    if (!options.request || !options.request?.headers) options.request = {...options.request, headers: {}};
+    if (!options?.request) options = {...options, request: {headers: {}}};
+    if (!options?.options) options = {...options, options: {}};
 
     //Добавляем User-Agent
     if (options.options?.userAgent) {

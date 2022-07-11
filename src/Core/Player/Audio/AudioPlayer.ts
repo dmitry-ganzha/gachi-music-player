@@ -24,12 +24,12 @@ export class AudioPlayer extends EventEmitter {
     /**
      * @description Текущее время плеера в мс
      */
-    public get CurrentTime() {
-        if (this.state.resource?.playbackDuration <= 0) return 0;
-        return parseInt((this.state.resource?.playbackDuration / 1000).toFixed(0));
+    public get playbackDuration() {
+        if (this.state.resource?.duration <= 0) return 0;
+        return parseInt((this.state.resource?.duration / 1000).toFixed(0));
     };
-    set #CurrentTime(time: number) {
-        this.state.resource.playbackDuration = time * 1e3;
+    private set playbackDuration(time: number) {
+        this.state.resource.duration = time * 1e3;
     };
     //====================== ====================== ====================== ======================
     /**
@@ -97,9 +97,10 @@ export class AudioPlayer extends EventEmitter {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
+        //Получаем исходный поток
         CreateResource(queue.songs[0], queue.audioFilters, seek).then(stream => {
             this.#play(stream);
-            if (seek) this.#CurrentTime = seek;
+            if (seek) this.playbackDuration = seek;
         });
     };
     //====================== ====================== ====================== ======================
@@ -111,12 +112,15 @@ export class AudioPlayer extends EventEmitter {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
+        //Если нет музыки в очереди или нет самой очереди, завершаем проигрывание!
         if (!queue || !queue.songs || !queue.songs.length) return void queue?.events?.queue?.emit("DestroyQueue", queue, message);
 
+        //Получаем исходный поток
         CreateResource(queue.songs[0], queue.audioFilters).then(stream => {
             this.#play(stream);
             client.console(`[Queue]: [GuildID: ${guild.id}, Type: ${queue.songs[0].type}, Status: Playing]: [${queue.songs[0].title}]`);
 
+            //Если стрим не пустышка отправляем сообщение
             if (stream instanceof FFmpegDecoder) PlaySongMessage(queue.channels.message);
         });
     };
@@ -201,6 +205,7 @@ export class AudioPlayer extends EventEmitter {
         if (this.state.status === "playing") {
             const packet: Buffer | null = this.state.resource?.read();
 
+            //Если есть аудио пакет отправляем во все голосовые каналы к которым подключен плеер
             if (packet) return this.#playOpusPacket(packet, Receivers);
             this.#signalStopSpeaking();
             this.stop();
@@ -235,6 +240,7 @@ export class AudioPlayer extends EventEmitter {
                 if (this.state.status === "buffering" && this.state.resource === resource) this.state = { status: "idle" };
             };
 
+            //Когда возможно будет прочитать поток, включаем его в голосовой канал
             resource.playStream.once('readable', onReadableCallback);
             ['end', 'close', 'finish'].forEach((event: string) => resource.playStream.once(event, onFailureCallback));
             this.state = { status: "buffering", resource, onReadableCallback, onFailureCallback, onStreamError };
@@ -266,6 +272,8 @@ export class AudioPlayer extends EventEmitter {
 
         setTimeout(() => {
             if (queue?.songs) isRemoveSong(queue); //Определяем тип loop
+
+            //Рандомим номер трека, просто меняем их местами
             if (queue?.options?.random) client.queue.swap(0, Math.floor(Math.random() * queue.songs.length), "songs", guild.id);
 
             return this.PlayCallback(message); //Включаем трек
@@ -281,8 +289,9 @@ export class AudioPlayer extends EventEmitter {
     #onErrorPlayer = (err: Error | string, message: ClientMessage): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
+        //Выводим сообщение об ошибке
         ErrorPlayerMessage(message, queue.songs[0], err);
-        return this.stop();
+        return this.stop(); //Останавливаем плеер
     };
     //====================== ====================== ====================== ======================
     /**
@@ -333,25 +342,24 @@ export class AudioPlayer extends EventEmitter {
  * @param req
  */
 function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0, req: number = 0): Promise<PlayerResource> {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
         if (req > 4) return resolve(null);
 
-        FindResource(song).catch(() => {
+        const CheckResource = await FindResource(song);
+        const RetryCheck = () => { //Повторно делаем запрос
             req++;
             return CreateResource(song, audioFilters, seek, req);
-        //@ts-ignore
-        }).then(() => {
-            if (!song.format?.url) {
-                req++;
-                return CreateResource(song, audioFilters, seek, req);
-            }
+        };
 
-            let Params: any = {url: song.format.url};
+        //Если выходит ошибка или нет ссылки на исходный ресурс
+        if (CheckResource instanceof Error || !song.format?.url) return RetryCheck();
+        if (song.isLive) { //Если будет включен поток
+            seek = 0;
+            audioFilters = [];
+        }
 
-            if (!song.isLive) Params = {...Params, seek: seek, Filters: audioFilters};
-
-            return resolve(new FFmpegDecoder(Params));
-        });
+        //Отправляем данные для дальнейшей загрузки
+        return resolve(new FFmpegDecoder({url: song.format.url, seek, Filters: audioFilters}));
     });
 }
 //====================== ====================== ====================== ======================

@@ -1,6 +1,6 @@
 import {User} from "discord.js";
 import {
-    FFmpegFormat, InputFormat,
+    FFmpegFormat,
     InputTrack,
     InputTrackAuthor,
     InputTrackDuration,
@@ -53,7 +53,7 @@ export class Song {
         this.#_isLive = track.isLive;
         this.#_color = Color(type);
         this.#_type = type;
-        this.format = ConstFormat(track.format);
+        this.format = {url: track?.format?.url}
     }
     //Название трека
     public get title() {
@@ -155,17 +155,3 @@ function Type(url: string): SongType {
     }
 }
 //====================== ====================== ====================== ======================
-/**
- * @description Подготавливаем формат трека для FFmpeg
- * @param format {InputFormat} Исходный формат
- * @constructor
- */
-export function ConstFormat (format: InputFormat): null | FFmpegFormat {
-    if (!format) return null;
-
-    return {
-        url: format.url,
-        // @ts-ignore
-        work: format?.work
-    };
-}

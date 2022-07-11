@@ -9,11 +9,18 @@ import {OggDemuxer} from "./Media/OggDemuxer";
  * @description
  */
 export class FFmpegDecoder {
-    public playbackDuration = 0;
     public readonly playStream: Readable & Writable;
     readonly #FFmpeg: FFmpeg;
     readonly #TimeFrame: number;
     #started = false;
+    #playbackDuration = 0;
+
+    public get duration() {
+        return this.#playbackDuration;
+    }
+    public set duration(duration: number) {
+        this.#playbackDuration = duration;
+    }
     //====================== ====================== ====================== ======================
     /**
      * @description Проверяем можно ли читать поток
@@ -62,7 +69,7 @@ export class FFmpegDecoder {
      */
     public read = (): Buffer | null => {
         const packet: Buffer = this.playStream?.read();
-        if (packet) this.playbackDuration += this.#TimeFrame;
+        if (packet) this.#playbackDuration += this.#TimeFrame;
 
         return packet;
     };
@@ -72,8 +79,6 @@ export class FFmpegDecoder {
      */
     public destroy = (): void => {
         if (this.#FFmpeg) this.#FFmpeg.destroy();
-
-        delete this.playbackDuration;
 
         //Удаляем с задержкой (чтоб убрать некоторые ошибки)
         setTimeout(() => {

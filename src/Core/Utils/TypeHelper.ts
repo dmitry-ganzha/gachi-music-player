@@ -33,8 +33,6 @@ type VideoQuality = "tiny" | "LOW" | "MEDIUM" | "HIGH";
  */
 export interface FFmpegFormat {
     url: string;
-    isM3U8?: boolean;
-    work: boolean;
 }
 
 /**

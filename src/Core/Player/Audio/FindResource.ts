@@ -1,27 +1,33 @@
-import {ConstFormat, Song} from "../Structures/Queue/Song";
+import {Song} from "../Structures/Queue/Song";
 import {httpsClient, httpsClientOptions} from "../../httpsClient";
 import {InputFormat, InputTrack} from "../../Utils/TypeHelper";
 import {SoundCloud, VK, YouTube} from "../../Platforms";
 import {ParserTime} from "../Manager/DurationUtils";
 
-const GlobalOptions: httpsClientOptions = {request: {method: "GET"}};
+const GlobalOptions: httpsClientOptions = {request: {method: "HEAD"}};
 
 //====================== ====================== ====================== ======================
 /**
  * @description Заготавливаем необходимые данные для создания потока
  */
-export async function FindResource(song: Song): Promise<void> {
+export async function FindResource(song: Song): Promise<void | Error> {
     if (!song.format || !song.format?.url) {
         let format = await getFormatSong(song);
 
-        if (!format || !format?.url) throw Error("Has not found format");
-
-        //Подгоняем под общую сетку
-        song.format = ConstFormat(format);
+        if (!format || !format?.url) {
+            song.format.url = null;
+            throw Error("Has not found format");
+        }
+        //Добавляем ссылку в трек
+        song.format = {url: format.url};
     }
 
+    //Делаем head запрос на сервер
     const resource = await CheckLink(song.format?.url);
-    if (resource === "Fail") throw Error("Has fail checking resource link");
+    if (resource === "Fail") { //Если выходит ошибка
+        song.format.url = null;
+        throw Error("Has fail checking resource link");
+    }
     return;
 }
 //====================== ====================== ====================== ======================
@@ -34,9 +40,9 @@ function CheckLink(url: string) {
     if (!url) return "Fail";
 
     return httpsClient.Request(url, GlobalOptions).then((resource) => {
-        if (resource instanceof Error) return "Fail";
-        if (resource.statusCode >= 200 && resource.statusCode < 400) return "OK";
-        return "Fail";
+        if (resource instanceof Error) return "Fail"; //Если есть ошибка
+        if (resource.statusCode >= 200 && resource.statusCode < 400) return "OK"; //Если возможно скачивать ресурс
+        return "Fail"; //Если прошлые варианты не подходят, то эта ссылка не рабочая
     });
 }
 //====================== ====================== ====================== ======================
@@ -67,10 +73,13 @@ function getFormatSong({type, url, title, author, duration}: Song): Promise<Inpu
  */
 function FindTrack(nameSong: string, duration: number): Promise<InputFormat> {
     return YouTube.SearchVideos(nameSong).then((Tracks) => {
+        //Фильтруем треки оп времени
         const FindTracks = Tracks.filter((track) => Filter(track, duration));
 
+        //Если треков нет
         if (FindTracks.length === 0) return null;
 
+        //Получаем данные о треке
         return getFormatYouTube(FindTracks[0].url);
     });
 }
@@ -86,5 +95,6 @@ function getFormatYouTube(url: string): Promise<InputFormat> {
 function Filter(track: InputTrack, NeedDuration: number) {
     const DurationSong = ParserTime(track.duration.seconds);
 
+    //Как надо фильтровать треки
     return DurationSong < NeedDuration + 15 && DurationSong > NeedDuration - 15;
 }

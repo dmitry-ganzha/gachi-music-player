@@ -159,8 +159,7 @@ function getFormat(formats: SoundCloudFormat[], ClientID: string): Promise<FFmpe
         const EndFormat = await httpsClient.parseJson(`${FilterFormats.url}?client_id=${ClientID}`);
 
         return resolve({
-            url: EndFormat.url,
-            work: undefined
+            url: EndFormat.url
         });
     });
 }

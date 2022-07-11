@@ -15,11 +15,11 @@ export const YouTube = {getVideo, getPlaylist, SearchVideos};
  */
 function getYouTubeID(url: string, isPlaylist = false) {
     if (typeof url !== "string") return "Url is not string";
-    let _parseUrl = new URL(url);
+    const parsedLink = new URL(url);
 
-    if (_parseUrl.searchParams.get("list") && isPlaylist) return _parseUrl.searchParams.get("list");
-    else if (_parseUrl.searchParams.get("v") && !isPlaylist) return _parseUrl.searchParams.get("v");
-    return _parseUrl.pathname.split("/")[1];
+    if (parsedLink.searchParams.get("list") && isPlaylist) return parsedLink.searchParams.get("list");
+    else if (parsedLink.searchParams.get("v") && !isPlaylist) return parsedLink.searchParams.get("v");
+    return parsedLink.pathname.split("/")[1];
 }
 //====================== ====================== ====================== ======================
 /**
@@ -72,7 +72,7 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
             }
         })]))[0];
 
-        if (body.includes("Our systems have detected unusual traffic from your computer network.")) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));
+        if (body.includes("Our systems have detected unusual traffic from your computer network.")) throw reject('Google понял что я бот! Это может занять много времени!');
 
         const PlayerResponse = body.split('var ytInitialPlayerResponse = ')?.[1]?.split(';</script>')[0].split(/(?<=}}});\s*(var|const|let)\s/)[0];
         if (!PlayerResponse) throw new Error("Данные на странице не были найдены");
@@ -109,7 +109,7 @@ function getVideo(url: string, options: Options = {onlyFormats: false}): Promise
         };
 
         return resolve({...VideoData, format: format.pop()});
-    })
+    });
 }
 //====================== ====================== ====================== ======================
 /**
@@ -138,7 +138,7 @@ function SearchVideos(search: string, options: SearchOptions = {limit: 15}): Pro
         if (!details) throw reject(new Error(`Не удалось найти: ${search}`));
 
         return resolve((await Promise.all([parsingVideos(details, options)]))[0]);
-    })
+    });
 }
 function parsingVideos(details: any[], {limit}: SearchOptions, FakeBase: InputTrack[] = []): InputTrack[] {
     let num = 0;
@@ -188,7 +188,7 @@ async function getPlaylist(url: string): Promise<InputPlaylist> {
             }
         })]))[0];
 
-        if (body.includes("Our systems have detected unusual traffic from your computer network.")) throw reject(new Error("Google понял что я бот! Это может занять много времени!"));
+        if (body.includes("Our systems have detected unusual traffic from your computer network.")) throw reject("Google понял что я бот! Это может занять много времени!");
 
         const parsed = JSON.parse(`${body.split("{\"playlistVideoListRenderer\":{\"contents\":")[1].split("}],\"playlistId\"")[0]}}]`);
         const playlistDetails = JSON.parse(body.split("{\"playlistSidebarRenderer\":")[1].split("}};</script>")[0]).items;

@@ -45,12 +45,12 @@ export function CurrentPlay(client: WatKLOK, song: Song, queue: Queue): EmbedCon
  * @param client {WatKLOK} Клиент
  */
 function createFields(song: Song, {player, songs, audioFilters}: Queue, client: WatKLOK): { name: string, value: string }[] {
-    const PlayingDuration = ConvertCurrentTime(player, audioFilters);
-    const DurationMusic = MusicDuration(song, PlayingDuration);
+    const playbackDuration = ConvertCurrentTime(player, audioFilters);
+    const VisualDuration = MusicDuration(song, playbackDuration);
 
     let fields = [{
         name: "Щас играет",
-        value: `**❯** [${client.ConvertedText(song.title, 29, true)}](${song.url})\n${DurationMusic}`
+        value: `**❯** [${client.ConvertedText(song.title, 29, true)}](${song.url})\n${VisualDuration}`
     }];
     if (songs[1]) fields.push({ name: "Потом", value: `**❯** [${client.ConvertedText(songs[1].title, 29, true)}](${songs[1].url})` });
     return fields;
@@ -75,16 +75,13 @@ function MusicDuration({isLive, duration}: Song, curTime: number | string): stri
 //====================== ====================== ====================== ======================
 /**
  * @description Конвертируем секунды проигранные плеером
- * @param state {audioPlayer<state>} Статус плеера
- * @param filters {AudioFilters}
+ * @param CurrentTime {number} Время проигрывания
+ * @param filters {AudioFilters} Фильтры
  * @constructor
  */
-function ConvertCurrentTime({state}: AudioPlayer, filters: AudioFilters): number | string {
-    const duration = state.resource?.playbackDuration ?? 0;
-    let seconds: number = parseInt((duration / 1000).toFixed(0));
-
-    if (ProgressBarValue) return seconds;
-    return ParseTimeString(seconds);
+function ConvertCurrentTime({playbackDuration}: AudioPlayer, filters: AudioFilters): number | string {
+    if (ProgressBarValue) return playbackDuration;
+    return ParseTimeString(playbackDuration);
 }
 //====================== ====================== ====================== ======================
 /**

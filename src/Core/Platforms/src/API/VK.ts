@@ -38,8 +38,7 @@ function getTrack(url: string): Promise<null | InputTrack> {
                 seconds: track.duration.toFixed(0)
             },
             format: {
-                url: track.url,
-                work: true
+                url: track.url
             }
         });
     });
