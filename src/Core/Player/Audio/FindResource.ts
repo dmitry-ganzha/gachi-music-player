@@ -10,25 +10,27 @@ const GlobalOptions: httpsClientOptions = {request: {method: "HEAD"}};
 /**
  * @description Заготавливаем необходимые данные для создания потока
  */
-export async function FindResource(song: Song): Promise<void | Error> {
-    if (!song.format || !song.format?.url) {
-        let format = await getFormatSong(song);
+export function FindResource(song: Song): Promise<true | Error> {
+    return new Promise(async (resolve) => {
+        if (!song.format || !song.format?.url) {
+            let format = await getFormatSong(song);
 
-        if (!format || !format?.url) {
-            song.format.url = null;
-            throw Error(`[FindResource]: [Song: ${song.title}]: Has not found format`);
+            if (!format || !format?.url) {
+                song.format.url = null;
+                return resolve(new Error(`[FindResource]: [Song: ${song.title}]: Has not found format`));
+            }
+            //Добавляем ссылку в трек
+            song.format = {url: format.url};
         }
-        //Добавляем ссылку в трек
-        song.format = {url: format.url};
-    }
 
-    //Делаем head запрос на сервер
-    const resource = await CheckLink(song.format?.url);
-    if (resource === "Fail") { //Если выходит ошибка
-        song.format.url = null;
-        throw Error(`[FindResource]: [Song: ${song.title}]: Has fail checking resource link`);
-    }
-    return;
+        //Делаем head запрос на сервер
+        const resource = await CheckLink(song.format?.url);
+        if (resource === "Fail") { //Если выходит ошибка
+            song.format.url = null;
+            return resolve(new Error(`[FindResource]: [Song: ${song.title}]: Has fail checking resource link`));
+        }
+        return resolve(true);
+    });
 }
 //====================== ====================== ====================== ======================
 /**
