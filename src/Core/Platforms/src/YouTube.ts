@@ -2,8 +2,8 @@ import {httpsClient} from "../../httpsClient";
 import {Decipher, YouTubeFormat} from "./youtube/decipher";
 import {InputAuthor, InputFormat, InputPlaylist, InputTrack} from "../../Utils/TypeHelper";
 
-const VerAuthor = new Set(['Verified', 'Official Artist Channel']);
-const DefaultLinkYouTube = 'https://www.youtube.com';
+const VerAuthor = new Set(["Verified", "Official Artist Channel"]);
+const YouTubeURL = "https://www.youtube.com";
 
 export namespace YouTube {
     /**
@@ -15,7 +15,7 @@ export namespace YouTube {
     export function getVideo(url: string, options: Options = {onlyFormats: false}): Promise<InputTrack | InputFormat> {
         return new Promise(async (resolve, reject) => {
             const VideoID = getYouTubeID(url);
-            const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/watch?v=${VideoID}&has_verified=1`, {
+            const body = (await Promise.all([httpsClient.parseBody(`${YouTubeURL}/watch?v=${VideoID}&has_verified=1`, {
                 options: { userAgent: true, cookie: true }, request: {
                     headers: {
                         "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
@@ -51,7 +51,7 @@ export namespace YouTube {
             if (options?.onlyFormats) return resolve(format.pop());
 
             const VideoData: InputTrack = {
-                url: `${DefaultLinkYouTube}/watch?v=${VideoID}`,
+                url: `${YouTubeURL}/watch?v=${VideoID}`,
                 title: videoDetails.title,
                 duration: {seconds: videoDetails.lengthSeconds},
                 image: videoDetails.thumbnail.thumbnails.pop(),
@@ -73,7 +73,7 @@ export namespace YouTube {
      */
     export function SearchVideos(search: string, options: SearchOptions = {limit: 15}): Promise<InputTrack[]> {
         return new Promise(async (resolve, reject) => {
-            const SearchRes = (await Promise.all([httpsClient.parseJson(`${DefaultLinkYouTube}/results?search_query=${search.replaceAll(' ', '+')}?flow=grid&view=0&pbj=1`, {
+            const SearchRes = (await Promise.all([httpsClient.parseJson(`${YouTubeURL}/results?search_query=${search.replaceAll(' ', '+')}?flow=grid&view=0&pbj=1`, {
                 options: {userAgent: true}, request: {
                     headers: {
                         "x-youtube-client-name": "1",
@@ -101,7 +101,7 @@ export namespace YouTube {
     export async function getPlaylist(url: string): Promise<InputPlaylist> {
         return new Promise(async (resolve, reject) => {
             const playlistID = getYouTubeID(url, true);
-            const body = (await Promise.all([httpsClient.parseBody(`${DefaultLinkYouTube}/playlist?list=${playlistID}`, {
+            const body = (await Promise.all([httpsClient.parseBody(`${YouTubeURL}/playlist?list=${playlistID}`, {
                 options: {userAgent: true, cookie: true}, request: {
                     headers: {
                         "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
@@ -118,7 +118,7 @@ export namespace YouTube {
             const channel = (playlistDetails[1] ?? playlistDetails[0])?.playlistSidebarSecondaryInfoRenderer?.videoOwner?.videoOwnerRenderer.title.runs[0] ?? null;
 
             return resolve({
-                url: `${DefaultLinkYouTube}/playlist?list=${playlistID}`,
+                url: `${YouTubeURL}/playlist?list=${playlistID}`,
                 title: playlistInfo?.title?.runs[0]?.text ?? "Not found",
                 items: (await Promise.all([parsePlaylistVideos(parsed)]))[0],
                 author: channel === null ? null : (await Promise.all([getChannel({ id: channel.navigationEndpoint.browseEndpoint.browseId, name: channel.text })]))[0],
@@ -151,7 +151,7 @@ function getYouTubeID(url: string, isPlaylist = false) {
  */
 function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
     return new Promise(async (resolve) => {
-        const channel: YouTubeChannelParse[] = (await Promise.all([httpsClient.parseJson(`${DefaultLinkYouTube}/channel/${id}/channels?flow=grid&view=0&pbj=1`, {
+        const channel: YouTubeChannelParse[] = (await Promise.all([httpsClient.parseJson(`${YouTubeURL}/channel/${id}/channels?flow=grid&view=0&pbj=1`, {
             request: {
                 headers: {
                     "x-youtube-client-name": "1",
@@ -168,7 +168,7 @@ function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
 
         return resolve({
             title: Channel?.title ?? name ?? "Not found",
-            url: `${DefaultLinkYouTube}/channel/${id}`,
+            url: `${YouTubeURL}/channel/${id}`,
             image: avatar?.thumbnails.pop() ?? null,
             isVerified: !!badges?.find((badge: any) => VerAuthor.has(badge?.metadataBadgeRenderer?.tooltip))
         })
@@ -226,7 +226,7 @@ function parsePlaylistVideos(videos: any[]): InputTrack[] {
 
         VideosEnd.push({
             title: video.title.runs[0].text,
-            url: `${DefaultLinkYouTube}/watch?v=${video.videoId}`,
+            url: `${YouTubeURL}/watch?v=${video.videoId}`,
             duration: {
                 seconds: video.lengthSeconds ?? 0
             },

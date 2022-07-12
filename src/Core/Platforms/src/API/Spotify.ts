@@ -163,19 +163,19 @@ export namespace Spotify {
  */
 function getToken(): Promise<void> {
     return httpsClient.parseJson(`${ApiLink}/token`, {
-            request: {
-                method: "POST",
-                headers: {
-                    "Accept": "application/json",
-                    "Authorization": `Basic ${Buffer.from(clientID + ":" + clientSecret).toString("base64")}`,
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "accept-encoding": "gzip, deflate, br"
-                },
-                body: "grant_type=client_credentials"
-            }
-        }).then((result) => {
-            TokenTime = Date.now() + result.expires_in;
-            Token = result.access_token;
+        request: {
+            method: "POST",
+            headers: {
+                "Accept": "application/json",
+                "Authorization": `Basic ${Buffer.from(clientID + ":" + clientSecret).toString("base64")}`,
+                "Content-Type": "application/x-www-form-urlencoded",
+                "accept-encoding": "gzip, deflate, br"
+            },
+            body: "grant_type=client_credentials"
+        }
+    }).then((result) => {
+        TokenTime = Date.now() + result.expires_in;
+        Token = result.access_token;
     });
 }
 //====================== ====================== ====================== ======================

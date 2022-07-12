@@ -6,7 +6,7 @@ import {InputPlaylist, InputTrack} from "../Utils/TypeHelper";
 import {CreateQueue} from "./Manager/Queue";
 import {PlayList} from "./Manager/PlaylistManager";
 
-export interface PlayerEmitter extends EventEmitter{
+export interface PlayerEmitter extends EventEmitter {
     play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack | InputTrack[]) => boolean | void | Promise<void | ClientMessage | NodeJS.Timeout>;
     pause: (message: ClientMessage) => void;
     resume: (message: ClientMessage) => void;

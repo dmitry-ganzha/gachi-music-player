@@ -7,7 +7,7 @@ import {getVoiceConnection, PlayerSubscription, VoiceConnection} from "@discordj
 import {addAudioPlayer, deleteAudioPlayer} from "../Manager/PlayersManager";
 import {JoinVoiceChannel} from "../Structures/Voice";
 import {ErrorPlayerMessage, PlaySongMessage} from "../Manager/MessagePlayer";
-import {FFmpegDecoder} from "../Structures/Streamer";
+import {FFmpegDecoder} from "../Structures/Media/FFmpegDecoder";
 
 //Статусы плеера для пропуска музыки
 export const StatusPlayerHasSkipped: Set<string> = new Set(["playing", "paused", "buffering", "idle"]);
@@ -219,7 +219,7 @@ export class AudioPlayer extends EventEmitter {
      */
     #play = (resource: PlayerResource): void => {
         if (!resource) return void this.emit("error", "[AudioResource]: has not found!");
-        if (resource?.ended) return void this.emit("error", "[AudioPlayer]: Message: Fail to load stream");
+        if (resource?.ended) return void this.emit("error", "[AudioPlayer]: Fail to load stream");
 
         //Если произойдет ошибка в чтении потока
         const onStreamError = (error: Error) => {
@@ -229,8 +229,7 @@ export class AudioPlayer extends EventEmitter {
 
         //Если можно включить поток
         if (resource.hasStarted) this.state = { status: "playing", resource, onStreamError };
-        else { //Сделаем это с задержкой
-
+        else {
             //Как только можно будет прочитать поток
             const onReadableCallback = () => {
                 if (this.state.status === "buffering" && this.state.resource === resource) this.state = { status: "playing", resource, onStreamError };
@@ -245,8 +244,6 @@ export class AudioPlayer extends EventEmitter {
             ["end", "close", "finish"].forEach((event: string) => resource.playStream.once(event, onFailureCallback));
             this.state = { status: "buffering", resource, onReadableCallback, onFailureCallback, onStreamError };
         }
-
-
     };
     //====================== ====================== ====================== ======================
     /**
