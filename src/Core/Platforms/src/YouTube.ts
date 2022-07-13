@@ -73,8 +73,8 @@ export namespace YouTube {
      */
     export function SearchVideos(search: string, options: SearchOptions = {limit: 15}): Promise<InputTrack[]> {
         return new Promise(async (resolve, reject) => {
-            const SearchRes = (await Promise.all([httpsClient.parseJson(`${YouTubeURL}/results?search_query=${search.replaceAll(' ', '+')}?flow=grid&view=0&pbj=1`, {
-                options: {userAgent: true}, request: {
+            const SearchRes = (await Promise.all([httpsClient.parseBody(`${YouTubeURL}/results?search_query=${search.replaceAll(' ', '+')}`, {
+                options: {userAgent: true, cookie: true}, request: {
                     headers: {
                         "x-youtube-client-name": "1",
                         "x-youtube-client-version": "2.20201021.03.00",
@@ -83,9 +83,8 @@ export namespace YouTube {
                     }
                 }
             })]))[0];
-
-            const SearchFinal = SearchRes.find((res: any) => res.response !== undefined).response;
-            const details = SearchFinal?.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents[0]?.itemSectionRenderer?.contents;
+            const SearchSplitter = (SearchRes.split("var ytInitialData = ")[1].split("}};")[0] + '}}').split(';</script><script')[0];
+            const details = JSON.parse(SearchSplitter)?.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents[0]?.itemSectionRenderer?.contents;
 
             if (!details) throw reject(new Error(`Не удалось найти: ${search}`));
 
@@ -185,6 +184,7 @@ function parseSearchVideos(videos: any[], {limit}: SearchOptions): InputTrack[] 
 
     for (let i = 0; i < videos.length; i++) {
         if (num >= limit) break;
+
         if (!videos[i] || !videos[i].videoRenderer) continue;
 
         const video = videos[i].videoRenderer;
@@ -311,7 +311,6 @@ Interface SearchVideos
 */
 interface Options_Search {
     limit: number;
-    onlyLink?: boolean
 }
 interface Options2_Search {
     limit?: number;

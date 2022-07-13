@@ -3,6 +3,7 @@ import {httpsClient, httpsClientOptions} from "../../httpsClient";
 import {InputFormat, InputTrack} from "../../Utils/TypeHelper";
 import {SoundCloud, VK, YouTube} from "../../Platforms";
 import {ParserTime} from "../Manager/DurationUtils";
+import {IncomingMessage} from "http";
 
 const GlobalOptions: httpsClientOptions = {request: {method: "HEAD"}};
 
@@ -41,7 +42,7 @@ export function FindResource(song: Song): Promise<true | Error> {
 function CheckLink(url: string) {
     if (!url) return "Fail";
 
-    return httpsClient.Request(url, GlobalOptions).then((resource) => {
+    return httpsClient.Request(url, GlobalOptions).then((resource: IncomingMessage) => {
         if (resource instanceof Error) return "Fail"; //Если есть ошибка
         if (resource.statusCode >= 200 && resource.statusCode < 400) return "OK"; //Если возможно скачивать ресурс
         return "Fail"; //Если прошлые варианты не подходят, то эта ссылка не рабочая
@@ -56,8 +57,8 @@ function getFormatSong({type, url, title, author, duration}: Song): Promise<Inpu
     try {
         switch (type) {
             case "SPOTIFY": return FindTrack(`${author.title} - ${title}`, duration.seconds);
-            case "SOUNDCLOUD": return VK.getTrack(url).then((d) => d?.format);
-            case "VK": return SoundCloud.getTrack(url).then((d) => d?.format);
+            case "SOUNDCLOUD": return SoundCloud.getTrack(url).then((d) => d?.format);
+            case "VK": return VK.getTrack(url).then((d) => d?.format);
             case "YOUTUBE": return getFormatYouTube(url);
             default: return null
         }
@@ -74,7 +75,7 @@ function getFormatSong({type, url, title, author, duration}: Song): Promise<Inpu
  * @constructor
  */
 function FindTrack(nameSong: string, duration: number): Promise<InputFormat> {
-    return YouTube.SearchVideos(nameSong).then((Tracks) => {
+    return YouTube.SearchVideos(nameSong, {limit: 30}).then((Tracks) => {
         //Фильтруем треки оп времени
         const FindTracks = Tracks.filter((track) => Filter(track, duration));
 
@@ -98,5 +99,5 @@ function Filter(track: InputTrack, NeedDuration: number) {
     const DurationSong = ParserTime(track.duration.seconds);
 
     //Как надо фильтровать треки
-    return DurationSong < NeedDuration + 15 && DurationSong > NeedDuration - 15;
+    return DurationSong === NeedDuration || DurationSong < NeedDuration + 10 && DurationSong > NeedDuration - 10;
 }

@@ -17,10 +17,9 @@ export namespace SoundCloud {
             if (!result?.id || !result) return resolve(null);
 
             return resolve({
-                id: result.id, url,
+                url,
                 title: result.title,
                 author: {
-                    id: result.user.id,
                     url: result.user.permalink_url,
                     title: result.user.username,
                     image: ParseImageToFull(result.user.avatar_url),
@@ -56,10 +55,9 @@ export namespace SoundCloud {
             }
 
             return resolve({
-                id: result.id, url,
+                url,
                 title: result.title,
                 author: {
-                    id: result.user.id,
                     url: result.user.permalink_url,
                     title: result.user.username,
                     image: ParseImageToFull(result.user.avatar_url),
@@ -131,11 +129,9 @@ function getClientID(): Promise<string> {
  */
 function CreateInfoTrack(result: any): InputTrack {
     return {
-        id: result.id,
         url: result.permalink_url,
         title: result.title,
         author: {
-            id: result.user.id,
             url: result.user.permalink_url,
             title: result.user.username,
             image: ParseImageToFull(result.user.avatar_url),

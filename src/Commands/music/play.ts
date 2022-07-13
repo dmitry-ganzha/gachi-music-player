@@ -53,7 +53,7 @@ const BaseGetTrack = {
                 if (!video) return SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Существует ли это видео вообще!`);
                 return PlayerSys.Default(video, message, voiceChannel);
             }).catch((err) => {
-                console.error(err);
+                console.log(err);
                 return SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Произошла ошибка!`);
             });
         });
@@ -61,11 +61,11 @@ const BaseGetTrack = {
     SP_getTrack: (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) => {
         setImmediate(() => {
             Spotify.getTrack(search).then((track: InputTrack) => {
-                if (!track?.isValid) return SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это трек вообще!`);
+                if (!track) return SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это трек вообще!`);
 
                 return PlayerSys.Default(track, message, voiceChannel);
             }).catch((err) => {
-                console.error(err);
+                console.log(err);
                 return SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Произошла ошибка!`);
             });
         });
@@ -77,20 +77,20 @@ const BaseGetTrack = {
 
                 return PlayerSys.Default(track, message, voiceChannel)
             }).catch((err) => {
-                console.error(err);
+                console.log(err);
                 return SendEmptyDataMessage(message, `${message.author}, **VK** не хочет делится данными! Произошла ошибка!`);
             });
         });
     },
     SC_getTrack: (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) => {
         setImmediate(() => {
-            Spotify.getTrack(search).then((track: InputTrack) => {
-                if (!track?.isValid) return SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это трек вообще!`);
+            SoundCloud.getTrack(search).then((track: InputTrack) => {
+                if (!track) return SendEmptyDataMessage(message, `${message.author}, **SoundCloud** не хочет делится данными! Существует ли это трек вообще!`);
 
                 return PlayerSys.Default(track, message, voiceChannel);
             }).catch((err) => {
-                console.error(err);
-                return SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Произошла ошибка!`);
+                console.log(err);
+                return SendEmptyDataMessage(message, `${message.author}, **SoundCloud** не хочет делится данными! Произошла ошибка!`);
             });
         });
     },
@@ -140,7 +140,7 @@ const BaseGetPlaylist = {
     SP_getPlaylist: (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) => {
         setImmediate(() => {
             Spotify.getPlaylist(search).then((playlist: InputPlaylist) => {
-                if (!playlist?.title) return SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это плейлист вообще!`);
+                if (!playlist) return SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это плейлист вообще!`);
 
                 return PlayerSys.PlaylistSys(message, playlist, voiceChannel)
             }).catch((err) => {

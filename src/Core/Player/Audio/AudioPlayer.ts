@@ -276,7 +276,7 @@ export class AudioPlayer extends EventEmitter {
             if (queue?.options?.random) client.queue.swap(0, Math.floor(Math.random() * queue.songs.length), "songs", guild.id);
 
             return this.PlayCallback(message); //Включаем трек
-        }, 700);
+        }, 500);
     };
     //====================== ====================== ====================== ======================
     /**
@@ -340,9 +340,9 @@ export class AudioPlayer extends EventEmitter {
  * @param seek {number} Пропуск музыки до 00:00:00
  * @param req
  */
-function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0, req: number = 0): Promise<PlayerResource> {
+function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0, req: number = 1): Promise<PlayerResource | null> {
     return new Promise(async (resolve) => {
-        if (req > 4) return resolve(null);
+        if (req > 2) return resolve(null);
 
         const CheckResource = await FindResource(song);
         const RetryCheck = () => { //Повторно делаем запрос
