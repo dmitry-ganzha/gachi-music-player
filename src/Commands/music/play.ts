@@ -18,6 +18,7 @@ import {FFprobe} from "../../Core/Player/Structures/Media/FFprobe";
 const youtubeStr = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi;
 const spotifySrt = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;
 const SoundCloudSrt = /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/(.*)$/;
+const UrlSrt = /^(https?:\/\/)/gi;
 
 type TypeSearch = "yt" | "sp" | "vk" | "sc";
 
@@ -301,21 +302,25 @@ export class CommandPlay extends Command {
     };
 
     public readonly run = (message: ClientMessage, args: string[]): void => {
-        const voiceChannel: VoiceChannel | StageChannel = message.member.voice.channel, search: string = args.join(" "),
-            queue: Queue = message.client.queue.get(message.guild.id);
+        const voiceChannel: VoiceChannel | StageChannel = message.member.voice.channel;
+        const queue: Queue = message.client.queue.get(message.guild.id);
+        const search: string = args.join(" ");
 
+        //Если есть очередь и пользователь не подключен к тому же голосовому каналу
         if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.Send({
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
             message,
             color: "RED"
         });
 
+        //Если пользователь не подключен к голосовым каналам
         if (!voiceChannel || !message.member.voice) return message.client.Send({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
             color: "RED"
         });
 
+        //Если пользователь не указал аргумент
         if (!search && !message.attachments) return message.client.Send({
             text: `${message.author}, Укажи ссылку, название или прикрепи файл!`,
             message,
@@ -336,26 +341,35 @@ export class CommandPlay extends Command {
     };
     //Выбираем платформу
     #getInfoPlatform = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
-        if (search.match(youtubeStr)) return this.#PlayYouTube(message, search, voiceChannel);
-        else if (search.match(spotifySrt)) return this.#PlaySpotify(message, search, voiceChannel);
-        else if (search.match(/vk.com/)) return this.#PlayVK(message, search, voiceChannel);
-        else if (search.match(SoundCloudSrt)) return this.#PlaySoundCloud(message, search, voiceChannel);
-        else if (search.match(/cdn.discordapp.com/) || message.attachments?.last()?.url) return BaseGetTrack.Discord_getTrack(search, message, voiceChannel);
+        if (search.match(UrlSrt)) {
+            if (search.match(youtubeStr)) return this.#PlayYouTube(message, search, voiceChannel);
+            else if (search.match(spotifySrt)) return this.#PlaySpotify(message, search, voiceChannel);
+            else if (search.match(/vk.com/)) return this.#PlayVK(message, search, voiceChannel);
+            else if (search.match(SoundCloudSrt)) return this.#PlaySoundCloud(message, search, voiceChannel);
+            else if (search.match(/cdn.discordapp.com/) || message.attachments?.last()?.url) return BaseGetTrack.Discord_getTrack(search, message, voiceChannel);
+        }
         const SplitSearch = search.split(' ');
         const SearchType = SplitSearch[0].toLowerCase();
 
-        if (SearchType === "sp") {
-            delete SplitSearch[0];
-            return BaseSearchTracks.SP_Search(message, voiceChannel, SplitSearch.join(' '));
-        } else if (SearchType === "vk") {
-            delete SplitSearch[0];
-            return BaseSearchTracks.VK_Search(message, voiceChannel, SplitSearch.join(' '));
-        } else if (SearchType === "sc") {
-            delete SplitSearch[0];
-            return BaseSearchTracks.SC_Search(message, voiceChannel, SplitSearch.join(' '));
+        //Ищем если аргумент не ссылка
+        switch (SearchType) {
+            case "sp": { //Ищем в Spotify
+                delete SplitSearch[0];
+                return BaseSearchTracks.SP_Search(message, voiceChannel, SplitSearch.join(' '));
+            }
+            case "vk": { //Ищем в VK
+                delete SplitSearch[0];
+                return BaseSearchTracks.VK_Search(message, voiceChannel, SplitSearch.join(' '));
+            }
+            case "sc": { //Ищем на SoundCloud
+                delete SplitSearch[0];
+                return BaseSearchTracks.SC_Search(message, voiceChannel, SplitSearch.join(' '));
+            }
+            default: {
+                //Ищем на YouTube
+                return BaseSearchTracks.YT_Search(message, voiceChannel, search);
+            }
         }
-
-        return BaseSearchTracks.YT_Search(message, voiceChannel, search);
     };
     //Для системы youtube
     #PlayYouTube = (message: ClientMessage, search: string, voiceChannel: VoiceChannel | StageChannel): void => {
@@ -389,19 +403,19 @@ export class CommandPlay extends Command {
  * @constructor
  */
 function ArraySort(results: InputTrack[], message: ClientMessage, type: TypeSearch): string {
-    let NumberTrack = 1, String;
+    let NumberTrack = 1, StringTracks;
 
     // @ts-ignore
-    results.ArraySort(15).forEach((s: InputTrack[]) => {
-        String = s.map((video) => {
-            const NameTrack = `[${message.client.ConvertedText(video.title, 80, true)}]`;
-            const DurationTrack = `[${ConvertTimeSearch(video.duration.seconds, type) ?? "LIVE"}]`;
-            const AuthorTrack = `[${message.client.ConvertedText(video.author.title, 12, true)}]`;
+    results.ArraySort(15).forEach((tracks: InputTrack[]) => {
+        StringTracks = tracks.map((track) => {
+            const NameTrack = `[${message.client.ConvertedText(track.title, 80, true)}]`;
+            const DurationTrack = `[${ConvertTimeSearch(track.duration.seconds, type) ?? "LIVE"}]`;
+            const AuthorTrack = `[${message.client.ConvertedText(track.author.title, 12, true)}]`;
 
             return `${NumberTrack++} ➜ ${DurationTrack} | ${AuthorTrack} | ${NameTrack}`;
         }).join("\n");
     });
-    return String;
+    return StringTracks;
 }
 //====================== ====================== ====================== ======================
 /**
@@ -444,8 +458,7 @@ function SendMessage(message: ClientMessage, results: any[], voiceChannel: Voice
 function CollectorCollect(msg: ClientMessage, results: any[], message: ClientMessage, voiceChannel: VoiceChannel | StageChannel, collector: MessageCollector, type: TypeSearch): void {
     collector.once("collect", (m: any): void => {
         setImmediate(() => {
-            deleteMessage(msg);
-            deleteMessage(m);
+            [msg, m].forEach((m: ClientMessage) => deleteMessage(m));
             collector?.stop();
             return pushSong(results, m, message, voiceChannel, type);
         });
@@ -462,10 +475,12 @@ function CollectorCollect(msg: ClientMessage, results: any[], message: ClientMes
  */
 function pushSong(results: any[], m: ClientMessage, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel, type: TypeSearch): void {
     setImmediate(() => {
-        if (type === "sp") return BaseGetTrack.SP_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
-        else if (type === "vk") return BaseGetTrack.VK_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
-        else if (type === "sc") return BaseGetTrack.SC_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
-        return BaseGetTrack.YT_getVideo(results[parseInt(m.content) - 1].url, message, voiceChannel);
+        switch (type) {
+            case "sp": return BaseGetTrack.SP_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
+            case "vk": return BaseGetTrack.VK_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
+            case "sc": return BaseGetTrack.SC_getTrack(results[parseInt(m.content) - 1].url, message, voiceChannel);
+            default: return BaseGetTrack.YT_getVideo(results[parseInt(m.content) - 1].url, message, voiceChannel);
+        }
     });
 }
 //====================== ====================== ====================== ======================
@@ -512,12 +527,13 @@ function CreateMessageCollector(msg: ClientMessage, message: ClientMessage, num:
  * @param type {TypeSearch} Платформа на которой искали
  */
 function isType(type: TypeSearch) {
-    if (type === "sp") return  "SPOTIFY";
-    else if (type === "yt") return "YOUTUBE"
-    else if (type === "vk") return "VK";
-    else if (type === "sc") return "SOUNDCLOUD";
-
-    return "UNKNOWN";
+    switch (type) {
+        case "sp": return "SPOTIFY";
+        case "sc": return "SOUNDCLOUD";
+        case "vk": return "VK";
+        case "yt": return "YOUTUBE";
+        default: return "UNKNOWN";
+    }
 }
 //====================== ====================== ====================== ======================
 /**

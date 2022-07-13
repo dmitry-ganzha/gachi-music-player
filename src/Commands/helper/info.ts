@@ -36,16 +36,21 @@ export class CommandInfo extends Command {
                 message.client.shard.fetchClientValues("queue.size").then((numbers) => this.#AutoConverter(numbers, queue));
             } finally {
                 message.channel.send({embeds: [this.#EmbedConstructor(message, {channels, guilds, queue})]})
-                    .then((msg) => setTimeout(() => msg.delete(), 25e3));
+                    .then((msg) => Command.DeleteMessage(msg, 25e3));
             }
             return;
         }
 
-        message.channel.send({embeds: [this.#EmbedConstructor(message)]})
-            .then((msg) => setTimeout(() => msg.delete(), 25e3));
+        message.channel.send({embeds: [this.#EmbedConstructor(message)]}).then((msg) => Command.DeleteMessage(msg, 25e3));
     };
-
-    #EmbedConstructor = (message: ClientMessage, options?: OptionsEmbed): EmbedConstructor => {
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Получаем <EmbedConstructor>
+     * @param message {ClientMessage} Сообщение
+     * @param options {OptionsEmbed} Данные
+     * @private
+     */
+    readonly #EmbedConstructor = (message: ClientMessage, options?: OptionsEmbed): EmbedConstructor => {
         return {
             color: Colors.GREEN,
             thumbnail: {
@@ -75,7 +80,7 @@ export class CommandInfo extends Command {
             }
         }
     };
-    #AutoConverter = (Array: any[], PushBase: any) => {
+    readonly #AutoConverter = (Array: any[], PushBase: any) => {
         Array.forEach((number) => PushBase += number);
     };
 }

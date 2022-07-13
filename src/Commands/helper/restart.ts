@@ -18,7 +18,12 @@ export class CommandRestart extends Command {
     public readonly run = (message: ClientMessage): Promise<ReactionCollector | boolean | void> | void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
-        if (!queue) return message.client.Send({ text: `${message.author}, ⚠ | Музыка щас не играет.`, message, color: "RED" });
+        //Если нет очереди
+        if (!queue) return message.client.Send({
+            text: `${message.author}, ⚠ | Музыка щас не играет.`,
+            message,
+            color: "RED"
+        });
 
         return message.channel.send({ embeds: [{ description: "**Очередь и плеер будут уничтожены!** \n**Музыка перезапустится только для этого сервера!**", color: Colors.RED }]}).then(async (msg: ClientMessage) => {
             this.#createReaction(msg, "✅", () => {
@@ -29,7 +34,7 @@ export class CommandRestart extends Command {
         });
     };
 
-    #createReaction = (msg: ClientMessage, emoji: string, callback: Function): void => {
+    readonly #createReaction = (msg: ClientMessage, emoji: string, callback: Function): void => {
         msg.react(emoji).then(() => msg.createReactionCollector({filter: (reaction: MessageReaction, user: User) => (reaction.emoji.name === emoji && user.id !== msg.client.user.id)}).on("collect", () => callback()));
     };
 }

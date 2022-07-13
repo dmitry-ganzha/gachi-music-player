@@ -3,6 +3,7 @@ import {ClientMessage} from "../../Core/Client";
 import {EmbedConstructor} from "../../Core/Utils/TypeHelper";
 import {CollectorSortReaction} from "../../Core/Utils/ReactionMenu";
 import {Colors} from "../../Core/Utils/LiteUtils";
+import {MessageReaction, User} from "discord.js";
 
 export class CommandHelp extends Command {
     public constructor() {
@@ -22,12 +23,21 @@ export class CommandHelp extends Command {
 
         // @ts-ignore
         let List: Command[] = Commands.ArraySort(5);
-        let {embed, page, pages} = this.#CreateEmbedMessage(message, List);
+        let {embed, pages} = this.#CreateEmbedMessage(message, List);
 
-        return new CollectorSortReaction()._run(embed, pages, page, message, false);
+        //Запускаем CollectorSortReaction
+        return new CollectorSortReaction()._run(embed, message, this.#Callbacks(1, pages, embed));
     };
-    #CreateEmbedMessage = (message: ClientMessage, List: Command[]): { embed: EmbedConstructor, pages: any[], page: number } => {
-        let helpEmbed: EmbedConstructor = {
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Создает Embed сообщение + pages
+     * @param message
+     * @param CommandsList
+     * @private
+     */
+    readonly #CreateEmbedMessage = (message: ClientMessage, CommandsList: Command[]): { embed: EmbedConstructor, pages: any[] } => {
+        const pages: string[] = [];
+        const helpEmbed: EmbedConstructor = {
             title: "Help Menu",
             color: Colors.YELLOW,
             thumbnail: {
@@ -35,21 +45,77 @@ export class CommandHelp extends Command {
             },
             timestamp: new Date()
         };
-        let pages: string[] = [], page: any = 1, i;
 
-        List.forEach((s: any) => {
-            i = s.map((cmd: Command) => (
-                `Команда [**${cmd.name}**]  
-                    **❯ Сокращения:** ${cmd.aliases ? `(${cmd.aliases})` : `(Нет)`} 
-                    **❯ Описание:** ${cmd.description ? `(${cmd.description})` : `(Нет)`}`
-            )).join('\n\n');
-            if (i !== undefined) pages.push(i)
+        //Преобразуем все команды в string
+        CommandsList.forEach((s: any) => {
+            const parsedCommand = s.map((command: Command) =>
+                `Команда [**${command.name}**]  
+                    **❯ Сокращения:** ${command.aliases ? `(${command.aliases})` : `(Нет)`} 
+                    **❯ Описание:** ${command.description ? `(${command.description})` : `(Нет)`}`
+            ).join('\n\n');
+
+            //Если parsedCommand не undefined, то добавляем его в pages
+            if (parsedCommand !== undefined) pages.push(parsedCommand);
         });
 
-        helpEmbed = {...helpEmbed, description: pages[page - 1], footer: {text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL()}};
+        helpEmbed.description = pages[0];
+        helpEmbed.footer = {text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL()}
 
         return {
-            embed: helpEmbed, pages, page
+            embed: helpEmbed, pages
+        };
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Функции для управления <CollectorSortReaction>
+     * @param page {number} С какой страницы начнем
+     * @param pages {Array<string>} страницы
+     * @param embed {EmbedConstructor} Json<Embed>
+     * @private
+     */
+    readonly #Callbacks = (page: number, pages: string[], embed: EmbedConstructor) => {
+        return {
+            //При нажатии на 1 эмодзи, будет выполнена эта функция
+            back: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
+                setImmediate(() => {
+                    users.remove(user).catch((err) => console.log(err));
+
+                    if (page === 1) return null;
+                    page--;
+                    embed = {...embed, description: pages[page - 1],
+                        footer: {
+                            ...embed.footer,
+                            text: `${message.author.username} | Лист ${page} из ${pages.length}`
+                        }
+                    };
+
+                    return msg.edit({embeds: [embed]});
+                });
+            },
+            //При нажатии на 3 эмодзи, будет выполнена эта функция
+            next: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
+                setImmediate(() => {
+                    users.remove(user).catch((err) => console.log(err));
+
+                    if (page === pages.length) return null;
+                    page++;
+
+                    embed = {...embed, description: pages[page - 1],
+                        footer: {
+                            ...embed.footer,
+                            text: `${message.author.username} | Лист ${page} из ${pages.length}`
+                        }
+                    };
+
+                    return msg.edit({embeds: [embed]});
+                });
+            },
+            //При нажатии на 2 эмодзи, будет выполнена эта функция
+            cancel: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
+                setImmediate(() => {
+                    [msg, message].forEach((mes) => mes.deletable ? mes.delete().catch(() => null) : null);
+                });
+            }
         };
     };
 }

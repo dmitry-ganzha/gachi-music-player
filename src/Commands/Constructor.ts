@@ -12,6 +12,10 @@ export class Command {
     public readonly enable: boolean;
     public readonly CoolDown: number
     public type: string;
+
+    /**
+     * @description Функция которая будет запущена при вызове команды
+     */
     public readonly run: (message: ClientMessage | ClientInteraction, args?: string[]) => Promise<void | any> | void | any;
 
     public constructor (

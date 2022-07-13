@@ -28,24 +28,28 @@ export class CommandLoop extends Command {
     public readonly run = (message: ClientMessage, args: string[]): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
-        if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.Send({
-            text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
-            message,
-            color: "RED"
-        });
-
-        if (!message.member.voice.channel || !message.member.voice) return message.client.Send({
-            text: `${message.author}, Подключись к голосовому каналу!`,
-            message,
-            color: "RED"
-        });
-
+        //Если нет очереди
         if (!queue) return message.client.Send({
             text: `${message.author}, ⚠ | Музыка щас не играет.`,
             message,
             color: "RED"
         });
 
+        //Если есть очередь и пользователь не подключен к тому же голосовому каналу
+        if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.Send({
+            text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
+            message,
+            color: "RED"
+        });
+
+        //Если пользователь не подключен к голосовым каналам
+        if (!message.member.voice.channel || !message.member.voice) return message.client.Send({
+            text: `${message.author}, Подключись к голосовому каналу!`,
+            message,
+            color: "RED"
+        });
+
+        //Если текущий трек является потоковым
         if (queue.songs[0].isLive) return message.client.Send({
             text: `${message.author}, Фильтры не работают со стримами`,
             message,
@@ -59,11 +63,14 @@ export class CommandLoop extends Command {
 
         if (!NameFilter) return message.client.Send({text: `Включенные фильтры: ${getEnableFilters(queue.audioFilters) ?? "нет включенных фильтров"}`, ...SendArg});
 
+        //Показываем все доступные фильтры
         if (NameFilter === "all") return message.client.Send({text: `Все фильтры: ${FFmpegConfig()}`, ...SendArg});
 
+        //Отключение всех фильтров
         if (NameFilter === "off") {
             queue.audioFilters = [];
             void message.client.player.emit("filter", message);
+            //Сообщаем что все выключено
             return message.client.Send({text: "Все фильтры: отключены", ...SendArg});
         }
 
@@ -71,32 +78,46 @@ export class CommandLoop extends Command {
         const Filter = FFmpegConfiguration.FilterConfigurator[NameFilter];
 
         if (Filter) {
-            //Disable filter
+
+            //Выключаем фильтр
             if (queue.audioFilters.includes(NameFilter)) {
+                //Если фильтр не требует аргумента
                 if (Filter.value === false) queue.audioFilters = queue.audioFilters.filter((name: string) => name !== NameFilter);
-                else {
+                else { //Если у фильтра есть аргументы
+
+                    //Ищем аргумент
                     const index = queue.audioFilters.indexOf(NameFilter);
                     if (index === -1) return;
-                    queue.audioFilters.splice(index, 2);
+                    queue.audioFilters.splice(index, 2); //Удаляем аргумент
                 }
-                void message.client.player.emit("filter", message);
+                this.#executeFilter(message);
+
+                //Сообщаем что он выключен
                 return message.client.Send({text: `${message.author.username} | Filter: ${NameFilter} выключен`, ...SendArg});
             }
-            //Enable filter
-            if (Filter.value === false) queue.audioFilters.push(NameFilter);
-            else {
-                if (!argsNum || argsNum > Filter.value.max || argsNum < Filter.value.min)
-                    return message.client.Send({text: `${message.author.username}, для этого фильтра нужно указать значение между ${Filter.value.max} - ${Filter.value.min}!`, ...SendArg})
 
+            //Включаем фильтр
+            if (Filter.value === false) queue.audioFilters.push(NameFilter); //Если фильтр не требует аргумента
+            else {
+                //Если у фильтра есть аргументы
+                if (!argsNum || argsNum > Filter.value.max || argsNum < Filter.value.min)return message.client.Send({text: `${message.author.username}, для этого фильтра нужно указать значение между ${Filter.value.max} - ${Filter.value.min}!`, ...SendArg})
+
+                //Добавляем сам фильтр и нужный аргумент
                 queue.audioFilters.push(NameFilter);
-                // @ts-ignore
-                queue.audioFilters.push(argsNum);
+                queue.audioFilters.push(argsNum as any);
             }
-            void message.client.player.emit("filter", message);
+            this.#executeFilter(message);
+
+            //Сообщаем что он включен
             return message.client.Send({text: `${message.author.username} | Filter: ${NameFilter} включен`, ...SendArg});
         }
+
+        //Если фильтр не найден в FFmpegConfigurator
         return message.client.Send({text: `${message.author.username}, я не нахожу ${NameFilter} в своей базе. Может он появится позже!`, ...SendArg})
     };
+
+    //Заставляем плеер перезапустить поток для применения фильтра
+    readonly #executeFilter = (message: ClientMessage) => message.client.player.emit("filter", message);
 }
 
 function FFmpegConfig() {

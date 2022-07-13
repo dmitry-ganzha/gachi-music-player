@@ -17,16 +17,19 @@ export class CommandStop extends Command {
 
     public readonly run = (message: ClientMessage): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
+
+        //Если есть очередь то
         if (queue) {
             DisconnectVoiceChannel(message.guild.id);
             queue.songs = [];
             void queue.events.queue.emit("DestroyQueue", queue, message);
             return;
         }
+
         try {
             DisconnectVoiceChannel(message.guild.id);
             return message.client.Send({text: `${message.author}, 👌`, message: message});
-        } catch {
+        } catch { //Если что-то пошло не так
             return message.client.Send({text: `${message.author}, 🤔`, message: message});
         }
     };

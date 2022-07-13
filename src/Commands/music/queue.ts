@@ -1,5 +1,5 @@
 import {Command} from "../Constructor";
-import {ReactionCollector} from "discord.js";
+import {MessageReaction, ReactionCollector, User} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {CollectorSortReaction} from "../../Core/Utils/ReactionMenu";
@@ -21,25 +21,75 @@ export class CommandQueue extends Command {
     public readonly run = (message: ClientMessage): Promise<ReactionCollector> | void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
+        //Если нет очереди
         if (!queue) return message.client.Send({
             text: `${message.author}, ⚠ | Музыка щас не играет.`,
             message,
             color: "RED"
         });
+        //Получаем то что надо было преобразовать в string[]
+        const pages = this.#parsedSongs(queue.songs, message.client.ConvertedText);
 
-        let pages: string[] = [], page = 1, TrackNumber = 1
+        //Запускаем CollectorSortReaction
+        return new CollectorSortReaction()._run(`\`\`\`css\n➡️ | Current playing [${queue.songs[0].title}]\n\n${pages[0]}\n\n${message.author.username} | ${TimeInArray(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}\`\`\``, message, this.#Callbacks(1, pages, queue));
+    };
 
+    readonly #parsedSongs = (ArraySongs: Song[], ConvertedText: ( text: string, value: any, clearText: boolean) => string) => {
+        const pages: string[] = [];
+        let TrackNumber = 1;
+
+        //Преобразуем все песни в string
         // @ts-ignore
-        queue.songs.ArraySort(10).forEach((songs: Song[]) => {
-            let song = songs.map((song: Song) => {
+        ArraySongs.ArraySort(10).forEach((songs: Song[]) => {
+            const song = songs.map((song: Song) => {
                 const Duration = song.duration.StringTime;
-                const TitleSong = message.client.ConvertedText(song.title, 80, true).replace(/[\s",']/g, ' ');
+                const TitleSong = ConvertedText(song.title, 80, true).replace(/[\s",']/g, ' ');
 
                 return `[${TrackNumber++}] - [${Duration}] | ${TitleSong}`;
             }).join("\n");
+
+            //Если song не undefined, то добавляем его в pages
             if (song !== undefined) pages.push(song);
         });
 
-        return new CollectorSortReaction()._run(`\`\`\`css\n➡️ | Current playing [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${TimeInArray(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``, pages, page, message, true);
+        return pages;
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Функции для управления <CollectorSortReaction>
+     * @param page {number} С какой страницы начнем
+     * @param pages {Array<string>} страницы
+     * @param queue {Queue} Очередь сервера
+     * @private
+     */
+    readonly #Callbacks = (page: number, pages: string[], queue: Queue) => {
+        return {
+            //При нажатии на 1 эмодзи, будет выполнена эта функция
+            back: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
+                setImmediate(() => {
+                    users.remove(user).catch((err) => console.log(err));
+
+                    if (page === 1) return null;
+                    page--;
+                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${TimeInArray(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
+                });
+            },
+            //При нажатии на 3 эмодзи, будет выполнена эта функция
+            next: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
+                setImmediate(() => {
+                    users.remove(user).catch((err) => console.log(err));
+
+                    if (page === pages.length) return null;
+                    page++;
+                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${TimeInArray(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
+                });
+            },
+            //При нажатии на 2 эмодзи, будет выполнена эта функция
+            cancel: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
+                setImmediate(() => {
+                    [msg, message].forEach((mes) => mes.deletable ? mes.delete().catch(() => null) : null);
+                });
+            }
+        };
     };
 }

@@ -1,44 +1,34 @@
 import {MessageReaction, ReactionCollector, User} from "discord.js";
 import {EmbedConstructor} from "./TypeHelper";
 import {ClientMessage} from "../Client";
-import {Queue} from "../Player/Structures/Queue/Queue";
-import {TimeInArray} from "../Player/Manager/DurationUtils";
 
 const emojis = {
     back: "⬅️",
-    up: "➡️",
+    next: "➡️",
     cancel: "❌"
+}
+
+interface Callbacks {
+    back: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage) => unknown | Promise<unknown>;
+    next: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage) => unknown | Promise<unknown>;
+    cancel: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage)  => unknown | Promise<unknown>;
 }
 
 export class CollectorSortReaction {
     /**
      * @description Создаем menu emoji
      * @param embed { EmbedConstructor | string } MessageEmbed или текст
-     * @param pages {any[]} ArraySort данные
-     * @param page {number} Текущая страница
      * @param message {ClientMessage} Сообщение с сервера
-     * @param EnableQueue {boolean} Добавляем сколько музыки есть в очереди
+     * @param callbacks
      */
-    public _run = (embed: EmbedConstructor | string, pages: string[], page: number, message: ClientMessage, EnableQueue: boolean): void => {
-        const queue: Queue = message.client.queue.get(message.guild.id);
-
+    public _run = (embed: EmbedConstructor | string, message: ClientMessage, callbacks: Callbacks): void => {
         setImmediate(() => {
-            const Callbacks = typeof embed === "string" ? CallbackString(page, pages, queue) : CallbackEmbed(page, pages, embed, queue, EnableQueue);
-
             message.channel.send(typeof embed === "string" ? embed : {embeds: [embed]}).then((msg) => {
                 // @ts-ignore
-                Object.entries(Callbacks).forEach(([key, value]) => reaction(message.author, message, msg, value, key));
+                Object.entries(callbacks).forEach(([key, value]) => reaction(message.author, message, msg, value, emojis[key]));
             });
         });
     }
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Удаляем сообщение
- * @param msg {ClientMessage} Сообщение
- */
-function DeleteMessage(msg: ClientMessage): void {
-    msg.deletable ? msg.delete().catch(() => null) : null;
 }
 //====================== ====================== ====================== ======================
 /**
@@ -63,101 +53,4 @@ function reaction(user: User, message: ClientMessage, msg: ClientMessage, callba
  */
 function filter(emoji: string, reaction: MessageReaction, user: User, message: ClientMessage) {
     return (reaction.emoji.name === emoji && user.id !== message.client.user.id);
-}
-//====================== ====================== ====================== ======================
-/**
- * @description 3 функции для текстовой menu emoji
- * @param page {number} Текущая страница
- * @param pages {any[]} ArraySort данные
- * @param queue {Queue} Очередь
- */
-function CallbackString(page: number, pages: string[], queue: Queue) {
-    return {
-        back: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
-            setImmediate(() => {
-                users.remove(user);
-
-                if (page === 1) return null;
-                page--;
-                return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${TimeInArray(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
-            });
-        },
-        cancel: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
-            setImmediate(() => {
-                [msg, message].forEach((mes) => DeleteMessage(mes));
-            });
-        },
-        up: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
-            setImmediate(() => {
-                users.remove(user);
-
-                if (page === pages.length) return null;
-                page++;
-                return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${TimeInArray(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
-            });
-        }
-    };
-}
-//====================== ====================== ====================== ======================
-/**
- * @description 3 функции для messageEmbed menu emoji
- * @param page {number} Текущая страница
- * @param pages {any[]} ArraySort данные
- * @param embed {MessageEmbed} MessageEmbed
- * @param queue {Queue} Очередь
- * @param EnableQueue {boolean} Добавляем сколько музыки есть в очереди
- */
-function CallbackEmbed(page: number, pages: string[], embed: EmbedConstructor, queue: Queue, EnableQueue: boolean) {
-    return {
-        back: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
-            setImmediate(() => {
-                users.remove(user);
-
-                if (page === 1) return null;
-                page--;
-                embed = {...embed, description: pages[page - 1]};
-                if (EnableQueue) embed = {...embed,
-                    footer: {
-                        text: `${message.author.username} | ${TimeInArray(queue)} | Лист ${page} из ${pages.length}`,
-                        iconURL: message.author.displayAvatarURL()
-                    }
-                };
-                else embed = {...embed,
-                    footer: {
-                        text: `${message.author.username} | Лист ${page} из ${pages.length}`,
-                        iconURL: message.author.displayAvatarURL()
-                    }
-                };
-                return msg.edit({embeds: [embed]});
-            });
-        },
-        cancel: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
-            setImmediate(() => {
-                [msg, message].forEach((mes) => DeleteMessage(mes));
-            });
-        },
-        up: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
-            setImmediate(() => {
-                users.remove(user);
-
-                if (page === pages.length) return null;
-                page++;
-
-                embed = {...embed, description: pages[page - 1]};
-                if (EnableQueue) embed = {...embed,
-                    footer: {
-                        text: `${message.author.username} | ${TimeInArray(queue)} | Лист ${page} из ${pages.length}`,
-                        iconURL: message.author.displayAvatarURL()
-                    }
-                };
-                else embed = {...embed,
-                    footer: {
-                        text: `${message.author.username} | Лист ${page} из ${pages.length}`,
-                        iconURL: message.author.displayAvatarURL()
-                    }
-                };
-                return msg.edit({embeds: [embed]});
-            });
-        }
-    };
 }

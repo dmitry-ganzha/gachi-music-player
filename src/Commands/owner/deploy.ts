@@ -9,25 +9,34 @@ export class CommandDeploy extends Command {
             enable: true,
             isOwner: true,
             slash: false
-        })
+        });
     };
 
-    public readonly run = (message: ClientMessage): void => {
+    public readonly run = (message: ClientMessage): void => message.client.Send({
+        text: `${message.author}, [${this.#createSlashCommand(message)}] команд загружено`,
+        message
+    });
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Отправляем данные на сервера discord о SlashCommand
+     * @param message {ClientMessage} Сообщение
+     * @private
+     */
+    readonly #createSlashCommand = (message: ClientMessage) => {
         let TotalCommands: number = 0;
-        message.client.commands.forEach((cmd: Command) => {
-            if (cmd.isOwner || !cmd.slash) return null;
-            TotalCommands++
+
+        for (let [key, command] of message.client.commands) {
+            if (command.isOwner || !command.slash) return null;
 
             let CommandSlash: TypeSlashCommand = {
-                name: cmd.name,
-                description: cmd.description
+                name: command.name,
+                description: command.description
             }
 
-            if (cmd.options.length > 0) CommandSlash = {...CommandSlash, options: cmd.options};
+            if (command.options.length > 0) CommandSlash = {...CommandSlash, options: command.options};
 
-            message.client.application.commands.create(CommandSlash as any).catch((err) => console.log(`[Command: ${cmd.name}]: ${err}`));
-        });
-
-        return message.client.Send({ text: `${message.author}, [${TotalCommands}] команд загружено`, message });
-    }
+            message.client.application.commands.create(CommandSlash as any).catch((err) => console.log(`[Command: ${command.name}]: ${err}`));
+        }
+        return TotalCommands;
+    };
 }

@@ -11,27 +11,51 @@ export class CommandEval extends Command {
             enable: true,
             isOwner: true,
             slash: false
-        })
+        });
     };
 
     public readonly run = (message: ClientMessage, args: string[]): void => {
-        let code: string = args.join(" "),
-            StartTime: number = new Date().getMilliseconds(),
-            RunEval: any;
+        const UserCode = args.join(" ");
+        const StartMs = new Date().getMilliseconds();
 
         try {
-            RunEval = eval(code);
-            this.#MessageSend(message, RunEval, Colors.GREEN, "[Status: Work]", code, StartTime);
+            const EvalExecute = eval(UserCode);
+            const EndMs = new Date().getMilliseconds();
+            const EmbedData = this.#getEmbed(EvalExecute, Colors.GREEN, "[Status: Work]", UserCode, StartMs, EndMs);
+            return this.#SendMessage(message, EmbedData);
         } catch (err) {
-            this.#MessageSend(message, err.code ? err.code : err, Colors.RED, "[Status: Fail]", code, StartTime);
-            message.client.console(`[EVAL]: [ERROR: ${err.code ? err.code : err}]`);
+            const EndMs = new Date().getMilliseconds();
+            const EmbedData = this.#getEmbed(err, Colors.RED, "[Status: Fail]", UserCode, StartMs, EndMs);
+
+            message.client.console(`[EVAL ERROR]: ${err}`);
+            return this.#SendMessage(message, EmbedData);
         }
     };
-    #MessageSend = (message: ClientMessage, response: string, color: number, type: string, code: string, StartTime: number): void => {
-        const EndTime = new Date().getMilliseconds();
-        let embed: EmbedConstructor = {
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Отправляем код в тестовый канал
+     * @param message {ClientMessage} Сообщение
+     * @param Embed {EmbedConstructor} Сам embed
+     * @private
+     */
+    readonly #SendMessage = (message: ClientMessage, Embed: EmbedConstructor) => {
+        message.channel.send({embeds: [Embed]}).then((msg: ClientMessage) => Command.DeleteMessage(msg, 30e3));
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Получаем Embed <EmbedConstructor>
+     * @param response {string} Выходная строка кода
+     * @param color {number} Цвет embed
+     * @param type {string} Тип embed сообщения
+     * @param code {string} Входная строка кода
+     * @param StartTime {number} Время старта обработки кода
+     * @param EndTime {number} Время окончания обработки кода
+     * @private
+     */
+    readonly #getEmbed = (response: string, color: number, type: string, code: string, StartTime: number, EndTime: number): EmbedConstructor => {
+        return {
             color,
-            title: `${type === "Fail" ? `❌ ${type}` : `✅ ${type}`}\n`,
+            title: `${type === "[Status: Fail]" ? `❌ ${type}` : `✅ ${type}`}`,
             fields: [
                 {
                     name: "Input Code:",
@@ -47,7 +71,6 @@ export class CommandEval extends Command {
             footer: {
                 text: `Time: ${EndTime - StartTime} ms`
             }
-        }
-        message.channel.send({embeds: [embed]}).then((msg: ClientMessage) => Command.DeleteMessage(msg, 30e3));
+        };
     };
 }

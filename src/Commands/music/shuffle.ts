@@ -25,30 +25,35 @@ export class CommandShuffle extends Command {
     public readonly run = (message: ClientMessage): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
+        //Если нет очереди
         if (!queue) return message.client.Send({
             text: `${message.author}, ⚠ | Музыка щас не играет.`,
             message,
             color: "RED"
         });
 
+        //Если есть очередь и пользователь не подключен к тому же голосовому каналу
         if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.Send({
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
             message,
             color: "RED"
         });
 
+        //Если пользователь не подключен к голосовым каналам
         if (!message.member.voice.channel || !message.member.voice) return message.client.Send({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
             color: "RED"
         });
 
+        //Если нет треков в очереди
         if (!queue.songs) return message.client.Send({
             text: `${message.author}, Нет музыки в очереди!`,
             message,
             color: "RED"
         });
 
+        //Если треков меньше 3
         if (queue.songs.length < 3) return message.client.Send({
             text: `${message.author}, Очень мало музыки, нужно более 3`,
             message,
@@ -59,7 +64,7 @@ export class CommandShuffle extends Command {
         return message.client.Send({text: `🔀 | Shuffle total [${queue.songs.length}]`, message, type: "css"});
     };
 
-    #shuffleSongs = (songs: Song[]): void => {
+    readonly #shuffleSongs = (songs: Song[]): void => {
         for (let i = songs.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [songs[i], songs[j]] = [songs[j], songs[i]];

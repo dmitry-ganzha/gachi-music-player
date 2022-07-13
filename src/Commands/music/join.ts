@@ -24,12 +24,14 @@ export class CommandJoin extends Command {
         const voiceChannel: VoiceChannel | StageChannel = message.member.voice.channel;
         const queue: Queue = message.client.queue.get(message.guild.id);
 
+        //Если пользователь не подключен к голосовым каналам
         if (!message.member.voice.channel || !message.member.voice) return message.client.Send({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
             color: "RED"
         });
 
+        //Если пользователь пытается подключить бота к тому же каналу
         if (voiceChannel.id === message.guild.members.me.voice.id) return message.client.Send({
             text: `${message.author}, Я уже в этом канале <#${queue.channels.voice.id}>.`,
             message,
@@ -46,7 +48,8 @@ export class CommandJoin extends Command {
             return;
         }
 
-        JoinVoiceChannel(voiceChannel); //Просто подключаемся к Vc
+        //Просто подключаемся к голосовому каналу
+        JoinVoiceChannel(voiceChannel);
         return;
     };
 }
