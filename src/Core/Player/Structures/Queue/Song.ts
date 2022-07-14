@@ -8,7 +8,7 @@ import {
 } from "../../../Utils/TypeHelper";
 import {ClientMessage} from "../../../Client";
 import {Colors} from "../../../Utils/LiteUtils";
-import {ParseTimeString} from "../../Manager/DurationUtils";
+import {DurationUtils} from "../../Manager/DurationUtils";
 
 type SongType = "SPOTIFY" | "YOUTUBE" | "VK" | "SOUNDCLOUD" | "UNKNOWN";
 
@@ -121,7 +121,7 @@ function ConstRequester({id, username, avatar}: User) {
 function ConstDuration(duration: InputTrackDuration): { StringTime: string | "Live"; seconds: number } {
     const seconds = parseInt(duration.seconds);
     return {
-        seconds, StringTime: seconds > 0 ? ParseTimeString(seconds) : "Live"
+        seconds, StringTime: seconds > 0 ? DurationUtils.ParsingTimeToString(seconds) : "Live"
     };
 }
 //====================== ====================== ====================== ======================

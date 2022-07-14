@@ -3,7 +3,7 @@ import {AudioPlayer} from "../../Audio/AudioPlayer";
 import {Song} from "./Song";
 import {ClientMessage} from "../../../Client";
 import {VoiceConnection} from "@discordjs/voice";
-import {QueueEvents} from "../../Manager/Queue";
+import {QueueEvents} from "./QueueConstructor";
 import {AutoDisconnectVoiceChannel} from "../Voice";
 
 export type LoopType = "song" | "songs" | "off";
@@ -11,12 +11,12 @@ export type AudioFilters = string[] | (string | number)[];
 
 export class Queue {
     readonly #_player: AudioPlayer;
-    events: { queue: QueueEvents, voice: AutoDisconnectVoiceChannel } = {
+    readonly #_events: { queue: QueueEvents, voice: AutoDisconnectVoiceChannel } = {
         queue: new QueueEvents(),
         voice: new AutoDisconnectVoiceChannel()
     };
-    public channels: { message: ClientMessage, voice: VoiceChannel | StageChannel, connection: VoiceConnection };
-    public options: { random: boolean, loop: LoopType, stop: boolean } = {
+    readonly #_channels: { message: ClientMessage, voice: VoiceChannel | StageChannel, connection: VoiceConnection };
+    readonly #_options: { random: boolean, loop: LoopType, stop: boolean } = {
         random: false,
         loop: "off",
         stop: false,
@@ -26,10 +26,19 @@ export class Queue {
 
     public constructor(message: ClientMessage, voice: VoiceChannel) {
         this.#_player = new AudioPlayer(message);
-        this.channels = { message, voice, connection: null};
+        this.#_channels = { message, voice, connection: null};
     };
 
     public get player() {
         return this.#_player;
+    };
+    public get events() {
+        return this.#_events;
+    };
+    public get channels() {
+        return this.#_channels;
+    };
+    public get options() {
+        return this.#_options;
     };
 }

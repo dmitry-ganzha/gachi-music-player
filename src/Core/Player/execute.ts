@@ -1,13 +1,12 @@
 import {EventEmitter} from "node:events";
-import {Controller} from "./Audio/Controller";
+import {PlayerController} from "./Audio/Controller";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../Client";
 import {InputPlaylist, InputTrack} from "../Utils/TypeHelper";
-import {CreateQueue} from "./Manager/Queue";
-import {PlayList} from "./Manager/PlaylistManager";
+import {QueueConstructor} from "./Structures/Queue/QueueConstructor";
 
 export interface PlayerEmitter extends EventEmitter {
-    play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack | InputTrack[]) => boolean | void | Promise<void | ClientMessage | NodeJS.Timeout>;
+    play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack | InputPlaylist) => boolean | void | Promise<void | ClientMessage | NodeJS.Timeout>;
     pause: (message: ClientMessage) => void;
     resume: (message: ClientMessage) => void;
     skip: (message: ClientMessage, args?: number) => void;
@@ -15,8 +14,6 @@ export interface PlayerEmitter extends EventEmitter {
     filter: (message: ClientMessage) => void;
     remove: (message: ClientMessage, args: number) => boolean | void;
     seek: (message: ClientMessage, seek: number) => void;
-
-    playlist: (message: ClientMessage, playlist: InputPlaylist, VoiceChannel: VoiceChannel |  StageChannel) => void;
 }
 
 /**
@@ -25,17 +22,15 @@ export interface PlayerEmitter extends EventEmitter {
 export class PlayerEmitter extends EventEmitter {
     public constructor() {
         super();
-        this.on("play", CreateQueue);
+        this.on("play", QueueConstructor.CheckQueue);
 
-        this.on("pause", Controller.PlayerPause);
-        this.on("resume", Controller.PlayerResume);
-        this.on("remove", Controller.PlayerRemove);
-        this.on("seek", Controller.PlayerSeek);
-        this.on("skip", Controller.PlayerSkip);
-        this.on("replay", Controller.PlayerReplay);
-        this.on("filter", Controller.PlayerFilter);
-
-        this.on("playlist", PlayList);
+        this.on("pause", PlayerController.PlayerPause);
+        this.on("resume", PlayerController.PlayerResume);
+        this.on("remove", PlayerController.PlayerRemove);
+        this.on("seek", PlayerController.PlayerSeek);
+        this.on("skip", PlayerController.PlayerSkip);
+        this.on("replay", PlayerController.PlayerReplay);
+        this.on("filter", PlayerController.PlayerFilter);
         this.setMaxListeners(9);
     };
 }

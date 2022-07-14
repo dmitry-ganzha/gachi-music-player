@@ -4,7 +4,8 @@ import pak from "../../../package.json";
 import {ClientMessage} from "../../Core/Client";
 import {EmbedConstructor} from "../../Core/Utils/TypeHelper";
 import {Colors} from "../../Core/Utils/LiteUtils";
-import {ParseTimeString} from "../../Core/Player/Manager/DurationUtils";
+import {DurationUtils} from "../../Core/Player/Manager/DurationUtils";
+import ParsingTimeToString = DurationUtils.ParsingTimeToString;
 
 const core = os.cpus()[0];
 interface OptionsEmbed {
@@ -75,7 +76,7 @@ export class CommandInfo extends Command {
             ],
             timestamp: new Date(),
             footer: {
-                text: `Latency - ${(Date.now() - message.createdTimestamp < 0 ? Math.random() * 78 : Date.now() - message.createdTimestamp).toFixed(0)} | Api - ${(message.client.ws.ping < 0 ? Math.random() * 78 : message.client.ws.ping).toFixed(0)} | Uptime: ${ParseTimeString(message.client.uptime / 1000)}`,
+                text: `Latency - ${(Date.now() - message.createdTimestamp < 0 ? Math.random() * 78 : Date.now() - message.createdTimestamp).toFixed(0)} | Api - ${(message.client.ws.ping < 0 ? Math.random() * 78 : message.client.ws.ping).toFixed(0)} | Uptime: ${ParsingTimeToString(message.client.uptime / 1000)}`,
                 iconURL: message.client.user.displayAvatarURL()
             }
         }

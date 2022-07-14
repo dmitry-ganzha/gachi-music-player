@@ -1,7 +1,7 @@
 import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
-import {DisconnectVoiceChannel} from "../../Core/Player/Structures/Voice";
+import {Voice} from "../../Core/Player/Structures/Voice";
 
 export class CommandStop extends Command {
     public constructor() {
@@ -20,14 +20,14 @@ export class CommandStop extends Command {
 
         //Если есть очередь то
         if (queue) {
-            DisconnectVoiceChannel(message.guild.id);
+            Voice.Disconnect(message.guild.id);
             queue.songs = [];
-            void queue.events.queue.emit("DestroyQueue", queue, message);
+            void queue.events.queue.emit("DeleteQueue", message, true);
             return;
         }
 
         try {
-            DisconnectVoiceChannel(message.guild.id);
+            Voice.Disconnect(message.guild.id);
             return message.client.Send({text: `${message.author}, 👌`, message: message});
         } catch { //Если что-то пошло не так
             return message.client.Send({text: `${message.author}, 🤔`, message: message});

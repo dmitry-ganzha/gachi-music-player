@@ -2,7 +2,7 @@ import {Command} from "../Constructor";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
-import {JoinVoiceChannel} from "../../Core/Player/Structures/Voice";
+import {Voice} from "../../Core/Player/Structures/Voice";
 
 export class CommandJoin extends Command {
     public constructor() {
@@ -39,8 +39,12 @@ export class CommandJoin extends Command {
         });
 
         if (queue) { //Если есть очередь, то
-            const connection = JoinVoiceChannel(voiceChannel); //Подключаемся к Vc
-            queue.channels = {message, voice: voiceChannel, connection}; //Записываем необходимые данные в очередь
+            const connection = Voice.Join(voiceChannel); //Подключаемся к Vc
+
+            queue.channels.message = message;
+            queue.channels.connection = connection;
+            queue.channels.voice = voiceChannel;
+
             queue.player.subscribe(connection); //Подключаем Vc к плееру
             queue.player.resume(); //Продолжаем воспроизведение
 
@@ -49,7 +53,7 @@ export class CommandJoin extends Command {
         }
 
         //Просто подключаемся к голосовому каналу
-        JoinVoiceChannel(voiceChannel);
+        Voice.Join(voiceChannel);
         return;
     };
 }

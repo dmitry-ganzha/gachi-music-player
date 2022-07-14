@@ -48,7 +48,7 @@ export namespace YouTube {
                 else format = [...VideoFormats];
             } else format = [{url: LiveData.url, work: true}];
 
-            if (options?.onlyFormats) return resolve(format.pop());
+            if (options?.onlyFormats) return resolve(format.pop() as InputFormat);
 
             const VideoData: InputTrack = {
                 url: `${YouTubeURL}/watch?v=${VideoID}`,

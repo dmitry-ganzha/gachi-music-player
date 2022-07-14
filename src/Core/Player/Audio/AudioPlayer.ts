@@ -5,9 +5,9 @@ import {Song} from "../Structures/Queue/Song";
 import {ClientMessage} from "../../Client";
 import {getVoiceConnection, PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 import {addAudioPlayer, deleteAudioPlayer} from "../Manager/PlayersManager";
-import {JoinVoiceChannel} from "../Structures/Voice";
-import {ErrorPlayerMessage, PlaySongMessage} from "../Manager/MessagePlayer";
+import {Voice} from "../Structures/Voice";
 import {FFmpegDecoder} from "../Structures/Media/FFmpegDecoder";
+import {MessagePlayer} from "../Manager/MessagePlayer";
 
 //Статусы плеера для пропуска музыки
 export const StatusPlayerHasSkipped: Set<string> = new Set(["playing", "paused", "buffering", "idle"]);
@@ -113,15 +113,15 @@ export class AudioPlayer extends EventEmitter {
         const queue: Queue = client.queue.get(guild.id);
 
         //Если нет музыки в очереди или нет самой очереди, завершаем проигрывание!
-        if (!queue || !queue.songs || !queue.songs.length) return void queue?.events?.queue?.emit("DestroyQueue", queue, message);
+        if (!queue || !queue.songs || !queue.songs.length) return void queue?.events?.queue?.emit("DeleteQueue", message);
 
         //Получаем исходный поток
         CreateResource(queue.songs[0], queue.audioFilters).then(stream => {
             this.#play(stream);
-            client.console(`[QueueID: ${guild.id}]: ${queue.songs[0].title}`);
+            client.console(`[GuildID: ${guild.id}]: ${queue.songs[0].title}`);
 
             //Если стрим не пустышка отправляем сообщение
-            if (stream instanceof FFmpegDecoder) PlaySongMessage(queue.channels.message);
+            if (stream instanceof FFmpegDecoder) MessagePlayer.PlaySong(queue.channels.message);
         });
     };
     //====================== ====================== ====================== ======================
@@ -289,7 +289,7 @@ export class AudioPlayer extends EventEmitter {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         //Выводим сообщение об ошибке
-        ErrorPlayerMessage(message, queue.songs[0], err);
+        MessagePlayer.ErrorPlayer(message, queue.songs[0], err);
         return this.stop(); //Останавливаем плеер
     };
     //====================== ====================== ====================== ======================
@@ -304,12 +304,12 @@ export class AudioPlayer extends EventEmitter {
 
         //Бота принудительно отключили, не подключаемся
         if (!VoiceChannel) {
-            queue.events.queue.DestroyQueue(queue, message, true);
+            queue.events.queue.emit("DeleteQueue", message, true);
             return;
         }
 
         //Подключаемся к прошлому голосовому каналу
-        const connection = JoinVoiceChannel(queue.channels.voice);
+        const connection = Voice.Join(queue.channels.voice);
 
         //Если поток еще не читаемый
         if (!this.state.resource.hasStarted) return;
@@ -322,14 +322,6 @@ export class AudioPlayer extends EventEmitter {
 
         this.subscribe(connection); //Добавляем голосовой канал
         queue.channels.connection = connection; //Записываем данные подключения в очередь
-    };
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Уничтожаем все что внутри плеера
-     */
-    public destroy = () => {
-        if (this.#subscribers) this.#subscribers.forEach(({connection}) => connection?.destroy());
-        this.removeAllListeners();
     };
 }
 //====================== ====================== ====================== ======================

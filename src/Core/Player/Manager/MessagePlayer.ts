@@ -1,69 +1,92 @@
 import {ClientMessage} from "../../Client";
-import {CurrentPlay} from "../Structures/Message/CurrentPlay";
 import {Queue} from "../Structures/Queue/Queue";
-import {Button} from "../Structures/Message/Helper";
 import {Song} from "../Structures/Queue/Song";
-import {Warning} from "../Structures/Message/Warning";
-import {AddSong} from "../Structures/Message/AddSong";
 import {CollectionMap} from "../../Utils/LiteUtils";
+import {InputPlaylist} from "../../Utils/TypeHelper";
+import {EmbedHelper, EmbedMessages} from "../Structures/EmbedMessages";
 
 const Message = new CollectionMap<string, ClientMessage>();
 let MessageTimer: NodeJS.Timeout = null;
 
 /**
- * @description Отправляем сообщение о текущем треке, обновляем раз в 15 сек
- * @param message {ClientMessage} Сообщение
- * @constructor
+ * Сообщения, которые отправляем плеер
  */
-export function PlaySongMessage(message: ClientMessage) {
-    if (Message.get(message.channelId)) removeMessage(message);
+export namespace MessagePlayer {
+    /**
+     * @description Отправляем сообщение о текущем треке, обновляем раз в 15 сек
+     * @param message {ClientMessage} Сообщение
+     * @constructor
+     */
+    export function PlaySong(message: ClientMessage) {
+        if (Message.get(message.channelId)) removeMessage(message);
 
-    AddInQueueMessage(message).then(addMessage);
-}
-//====================== ====================== ====================== ======================
-/**
- * @description При ошибке плеер выводит эту функцию
- * @param channel {ClientMessage<channel>} Канал
- * @param client {ClientMessage<client>} Клиент
- * @param guild {ClientMessage<guild>} Сервер
- * @param song {Song} Трек
- * @param err {Error | string} Ошибка
- * @constructor
- */
-export function ErrorPlayerMessage({channel, client, guild}: ClientMessage, song: Song, err: Error | string = null) {
-    setImmediate(() => {
-        try {
-            const queue: Queue = client.queue.get(guild.id);
-            const Embed = Warning(client, song, queue, err);
-            const WarningChannelSend = channel.send({embeds: [Embed]});
+        AddInQueueMessage(message).then(addMessage);
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description При ошибке плеер выводит эту функцию
+     * @param channel {ClientMessage<channel>} Канал
+     * @param client {ClientMessage<client>} Клиент
+     * @param guild {ClientMessage<guild>} Сервер
+     * @param song {Song} Трек
+     * @param err {Error | string} Ошибка
+     * @constructor
+     */
+    export function ErrorPlayer({channel, client, guild}: ClientMessage, song: Song, err: Error | string = null) {
+        setImmediate(() => {
+            try {
+                const queue: Queue = client.queue.get(guild.id);
+                const Embed = EmbedMessages.Warning(client, song, queue, err);
+                const WarningChannelSend = channel.send({embeds: [Embed]});
 
-            return DeleteMessage(WarningChannelSend, 5e3);
-        } catch (e) {
-            client.console(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
-        }
-    });
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Сообщение о добавлении трека в очередь сервера
- * @param channel {ClientMessage<channel>} Канал
- * @param client {ClientMessage<client>} Клиент
- * @param guild {ClientMessage<guild>} Сервер
- * @param song {Song} Трек
- * @constructor
- */
-export function PushSongMessage({channel, client, guild}: ClientMessage, song: Song) {
-    setImmediate(() => {
-        try {
-            const queue: Queue = client.queue.get(guild.id);
-            const EmbedPushedSong = AddSong(client, song, queue);
-            const PushChannel = channel.send({embeds: [EmbedPushedSong]});
+                return DeleteMessage(WarningChannelSend, 5e3);
+            } catch (e) {
+                client.console(`[MessagePlayer]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
+            }
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Сообщение о добавлении трека в очередь сервера
+     * @param channel {ClientMessage<channel>} Канал
+     * @param client {ClientMessage<client>} Клиент
+     * @param guild {ClientMessage<guild>} Сервер
+     * @param song {Song} Трек
+     * @constructor
+     */
+    export function pushSong({channel, client, guild}: ClientMessage, song: Song) {
+        setImmediate(() => {
+            try {
+                const queue: Queue = client.queue.get(guild.id);
+                const EmbedPushedSong = EmbedMessages.pushSong(client, song, queue);
+                const PushChannel = channel.send({embeds: [EmbedPushedSong]});
 
-            return DeleteMessage(PushChannel, 8e3);
-        } catch (e) {
-            client.console(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
-        }
-    });
+                return DeleteMessage(PushChannel, 8e3);
+            } catch (e) {
+                client.console(`[MessagePlayer]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
+            }
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Отправляем сообщение о том что плейлист был добавлен в очередь
+     * @param message {ClientMessage} Сообщение
+     * @param playlist {InputPlaylist} Сам плейлист
+     */
+    export function pushPlaylist(message: ClientMessage, playlist: InputPlaylist) {
+        const {channel, client} = message;
+
+        setImmediate(() => {
+            try {
+                const EmbedPushPlaylist = EmbedMessages.pushPlaylist(message, playlist);
+                const PushChannel = channel.send({embeds: [EmbedPushPlaylist]});
+
+                return DeleteMessage(PushChannel, 8e3);
+            } catch (e) {
+                client.console(`[MessagePlayer]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
+            }
+        });
+    }
 }
 //====================== ====================== ====================== ======================
 /**
@@ -77,7 +100,7 @@ function UpdateMessage(message: ClientMessage): void {
     if (!queue || queue?.songs?.length === 0) return removeMessage(message);
 
     setImmediate(() => {
-        const CurrentPlayEmbed = CurrentPlay(message.client, queue?.songs[0], queue);
+        const CurrentPlayEmbed = EmbedMessages.CurrentPlay(message.client, queue?.songs[0], queue);
 
         try {
             return message.edit({embeds: [CurrentPlayEmbed]});
@@ -94,11 +117,11 @@ function UpdateMessage(message: ClientMessage): void {
  */
 function AddInQueueMessage(message: ClientMessage): Promise<ClientMessage> {
     const queue: Queue = message.client.queue.get(message.guild.id);
-    const CurrentPlayEmbed = CurrentPlay(message.client, queue.songs[0], queue);
+    const CurrentPlayEmbed = EmbedMessages.CurrentPlay(message.client, queue.songs[0], queue);
 
     try {
         // @ts-ignore
-        return message.channel.send({embeds: [CurrentPlayEmbed], components: [Button]});
+        return message.channel.send({embeds: [CurrentPlayEmbed], components: [EmbedHelper.Button]});
     } catch (e) {
         message.client.console(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: playSong, ${e.code}]: ${e?.message}`);
     }

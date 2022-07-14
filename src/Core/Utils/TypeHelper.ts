@@ -39,6 +39,7 @@ export interface FFmpegFormat {
  * @description Получаемый формат из SPNK<YouTube.getVideo>
  */
 export interface InputFormat {
+    itag: number;
     url: string;
     other?: boolean | string;
     protocol?: string;
@@ -52,7 +53,6 @@ export interface InputFormat {
  * @description Пример получаемого трека
  */
 export interface InputTrack {
-    id?: string | number;
     title: string;
     url: string;
     duration: {
@@ -60,7 +60,6 @@ export interface InputTrack {
     };
     image?: { url: string; height?: number; width?: number };
     author: {
-        id?: string | number;
         title: string;
         url: string | undefined;
         image?: {
@@ -93,7 +92,6 @@ export type InputTrackImage = InputTrack["image"];
  * @description Пример получаемого автора трека
  */
 export interface InputAuthor {
-    id?: string | number;
     title: string;
     url: string;
     image: {
@@ -107,7 +105,6 @@ export interface InputAuthor {
  * @description Пример получаемого плейлиста
  */
 export interface InputPlaylist {
-    id?: string | number;
     url: string;
     title: string;
     items: InputTrack[];

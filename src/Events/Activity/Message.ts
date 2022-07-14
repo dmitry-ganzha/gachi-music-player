@@ -4,7 +4,8 @@ import cfg from '../../../DataBase/Config.json';
 import {ClientMessage} from "../../Core/Client";
 import {Channel, EmbedConstructor} from "../../Core/Utils/TypeHelper";
 import {Colors} from "../../Core/Utils/LiteUtils";
-import {ParseTimeString} from "../../Core/Player/Manager/DurationUtils";
+import {DurationUtils} from "../../Core/Player/Manager/DurationUtils";
+import ParsingTimeToString = DurationUtils.ParsingTimeToString;
 
 type CommandPermission = Command['permissions'];
 type CommandIsOwner = Command['isOwner'];
@@ -24,7 +25,7 @@ export class GuildMessage {
 
         if (isOwner(true, message.author.id)) {
             if (CoolDownFind) return message.client.Send({
-                text: `${message.author.username}, Воу воу, ты слишком быстро отправляешь сообщения. Подожди ${ParseTimeString(CoolDownFind.time)}`,
+                text: `${message.author.username}, Воу воу, ты слишком быстро отправляешь сообщения. Подожди ${ParsingTimeToString(CoolDownFind.time)}`,
                 message,
                 type: "css"
             });

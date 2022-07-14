@@ -92,7 +92,6 @@ export namespace Spotify {
                 if (!result || !result?.name) return resolve(null);
 
                 return resolve({
-                    id: id,
                     url: url,
                     title: result.name,
                     items: await Promise.all(result.tracks.items.map(async (track: SpotifyTrack) => {

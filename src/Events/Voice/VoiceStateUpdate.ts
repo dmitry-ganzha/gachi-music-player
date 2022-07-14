@@ -1,7 +1,7 @@
 import {VoiceState} from "discord.js";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {WatKLOK} from "../../Core/Client";
-import {DisconnectVoiceChannel} from "../../Core/Player/Structures/Voice";
+import {Voice} from "../../Core/Player/Structures/Voice";
 
 export class voiceStateUpdate {
     public readonly name: string = "voiceStateUpdate";
@@ -21,5 +21,5 @@ export class voiceStateUpdate {
         }
     };
     //Отключаемся от голосового канала
-    #LeaveVoice = (GuildID: string) => DisconnectVoiceChannel(GuildID);
+    #LeaveVoice = (GuildID: string) => Voice.Disconnect(GuildID);
 }

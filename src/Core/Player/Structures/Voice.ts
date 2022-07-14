@@ -8,41 +8,46 @@ const VoiceDestroyTime = 30; //Очередь будет удалена авто
 
 //Допустимые голосовые каналы
 type VoiceChannels = VoiceChannel | StageChannel;
+
 /**
- * @description Подключаемся к голосовому каналу
- * @param id {string} ID канала
- * @param guild {Guild} Сервер
- * @param type {string} Тип канала
- * @constructor
+ * Здесь все возможные взаимодействия с голосовым каналом (еще не финал)
  */
-export function JoinVoiceChannel({id, guild, type}: VoiceChannels) {
-    const JoinVoice = joinVoiceChannel({
-        selfDeaf: true,
-        selfMute: false,
-        channelId: id,
-        guildId: guild.id,
-        adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator & DiscordGatewayAdapterCreator,
-    });
-    const me = guild.members?.me;
+export namespace Voice {
+    /**
+     * @description Подключаемся к голосовому каналу
+     * @param id {string} ID канала
+     * @param guild {Guild} Сервер
+     * @param type {string} Тип канала
+     * @constructor
+     */
+    export function Join({id, guild, type}: VoiceChannels) {
+        const JoinVoice = joinVoiceChannel({
+            selfDeaf: true,
+            selfMute: false,
+            channelId: id,
+            guildId: guild.id,
+            adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator & DiscordGatewayAdapterCreator,
+        });
+        const me = guild.members?.me;
 
-    //Для голосовых трибун
-    if (type !== ChannelType.GuildVoice && me) me?.voice?.setRequestToSpeak(true).catch(() => undefined);
+        //Для голосовых трибун
+        if (type !== ChannelType.GuildVoice && me) me?.voice?.setRequestToSpeak(true).catch(() => undefined);
 
-    return JoinVoice;
+        return JoinVoice;
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Отключаемся от канала
+     * @param channel {VoiceChannels | string} ID канала или сам канал
+     * @constructor
+     */
+    export function Disconnect(channel: VoiceChannels | string) {
+        const VoiceConnection = getVoiceConnection(typeof channel === "string" ? channel : channel.id);
+
+        //Если бот подключен к голосовому каналу, то отключаемся!
+        if (VoiceConnection) VoiceConnection.disconnect();
+    }
 }
-//====================== ====================== ====================== ======================
-/**
- * @description Отключаемся от канала
- * @param channel {VoiceChannels | string} ID канала или сам канал
- * @constructor
- */
-export function DisconnectVoiceChannel(channel: VoiceChannels | string) {
-    const VoiceConnection = getVoiceConnection(typeof channel === "string" ? channel : channel.id);
-
-    //Если бот подключен к голосовому каналу, то отключаемся!
-    if (VoiceConnection) VoiceConnection.disconnect();
-}
-//====================== ====================== ====================== ======================
 
 export class AutoDisconnectVoiceChannel extends EventEmitter {
     #Timer: NodeJS.Timeout;
@@ -59,13 +64,15 @@ export class AutoDisconnectVoiceChannel extends EventEmitter {
      * @description Создаем таймер (по истечению таймера будет удалена очередь)
      * @param queue {object} Очередь сервера
      */
-    #onStartQueueDestroy = (queue: Queue): void => {
+    readonly #onStartQueueDestroy = (queue: Queue): void => {
         if (!queue) return null;
 
         const {player, events, channels} = queue;
 
         //Если нет таймера добавим его!
-        if (!this.#Timer) this.#Timer = setTimeout(() => events.queue.emit("DestroyQueue", queue, channels.message, false), VoiceDestroyTime * 1e3);
+        if (!this.#Timer) {
+            this.#Timer = setTimeout(() => events.queue.emit("DeleteQueue", channels.message, false), VoiceDestroyTime * 1e3);
+        }
         this.#hasDestroying = true;
         player.pause();
     };
@@ -74,17 +81,16 @@ export class AutoDisconnectVoiceChannel extends EventEmitter {
      * @description Удаляем таймер который удаляет очередь
      * @param player {AudioPlayer} Плеер
      */
-    #onCancelQueueDestroy = (player: AudioPlayer): boolean | void => {
+    readonly #onCancelQueueDestroy = (player: AudioPlayer): boolean | void => {
         if (this.#hasDestroying) {
-            this.#hasDestroying = false;
-
             //Если есть таймер уничтожим его
             if (this.#Timer) clearTimeout(this.#Timer);
             player.resume();
+            this.#hasDestroying = false;
         }
     };
 
-    public destroy = () => {
+    public readonly destroy = () => {
         clearTimeout(this.#Timer);
         this.removeAllListeners();
     };

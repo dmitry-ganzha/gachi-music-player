@@ -11,9 +11,10 @@ import {ClientMessage} from "../../Core/Client";
 import {SoundCloud, Spotify, VK, YouTube} from "../../Core/Platforms";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {InputPlaylist, InputTrack} from "../../Core/Utils/TypeHelper";
-import {NotImage} from "../../Core/Player/Structures/Message/Helper";
-import {ParseTimeString} from "../../Core/Player/Manager/DurationUtils";
 import {FFprobe} from "../../Core/Player/Structures/Media/FFprobe";
+import {EmbedHelper} from "../../Core/Player/Structures/EmbedMessages";
+import {DurationUtils} from "../../Core/Player/Manager/DurationUtils";
+import ParsingTimeToString = DurationUtils.ParsingTimeToString;
 
 const youtubeStr = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi;
 const spotifySrt = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;
@@ -111,7 +112,7 @@ const BaseGetTrack = {
                         isVerified: false,
                         image: { url: message.author.avatarURL() }
                     },
-                    image: { url: NotImage },
+                    image: { url: EmbedHelper.NotImage },
                     duration: { seconds: trackInfo.format.duration },
                     format: { url: trackInfo.format.filename }
                 };
@@ -128,7 +129,7 @@ const BaseGetPlaylist = {
     YT_getPlaylist: (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) => {
         setImmediate(() => {
             YouTube.getPlaylist(search).then((playlist: InputPlaylist) => {
-                if (!playlist) return SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Существует ли это плейлист вообще!`);
+                if (!playlist || !playlist?.items) return SendEmptyDataMessage(message, `${message.author}, **YouTube** не хочет делится данными! Существует ли это плейлист вообще!`);
 
                 return PlayerSys.PlaylistSys(message, playlist, voiceChannel);
             }).catch((err) => {
@@ -140,7 +141,7 @@ const BaseGetPlaylist = {
     SP_getPlaylist: (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) => {
         setImmediate(() => {
             Spotify.getPlaylist(search).then((playlist: InputPlaylist) => {
-                if (!playlist) return SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это плейлист вообще!`);
+                if (!playlist || !playlist?.items) return SendEmptyDataMessage(message, `${message.author}, **Spotify** не хочет делится данными! Существует ли это плейлист вообще!`);
 
                 return PlayerSys.PlaylistSys(message, playlist, voiceChannel)
             }).catch((err) => {
@@ -152,7 +153,7 @@ const BaseGetPlaylist = {
     VK_getPlaylist: (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) => {
         setImmediate(() => {
             VK.getPlaylist(search).then((playlist: InputPlaylist) => {
-                if (!playlist) return SendEmptyDataMessage(message, `${message.author}, **VK** не хочет делится данными! Существует ли это плейлист вообще!`);
+                if (!playlist || !playlist?.items) return SendEmptyDataMessage(message, `${message.author}, **VK** не хочет делится данными! Существует ли это плейлист вообще!`);
 
                 return PlayerSys.PlaylistSys(message, playlist, voiceChannel);
             }).catch((err) => {
@@ -164,7 +165,7 @@ const BaseGetPlaylist = {
     SC_getPlaylist: (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) => {
         setImmediate(() => {
             SoundCloud.getPlaylist(search).then((playlist: InputPlaylist) => {
-                if (!playlist) return SendEmptyDataMessage(message, `${message.author}, **SoundCloud** не хочет делится данными! Существует ли это плейлист вообще!`);
+                if (!playlist || !playlist?.items) return SendEmptyDataMessage(message, `${message.author}, **SoundCloud** не хочет делится данными! Существует ли это плейлист вообще!`);
 
                 return PlayerSys.PlaylistSys(message, playlist, voiceChannel)
             }).catch((err) => {
@@ -544,7 +545,7 @@ function isType(type: TypeSearch) {
  */
 function ConvertTimeSearch(duration: string, type: TypeSearch) {
     if (type === "yt") return duration;
-    return ParseTimeString(parseInt(duration));
+    return ParsingTimeToString(parseInt(duration));
 }
 
 function SendEmptyDataMessage(message: ClientMessage, text: string): void {

@@ -4,7 +4,7 @@ import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {CollectorSortReaction} from "../../Core/Utils/ReactionMenu";
 import {Song} from "../../Core/Player/Structures/Queue/Song";
-import {TimeInArray} from "../../Core/Player/Manager/DurationUtils";
+import {DurationUtils} from "../../Core/Player/Manager/DurationUtils";
 
 export class CommandQueue extends Command {
     public constructor() {
@@ -31,7 +31,7 @@ export class CommandQueue extends Command {
         const pages = this.#parsedSongs(queue.songs, message.client.ConvertedText);
 
         //Запускаем CollectorSortReaction
-        return new CollectorSortReaction()._run(`\`\`\`css\n➡️ | Current playing [${queue.songs[0].title}]\n\n${pages[0]}\n\n${message.author.username} | ${TimeInArray(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}\`\`\``, message, this.#Callbacks(1, pages, queue));
+        return new CollectorSortReaction()._run(`\`\`\`css\n➡️ | Current playing [${queue.songs[0].title}]\n\n${pages[0]}\n\n${message.author.username} | ${this.#getTime(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}\`\`\``, message, this.#Callbacks(1, pages, queue));
     };
 
     readonly #parsedSongs = (ArraySongs: Song[], ConvertedText: ( text: string, value: any, clearText: boolean) => string) => {
@@ -71,7 +71,7 @@ export class CommandQueue extends Command {
 
                     if (page === 1) return null;
                     page--;
-                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${TimeInArray(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
+                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${this.#getTime(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
                 });
             },
             //При нажатии на 3 эмодзи, будет выполнена эта функция
@@ -81,7 +81,7 @@ export class CommandQueue extends Command {
 
                     if (page === pages.length) return null;
                     page++;
-                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${TimeInArray(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
+                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${this.#getTime(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
                 });
             },
             //При нажатии на 2 эмодзи, будет выполнена эта функция
@@ -92,4 +92,5 @@ export class CommandQueue extends Command {
             }
         };
     };
+    readonly #getTime = DurationUtils.getTimeQueue
 }

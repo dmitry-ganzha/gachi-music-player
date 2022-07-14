@@ -1,9 +1,10 @@
 import {Song} from "../Structures/Queue/Song";
 import {httpsClient, httpsClientOptions} from "../../httpsClient";
-import {InputFormat, InputTrack} from "../../Utils/TypeHelper";
+import {FFmpegFormat, InputFormat, InputTrack} from "../../Utils/TypeHelper";
 import {SoundCloud, VK, YouTube} from "../../Platforms";
-import {ParserTime} from "../Manager/DurationUtils";
 import {IncomingMessage} from "http";
+import {DurationUtils} from "../Manager/DurationUtils";
+import ParsingTimeToNumber = DurationUtils.ParsingTimeToNumber;
 
 const GlobalOptions: httpsClientOptions = {request: {method: "HEAD"}};
 
@@ -53,7 +54,7 @@ function CheckLink(url: string) {
  * @description Получаем данные формата
  * @param song {Song} Трек
  */
-function getFormatSong({type, url, title, author, duration}: Song): Promise<InputFormat> {
+function getFormatSong({type, url, title, author, duration}: Song): Promise<FFmpegFormat | { url: string | undefined } | InputFormat> {
     try {
         switch (type) {
             case "SPOTIFY": return FindTrack(`${author.title} - ${title}`, duration.seconds);
@@ -96,7 +97,7 @@ function getFormatYouTube(url: string): Promise<InputFormat> {
 }
 
 function Filter(track: InputTrack, NeedDuration: number) {
-    const DurationSong = ParserTime(track.duration.seconds);
+    const DurationSong = ParsingTimeToNumber(track.duration.seconds);
 
     //Как надо фильтровать треки
     return DurationSong === NeedDuration || DurationSong < NeedDuration + 10 && DurationSong > NeedDuration - 10;
