@@ -48,7 +48,7 @@ export namespace PlayerController {
      * @param message {ClientMessage} Сообщение с сервера
      * @param args {string} Аргументы Пример: команда аргумент1 аргумент2
      */
-    export function PlayerRemove(message: ClientMessage, args: number): boolean | void {
+    export function PlayerRemove(message: ClientMessage, args: number): void {
         const {client, guild, member, author} = message;
         const {player, songs}: Queue = client.queue.get(guild.id);
         const {title, color, requester, url}: Song = songs[args - 1];
@@ -90,7 +90,7 @@ export namespace PlayerController {
      * @param message {ClientMessage} Сообщение с сервера
      * @param args {number} Сколько треков пропускаем
      */
-    export function PlayerSkip(message: ClientMessage, args: number): void | boolean {
+    export function PlayerSkip(message: ClientMessage, args: number): void {
         if (args) return PlayerSkipTo(message, args);
 
         const {client, guild, member, author} = message;
@@ -149,7 +149,7 @@ export namespace PlayerController {
  * @param message {ClientMessage} Сообщение с сервера
  * @param args {string} Аргументы Пример: команда аргумент1 аргумент2
  */
-function PlayerSkipTo(message: ClientMessage, args: number): void | boolean {
+function PlayerSkipTo(message: ClientMessage, args: number): void {
     const {client, guild, member, author} = message;
     const queue: Queue = client.queue.get(guild.id);
     const {title, color, requester, url}: Song = queue.songs[args - 1];
@@ -179,5 +179,4 @@ function PlayerEnd(message: ClientMessage): void {
     const {player}: Queue = client.queue.get(guild.id);
 
     if (StatusPlayerHasSkipped.has(player.state.status)) setTimeout(player.stop, 300);
-    return;
 }

@@ -8,8 +8,6 @@ import {Colors} from "../../Utils/LiteUtils";
 import {DurationUtils} from "../Manager/DurationUtils";
 
 const ProgressBarValue: boolean = true;
-const getTimeQueue = DurationUtils.getTimeQueue;
-const ParsingTimeToString = DurationUtils.ParsingTimeToString;
 
 /**
  * Вспомогательный элемент
@@ -26,6 +24,7 @@ export namespace EmbedHelper {
         new ButtonBuilder().setCustomId("replay").setEmoji({id: "986009690716667964"}).setStyle(ButtonStyle.Secondary)]
     );
 }
+//====================== ====================== ====================== ======================
 /**
  * Здесь хранятся все EMBED данные о сообщениях (Используется в MessagePlayer)
  */
@@ -52,7 +51,7 @@ export namespace EmbedMessages {
                 url: song.image?.url ?? null
             },
             footer: {
-                text: `${song.requester.username} | ${getTimeQueue(queue)} | 🎶: ${queue.songs.length}`,
+                text: `${song.requester.username} | ${DurationUtils.getTimeQueue(queue)} | 🎶: ${queue.songs.length}`,
                 iconURL: song.requester.avatarURL(),
             }
         };
@@ -87,7 +86,7 @@ export namespace EmbedMessages {
                 value: `**❯** [${client.ConvertedText(title, 40, true)}](${url}})\n**❯** [${duration.StringTime}]`
             }],
             footer: {
-                text: `${requester.username} | ${getTimeQueue(songs)} | 🎶: ${songs.length}`,
+                text: `${requester.username} | ${DurationUtils.getTimeQueue(songs)} | 🎶: ${songs.length}`,
                 iconURL: requester.avatarURL(),
             }
         }
@@ -117,7 +116,7 @@ export namespace EmbedMessages {
             description: `Найден плейлист [${title}](${url})`,
             timestamp: new Date(),
             footer: {
-                text: `${DisAuthor.username} | ${getTimeQueue(items)} | 🎶: ${items?.length}`,
+                text: `${DisAuthor.username} | ${DurationUtils.getTimeQueue(items)} | 🎶: ${items?.length}`,
                 iconURL: DisAuthor.displayAvatarURL({}),
             }
         };
@@ -151,12 +150,13 @@ export namespace EmbedMessages {
             },
             timestamp: new Date(),
             footer: {
-                text: `${requester.username} | ${getTimeQueue(songs)} | 🎶: ${songs.length}`,
+                text: `${requester.username} | ${DurationUtils.getTimeQueue(songs)} | 🎶: ${songs.length}`,
                 iconURL: requester?.avatarURL() ?? client.user.displayAvatarURL(),
             }
         }
     }
 }
+//====================== ====================== ====================== ======================
 /**
  * @description Создаем Message<Fields>
  * @param song {Song} Трек
@@ -187,7 +187,7 @@ function MusicDuration({isLive, duration}: Song, curTime: number | string): stri
     if (isLive) return `[${duration.StringTime}]`;
 
     const str = `${duration.StringTime}]`;
-    const parsedTimeSong = curTime >= duration.seconds ? duration.StringTime : ParsingTimeToString(curTime as number);
+    const parsedTimeSong = curTime >= duration.seconds ? duration.StringTime : DurationUtils.ParsingTimeToString(curTime as number);
     const progress = ProgressBar(curTime as number, duration.seconds, 15);
 
     if (ProgressBarValue) return `**❯** [${parsedTimeSong} - ${str}\n${progress}`;
@@ -202,7 +202,7 @@ function MusicDuration({isLive, duration}: Song, curTime: number | string): stri
  */
 function ConvertCurrentTime({playbackDuration}: AudioPlayer, filters: AudioFilters): number | string {
     if (ProgressBarValue) return playbackDuration;
-    return ParsingTimeToString(playbackDuration);
+    return DurationUtils.ParsingTimeToString(playbackDuration);
 }
 //====================== ====================== ====================== ======================
 /**

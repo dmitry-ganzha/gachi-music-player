@@ -1,9 +1,9 @@
 import {EventEmitter} from "node:events";
+import {getVoiceConnection, PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 import {FindResource} from "./FindResource";
 import {AudioFilters, Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
 import {ClientMessage} from "../../Client";
-import {getVoiceConnection, PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 import {addAudioPlayer, deleteAudioPlayer} from "../Manager/PlayersManager";
 import {Voice} from "../Structures/Voice";
 import {FFmpegDecoder} from "../Structures/Media/FFmpegDecoder";

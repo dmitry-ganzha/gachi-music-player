@@ -103,7 +103,6 @@ function onDeleteQueue(message: ClientMessage, sendDelQueue: boolean = true) {
     if (Queue.player) Queue.player.stop();
     if (Queue.events.voice) Queue.events.voice.destroy();
 
-
     if (sendDelQueue) {
         if (Queue.options.stop) sendMessage(message, "🎵 | Музыка была выключена");
         else sendMessage(message, "🎵 | Музыка закончилась");
