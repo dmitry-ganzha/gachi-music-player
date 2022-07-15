@@ -345,7 +345,7 @@ export namespace FindTrackInfo {
  */
 function AutoCompileData(info: InputTrack | InputPlaylist, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel, types: Types) {
     if (!info) return sendMessage(message, `${message.author}, **${types.platform}** не хочет делится данными! Существует ли **${types.typeSong}** вообще!`);
-    return message.client.player.emit("play", message, voiceChannel, info)
+    return message.client.player.emit("play", message, voiceChannel, info);
 }
 //====================== ====================== ====================== ======================
 /**
@@ -361,11 +361,10 @@ function AutoCompileDataSearch(info: InputTrack[] | {items: InputTrack[]} , mess
         if (!info || !info.items) return sendMessage(message, `${message.author}, я нечего не нашел в **${types.platform}**`);
 
         return SearchSendMessage(message, info.items, voiceChannel, ArraySort(info.items, message, types.platform), info.items.length, types.platform);
-    } else {
-        if (!info) return sendMessage(message, `${message.author}, я нечего не нашел в **${types.platform}**`);
-
-        return SearchSendMessage(message, info, voiceChannel, ArraySort(info, message, types.platform), info.length, types.platform);
     }
+    if (!info) return sendMessage(message, `${message.author}, я нечего не нашел в **${types.platform}**`);
+
+    return SearchSendMessage(message, info, voiceChannel, ArraySort(info, message, types.platform), info.length, types.platform);
 }
 //====================== ====================== ====================== ======================
 /**
