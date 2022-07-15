@@ -10,17 +10,26 @@ const OPUS_HEAD = Buffer.from([...'OpusHead'].map(charCode));
 // @ts-ignore
 const OPUS_TAGS = Buffer.from([...'OpusTags'].map(charCode));
 
-type TransformDone = (error?: Error) => void;
+type TransformDone = (error?: Error | null) => void;
 
 /**
  * @description Декодирует из ogg/opus в чистый opus
  * @author prism-media
  */
 export class OggDemuxer extends Transform {
-    #_HeadSegment: boolean = null;
-    #_bitstream: number = null;
+    _HeadSegment: boolean = null;
+    _bitstream: number = null;
     public constructor(options = {}) {
         super(Object.assign({ readableObjectMode: true, ...options }));
+    };
+
+    readonly _destroy = (error?: Error | null, callback?: TransformDone) => {
+       if (error) console.log(error);
+       if (callback) callback(error);
+
+       delete this._bitstream;
+       delete this._HeadSegment;
+       this?.destroy();
     };
 
     readonly _transform = (chunk: Buffer, encoding: string, done: TransformDone) => {
@@ -83,15 +92,15 @@ export class OggDemuxer extends Transform {
             const header: Buffer = segment.subarray(0, 8);
 
             //Если this._head не пустой
-            if (this.#_HeadSegment) {
+            if (this._HeadSegment) {
                 if (header.equals(OPUS_TAGS)) this.emit('tags', segment);
-                else if (this.#_bitstream === bitstream) this.push(segment);
+                else if (this._bitstream === bitstream) this.push(segment);
 
             //Если this._head пустой
             } else if (header.equals(OPUS_HEAD)) {
                 this.emit('head', segment);
-                this.#_HeadSegment = true;
-                this.#_bitstream = bitstream;
+                this._HeadSegment = true;
+                this._bitstream = bitstream;
 
             //Если chunk невозможно опознать
             } else this.emit('unknownSegment', segment);

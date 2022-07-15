@@ -53,8 +53,8 @@ export class FFmpeg extends Duplex {
      * @constructor
      */
         // @ts-ignore
-    #Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
-    #Calling = (methods: string[]) => {
+    readonly #Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
+    readonly #Calling = (methods: string[]) => {
         const EVENTS = {
             readable: this.#input,
             data: this.#input,
@@ -72,13 +72,13 @@ export class FFmpeg extends Duplex {
      * @description Запускаем FFmpeg
      * @param Arguments {FFmpegArgs} Указываем аргументы для запуска
      */
-    #SpawnFFmpeg = (Arguments: FFmpegArgs): any => spawn(FFmpegName, [...Arguments, "pipe:1"] as any, { shell: false, windowsHide: true });
+    readonly #SpawnFFmpeg = (Arguments: FFmpegArgs): any => spawn(FFmpegName, [...Arguments, "pipe:1"] as any, { shell: false, windowsHide: true });
     //====================== ====================== ====================== ======================
     /**
      * @description Удаляем все что не нужно
      * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
      */
-    public _destroy = (error?: Error | null) => {
+    public readonly _destroy = (error?: Error | null) => {
         if (this.#process) {
             this.removeAllListeners();
             this.#process.removeAllListeners();

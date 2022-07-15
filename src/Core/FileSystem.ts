@@ -24,7 +24,7 @@ class MultiLoader {
     /**
      * @description Открываем директорию (папку) и смотрим что в ней, проверяем что-бы были файлы js или ts. Загружаем...
      */
-    public readdirSync = async (): Promise<void> => readdirSync(`./src/${this.path}`).forEach((dir: string) => {
+    public readonly readdirSync = async (): Promise<void> => readdirSync(`./src/${this.path}`).forEach((dir: string) => {
         if (dir.endsWith(".js") || dir.endsWith(".ts")) return;
 
         const Files = readdirSync(`./src/${this.path}/${dir}/`).filter((file: string) => (file.endsWith(".js") || file.endsWith(".ts")));
@@ -37,7 +37,7 @@ class MultiLoader {
      * @param dir {string} Директория из которой загружаем файлы
      * @private
      */
-    #ForLoad = async (Files: string[], dir: string): Promise<void> => {
+    readonly #ForLoad = async (Files: string[], dir: string): Promise<void> => {
         for (let file of Files) {
             let pull: Command;
 
@@ -65,9 +65,9 @@ class MultiLoader {
      * @param path {string} Путь до файла
      * @private
      */
-    #getFile = async (path: string): Promise<Command> => {
-        let cmd = (await import(path));
-        let name = Object.keys(cmd)[0];
+    readonly #getFile = async (path: string): Promise<Command> => {
+        const cmd = (await import(path));
+        const name = Object.keys(cmd)[0];
         return new cmd[name];
     };
 }

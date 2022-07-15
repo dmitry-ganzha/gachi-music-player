@@ -55,7 +55,12 @@ function PlayerButtons(client: WatKLOK, interaction: ClientInteraction) {
         if (!queue || !queue?.songs) return;
         if (queue.songs.length === 1) return queue.player.stop();
 
-        client.queue.swap(0, queue.songs.length - 1, "songs", interaction.guildId);
+        // @ts-ignore
+        const Array: any = queue.songs;
+        const hasChange = Array[queue.songs.length - 1];
+
+        Array[queue.songs.length - 1] = Array[0];
+        Array[0] = hasChange;
         queue.player.stop();
     }
 }

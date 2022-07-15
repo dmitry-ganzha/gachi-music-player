@@ -1,11 +1,10 @@
 import {EventEmitter} from "node:events";
-import {getVoiceConnection, PlayerSubscription, VoiceConnection} from "@discordjs/voice";
+import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 import {FindResourceInfo} from "./FindResource";
 import {AudioFilters, Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
 import {ClientMessage} from "../../Client";
 import {addAudioPlayer, deleteAudioPlayer} from "../Manager/PlayersManager";
-import {Voice} from "../Structures/Voice";
 import {FFmpegDecoder} from "../Structures/Media/FFmpegDecoder";
 import {MessagePlayer} from "../Manager/MessagePlayer";
 
@@ -18,7 +17,7 @@ const EmptyFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe]);
  */
 export class AudioPlayer extends EventEmitter {
     #_state: PlayerState = { status: "idle" };
-    #subscribers: PlayerSubscription[] = [];
+    readonly #subscribers: PlayerSubscription[] = [];
 
     //====================== ====================== ====================== ======================
     /**
@@ -61,7 +60,11 @@ export class AudioPlayer extends EventEmitter {
         const OldState = this.#_state; //Старая статистика плеера
         const newResource = newState?.resource; //Новый поток. Есть ли он?
 
-        if (OldState.status !== "idle" && OldState.resource !== newResource) setImmediate(OldState.resource.destroy);
+        if (OldState.status !== "idle" && OldState.resource !== newResource) {
+            OldState.resource.playStream.destroy();
+            OldState.resource.playStream.read();
+            delete OldState.resource;
+        }
 
         //Удаляем плеер если статус "idle"
         if (newState.status === "idle") {
@@ -168,8 +171,6 @@ export class AudioPlayer extends EventEmitter {
      * @param subscription {PlayerSubscription} Голосовой канал на котором больше не будет играть музыка
      */
     public readonly unsubscribe = (subscription?: PlayerSubscription): void => {
-        if (!subscription) return void (this.#subscribers = null);
-
         const index = this.#subscribers.indexOf(subscription);
 
         //Если был найден отключаемый голосовой канал, то удаляем из <this.#subscribers>
@@ -273,7 +274,14 @@ export class AudioPlayer extends EventEmitter {
             if (queue?.songs) isRemoveSong(queue); //Определяем тип loop
 
             //Рандомим номер трека, просто меняем их местами
-            if (queue?.options?.random) client.queue.swap(0, Math.floor(Math.random() * queue.songs.length), "songs", guild.id);
+            if (queue?.options?.random) {
+                const RandomNumSong = Math.floor(Math.random() * queue.songs.length)
+                const Array: any = queue.songs;
+                const hasChange = Array[RandomNumSong];
+
+                Array[RandomNumSong] = Array[0];
+                Array[0] = hasChange;
+            }
 
             return this.PlayCallback(message); //Включаем трек
         }, 500);
@@ -291,37 +299,6 @@ export class AudioPlayer extends EventEmitter {
         //Выводим сообщение об ошибке
         MessagePlayer.ErrorPlayer(message, queue.songs[0], err);
         return this.stop(); //Останавливаем плеер
-    };
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Если вдруг что-то произойдет с подключением к голосовому каналу, будет произведено переподключение!
-     * @param message {ClientMessage} Сообщение с сервера
-     * @private
-     */
-    readonly #onAutoPaused = (message: ClientMessage) => {
-        const queue: Queue = message.client.queue.get(message.guild.id);
-        const VoiceChannel = getVoiceConnection(message.guildId);
-
-        //Бота принудительно отключили, не подключаемся
-        if (!VoiceChannel) {
-            queue.events.queue.emit("DeleteQueue", message, true);
-            return;
-        }
-
-        //Подключаемся к прошлому голосовому каналу
-        const connection = Voice.Join(queue.channels.voice);
-
-        //Если поток еще не читаемый
-        if (!this.state.resource.hasStarted) return;
-
-        //Если голосовых каналов подключенных к плееру более 1
-        if (this.#subscribers.length > 0) {
-            const subscribe = this.#subscribers.find((sub) => sub.connection === connection);
-            if (subscribe) this.unsubscribe(subscribe);
-        }
-
-        this.subscribe(connection); //Добавляем голосовой канал
-        queue.channels.connection = connection; //Записываем данные подключения в очередь
     };
 }
 //====================== ====================== ====================== ======================

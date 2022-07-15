@@ -6,15 +6,13 @@ const ApiLink = "https://accounts.spotify.com/api"; //token
 const GetApi = "https://api.spotify.com/v1"; //type/id/params
 const DefaultUrlSpotify = 'https://open.spotify.com';
 const SpotifyStr = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;
-
-const clientID: string = cfg.spotify.clientID
-const clientSecret: string = cfg.spotify.clientSecret;
-
-let Token: string = null
-let TokenTime: number = null;
+const {clientID, clientSecret} = cfg.spotify;
+const SpotifyRes = {
+    Token: "",
+    Time: 0
+};
 
 export namespace Spotify {
-    //====================== ====================== ====================== ======================
     /**
      * @description Получаем данные о треке
      * @param url {string} Ссылка на трек
@@ -173,8 +171,8 @@ function getToken(): Promise<void> {
             body: "grant_type=client_credentials"
         }
     }).then((result) => {
-        TokenTime = Date.now() + result.expires_in;
-        Token = result.access_token;
+        SpotifyRes.Time = Date.now() + result.expires_in;
+        SpotifyRes.Token = result.access_token;
     });
 }
 //====================== ====================== ====================== ======================
@@ -191,7 +189,7 @@ function RequestSpotify(method: string): Promise<SpotifyRes> {
                 headers: {
                     "Accept": "application/json",
                     "Content-Type": "application/x-www-form-urlencoded",
-                    "Authorization": "Bearer " + Token,
+                    "Authorization": "Bearer " + SpotifyRes.Token,
                     "accept-encoding": "gzip, deflate, br"
                 }
             }
@@ -224,7 +222,7 @@ function login() {
 
 //Вышел ли токен из строя (timeout)
 function isLoggedIn() {
-    return Token !== undefined && TokenTime > Date.now() + 2;
+    return SpotifyRes.Token !== undefined && SpotifyRes.Time > Date.now() + 2;
 }
 
 //Получаем ID трека, плейлиста, альбома

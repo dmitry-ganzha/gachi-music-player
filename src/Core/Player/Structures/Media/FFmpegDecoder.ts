@@ -6,7 +6,7 @@ import {OggDemuxer} from "./OggDemuxer";
 
 /**
  * @name FFmpegDecoder
- * @description
+ * @description Совмещает FFmpeg с OggDemuxer
  */
 export class FFmpegDecoder {
     public readonly playStream: Readable & Writable;
@@ -17,10 +17,10 @@ export class FFmpegDecoder {
 
     public get duration() {
         return this.#playbackDuration;
-    }
+    };
     public set duration(duration: number) {
         this.#playbackDuration = duration;
-    }
+    };
     //====================== ====================== ====================== ======================
     /**
      * @description Проверяем можно ли читать поток
@@ -67,9 +67,9 @@ export class FFmpegDecoder {
     /**
      * @description Получаем пакет и проверяем не пустой ли он если не пустой к таймеру добавляем 20 мс
      */
-    public read = (): Buffer | null => {
+    public readonly read = (): Buffer | null => {
         const packet: Buffer = this.playStream?.read();
-        if (packet) this.#playbackDuration += this.#TimeFrame;
+        if (packet) this.duration += this.#TimeFrame;
 
         return packet;
     };
@@ -77,7 +77,7 @@ export class FFmpegDecoder {
     /**
      * @description Чистим память!
      */
-    public destroy = (): void => {
+    public readonly destroy = (): void => {
         if (this.#FFmpeg) this.#FFmpeg.destroy();
 
         //Удаляем с задержкой (чтоб убрать некоторые ошибки)

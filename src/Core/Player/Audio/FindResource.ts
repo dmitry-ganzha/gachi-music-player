@@ -209,7 +209,14 @@ export namespace FindTrackInfo {
                 });
                 return;
             }
-            case "album": //Если search === https://open.spotify.com/album/ID
+            case "album": {//Если search === https://open.spotify.com/album/ID
+                setImmediate(() => {
+                    const promise = Spotify.getAlbum(search);
+                    promise.then((playlist) => AutoCompileData(playlist, message, voiceChannel, types));
+                    promise.catch((err) => AutoCatch(err, message, types.platform));
+                });
+                return;
+            }
             case "playlist": { //Если search === https://open.spotify.com/playlist/ID
                 setImmediate(() => {
                     const promise = Spotify.getPlaylist(search);

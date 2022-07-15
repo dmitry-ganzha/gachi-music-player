@@ -41,7 +41,7 @@ export class FFprobe {
     /**
      * @description Получаем данные
      */
-    public getInfo = (): Promise<any> => new Promise((resolve) => {
+    public readonly getInfo = (): Promise<any> => new Promise((resolve) => {
         let information = "";
         this.#process.once("close", () => {
             this.#process?.kill();
@@ -62,5 +62,5 @@ export class FFprobe {
      * @param Arguments {FFmpegArgs} Указываем аргументы для запуска
      * @private
      */
-    #SpawnProbe = (Arguments: string[]) => spawn(FFprobeName, ["-print_format", "json", "-show_format", ...Arguments], { shell: false, windowsHide: true });
+    readonly #SpawnProbe = (Arguments: string[]) => spawn(FFprobeName, ["-print_format", "json", "-show_format", ...Arguments], { shell: false, windowsHide: true });
 }

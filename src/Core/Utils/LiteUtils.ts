@@ -32,15 +32,6 @@ export class CollectionMap<K, V> extends Map<K, V> {
 
         return db;
     };
-
-    public swap = (set: number = 0, next: number, path: string, K: K) => {
-        // @ts-ignore
-        const Array: any = this.get(K)[path];
-        const hasChange = Array[next];
-
-        Array[next] = Array[set];
-        Array[set] = hasChange;
-    };
 }
 //====================== ====================== ====================== ======================
 /**
