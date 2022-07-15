@@ -38,13 +38,16 @@ export namespace SoundCloud {
      * @description Получаем плейлист
      * @param url {string} Ссылка на плейлист
      */
-    export function getPlaylist(url: string): Promise<InputPlaylist> {
-        return new Promise<InputPlaylist>(async (resolve) => {
+    export function getPlaylist(url: string): Promise<InputPlaylist | InputTrack> {
+        return new Promise(async (resolve) => {
             const ClientID = await getClientID();
             const result = await httpsClient.parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
             const PlaylistItems: InputTrack[] = [];
 
             if (!result?.id || !result) return resolve(null);
+
+            //Если SoundCloud нас обманул со ссылкой, есть нет <result>.tracks, то это просто трек!
+            if (result.tracks === undefined) return getTrack(url).then(resolve);
 
             for (let i in result.tracks) {
                 const track = result.tracks[i];

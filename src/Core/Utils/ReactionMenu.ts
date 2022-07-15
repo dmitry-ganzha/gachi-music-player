@@ -21,14 +21,14 @@ export class CollectorSortReaction {
      * @param message {ClientMessage} Сообщение с сервера
      * @param callbacks
      */
-    public _run = (embed: EmbedConstructor | string, message: ClientMessage, callbacks: Callbacks): void => {
+    public constructor(embed: EmbedConstructor | string, message: ClientMessage, callbacks: Callbacks) {
         setImmediate(() => {
             message.channel.send(typeof embed === "string" ? embed : {embeds: [embed]}).then((msg) => {
                 // @ts-ignore
                 Object.entries(callbacks).forEach(([key, value]) => reaction(message.author, message, msg, value, emojis[key]));
             });
         });
-    }
+    };
 }
 //====================== ====================== ====================== ======================
 /**

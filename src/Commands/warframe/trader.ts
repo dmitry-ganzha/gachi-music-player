@@ -40,14 +40,13 @@ export class Trader extends Command {
                 name: res.character
             },
             footer: {
-                text: res.active ? `Уйдет через` : `Прейдет через`,
-            },
-            timestamp: res.active ? res.expiry : res.activation
+                text: `${res.active ? `Уйдет через` : `Прейдет через`} ${res.active ? res.startString : res.endString}`,
+            }
         }
         //Если есть инвентарь, то запускаем CollectorSortReaction
         if (pagesInventory.length >= 1) {
             EmbedVoidTrader.description = pagesInventory[0];
-            new CollectorSortReaction()._run(EmbedVoidTrader, message, this.#Callbacks(1, pagesInventory, EmbedVoidTrader));
+            new CollectorSortReaction(EmbedVoidTrader, message, this.#Callbacks(1, pagesInventory, EmbedVoidTrader));
             return;
         }
         //Если инвентаря нет просто отправляем сообщение

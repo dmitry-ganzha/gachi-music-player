@@ -1,6 +1,6 @@
 import {EventEmitter} from "node:events";
 import {getVoiceConnection, PlayerSubscription, VoiceConnection} from "@discordjs/voice";
-import {FindResource} from "./FindResource";
+import {FindResourceInfo} from "./FindResource";
 import {AudioFilters, Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
 import {ClientMessage} from "../../Client";
@@ -93,7 +93,7 @@ export class AudioPlayer extends EventEmitter {
      * @param message {ClientMessage} Сообщение с сервера
      * @param seek {number} Пропуск музыки до 00:00:00
      */
-    public seek = (message: ClientMessage, seek: number = 0): void => {
+    public readonly seek = (message: ClientMessage, seek: number = 0): void => {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
@@ -108,7 +108,7 @@ export class AudioPlayer extends EventEmitter {
      * @description Включаем музыку
      * @param message {ClientMessage} Сообщение с сервера
      */
-    public PlayCallback = (message: ClientMessage): void => {
+    public readonly PlayCallback = (message: ClientMessage): void => {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
@@ -128,7 +128,7 @@ export class AudioPlayer extends EventEmitter {
     /**
      * @description Приостанавливаем отправку пакетов в голосовой канал
      */
-    public pause = (): void => {
+    public readonly pause = (): void => {
         if (this.state.status !== "playing") return;
         this.state = { ...this.state, status: "paused" };
     };
@@ -136,7 +136,7 @@ export class AudioPlayer extends EventEmitter {
     /**
      * @description Продолжаем отправлять пакеты в голосовой канал
      */
-    public resume = (): void => {
+    public readonly resume = (): void => {
         if (this.state.status !== "paused") return;
         this.state = { ...this.state, status: "playing" };
     };
@@ -144,7 +144,7 @@ export class AudioPlayer extends EventEmitter {
     /**
      * @description Пропускаем текущий трек
      */
-    public stop = (): void => {
+    public readonly stop = (): void => {
         if (this.state.status === "idle") return;
         this.state = { status: "idle" };
     };
@@ -153,7 +153,7 @@ export class AudioPlayer extends EventEmitter {
      * @description Убираем из <this.subscribers> голосовой канал
      * @param connection {VoiceConnection} Голосовой канал на котором будет играть музыка
      */
-    public subscribe = (connection: VoiceConnection): void => {
+    public readonly subscribe = (connection: VoiceConnection): void => {
         const FindVoiceChannel = this.#subscribers.find((sub) => sub.connection === connection);
 
         //Если не найден в <this.#subscribers> то добавляем
@@ -167,7 +167,7 @@ export class AudioPlayer extends EventEmitter {
      * @description Убираем из <this.subscribers> голосовой канал
      * @param subscription {PlayerSubscription} Голосовой канал на котором больше не будет играть музыка
      */
-    public unsubscribe = (subscription?: PlayerSubscription): void => {
+    public readonly unsubscribe = (subscription?: PlayerSubscription): void => {
         if (!subscription) return void (this.#subscribers = null);
 
         const index = this.#subscribers.indexOf(subscription);
@@ -182,7 +182,7 @@ export class AudioPlayer extends EventEmitter {
     /**
      * @description Проверка перед отправкой пакета в голосовой канал
      */
-    protected CheckStatusPlayer = (): void => {
+    protected readonly CheckStatusPlayer = (): void => {
         //Если статус (idle или buffering) прекратить выполнение функции
         if (this.state.status === "idle" || this.state.status === "buffering" || this.state.status === "paused") return;
 
@@ -217,7 +217,7 @@ export class AudioPlayer extends EventEmitter {
      * @param resource {PlayerResource} Поток
      * @private
      */
-    #play = (resource: PlayerResource): void => {
+    readonly #play = (resource: PlayerResource): void => {
         if (!resource) return void this.emit("error", "[AudioResource]: has not found!");
         if (resource?.ended) return void this.emit("error", "[AudioPlayer]: Fail to load stream");
 
@@ -250,7 +250,7 @@ export class AudioPlayer extends EventEmitter {
      * @description Перестаем передавать пакеты во все доступные каналы
      * @private
      */
-    #signalStopSpeaking = (): void => this.#subscribers.forEach(({connection} ) => connection.setSpeaking(false));
+    readonly #signalStopSpeaking = (): void => this.#subscribers.forEach(({connection} ) => connection.setSpeaking(false));
     //====================== ====================== ====================== ======================
     /**
      * @description Отправляем пакет во все доступные каналы
@@ -258,14 +258,14 @@ export class AudioPlayer extends EventEmitter {
      * @param receivers {VoiceConnection[]} В какие каналы отправить пакет
      * @private
      */
-    #playOpusPacket = (packet: Buffer, receivers: VoiceConnection[]): void => receivers.forEach((connection) => connection.playOpusPacket(packet));
+    readonly #playOpusPacket = (packet: Buffer, receivers: VoiceConnection[]): void => receivers.forEach((connection) => connection.playOpusPacket(packet));
     //====================== ====================== ====================== ======================
     /**
      * @description Когда плеер завершит песню, он возвратит эту функцию
      * @param message {ClientMessage} Сообщение с сервера
      * @private
      */
-    #onIdlePlayer = (message: ClientMessage): void => {
+    readonly #onIdlePlayer = (message: ClientMessage): void => {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
@@ -285,7 +285,7 @@ export class AudioPlayer extends EventEmitter {
      * @param message {ClientMessage} Сообщение с сервера
      * @private
      */
-    #onErrorPlayer = (err: Error | string, message: ClientMessage): void => {
+    readonly #onErrorPlayer = (err: Error | string, message: ClientMessage): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         //Выводим сообщение об ошибке
@@ -298,7 +298,7 @@ export class AudioPlayer extends EventEmitter {
      * @param message {ClientMessage} Сообщение с сервера
      * @private
      */
-    #onAutoPaused = (message: ClientMessage) => {
+    readonly #onAutoPaused = (message: ClientMessage) => {
         const queue: Queue = message.client.queue.get(message.guild.id);
         const VoiceChannel = getVoiceConnection(message.guildId);
 
@@ -336,7 +336,7 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
     return new Promise(async (resolve) => {
         if (req > 2) return resolve(null);
 
-        const CheckResource = await FindResource(song);
+        const CheckResource = await FindResourceInfo(song);
         const RetryCheck = () => { //Повторно делаем запрос
             req++;
             return CreateResource(song, audioFilters, seek, req);

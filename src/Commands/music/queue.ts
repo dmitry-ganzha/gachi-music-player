@@ -29,11 +29,19 @@ export class CommandQueue extends Command {
         });
         //Получаем то что надо было преобразовать в string[]
         const pages = this.#parsedSongs(queue.songs, message.client.ConvertedText);
+        const CurrentPlaying = `Current playing -> [${queue.songs[0].title}]`; //Музыка, которая играет сейчас
+        const Footer = `${message.author.username} | ${this.#getTime(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}`; //Что будет снизу сообщения
 
         //Запускаем CollectorSortReaction
-        return new CollectorSortReaction()._run(`\`\`\`css\n➡️ | Current playing [${queue.songs[0].title}]\n\n${pages[0]}\n\n${message.author.username} | ${this.#getTime(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}\`\`\``, message, this.#Callbacks(1, pages, queue));
+        new CollectorSortReaction(`\`\`\`css\n➡️ | ${CurrentPlaying}\n\n${pages[0]}\n\n${Footer}\`\`\``, message, this.#Callbacks(1, pages, queue));
     };
-
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Из <Song[]> делаем <string[]>
+     * @param ArraySongs {Song[]} Музыка которую надо изменить
+     * @param ConvertedText {Function} Сокращение названия трека
+     * @private
+     */
     readonly #parsedSongs = (ArraySongs: Song[], ConvertedText: ( text: string, value: any, clearText: boolean) => string) => {
         const pages: string[] = [];
         let TrackNumber = 1;
@@ -71,7 +79,7 @@ export class CommandQueue extends Command {
 
                     if (page === 1) return null;
                     page--;
-                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${this.#getTime(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
+                    return this.#EditMessage(queue, message, msg, pages, page);
                 });
             },
             //При нажатии на 3 эмодзи, будет выполнена эта функция
@@ -81,7 +89,7 @@ export class CommandQueue extends Command {
 
                     if (page === pages.length) return null;
                     page++;
-                    return msg.edit(`\`\`\`css\n➡️ | Current playing -> [${queue.songs[0].title}]\n\n${pages[page - 1]}\n\n${message.author.username} | ${this.#getTime(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}\`\`\``);
+                    return this.#EditMessage(queue, message, msg, pages, page);
                 });
             },
             //При нажатии на 2 эмодзи, будет выполнена эта функция
@@ -92,5 +100,21 @@ export class CommandQueue extends Command {
             }
         };
     };
-    readonly #getTime = DurationUtils.getTimeQueue
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Изменяем данные сообщения
+     * @param queue {Queue} Очередь сервера
+     * @param message {ClientMessage} Сообщение пользователя
+     * @param msg {ClientMessage} Сообщение бота
+     * @param pages {string[]} Страницы
+     * @param page {number} Номер ткущей страницы
+     * @private
+     */
+    readonly #EditMessage = (queue: Queue, message: ClientMessage, msg: ClientMessage, pages: string[], page: number) => {
+        const CurrentPlaying = `Current playing -> [${queue.songs[0].title}]`;
+        const Footer = `${message.author.username} | ${this.#getTime(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}`;
+
+        return msg.edit(`\`\`\`css\n➡️ | ${CurrentPlaying}\n\n${pages[page - 1]}\n\n${Footer}\`\`\``);
+    };
+    readonly #getTime = DurationUtils.getTimeQueue;
 }

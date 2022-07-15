@@ -10,8 +10,8 @@ export namespace DurationUtils {
     export function getTimeQueue(queue: Queue | any[]): string {
         let Timer: number = 0;
 
-        if (queue instanceof Queue) queue.songs.map((song: Song) => Timer += song.duration.seconds);
-        else queue.map((song: {duration: {seconds: string}}) => Timer += parseInt(song.duration.seconds));
+        if (queue instanceof Queue) queue.songs.forEach((song: Song) => Timer += song.duration.seconds);
+        else queue.forEach((song: {duration: {seconds: string}}) => Timer += parseInt(song.duration.seconds));
 
         return ParsingTimeToString(Timer);
     }

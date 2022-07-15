@@ -9,7 +9,7 @@ const Message = new CollectionMap<string, ClientMessage>();
 let MessageTimer: NodeJS.Timeout = null;
 
 /**
- * Сообщения, которые отправляем плеер
+ * Сообщения, которые отправляет плеер
  */
 export namespace MessagePlayer {
     /**
@@ -175,7 +175,7 @@ function removeMessage(message: ClientMessage) {
  */
 function StepCycleMessage() {
     try {
-        Message.forEach((message) => setImmediate(() => UpdateMessage(message)));
+        setImmediate(() => Message.forEach(UpdateMessage));
     } finally {
         MessageTimer = setTimeout(StepCycleMessage, 12e3);
     }

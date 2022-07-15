@@ -26,7 +26,7 @@ export class CommandHelp extends Command {
         let {embed, pages} = this.#CreateEmbedMessage(message, List);
 
         //Запускаем CollectorSortReaction
-        return new CollectorSortReaction()._run(embed, message, this.#Callbacks(1, pages, embed));
+        new CollectorSortReaction(embed, message, this.#Callbacks(1, pages, embed));
     };
     //====================== ====================== ====================== ======================
     /**
