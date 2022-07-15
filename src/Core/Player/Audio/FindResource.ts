@@ -143,24 +143,27 @@ export namespace FindTrackInfo {
             //Если search === https://www.youtube.com/watch?v=ID
             case "track": {
                 setImmediate(() => {
-                    YouTube.getVideo(search).then((video: InputTrack) => AutoCompileData(video, message, voiceChannel, types))
-                        .catch((err) => AutoCatch(err, message, types.platform));
+                    const promise = YouTube.getVideo(search);
+                    promise.then((video: InputTrack) => AutoCompileData(video, message, voiceChannel, types));
+                    promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
             }
             //Если search === https://www.youtube.com/playlist?list=ID
             case "playlist": {
                 setImmediate(() => {
-                    YouTube.getPlaylist(search).then((playlist: InputPlaylist) => AutoCompileData(playlist, message, voiceChannel, types))
-                        .catch((err) => AutoCatch(err, message, types.platform));
+                    const promise = YouTube.getPlaylist(search);
+                    promise.then((playlist: InputPlaylist) => AutoCompileData(playlist, message, voiceChannel, types));
+                    promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
             }
             //Если search === string
             case "search": {
                 setImmediate(() => {
-                    YouTube.SearchVideos(search).then((result: InputTrack[]) => AutoCompileDataSearch(result, message, voiceChannel, types))
-                        .catch((err) => AutoCatch(err, message, types.platform));
+                    const promise = YouTube.SearchVideos(search);
+                    promise.then((result: InputTrack[]) => AutoCompileDataSearch(result, message, voiceChannel, types));
+                    promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
             }
@@ -200,24 +203,27 @@ export namespace FindTrackInfo {
             //Если search === https://open.spotify.com/track/ID
             case "track": {
                 setImmediate(() => {
-                    Spotify.getTrack(search).then((track) => AutoCompileData(track, message, voiceChannel, types))
-                        .catch((err) => AutoCatch(err, message, types.platform));
+                    const promise = Spotify.getTrack(search);
+                    promise.then((track) => AutoCompileData(track, message, voiceChannel, types));
+                    promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
             }
             case "album": //Если search === https://open.spotify.com/album/ID
             case "playlist": { //Если search === https://open.spotify.com/playlist/ID
                 setImmediate(() => {
-                    Spotify.getPlaylist(search).then((playlist) => AutoCompileData(playlist, message, voiceChannel, types))
-                        .catch((err) => AutoCatch(err, message, types.platform));
+                    const promise = Spotify.getPlaylist(search);
+                    promise.then((playlist) => AutoCompileData(playlist, message, voiceChannel, types));
+                    promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
             }
             //Если search === string
             case "search": {
                 setImmediate(() => {
-                    Spotify.SearchTracks(search).then((result) => AutoCompileDataSearch(result, message, voiceChannel, types))
-                        .catch((err) => AutoCatch(err, message, types.platform));
+                    const promise = Spotify.SearchTracks(search);
+                    promise.then((result) => AutoCompileDataSearch(result, message, voiceChannel, types));
+                    promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
             }
@@ -237,24 +243,27 @@ export namespace FindTrackInfo {
             //Если search === https://vk.com/audioUserID_TrackID
             case "track": {
                 setImmediate(() => {
-                    VK.getTrack(search).then((track) => AutoCompileData(track, message, voiceChannel, types))
-                        .catch((err) => AutoCatch(err, message, types.platform));
+                    const promise = VK.getTrack(search);
+                    promise.then((track) => AutoCompileData(track, message, voiceChannel, types));
+                    promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
             }
             //Если search === https://vk.com/music/playlist/keyID_TrackLenght_PlaylistID
             case "playlist": {
                 setImmediate(() => {
-                    VK.getPlaylist(search).then((playlist) => AutoCompileData(playlist, message, voiceChannel, types))
-                        .catch((err) => AutoCatch(err, message, types.platform));
+                    const promise = VK.getPlaylist(search);
+                    promise.then((playlist) => AutoCompileData(playlist, message, voiceChannel, types));
+                    promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
             }
             //Если search === string
             case "search": {
                 setImmediate(() => {
-                    VK.SearchTracks(search).then((result) => AutoCompileDataSearch(result, message, voiceChannel, types))
-                        .catch((err) => AutoCatch(err, message, types.platform));
+                    const promise = VK.SearchTracks(search);
+                    promise.then((result) => AutoCompileDataSearch(result, message, voiceChannel, types));
+                    promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
             }
@@ -274,8 +283,9 @@ export namespace FindTrackInfo {
             //Если search === https://soundcloud.com/AuthorName/TrackName
             case "track": {
                 setImmediate(() => {
-                    SoundCloud.getTrack(search).then((video: InputTrack) => AutoCompileData(video, message, voiceChannel, types))
-                        .catch((err) => AutoCatch(err, message, types.platform));
+                    const promise = SoundCloud.getTrack(search);
+                    promise.then((video: InputTrack) => AutoCompileData(video, message, voiceChannel, types));
+                    promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
             }
@@ -283,16 +293,18 @@ export namespace FindTrackInfo {
             case "album":
             case "playlist": {
                 setImmediate(() => {
-                    SoundCloud.getPlaylist(search).then((playlist: InputPlaylist) => AutoCompileData(playlist, message, voiceChannel, types))
-                        .catch((err) => AutoCatch(err, message, types.platform));
+                    const promise = SoundCloud.getPlaylist(search);
+                    promise.then((playlist: InputPlaylist) => AutoCompileData(playlist, message, voiceChannel, types));
+                    promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
             }
             //Если search === string
             case "search": {
                 setImmediate(() => {
-                    SoundCloud.SearchTracks(search).then((result: InputTrack[]) => AutoCompileDataSearch(result, message, voiceChannel, types))
-                        .catch((err) => AutoCatch(err, message, types.platform));
+                    const promise = SoundCloud.SearchTracks(search);
+                    promise.then((result: InputTrack[]) => AutoCompileDataSearch(result, message, voiceChannel, types));
+                    promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
             }
