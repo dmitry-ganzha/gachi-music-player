@@ -69,9 +69,17 @@ export class CommandPlay extends Command {
         });
 
         try {
+            //Отправляем сообщение о поиске трека
+            message.client.Send({
+                text: `🔍 | Поиск -> ${search}`,
+                message,
+                color: "RED",
+                type: "css"
+            });
+
             return this.#getInfoPlatform(search, message, voiceChannel);
         } catch (e) {
-            console.log(`[PlayCommand]: [ERROR] -> `, e);
+            console.log(`[Command: Play]: ${e}`);
             return message.client.Send({
                 text: `${message.author.username} | Произошла ошибка: ${e}`,
                 message,
