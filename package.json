@@ -1,17 +1,17 @@
 {
-  "name": "watklok",
+  "name": "WatKLOK",
   "description": "Discord music bot",
   "type": "commonjs",
   "author": "SNIPPIK",
-  "version": "1.4.4",
+  "version": "1.4.4.1",
   "main": "src/Core/Client.js",
   "scripts": {
     "client": "node ./src/Core/Client.js",
     "shard": "node ./src/Core/ShardManager.js"
   },
   "dependencies": {
-    "@discordjs/voice": "^0.11.0-dev.1655381032-4df491c",
-    "discord.js": "^14.0.0-dev.1656547803-27d8deb"
+    "@discordjs/voice": "^0.11.0-dev.1657411901-f0b68d5",
+    "discord.js": "^14.0.0-dev.1657411900-f0b68d5"
   },
   "repository": {
     "github": "https://github.com/SNIPPIK/WatKLOK.git"
