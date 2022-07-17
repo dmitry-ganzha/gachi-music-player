@@ -21,5 +21,5 @@ export class voiceStateUpdate {
         }
     };
     //Отключаемся от голосового канала
-    #LeaveVoice = (GuildID: string) => Voice.Disconnect(GuildID);
+    readonly #LeaveVoice = (GuildID: string) => Voice.Disconnect(GuildID);
 }
