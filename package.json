@@ -10,8 +10,8 @@
     "shard": "node ./src/Core/ShardManager.js"
   },
   "dependencies": {
-    "@discordjs/voice": "^0.11.0-dev.1657411901-f0b68d5",
-    "discord.js": "^14.0.0-dev.1657411900-f0b68d5"
+    "@discordjs/voice": "^0.11.0-dev.1657757511-fe34f48",
+    "discord.js": "^14.0.1"
   },
   "repository": {
     "github": "https://github.com/SNIPPIK/WatKLOK.git"
