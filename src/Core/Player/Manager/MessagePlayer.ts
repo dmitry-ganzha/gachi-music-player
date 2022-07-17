@@ -158,7 +158,7 @@ function addMessage(message: ClientMessage) {
  * @param message {ClientMessage} Сообщение
  */
 function removeMessage(message: ClientMessage) {
-    const Find = Message.get(message.channelId)
+    const Find = Message.get(message.channelId);
     if (!Find) return;
 
     if (Find.deletable) Find.delete().catch(() => undefined);
