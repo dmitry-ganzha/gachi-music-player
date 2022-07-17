@@ -1,11 +1,11 @@
-import {EventEmitter} from "node:events";
 import {PlayerController} from "./Audio/Controller";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../Client";
 import {InputPlaylist, InputTrack} from "../Utils/TypeHelper";
 import {QueueConstructor} from "./Structures/Queue/QueueConstructor";
+import {TypedEmitter} from "tiny-typed-emitter";
 
-export interface PlayerEmitter extends EventEmitter {
+interface PlayerEvents {
     play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack | InputPlaylist) => boolean | void | Promise<void | ClientMessage | NodeJS.Timeout>;
     pause: (message: ClientMessage) => void;
     resume: (message: ClientMessage) => void;
@@ -19,7 +19,7 @@ export interface PlayerEmitter extends EventEmitter {
 /**
  * @description Запускаем все функции плеера
  */
-export class PlayerEmitter extends EventEmitter {
+export class PlayerEmitter extends TypedEmitter<PlayerEvents> {
     public constructor() {
         super();
         this.on("play", QueueConstructor.CheckQueue);

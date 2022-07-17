@@ -48,7 +48,7 @@ export class CommandJoin extends Command {
             queue.player.subscribe(connection); //Подключаем Vc к плееру
             queue.player.resume(); //Продолжаем воспроизведение
 
-            queue.events.voice.emit("CancelQueueDestroy", queue.player); //Отменяем удаление очереди
+            queue.emitter.emit("CancelDelete", queue.player); //Отменяем удаление очереди
             return;
         }
 

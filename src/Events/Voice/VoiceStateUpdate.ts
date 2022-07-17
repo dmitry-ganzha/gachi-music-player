@@ -9,16 +9,19 @@ export class voiceStateUpdate {
 
     public readonly run = (oldState: VoiceState, newState: VoiceState, client: WatKLOK): void => {
         const queue: Queue = client.queue.get(newState.guild.id); //Очередь сервера
-        const UsersVoiceChannel = client.connections(newState?.guild); //Все пользователи подключенные к голосовому каналу на сервере
-        const FilterVoiceChannel: VoiceState[] = UsersVoiceChannel.filter((fn) => !fn.member.user.bot); //Фильтруем пользователей чтоб боты не слушали музыку
 
-        //Если пользователей нет в голосовом канале
-        if (FilterVoiceChannel.length === 0) {
-            this.#LeaveVoice(newState.guild.id); //Отключаемся
+        setImmediate(() => {
+            const UsersVoiceChannel = client.connections(newState?.guild); //Все пользователи подключенные к голосовому каналу на сервере
+            const FilterVoiceChannel: VoiceState[] = UsersVoiceChannel.filter((fn) => !fn.member.user.bot); //Фильтруем пользователей чтоб боты не слушали музыку
 
-            //Если есть очередь сервера, удаляем!
-            if (queue) queue.events?.voice?.emit("StartQueueDestroy", queue);
-        }
+            //Если пользователей нет в голосовом канале
+            if (FilterVoiceChannel.length === 0) {
+                this.#LeaveVoice(newState.guild.id); //Отключаемся
+
+                //Если есть очередь сервера, удаляем!
+                if (queue) queue.emitter.emit("StartDelete", queue);
+            }
+        })
     };
     //Отключаемся от голосового канала
     readonly #LeaveVoice = (GuildID: string) => Voice.Disconnect(GuildID);

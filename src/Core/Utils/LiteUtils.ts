@@ -101,36 +101,44 @@ export type SendOptions = {
 }
 type OptionsSendType =  "css" | "js" | "ts" | "cpp" | "html" | "cs";
 
-
+/**
+ * @description Отправляем просто embed сообщение
+ * @param options {SendOptions} Параметры отправки
+ * @constructor
+ */
 export function MessageChannelSend(options: SendOptions): void {
-    if (typeof options.type === "string") return SendMessageCode(options);
-    return SendMessageNoCode(options)
+    const text = typeof options.type === "string" ? `\`\`\`${options.type}\n${options.text}\n\`\`\`` : options.text;
+    const send = options.message.channel.send({ embeds: [MessageEmbed(options.color, text)] });
+    CatchMessage(send);
 }
-
-function SendMessageCode(options: SendOptions): void {
-    return CatchMessage(options.message.channel.send({
-        embeds: [MessageEmbed(options.color, `\`\`\`${options.type}\n${options.text}\n\`\`\``)],
-    }));
-}
-function SendMessageNoCode(options: SendOptions): void {
-    return CatchMessage(options.message.channel.send({
-        embeds: [MessageEmbed(options.color, options.text)]
-    }));
-}
-
-function CatchMessage(type: Promise<ClientMessage>): void {
-    type.then((msg: ClientMessage) => setTimeout(() => msg.deletable ? msg.delete() : null, 12e3))
+//====================== ====================== ====================== ======================
+/**
+ * @description Игнорируем ошибки сообщения
+ * @param message {Promise<ClientMessage>}
+ * @constructor
+ */
+function CatchMessage(message: Promise<ClientMessage>): void {
+    message.then((msg: ClientMessage) => setTimeout(() => msg.deletable ? msg.delete().catch(() => null) : null, 12e3))
         .catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
-
-    return;
 }
-
+//====================== ====================== ====================== ======================
+/**
+ * @description Создаем JSON<EmbedConstructor>
+ * @param color {ColorResolvable | number} Цвет
+ * @param description {string} Что будет написано в embed
+ * @constructor
+ */
 function MessageEmbed(color: ColorResolvable | number = "BLUE", description: string): EmbedConstructor {
     return {
         color: typeof color === "number" ? color : ConvertColor(color), description
     }
 }
-
+//====================== ====================== ====================== ======================
+/**
+ * @description Из строки делаем номер
+ * @param color {ColorResolvable} Все доступные цвета
+ * @constructor
+ */
 function ConvertColor(color: ColorResolvable): number | null {
     let colorOut;
     try {

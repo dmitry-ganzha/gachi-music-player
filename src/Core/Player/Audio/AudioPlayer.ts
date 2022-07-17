@@ -1,12 +1,12 @@
-import {EventEmitter} from "node:events";
 import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 import {FindResourceInfo} from "./FindResource";
 import {AudioFilters, Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
 import {ClientMessage} from "../../Client";
-import {addAudioPlayer, deleteAudioPlayer} from "../Manager/PlayersManager";
 import {FFmpegDecoder} from "../Structures/Media/FFmpegDecoder";
 import {MessagePlayer} from "../Manager/MessagePlayer";
+import {PlayersManager} from "../Manager/PlayersManager";
+import {TypedEmitter} from "tiny-typed-emitter";
 
 //Статусы плеера для пропуска музыки
 export const StatusPlayerHasSkipped: Set<string> = new Set(["playing", "paused", "buffering", "idle"]);
@@ -15,7 +15,7 @@ const EmptyFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe]);
 /**
  * @description Плеер. За основу взять с <discordjs voice>. Немного изменен!
  */
-export class AudioPlayer extends EventEmitter {
+export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     #_state: PlayerState = { status: "idle" };
     readonly #subscribers: PlayerSubscription[] = [];
 
@@ -69,9 +69,9 @@ export class AudioPlayer extends EventEmitter {
         //Удаляем плеер если статус "idle"
         if (newState.status === "idle") {
             this.#signalStopSpeaking();
-            deleteAudioPlayer(this);
+            PlayersManager.remove(this);
         }
-        if (newResource) addAudioPlayer(this);
+        if (newResource) PlayersManager.push(this);
 
         const isNewResources = OldState.status !== "idle" && newState.status === "playing" && OldState.resource !== newState.resource;
         this.#_state = newState; //Обновляем статистику плеера
@@ -116,7 +116,7 @@ export class AudioPlayer extends EventEmitter {
         const queue: Queue = client.queue.get(guild.id);
 
         //Если нет музыки в очереди или нет самой очереди, завершаем проигрывание!
-        if (!queue || !queue.songs || !queue.songs.length) return void queue?.events?.queue?.emit("DeleteQueue", message);
+        if (!queue || !queue.songs || !queue.songs.length) return void queue.emitter.emit("DeleteQueue", message);
 
         //Получаем исходный поток
         CreateResource(queue.songs[0], queue.audioFilters).then(stream => {
@@ -215,11 +215,12 @@ export class AudioPlayer extends EventEmitter {
     //====================== ====================== ====================== ======================
     /**
      * @description Что бот будет отправлять в гс
-     * @param resource {PlayerResource} Поток
+     * @param resource {PlayerResource | Error} Поток или ошибка из-за которой невозможно включить трек
      * @private
      */
-    readonly #play = (resource: PlayerResource): void => {
+    readonly #play = (resource: PlayerResource | Error): void => {
         if (!resource) return void this.emit("error", "[AudioResource]: has not found!");
+        if (resource instanceof Error) return void this.emit("error", resource);
 
         //Если произойдет ошибка в чтении потока
         const onStreamError = (error: Error) => {
@@ -308,9 +309,9 @@ export class AudioPlayer extends EventEmitter {
  * @param seek {number} Пропуск музыки до 00:00:00
  * @param req
  */
-function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0, req: number = 1): Promise<PlayerResource | null> {
+function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0, req: number = 1): Promise<PlayerResource | Error> {
     return new Promise(async (resolve) => {
-        if (req > 2) return resolve(null);
+        if (req > 2) return resolve(Error("[AudioPlayer]: has not found format this song!"));
 
         const CheckResource = await FindResourceInfo(song);
         const RetryCheck = () => { //Повторно делаем запрос
@@ -395,7 +396,7 @@ interface PlayerStateBuffering {
 /**
  * @description Ивенты плеера
  */
-export interface AudioPlayer extends EventEmitter {
+interface AudioPlayerEvents {
     //Плеер ожидает дальнейших действий
     idle: (oldState: PlayerState, newState: PlayerState) => void;
     //Плеер ожидает
@@ -407,5 +408,5 @@ export interface AudioPlayer extends EventEmitter {
     //Плеер воспроизводит музыку в голосовой канал
     playing: (oldState: PlayerState, newState: PlayerState) => void;
     //Плеер не может продолжить воспроизведение музыки из-за ошибки
-    error: (error: any) => void;
+    error: (error: string | Error) => void;
 }

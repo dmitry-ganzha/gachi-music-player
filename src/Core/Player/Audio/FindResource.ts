@@ -162,7 +162,7 @@ export namespace FindTrackInfo {
             case "search": {
                 setImmediate(() => {
                     const promise = YouTube.SearchVideos(search);
-                    promise.then((result: InputTrack[]) => AutoCompileDataSearch(result, message, voiceChannel, types));
+                    promise.then((result: InputTrack[]) => AutoCompileData(result, message, voiceChannel, types));
                     promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
@@ -229,7 +229,7 @@ export namespace FindTrackInfo {
             case "search": {
                 setImmediate(() => {
                     const promise = Spotify.SearchTracks(search);
-                    promise.then((result) => AutoCompileDataSearch(result, message, voiceChannel, types));
+                    promise.then((result) => AutoCompileData(result, message, voiceChannel, types));
                     promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
@@ -269,7 +269,7 @@ export namespace FindTrackInfo {
             case "search": {
                 setImmediate(() => {
                     const promise = VK.SearchTracks(search);
-                    promise.then((result) => AutoCompileDataSearch(result, message, voiceChannel, types));
+                    promise.then((result) => AutoCompileData(result, message, voiceChannel, types));
                     promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
@@ -310,7 +310,7 @@ export namespace FindTrackInfo {
             case "search": {
                 setImmediate(() => {
                     const promise = SoundCloud.SearchTracks(search);
-                    promise.then((result: InputTrack[]) => AutoCompileDataSearch(result, message, voiceChannel, types));
+                    promise.then((result: InputTrack[]) => AutoCompileData(result, message, voiceChannel, types));
                     promise.catch((err) => AutoCatch(err, message, types.platform));
                 });
                 return;
@@ -356,34 +356,25 @@ export namespace FindTrackInfo {
 //====================== ====================== ====================== ======================
 /**
  * @description Сокращение функций FindTrackInfo<all> для уменьшения кода без потерь по качеству
- * @param info {InputTrack | InputPlaylist} Трек или плейлист
+ * @param info {InputTrack | InputPlaylist | InputTrack[] | {items: InputTrack[]}} Трек или плейлист
  * @param message {ClientMessage} Сообщение пользователя
  * @param voiceChannel {VoiceChannel | StageChannel} Голосовой канал
  * @param types {Types} Тип данных и платформа
  * @constructor
  */
-function AutoCompileData(info: InputTrack | InputPlaylist, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel, types: Types) {
-    if (!info) return sendMessage(message, `${message.author}, **${types.platform}** не хочет делится данными! Существует ли **${types.typeSong}** вообще!`);
-    return message.client.player.emit("play", message, voiceChannel, info);
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Сокращение функций FindTrackInfo<all> для уменьшения кода без потерь по качеству
- * @param info {InputTrack[] | {items: InputTrack[]}} Array<InputTrack> или items.Array<InputTrack>
- * @param message {ClientMessage} Сообщение пользователя
- * @param voiceChannel {VoiceChannel | StageChannel} Голосовой канал
- * @param types {Types} Тип данных и платформа
- * @constructor
- */
-function AutoCompileDataSearch(info: InputTrack[] | {items: InputTrack[]} , message: ClientMessage, voiceChannel: VoiceChannel | StageChannel, types: {platform: TypeSearch}) {
+function AutoCompileData(info: InputTrack | InputPlaylist | InputTrack[] | {items: InputTrack[]}, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel, types: Types) {
     if ("items" in info) {
         if (!info || !info.items) return sendMessage(message, `${message.author}, я нечего не нашел в **${types.platform}**`);
 
         return SearchSendMessage(message, info.items, voiceChannel, ArraySort(info.items, message, types.platform), info.items.length, types.platform);
-    }
-    if (!info) return sendMessage(message, `${message.author}, я нечего не нашел в **${types.platform}**`);
+    } else if (info instanceof Array) {
+        if (!info) return sendMessage(message, `${message.author}, я нечего не нашел в **${types.platform}**`);
 
-    return SearchSendMessage(message, info, voiceChannel, ArraySort(info, message, types.platform), info.length, types.platform);
+        return SearchSendMessage(message, info, voiceChannel, ArraySort(info, message, types.platform), info.length, types.platform);
+    }
+
+    if (!info) return sendMessage(message, `${message.author}, **${types.platform}** не хочет делится данными! Существует ли **${types.typeSong}** вообще!`);
+    return message.client.player.emit("play", message, voiceChannel, info);
 }
 //====================== ====================== ====================== ======================
 /**
