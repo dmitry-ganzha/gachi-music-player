@@ -37,12 +37,13 @@ export class Trader extends Command {
             color: Colors.BLUE_DARK,
             thumbnail: {url: VoidIcon},
             author: {
-                name: res.character
+                name: res.character,
+                url: "https://warframe.fandom.com/wiki/Baro_Ki%27Teer"
             },
             footer: {
-                text: `${res.active ? `Уйдет через` : `Прейдет через`} ${res.active ? res.startString : res.endString}`,
+                text: `${res.active ? `Уйдет через` : `Прейдет через`} ${!res.active ? res.startString : res.endString}`,
             }
-        }
+        };
         //Если есть инвентарь, то запускаем CollectorSortReaction
         if (pagesInventory.length >= 1) {
             EmbedVoidTrader.description = pagesInventory[0];
@@ -59,13 +60,17 @@ export class Trader extends Command {
      * @private
      */
     readonly #parsedInventory = (inventory: voidTraderItem[]) => {
-        let pages: string[] = [];
+        let pages: string[] = [], itemNumber = 1;
 
         //Если есть инвентарь, то парсим все в string
         if (inventory.length !== 0) {
             // @ts-ignore
-            inventory.ArraySort(10).forEach((items: voidTraderItem[]) => {
-                const item = items.map((item) => `[${item.ducats}] | [${item.credits}] | [${item.item}]`).join("\n");
+            inventory.ArraySort(5).forEach((items: voidTraderItem[]) => {
+                const item = items.map((item) =>
+                    `${itemNumber++} Предмет [**${item.item}**]  
+                    **❯ Кредиты:** (${FormatBytes(item.credits)})
+                    **❯ Дукаты :** ${item.ducats ? `(${item.ducats})` : `(Нет)`}`
+                ).join("\n\n");
 
                 //Если item не undefined, то добавляем его в pages
                 if (item !== undefined) pages.push(item);
@@ -95,6 +100,12 @@ export class Trader extends Command {
                     return msg.edit({embeds: [embed]});
                 });
             },
+            //При нажатии на 2 эмодзи, будет выполнена эта функция
+            cancel: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage) => {
+                setImmediate(() => {
+                    [msg, message].forEach((mes) => mes.deletable ? mes.delete().catch(() => null) : null);
+                });
+            },
             //При нажатии на 3 эмодзи, будет выполнена эта функция
             next: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage) => {
                 setImmediate(() => {
@@ -106,15 +117,16 @@ export class Trader extends Command {
                     embed = {...embed, description: pages[page - 1]};
                     return msg.edit({embeds: [embed]});
                 });
-            },
-            //При нажатии на 2 эмодзи, будет выполнена эта функция
-            cancel: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage) => {
-                setImmediate(() => {
-                    [msg, message].forEach((mes) => mes.deletable ? mes.delete().catch(() => null) : null);
-                });
             }
         };
     };
+}
+
+function FormatBytes(heapUsed: number): string {
+    if (heapUsed === 0) return '0';
+    const sizes: string[] = ['k', 'kk', 'kkk'];
+    const i: number = Math.floor(Math.log(heapUsed) / Math.log(1000));
+    return `${parseFloat((heapUsed / Math.pow(1000, i)).toFixed(2))} ${sizes[i]}`;
 }
 
 interface voidTraderItem {

@@ -32,8 +32,7 @@ export namespace Spotify {
                     seconds: (result.duration_ms / 1000).toFixed(0)
                 },
                 image: result.album.images[0],
-                isValid: true,
-                PrevFile: result.preview_url
+                //PrevFile: result.preview_url
             });
         });
     }
@@ -62,8 +61,7 @@ export namespace Spotify {
                                 seconds: (track.duration_ms / 1000).toFixed(0)
                             },
                             image: track.album.images[0] ?? result?.images[0],
-                            isValid: true,
-                            PrevFile: track?.preview_url
+                            //PrevFile: track?.preview_url
                         }
                     })),
                     image: result.images[0],
@@ -101,8 +99,7 @@ export namespace Spotify {
                                 seconds: (track.duration_ms / 1000).toFixed(0)
                             },
                             image: track?.album?.images[0] ?? result?.images[0],
-                            isValid: true,
-                            PrevFile: track.preview_url
+                            //PrevFile: track.preview_url
                         }
                     })),
                     image: result?.images[0],
@@ -142,8 +139,7 @@ export namespace Spotify {
                                 seconds: (track.duration_ms / 1000).toFixed(0),
                             },
                             image: track.album.images[0],
-                            isValid: true,
-                            PrevFile: track.preview_url
+                            //PrevFile: track.preview_url
                         };
                     }))
                 });

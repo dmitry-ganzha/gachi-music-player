@@ -82,6 +82,12 @@ export class CommandQueue extends Command {
                     return this.#EditMessage(queue, message, msg, pages, page);
                 });
             },
+            //При нажатии на 2 эмодзи, будет выполнена эта функция
+            cancel: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
+                setImmediate(() => {
+                    [msg, message].forEach((mes) => mes.deletable ? mes.delete().catch(() => null) : null);
+                });
+            },
             //При нажатии на 3 эмодзи, будет выполнена эта функция
             next: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
                 setImmediate(() => {
@@ -90,12 +96,6 @@ export class CommandQueue extends Command {
                     if (page === pages.length) return null;
                     page++;
                     return this.#EditMessage(queue, message, msg, pages, page);
-                });
-            },
-            //При нажатии на 2 эмодзи, будет выполнена эта функция
-            cancel: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
-                setImmediate(() => {
-                    [msg, message].forEach((mes) => mes.deletable ? mes.delete().catch(() => null) : null);
                 });
             }
         };

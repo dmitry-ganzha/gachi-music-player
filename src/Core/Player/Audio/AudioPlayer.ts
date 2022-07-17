@@ -61,8 +61,8 @@ export class AudioPlayer extends EventEmitter {
         const newResource = newState?.resource; //Новый поток. Есть ли он?
 
         if (OldState.status !== "idle" && OldState.resource !== newResource) {
-            OldState.resource.playStream.destroy();
-            OldState.resource.playStream.read();
+            OldState.resource.destroy();
+            OldState.resource.read();
             delete OldState.resource;
         }
 
@@ -220,7 +220,6 @@ export class AudioPlayer extends EventEmitter {
      */
     readonly #play = (resource: PlayerResource): void => {
         if (!resource) return void this.emit("error", "[AudioResource]: has not found!");
-        if (resource?.ended) return void this.emit("error", "[AudioPlayer]: Fail to load stream");
 
         //Если произойдет ошибка в чтении потока
         const onStreamError = (error: Error) => {
@@ -241,8 +240,8 @@ export class AudioPlayer extends EventEmitter {
             };
 
             //Когда возможно будет прочитать поток, включаем его в голосовой канал
-            resource.playStream.once("readable", onReadableCallback);
-            ["end", "close", "finish"].forEach((event: string) => resource.playStream.once(event, onFailureCallback));
+            resource.once("readable", onReadableCallback);
+            ["end", "close", "finish"].forEach((event: string) => resource.once(event, onFailureCallback));
             this.state = { status: "buffering", resource, onReadableCallback, onFailureCallback, onStreamError };
         }
     };

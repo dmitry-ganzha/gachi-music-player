@@ -1,20 +1,19 @@
-import {Readable, Writable} from "stream";
 import JsonFFmpeg from "../../../../../DataBase/FFmpeg.json";
 import {CreateFilters, FFmpeg, FFmpegArgs} from "./FFmpeg";
 import {AudioFilters} from "../Queue/Queue";
 import {OggDemuxer} from "./OggDemuxer";
 
 /**
- * @name FFmpegDecoder
- * @description Совмещает FFmpeg с OggDemuxer
+ * @name FFmpegDecoder<OggDemuxer>
+ * Создает интеграцию с <OggDemuxer> и <FFmpeg>
  */
-export class FFmpegDecoder {
-    public readonly playStream: Readable & Writable;
+export class FFmpegDecoder extends OggDemuxer {
     readonly #FFmpeg: FFmpeg;
     readonly #TimeFrame: number;
     #started = false;
     #playbackDuration = 0;
 
+    //Общее время проигрывание текущего ресурса
     public get duration() {
         return this.#playbackDuration;
     };
@@ -30,45 +29,30 @@ export class FFmpegDecoder {
     };
     //====================== ====================== ====================== ======================
     /**
-     * @description Для проверки, читабельный ли стрим
-     */
-    public get readable() {
-        return this.playStream.readable;
-    };
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Для проверки, закончился ли стрим ресурса
-     */
-    public get ended() {
-        return this.playStream?.readableEnded || this.playStream?.destroyed || !this.playStream;
-    };
-    //====================== ====================== ====================== ======================
-    /**
      * @description Декодируем в opus
      * @param parameters {Options}
      */
     public constructor(parameters: {url: string, seek?: number, Filters?: AudioFilters}) {
-        //Проверяем сколько времени длится пакет
-        this.#TimeFrame = FFmpegTimer(parameters?.Filters);
+        super();
         //Даем FFmpeg'у, ссылку с которой надо скачать поток
         this.#FFmpeg = new FFmpeg(CreateArguments(parameters.url, parameters?.Filters, parameters?.seek));
-        //Декодируем в чистый opus
-        this.playStream = new OggDemuxer({autoDestroy: true, objectMode: true});
+        this.#FFmpeg.pipe(this); //Загружаем из FFmpeg'a в декодер
 
-        this.#FFmpeg.pipe(this.playStream); //Загружаем из FFmpeg'a в декодер
+        //Проверяем сколько времени длится пакет
+        this.#TimeFrame = FFmpegTimer(parameters?.Filters);
 
         //Когда можно будет читать поток записываем его в <this.#started>
-        this.playStream.once("readable", () => (this.#started = true));
+        this.once("readable", () => (this.#started = true));
         //Если в <this.playStream> будет один из этих статусов, чистим память!
-        ["end", "close", "error"].forEach((event) => this.playStream.once(event, this.destroy));
-        return;
+        ["end", "close", "error"].forEach((event) => this.once(event, this.destroy));
     };
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем пакет и проверяем не пустой ли он если не пустой к таймеру добавляем 20 мс
      */
     public readonly read = (): Buffer | null => {
-        const packet: Buffer = this.playStream?.read();
+        const packet: Buffer = super.read();
+
         if (packet) this.duration += this.#TimeFrame;
 
         return packet;
@@ -77,14 +61,16 @@ export class FFmpegDecoder {
     /**
      * @description Чистим память!
      */
-    public readonly destroy = (): void => {
+    public readonly _destroy = (): void => {
         if (this.#FFmpeg) this.#FFmpeg.destroy();
+        if (!super.destroyed) super.destroy();
 
         //Удаляем с задержкой (чтоб убрать некоторые ошибки)
         setTimeout(() => {
-            if (this.playStream && !this.playStream?.destroyed) {
-                this.playStream?.removeAllListeners();
-                this.playStream?.destroy();
+            if (this && !this?.destroyed) {
+                super.destroy();
+                this?.removeAllListeners();
+                this?.destroy();
             }
         }, 125);
     };

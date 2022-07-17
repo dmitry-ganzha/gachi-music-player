@@ -32,7 +32,7 @@ export class FFmpeg extends Duplex {
     readonly #process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
     get #input() { return this.#process.stdout; };
     get #output() { return this.#process.stdin; };
-    //====================== ====================== ====================== ======================
+
     public constructor(args: FFmpegArgs) {
         super({autoDestroy: true, objectMode: true});
         //Используется для загрузки потока в ffmpeg. Неообходимо не указывать параметр -i

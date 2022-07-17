@@ -81,7 +81,7 @@ function getFormatSong({type, url, title, author, duration}: Song): Promise<Inpu
  * @constructor
  */
 function FindTrack(nameSong: string, duration: number): Promise<InputFormat> {
-    return YouTube.SearchVideos(nameSong, {limit: 30}).then((Tracks) => {
+    return YouTube.SearchVideos(nameSong, {limit: 5}).then((Tracks) => {
         //Фильтруем треки оп времени
         const FindTracks = Tracks.filter((track) => Filter(track, duration));
 
