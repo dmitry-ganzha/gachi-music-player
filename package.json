@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@discordjs/voice": "^0.11.0-dev.1657757511-fe34f48",
-    "discord.js": "^14.0.1"
+    "discord.js": "^14.0.1",
+    "tiny-typed-emitter": "^2.1.0"
   },
   "repository": {
     "github": "https://github.com/SNIPPIK/WatKLOK.git"
