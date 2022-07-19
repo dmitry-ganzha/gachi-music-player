@@ -141,6 +141,15 @@ function FileType(file: string): string {
 function NameFilesSystem(): string {
     return "[FileSystem]";
 }
+
+/**
+ * @description Отправляем лог
+ * @param File {string} Файл
+ * @param Path {string} Путь
+ * @param status {emoji} Статус загрузки
+ * @requires {FileType, NameFilesSystem}
+ * @constructor
+ */
 function SendLog(File: string, Path: string, status: "✖️" | "✔️") {
     return console.log(`${NameFilesSystem()} ->  Status: [${status}] | Type: [${FileType(File)}] | Path: [${Path}]`);
 }

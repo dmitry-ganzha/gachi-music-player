@@ -31,6 +31,7 @@ export class FFmpegDecoder extends OggDemuxer {
     /**
      * @description Декодируем в opus
      * @param parameters {Options}
+     * @requires {CreateArguments, FFmpegTimer}
      */
     public constructor(parameters: {url: string, seek?: number, Filters?: AudioFilters}) {
         super();

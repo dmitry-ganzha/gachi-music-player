@@ -16,6 +16,7 @@ const GlobalOptions: httpsClientOptions = {request: {method: "HEAD"}};
 //====================== ====================== ====================== ======================
 /**
  * @description Заготавливаем необходимые данные для создания потока
+ * @requires {getFormatYouTube, CheckLink}
  */
 export function FindResourceInfo(song: Song): Promise<true | Error> {
     return new Promise(async (resolve) => {
@@ -58,6 +59,7 @@ function CheckLink(url: string) {
 /**
  * @description Получаем данные формата
  * @param song {Song} Трек
+ * @requires {FindTrack, getFormatYouTube}
  */
 function getFormatSong({type, url, title, author, duration}: Song): Promise<InputFormat | FFmpegFormat> {
     try {
@@ -78,6 +80,7 @@ function getFormatSong({type, url, title, author, duration}: Song): Promise<Inpu
  * @description Ищем трек на youtube
  * @param nameSong {string} Название музыки
  * @param duration
+ * @requires {getFormatYouTube}
  * @constructor
  */
 function FindTrack(nameSong: string, duration: number): Promise<InputFormat> {

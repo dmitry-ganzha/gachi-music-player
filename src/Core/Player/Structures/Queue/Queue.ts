@@ -25,6 +25,19 @@ export class Queue {
         this.#_channels = { message, voice, connection: null};
     };
 
+    public readonly swapSongs = (customNum?: number) => {
+        if (this.songs.length === 1) return this.player.stop();
+
+        const SetNum = customNum ? customNum : this.songs.length - 1;
+        const ArraySongs: Song[] = this.songs;
+        const hasChange = ArraySongs[SetNum];
+
+        ArraySongs[SetNum] = ArraySongs[0];
+        ArraySongs[0] = hasChange;
+        this.player.stop();
+        return;
+    }
+
     public get player() {
         return this.#_player;
     };

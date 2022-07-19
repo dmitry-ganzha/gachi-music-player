@@ -3,10 +3,22 @@ import {Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
 import {CollectionMap} from "../../Utils/LiteUtils";
 import {InputPlaylist} from "../../Utils/TypeHelper";
-import {EmbedHelper, EmbedMessages} from "../Structures/EmbedMessages";
+import {EmbedMessages} from "../Structures/EmbedMessages";
+import {ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType} from "discord.js";
 
+//Кнопки над сообщением о проигрывании трека
+const Buttons = new ActionRowBuilder().addComponents([
+    new ButtonBuilder().setCustomId("last").setEmoji({id: "986009800867479572"}).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId("resume_pause").setEmoji({id: "986009725432893590"}).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId("skip").setEmoji({id: "986009774015520808"}).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId("replay").setEmoji({id: "986009690716667964"}).setStyle(ButtonStyle.Secondary)]
+);
+//Кнопки с которыми можно взаимодействовать
+const ButtonID = new Set(["skip", "resume_pause", "replay", "last"]);
+
+//Баса с сообщениями
 const Message = new CollectionMap<string, ClientMessage>();
-let MessageTimer: NodeJS.Timeout = null;
+let MessageTimer: NodeJS.Timeout = null; //Таймер
 
 /**
  * Сообщения, которые отправляет плеер
@@ -15,6 +27,7 @@ export namespace MessagePlayer {
     /**
      * @description Отправляем сообщение о текущем треке, обновляем раз в 15 сек
      * @param message {ClientMessage} Сообщение
+     * @requires {removeMessage, addMessage, AddInQueueMessage, Message}
      * @constructor
      */
     export function PlaySong(message: ClientMessage) {
@@ -30,6 +43,7 @@ export namespace MessagePlayer {
      * @param guild {ClientMessage<guild>} Сервер
      * @param song {Song} Трек
      * @param err {Error | string} Ошибка
+     * @requires {DeleteMessage}
      * @constructor
      */
     export function ErrorPlayer({channel, client, guild}: ClientMessage, song: Song, err: Error | string = null) {
@@ -52,6 +66,7 @@ export namespace MessagePlayer {
      * @param client {ClientMessage<client>} Клиент
      * @param guild {ClientMessage<guild>} Сервер
      * @param song {Song} Трек
+     * @requires {DeleteMessage}
      * @constructor
      */
     export function pushSong({channel, client, guild}: ClientMessage, song: Song) {
@@ -72,6 +87,7 @@ export namespace MessagePlayer {
      * @description Отправляем сообщение о том что плейлист был добавлен в очередь
      * @param message {ClientMessage} Сообщение
      * @param playlist {InputPlaylist} Сам плейлист
+     * @requires {DeleteMessage}
      */
     export function pushPlaylist(message: ClientMessage, playlist: InputPlaylist) {
         const {channel, client} = message;
@@ -92,6 +108,7 @@ export namespace MessagePlayer {
 /**
  * @description Обновляем сообщение
  * @param message {ClientMessage} Сообщение
+ * @requires {removeMessage}
  * @constructor
  */
 function UpdateMessage(message: ClientMessage): void {
@@ -113,18 +130,54 @@ function UpdateMessage(message: ClientMessage): void {
 /**
  * @description Отправляем сообщение
  * @param message {ClientMessage} Сообщение
+ * @requires {CreateCollector, Buttons}
  * @constructor
  */
 function AddInQueueMessage(message: ClientMessage): Promise<ClientMessage> {
     const queue: Queue = message.client.queue.get(message.guild.id);
-    const CurrentPlayEmbed = EmbedMessages.CurrentPlay(message.client, queue.songs[0], queue);
+    const CurrentPlayEmbed = EmbedMessages.CurrentPlay(message.client, queue.songs[0], queue); // @ts-ignore
+    const sendMessage = message.channel.send({embeds: [CurrentPlayEmbed], components: [Buttons]});
 
-    try {
-        // @ts-ignore
-        return message.channel.send({embeds: [CurrentPlayEmbed], components: [EmbedHelper.Button]});
-    } catch (e) {
-        message.client.console(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: playSong, ${e.code}]: ${e?.message}`);
-    }
+    sendMessage.then((msg) => CreateCollector(msg, queue));
+    sendMessage.catch((e) => console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: playSong, ${e.code}]: ${e?.message}`));
+
+    return sendMessage;
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Создаем сборщик кнопок
+ * @param message {ClientMessage} Сообщение
+ * @param queue {Queue} Очередь сервера
+ * @constructor
+ */
+function CreateCollector(message: ClientMessage, queue: Queue) {
+    //Создаем сборщик кнопок
+    const collector = message.createMessageComponentCollector({
+        time: queue.songs[0].duration.seconds * 4, //Время через которое сборщик будет недоступен
+        filter: (i) => ButtonID.has(i.customId), //Фильтруем
+        componentType: ComponentType.Button, //Какие компоненты принимать
+    });
+
+    //Добавляем ему ивент сборки кнопок
+    collector.on("collect", (i) => {
+        switch (i.customId) {
+            case "resume_pause": { //Если надо приостановить музыку или продолжить воспроизведение
+                switch (queue?.player.state.status) {
+                    case "playing": return queue?.player.pause();
+                    case "paused": return queue?.player.resume();
+                }
+                return;
+            }
+            //Пропуск текущей музыки
+            case "skip": return queue?.player.stop();
+            //Повторно включить текущую музыку
+            case "replay": return queue?.player.seek(message, 0);
+            //Включить последнею из списка музыку
+            case "last": return queue?.swapSongs();
+        }
+    });
+
+    return collector;
 }
 //====================== ====================== ====================== ======================
 /**
@@ -145,6 +198,7 @@ function DeleteMessage(send: Promise<ClientMessage>, time: number = 5e3): void {
 /**
  * @description Добавляем сообщение в <Message[]>
  * @param message {message} Сообщение
+ * @requires {StepCycleMessage}
  */
 function addMessage(message: ClientMessage) {
     if (Message.get(message.channelId)) return;
@@ -156,6 +210,7 @@ function addMessage(message: ClientMessage) {
 /**
  * @description Удаляем сообщение из <Message[]>, так-же проверяем отключить ли таймер
  * @param message {ClientMessage} Сообщение
+ * @requires {MessageTimer, Message}
  */
 function removeMessage(message: ClientMessage) {
     const Find = Message.get(message.channelId);
@@ -171,6 +226,7 @@ function removeMessage(message: ClientMessage) {
 //====================== ====================== ====================== ======================
 /**
  * @description Обновляем сообщения на текстовый каналах
+ * @requires {UpdateMessage, Message, MessageTimer}
  * @constructor
  */
 function StepCycleMessage() {

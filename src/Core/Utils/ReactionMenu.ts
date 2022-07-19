@@ -19,7 +19,8 @@ export class CollectorSortReaction {
      * @description Создаем menu emoji
      * @param embed { EmbedConstructor | string } MessageEmbed или текст
      * @param message {ClientMessage} Сообщение с сервера
-     * @param callbacks
+     * @param callbacks {Callbacks} Функции
+     * @requires {reaction}
      */
     public constructor(embed: EmbedConstructor | string, message: ClientMessage, callbacks: Callbacks) {
         setImmediate(() => {
@@ -38,6 +39,7 @@ export class CollectorSortReaction {
  * @param msg {ClientMessage} Сообщение
  * @param callback {Function} Выполняем функцию реакции
  * @param emoji {string} Смайл
+ * @requires {filter}
  */
 function reaction(user: User, message: ClientMessage, msg: ClientMessage, callback: Function, emoji: string): Promise<ReactionCollector> {
     return msg.react(emoji).then(() => msg.createReactionCollector({filter: (reaction: MessageReaction, user: User) => filter(emoji, reaction, user, message), time: 1e4 * 25})

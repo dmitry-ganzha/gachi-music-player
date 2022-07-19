@@ -11,6 +11,7 @@ export namespace httpsClient {
      * @description Создаем запрос по ссылке, модифицируем по необходимости
      * @param url {string} Ссылка
      * @param options {httpsClientOptions} Настройки запроса
+     * @requires {ChangeReqOptions}
      */
     export function Request(url: string, options?: httpsClientOptions): Promise<IncomingMessage> {
         ChangeReqOptions(options);
@@ -40,6 +41,7 @@ export namespace httpsClient {
      * @description Автоматическая переадресация
      * @param url {string} Ссылка
      * @param options {httpsClientOptions} Настройки запроса
+     * @requires {Request}
      * @constructor
      */
     function AutoRedirect(url: string, options?: httpsClientOptions): Promise<IncomingMessage> {
@@ -60,6 +62,7 @@ export namespace httpsClient {
      * @description Получаем страницу в формате string
      * @param url {string} Ссылка
      * @param options {httpsClientOptions} Настройки запроса
+     * @requires {AutoRedirect, uploadCookie, getCookies}
      */
     export function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
         return new Promise((resolve) => {
@@ -101,6 +104,7 @@ export namespace httpsClient {
      * @description Получаем со страницы JSON (Работает только тогда когда все страница JSON)
      * @param url {string} Ссылка
      * @param options {httpsClientOptions} Настройки запроса
+     * @requires {parseBody}
      */
     export function parseJson(url: string, options?: httpsClientOptions): Promise<null | any> {
         return parseBody(url, options).then((body: string) => {
@@ -134,6 +138,7 @@ function GetUserAgent(): {Agent: string, Version: string} {
 /**
  * @description Добавляем свои аргументы запроса
  * @param options {httpsClientOptions} Настройки запроса
+ * @requires {GetUserAgent}
  */
 function ChangeReqOptions(options: httpsClientOptions): void {
     if (!options?.request) options = {...options, request: {headers: {}}};

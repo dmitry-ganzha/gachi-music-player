@@ -104,6 +104,7 @@ type OptionsSendType =  "css" | "js" | "ts" | "cpp" | "html" | "cs";
 /**
  * @description Отправляем просто embed сообщение
  * @param options {SendOptions} Параметры отправки
+ * @requires {CatchMessage, MessageEmbed}
  * @constructor
  */
 export function MessageChannelSend(options: SendOptions): void {
@@ -126,6 +127,7 @@ function CatchMessage(message: Promise<ClientMessage>): void {
  * @description Создаем JSON<EmbedConstructor>
  * @param color {ColorResolvable | number} Цвет
  * @param description {string} Что будет написано в embed
+ * @requires {ConvertColor}
  * @constructor
  */
 function MessageEmbed(color: ColorResolvable | number = "BLUE", description: string): EmbedConstructor {

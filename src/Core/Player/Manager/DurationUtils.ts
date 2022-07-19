@@ -19,6 +19,7 @@ export namespace DurationUtils {
     /**
      * @description Создаем готовый формат времени. Пример 00:00:00:00 (Days:Hours:Minutes:Seconds)
      * @param duration {number} Число
+     * @requires {toStringTime}
      * @constructor
      */
     export function ParsingTimeToString(duration: number): string {
@@ -65,6 +66,7 @@ export namespace DurationUtils {
 /**
  * @description Делаем из числа строку, так-же добавляем к числу 0 если это надо
  * @param duration {number} Желательно число
+ * @requires {NumberString}
  */
 function toStringTime(duration: number): string | number {
     return NumberString(parseInt(duration as any));

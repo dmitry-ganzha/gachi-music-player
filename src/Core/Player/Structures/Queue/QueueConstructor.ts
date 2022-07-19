@@ -17,6 +17,7 @@ export namespace QueueConstructor {
      * @param message {ClientMessage} Сообщение с сервера
      * @param VoiceChannel {VoiceChannel} К какому голосовому каналу надо подключатся
      * @param info {InputTrack | InputPlaylist} Входные данные это трек или плейлист?
+     * @requires {CreateQueue, PushSong}
      * @constructor
      */
     export function CheckQueue(message: ClientMessage, VoiceChannel: VoiceChannel, info: InputTrack | InputPlaylist) {
@@ -126,6 +127,7 @@ export class QueueEvents extends TypedEmitter<Events> {
  * @description Удаление очереди
  * @param message {ClientMessage} Сообщение с сервера
  * @param sendDelQueue {boolean} Отправить сообщение об удалении очереди
+ * @requires {sendMessage}
  */
 function onDeleteQueue(message: ClientMessage, sendDelQueue: boolean = true) {
     const {client, guild} = message;

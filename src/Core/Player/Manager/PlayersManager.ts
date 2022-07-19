@@ -8,6 +8,7 @@ export namespace PlayersManager {
     /**
      * @description Добавляем плеер в базу
      * @param player {AudioPlayer}
+     * @requires {audioPlayers, playerCycleStep, TimeToFrame}
      */
     export function push(player: AudioPlayer): void {
         if (audioPlayers.includes(player)) return;
@@ -23,6 +24,7 @@ export namespace PlayersManager {
     /**
      * @description Удаляем плеер из базы
      * @param player {AudioPlayer}
+     * @requires {AudioCycleTimer, audioPlayers, TimeToFrame}
      */
     export function remove(player: AudioPlayer): void {
         const index = audioPlayers.indexOf(player);
@@ -38,6 +40,7 @@ export namespace PlayersManager {
 /**
  * @description Цикл жизни плеера
  * @param players {AudioPlayer[]} Плееры
+ * @requires {audioPlayers, AudioCycleTimer, TimeToFrame}
  */
 function playerCycleStep(players: AudioPlayer[] = null): void {
     //Проверяем плееры на возможность включить музыку в голосовые каналы

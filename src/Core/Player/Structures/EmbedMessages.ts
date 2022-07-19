@@ -3,7 +3,6 @@ import {Song} from "./Queue/Song";
 import {AudioFilters, Queue} from "./Queue/Queue";
 import {EmbedConstructor, InputPlaylist} from "../../Utils/TypeHelper";
 import {AudioPlayer} from "../Audio/AudioPlayer";
-import {ActionRowBuilder, ButtonBuilder, ButtonStyle} from "discord.js";
 import {Colors} from "../../Utils/LiteUtils";
 import {DurationUtils} from "../Manager/DurationUtils";
 
@@ -17,12 +16,6 @@ export namespace EmbedHelper {
     export const NotVer = "https://cdn.discordapp.com/attachments/860113484493881365/986005794849980486/Not.png";
     export const NotFound = "https://cdn.discordapp.com/attachments/860113484493881365/986005794627670086/WTF.png";
     export const NotImage = "https://cdn.discordapp.com/attachments/860113484493881365/940926476746883082/MusciNote.png";
-    export const Button = new ActionRowBuilder().addComponents([
-        new ButtonBuilder().setCustomId("last").setEmoji({id: "986009800867479572"}).setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId("resume_pause").setEmoji({id: "986009725432893590"}).setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId("skip").setEmoji({id: "986009774015520808"}).setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId("replay").setEmoji({id: "986009690716667964"}).setStyle(ButtonStyle.Secondary)]
-    );
 }
 //====================== ====================== ====================== ======================
 /**
@@ -164,6 +157,7 @@ export namespace EmbedMessages {
  * @param songs {Queue<songs>>} Все треки
  * @param audioFilters
  * @param client {WatKLOK} Клиент
+ * @requires {ConvertCurrentTime, MusicDuration}
  */
 function createFields(song: Song, {player, songs, audioFilters}: Queue, client: WatKLOK): { name: string, value: string }[] {
     const playbackDuration = ConvertCurrentTime(player, audioFilters);
@@ -182,6 +176,7 @@ function createFields(song: Song, {player, songs, audioFilters}: Queue, client: 
  * @param isLive {Song<isLive>} Текущий трек, стрим?
  * @param duration {Song<duration>} Продолжительность трека
  * @param curTime {number | string} Текущее время проигрывания трека
+ * @requires {ProgressBar}
  */
 function MusicDuration({isLive, duration}: Song, curTime: number | string): string {
     if (isLive) return `[${duration.StringTime}]`;

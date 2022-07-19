@@ -95,6 +95,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
      * @description Включаем музыку с пропуском
      * @param message {ClientMessage} Сообщение с сервера
      * @param seek {number} Пропуск музыки до 00:00:00
+     * @requires {CreateResource}
      */
     public readonly seek = (message: ClientMessage, seek: number = 0): void => {
         const {client, guild} = message;
@@ -110,13 +111,17 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     /**
      * @description Включаем музыку
      * @param message {ClientMessage} Сообщение с сервера
+     * @requires {CreateResource}
      */
     public readonly PlayCallback = (message: ClientMessage): void => {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
         //Если нет музыки в очереди или нет самой очереди, завершаем проигрывание!
-        if (!queue || !queue.songs || !queue.songs.length) return void queue.emitter.emit("DeleteQueue", message);
+        if (!queue || !queue?.songs?.length) {
+            if (queue?.emitter) queue.emitter.emit("DeleteQueue", message);
+            return;
+        }
 
         //Получаем исходный поток
         CreateResource(queue.songs[0], queue.audioFilters).then(stream => {
@@ -200,7 +205,10 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
             return;
         }
         //Если некуда проигрывать музыку ставить плеер на паузу
-        if (Receivers.length === 0) return void (this.state = { ...this.state, status: "autoPaused" });
+        if (Receivers.length === 0) {
+            this.state = { ...this.state, status: "autoPaused" };
+            return;
+        }
 
         //Отправка музыкального пакета
         if (this.state.status === "playing") {
@@ -219,12 +227,14 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
      * @private
      */
     readonly #play = (resource: PlayerResource | Error): void => {
-        if (!resource) return void this.emit("error", "[AudioResource]: has not found!");
-        if (resource instanceof Error) return void this.emit("error", resource);
+        if (!resource || resource instanceof Error) {
+            this.emit("error", "[AudioPlayer]: fail playing this song!");
+            return;
+        }
 
         //Если произойдет ошибка в чтении потока
         const onStreamError = (error: Error) => {
-            if (this.state.status !== "idle") void this.emit("error", error);
+            if (this.state.status !== "idle") this.emit("error", error);
             if (this.state.status !== "idle" && this.state.resource === resource) this.state = { status: "idle" };
         };
 
@@ -264,6 +274,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     /**
      * @description Когда плеер завершит песню, он возвратит эту функцию
      * @param message {ClientMessage} Сообщение с сервера
+     * @requires {isRemoveSong}
      * @private
      */
     readonly #onIdlePlayer = (message: ClientMessage): void => {
@@ -276,11 +287,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
             //Рандомим номер трека, просто меняем их местами
             if (queue?.options?.random) {
                 const RandomNumSong = Math.floor(Math.random() * queue.songs.length)
-                const Array: any = queue.songs;
-                const hasChange = Array[RandomNumSong];
-
-                Array[RandomNumSong] = Array[0];
-                Array[0] = hasChange;
+                queue.swapSongs(RandomNumSong);
             }
 
             return this.PlayCallback(message); //Включаем трек

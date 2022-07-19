@@ -47,6 +47,7 @@ export namespace PlayerController {
      * @description Убираем музыку из очереди
      * @param message {ClientMessage} Сообщение с сервера
      * @param args {string} Аргументы Пример: команда аргумент1 аргумент2
+     * @requires {PlayerEnd}
      */
     export function PlayerRemove(message: ClientMessage, args: number): void {
         const {client, guild, member, author} = message;
@@ -83,6 +84,7 @@ export namespace PlayerController {
      * @description Завершает текущую музыку
      * @param message {ClientMessage} Сообщение с сервера
      * @param seek {number} музыка будет играть с нужной секунды (не работает без ffmpeg)
+     * @requires {ParsingTimeToString}
      */
     export function PlayerSeek(message: ClientMessage, seek: number): void {
         const {client, guild, author} = message;
@@ -101,6 +103,7 @@ export namespace PlayerController {
      * @description Пропускает текущую музыку
      * @param message {ClientMessage} Сообщение с сервера
      * @param args {number} Сколько треков пропускаем
+     * @requires {PlayerSkipTo, PlayerEnd}
      */
     export function PlayerSkip(message: ClientMessage, args: number): void {
         if (args) return PlayerSkipTo(message, args);
@@ -171,6 +174,7 @@ export namespace PlayerController {
  * @description Пропускает музыку под номером
  * @param message {ClientMessage} Сообщение с сервера
  * @param args {string} Аргументы Пример: команда аргумент1 аргумент2
+ * @requires {PlayerEnd}
  */
 function PlayerSkipTo(message: ClientMessage, args: number): void {
     const {client, guild, member, author} = message;
