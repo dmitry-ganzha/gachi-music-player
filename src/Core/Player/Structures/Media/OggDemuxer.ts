@@ -25,7 +25,7 @@ export class OggDemuxer extends Transform {
 
        delete this.#segment.bit;
        delete this.#segment.head;
-       this?.destroy();
+       super.destroy();
     };
 
     readonly _transform = (chunk: Buffer, encoding: string, done: TransformDone): void => {
@@ -59,7 +59,6 @@ export class OggDemuxer extends Transform {
         if (chunk.length < 27 + pageSegments) return null;
         const table: Buffer = chunk.subarray(27, 27 + pageSegments); //Возвращает новый буфер, который ссылается на ту же память, что и оригинал, но смещен и обрезан по начальному и конечному индексам.
         const bitstream: number = chunk.readUInt32BE(14); //Считывает 32-битное целое число(14) из буфера
-
         const sizes: Array<number> = [];
         let totalSize: number = 0;
 
@@ -83,26 +82,24 @@ export class OggDemuxer extends Transform {
         let start: number = 27 + pageSegments;
 
         //Начинаем запись сегментов в текущий класс
-        for (let size of sizes) {
-            const segment: Buffer = chunk.subarray(start, start + size);
-            const header: Buffer = segment.subarray(0, 8);
+        sizes.forEach((size) => {
+            const segment: Buffer = chunk.subarray(start, start + size); //Получаем нужный сегмент
+            const header: Buffer = segment.subarray(0, 8); //Обрезаем сегмент для определения
 
-            //Если this._head не пустой
+            //Если есть this.#segment.head
             if (this.#segment.head) {
-                if (header.equals(OPUS_TAGS)) this.emit('tags', segment);
+                if (header.equals(OPUS_TAGS)) this.emit("tags", segment);
                 else if (this.#segment.bit === bitstream) this.push(segment);
-
-            //Если this._head пустой
-            } else if (header.equals(OPUS_HEAD)) {
-                this.emit('head', segment);
+            } else if (header.equals(OPUS_HEAD)) { //Если находим в header, фрагменты OPUS_HEAD
+                this.emit("head", segment);
                 this.#segment.head = true;
                 this.#segment.bit = bitstream;
-
-            //Если chunk невозможно опознать
-            } else this.emit('unknownSegment', segment);
+            } else this.emit("unknownSegment", segment); //Если больше нечего делать с сегментом
 
             start += size;
-        }
+        });
+
+        //Выдаем обрезанный сегмент
         return chunk.subarray(start);
     };
 }

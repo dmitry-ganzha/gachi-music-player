@@ -84,6 +84,7 @@ export class FFmpeg extends Duplex {
             this.#process.removeAllListeners();
             this.#process.kill("SIGKILL");
         }
+        super.destroy();
 
         if (error) return console.error(error);
     };

@@ -189,7 +189,7 @@ function RequestSpotify(method: string): Promise<SpotifyRes> {
                     "accept-encoding": "gzip, deflate, br"
                 }
             }
-        }).then((d) => resolve(d));
+        }).then(resolve);
     });
 }
 //====================== ====================== ====================== ======================
