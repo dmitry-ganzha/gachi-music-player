@@ -7,7 +7,7 @@ export namespace DurationUtils {
      * @param queue {Queue | any[]} Очередь
      * @constructor
      */
-    export function getTimeQueue(queue: Queue | any[]): string {
+    export function getTimeQueue(queue: Queue | Array<any>): string {
         let Timer: number = 0;
 
         if (queue instanceof Queue) queue.songs.forEach((song: Song) => Timer += song.duration.seconds);

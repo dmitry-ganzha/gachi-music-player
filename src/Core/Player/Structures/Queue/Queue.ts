@@ -6,7 +6,7 @@ import {VoiceConnection} from "@discordjs/voice";
 import {QueueEvents} from "./QueueConstructor";
 
 export type LoopType = "song" | "songs" | "off";
-export type AudioFilters = string[] | (string | number)[];
+export type AudioFilters = Array<string> | Array<string | number>;
 
 export class Queue {
     readonly #_player: AudioPlayer;
@@ -17,8 +17,8 @@ export class Queue {
         loop: "off",
         stop: false,
     };
-    public audioFilters: string[] | (string | number)[] = [];
-    public songs: Song[] = [];
+    public audioFilters: Array<string> | Array<string | number> = [];
+    public songs: Array<Song> = [];
 
     public constructor(message: ClientMessage, voice: VoiceChannel) {
         this.#_player = new AudioPlayer(message);
@@ -29,7 +29,7 @@ export class Queue {
         if (this.songs.length === 1) return this.player.stop();
 
         const SetNum = customNum ? customNum : this.songs.length - 1;
-        const ArraySongs: Song[] = this.songs;
+        const ArraySongs: Array<Song> = this.songs;
         const hasChange = ArraySongs[SetNum];
 
         ArraySongs[SetNum] = ArraySongs[0];

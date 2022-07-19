@@ -2,10 +2,10 @@ import {Transform, TransformOptions} from "stream";
 
 const OGG_PAGE_HEADER_SIZE = 26;
 const STREAM_STRUCTURE_VERSION = 0;
-const charCode = (x: string) => x.charCodeAt(0);
-const OGGs_HEADER = Buffer.from([...'OggS'].map(charCode));
-const OPUS_HEAD = Buffer.from([...'OpusHead'].map(charCode));
-const OPUS_TAGS = Buffer.from([...'OpusTags'].map(charCode));
+const charCode = (x: string): number => x.charCodeAt(0);
+const OGGs_HEADER: Buffer = Buffer.from([...'OggS'].map(charCode));
+const OPUS_HEAD: Buffer = Buffer.from([...'OpusHead'].map(charCode));
+const OPUS_TAGS: Buffer = Buffer.from([...'OpusTags'].map(charCode));
 
 type TransformDone = (error?: Error | null) => void;
 
@@ -61,7 +61,7 @@ export class OggDemuxer extends Transform {
         const bitstream: number = chunk.readUInt32BE(14); //Считывает 32-битное целое число(14) из буфера
 
         const sizes: Array<number> = [];
-        let totalSize = 0;
+        let totalSize: number = 0;
 
         //Собираем читаемые сегменты вместе
         for (let i = 0; i < pageSegments;) {
@@ -80,7 +80,7 @@ export class OggDemuxer extends Transform {
         }
 
         if (chunk.length < 27 + pageSegments + totalSize) return null;
-        let start = 27 + pageSegments;
+        let start: number = 27 + pageSegments;
 
         //Начинаем запись сегментов в текущий класс
         for (let size of sizes) {

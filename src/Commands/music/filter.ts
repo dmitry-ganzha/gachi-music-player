@@ -3,7 +3,6 @@ import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {ApplicationCommandOptionType} from "discord.js";
 import FFmpegConfiguration from "../../../DataBase/FFmpeg.json";
-import {getEnableFilters} from "../../Core/Player/Structures/Media/FFmpeg";
 
 export class CommandLoop extends Command {
     public constructor() {
@@ -61,7 +60,7 @@ export class CommandLoop extends Command {
         const SendArg: {color: number, type: "css", message: ClientMessage} = {color: song.color, type: "css", message};
         const NameFilter = args[0]?.toLowerCase();
 
-        if (!NameFilter) return message.client.Send({text: `Включенные фильтры: ${getEnableFilters(queue.audioFilters) ?? "нет включенных фильтров"}`, ...SendArg});
+        if (!NameFilter) return message.client.Send({text: `Включенные фильтры: ${queue.audioFilters.filter((name) => typeof name === "string").join(", ") ?? "нет включенных фильтров"}`, ...SendArg});
 
         //Показываем все доступные фильтры
         if (NameFilter === "all") return message.client.Send({text: `Все фильтры: ${FFmpegConfig()}`, ...SendArg});

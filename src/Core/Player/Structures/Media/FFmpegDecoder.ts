@@ -5,9 +5,10 @@ import {OggDemuxer} from "./OggDemuxer";
 
 let FiltersStatic = {};
 
+//Загружаем статичные фильтры
 (() => {
     Object.entries(JsonFFmpeg.FilterConfigurator).forEach(([key, object]) => {
-        if ("speedModification" in object) FiltersStatic = {...FiltersStatic, [key]: object.speedModification}
+        if ("speedModification" in object) FiltersStatic = {...FiltersStatic, [key]: object.speedModification};
     });
 })();
 
@@ -39,7 +40,7 @@ export class FFmpegDecoder extends OggDemuxer {
     /**
      * @description Декодируем в opus
      * @param parameters {Options}
-     * @requires {CreateArguments, FFmpegTimer}
+     * @requires {CreateArguments, FiltersTime}
      */
     public constructor(parameters: {url: string, seek?: number, Filters?: AudioFilters}) {
         super();
@@ -48,7 +49,7 @@ export class FFmpegDecoder extends OggDemuxer {
         this.#FFmpeg.pipe(this); //Загружаем из FFmpeg'a в декодер
 
         //Проверяем сколько времени длится пакет
-        this.#TimeFrame = FFmpegTimer(parameters?.Filters);
+        this.#TimeFrame = FiltersTime(parameters?.Filters);
 
         //Когда можно будет читать поток записываем его в <this.#started>
         this.once("readable", () => (this.#started = true));
@@ -105,11 +106,10 @@ function CreateArguments (url: string, AudioFilters: AudioFilters, seek: number)
  * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
  * @constructor
  */
-function FFmpegTimer(AudioFilters: AudioFilters) {
-    if (!AudioFilters) return null;
+function FiltersTime(AudioFilters: AudioFilters) {
     let NumberDuration = 20;
 
-    AudioFilters.forEach((filter: string | number) => {
+    if (AudioFilters) AudioFilters.forEach((filter: string | number) => {
         //Если filter чисто, пропускаем!
         if (typeof filter === "number") return;
 
@@ -130,5 +130,5 @@ function FFmpegTimer(AudioFilters: AudioFilters) {
         }
     });
 
-    return NumberDuration
+    return NumberDuration;
 }

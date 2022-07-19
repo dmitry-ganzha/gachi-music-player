@@ -34,7 +34,7 @@ export class FFprobe {
      * @description Запуск FFprobe
      * @param Arguments {FFmpegArgs} Указываем аргументы для запуска
      */
-    public constructor(Arguments: string[]) {
+    public constructor(Arguments: Array<string>) {
         this.#process = this.#SpawnProbe(Arguments);
     };
     //====================== ====================== ====================== ======================
@@ -62,5 +62,5 @@ export class FFprobe {
      * @param Arguments {FFmpegArgs} Указываем аргументы для запуска
      * @private
      */
-    readonly #SpawnProbe = (Arguments: string[]) => spawn(FFprobeName, ["-print_format", "json", "-show_format", ...Arguments], { shell: false, windowsHide: true });
+    readonly #SpawnProbe = (Arguments: Array<string>) => spawn(FFprobeName, ["-print_format", "json", "-show_format", ...Arguments], { shell: false, windowsHide: true });
 }

@@ -27,13 +27,13 @@ export namespace MessagePlayer {
     /**
      * @description Отправляем сообщение о текущем треке, обновляем раз в 15 сек
      * @param message {ClientMessage} Сообщение
-     * @requires {removeMessage, addMessage, AddInQueueMessage, Message}
+     * @requires {removeMessage, addMessage, pushCurrentSongMessage, Message}
      * @constructor
      */
     export function PlaySong(message: ClientMessage) {
         if (Message.get(message.channelId)) removeMessage(message);
 
-        AddInQueueMessage(message).then(addMessage);
+        pushCurrentSongMessage(message).then(addMessage);
     }
     //====================== ====================== ====================== ======================
     /**
@@ -133,7 +133,7 @@ function UpdateMessage(message: ClientMessage): void {
  * @requires {CreateCollector, Buttons}
  * @constructor
  */
-function AddInQueueMessage(message: ClientMessage): Promise<ClientMessage> {
+function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> {
     const queue: Queue = message.client.queue.get(message.guild.id);
     const CurrentPlayEmbed = EmbedMessages.CurrentPlay(message.client, queue.songs[0], queue); // @ts-ignore
     const sendMessage = message.channel.send({embeds: [CurrentPlayEmbed], components: [Buttons]});
@@ -153,7 +153,6 @@ function AddInQueueMessage(message: ClientMessage): Promise<ClientMessage> {
 function CreateCollector(message: ClientMessage, queue: Queue) {
     //Создаем сборщик кнопок
     const collector = message.createMessageComponentCollector({
-        time: queue.songs[0].duration.seconds * 4, //Время через которое сборщик будет недоступен
         filter: (i) => ButtonID.has(i.customId), //Фильтруем
         componentType: ComponentType.Button, //Какие компоненты принимать
     });

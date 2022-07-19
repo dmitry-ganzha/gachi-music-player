@@ -3,7 +3,7 @@ import {ChildProcessWithoutNullStreams, spawn, spawnSync} from "child_process";
 import JsonFFmpeg from "../../../../../DataBase/FFmpeg.json";
 import {AudioFilters} from "../Queue/Queue";
 
-export type FFmpegArgs = (string | number)[] | string[];
+export type FFmpegArgs = Array<string | number> | Array<string>;
 let FFmpegName: string;
 /**
  * @description
@@ -95,40 +95,26 @@ export class FFmpeg extends Duplex {
  * @constructor
  */
 export function CreateFilters(AudioFilters: AudioFilters): string {
-    const response: string[] = [];
+    const response: Array<string> = [];
 
-    if (AudioFilters) AudioFilters.forEach((name: string) => {
+    if (AudioFilters) AudioFilters.forEach((name: string | number) => {
         if (typeof name === "number") return;
-
-        // @ts-ignore
+        //@ts-ignore
         const Filter = JsonFFmpeg.FilterConfigurator[name];
-        if (!Filter) return;
-        if (Filter.value === false) return response.push(Filter.arg);
 
-        const index = AudioFilters.indexOf(name);
-        if (index === -1) return;
+        if (Filter) {
+            //Если у <Filter.value> указано false (Аргументы не нужны)
+            if (Filter.value === false) return response.push(Filter.arg);
 
-        response.push(`${Filter.arg}${AudioFilters.slice(index + 1)[0]}`);
-        return;
+            //Получаем номер фильтра
+            const IndexFilter = AudioFilters.indexOf(name);
+            //Добавляем в response, фильтр + аргумент
+            response.push(`${Filter.arg}${AudioFilters.slice(IndexFilter + 1)[0]}`);
+        }
     });
 
+    //Более плавное включение музыки
     response.push(JsonFFmpeg.Args.Filters.AudioFade);
 
     return response.join(",");
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Получение всех включенных фильтров
- * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
- */
-export function getEnableFilters(AudioFilters: AudioFilters): string {
-    if (!AudioFilters) return null;
-    const response: string[] = [];
-
-    AudioFilters.forEach((name: string) => {
-        if (typeof name === "number") return;
-        response.push(name);
-    });
-
-    return response.join(", ");
 }

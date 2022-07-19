@@ -17,7 +17,7 @@ const EmptyFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe]);
  */
 export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     #_state: PlayerState = { status: "idle" };
-    readonly #subscribers: PlayerSubscription[] = [];
+    readonly #subscribers: Array<PlayerSubscription> = [];
 
     //====================== ====================== ====================== ======================
     /**
