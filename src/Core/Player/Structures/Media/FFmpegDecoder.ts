@@ -3,6 +3,14 @@ import {CreateFilters, FFmpeg, FFmpegArgs} from "./FFmpeg";
 import {AudioFilters} from "../Queue/Queue";
 import {OggDemuxer} from "./OggDemuxer";
 
+let FiltersStatic = {};
+
+(() => {
+    Object.entries(JsonFFmpeg.FilterConfigurator).forEach(([key, object]) => {
+        if ("speedModification" in object) FiltersStatic = {...FiltersStatic, [key]: object.speedModification}
+    });
+})();
+
 /**
  * @name FFmpegDecoder<OggDemuxer>
  * Создает интеграцию с <OggDemuxer> и <FFmpeg>
@@ -101,30 +109,26 @@ function FFmpegTimer(AudioFilters: AudioFilters) {
     if (!AudioFilters) return null;
     let NumberDuration = 20;
 
-    //Фильтр <nightcore>
-    if (AudioFilters.includes("nightcore")) {
-        const Arg = JsonFFmpeg.FilterConfigurator["nightcore"].arg;
-        const number = Arg.split("*")[1].split(",")[0];
+    AudioFilters.forEach((filter: string | number) => {
+        //Если filter чисто, пропускаем!
+        if (typeof filter === "number") return;
 
-        NumberDuration *= Number(number);
-    }
+        // @ts-ignore
+        const StaticFilter = FiltersStatic[filter];
 
-    //Фильтр <speed>
-    if (AudioFilters.includes("speed")) {
-        const Index = AudioFilters.indexOf("speed") + 1;
-        const number = AudioFilters.slice(Index);
+        //Проверяем есть ли такой модификатор
+        if (StaticFilter) {
+            //Если уже указан модификатор скорости
+            if (typeof StaticFilter === "number") {
+                NumberDuration *= Number(StaticFilter);
+            } else { //Если модификатор надо указывать пользователю
+                const Index = AudioFilters.indexOf(filter) + 1; //Позиция <filter> в AudioFilters
+                const number = AudioFilters.slice(Index); //Получаем то что указал пользователь
 
-        NumberDuration *= Number(number);
-    }
+                NumberDuration *= Number(number);
+            }
+        }
+    });
 
-    //Фильтр <vaporwave>
-    if (AudioFilters.includes("vaporwave")) {
-        const Arg = JsonFFmpeg.FilterConfigurator["vaporwave"].arg;
-        const number1 = Arg.split("*")[1].split(",")[0];
-        const number2 = Arg.split(",atempo=")[1];
-
-        NumberDuration *= Number(number1 + number2);
-    }
-
-    return NumberDuration;
+    return NumberDuration
 }

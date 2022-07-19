@@ -1,17 +1,18 @@
 {
   "Names": ["ffmpeg", "avconv", "./FFmpeg/ffmpeg", "./FFmpeg/avconv", "./node_modules/ffmpeg-static/ffmpeg"],
   "Args": {
-    "OggOpus": ["-acodec", "libopus", "-f", "opus"],
+    "OggOpus": ["-acodec", "libopus", "-f", "opus", "-tune", "zerolatency"],
     "Seek": ["-ss"],
-    "Reconnect": ["-reconnect", 1, "-reconnect_delay_max", 25, "-reconnect_streamed", 1],
+    "Reconnect": ["-reconnect", 1, "-reconnect_delay_max", 5, "-reconnect_streamed", 1],
     "DecoderPreset": ["-ar", 48e3, "-ac", 2],
-    "Other": ["-analyzeduration", 0],
+    "Other": ["-analyzeduration", 0, "-loglevel", 0],
     "Filters": {
       "AudioFade": "afade=t=in:st=0:d=1.5"
     }
   },
   "FilterConfigurator": {
     "nightcore": {
+      "speedModification": 1.25,
       "value": false,
       "arg": "asetrate=48000*1.25,aresample=48000,bass=g=5"
     },
@@ -28,6 +29,7 @@
       "arg": "apulsator=hz=0.125"
     },
     "speed": {
+      "speedModification": "value",
       "value": {
         "max": 3,
         "min": 1
@@ -41,7 +43,7 @@
       },
       "arg": "bass=g="
     },
-    "Sub_bass": {
+    "sub_bass": {
       "value": false,
       "arg": "asubboost"
     },
@@ -54,6 +56,7 @@
       "arg": "aphaser=in_gain=0.4"
     },
     "vaporwave": {
+      "speedModification": 1.1,
       "value": false,
       "arg": "asetrate=48000*0.8,aresample=48000,atempo=1.1"
     }
