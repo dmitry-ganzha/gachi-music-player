@@ -1,9 +1,5 @@
 import {Command} from "../Constructor";
-import {
-    ApplicationCommandOptionType,
-    StageChannel,
-    VoiceChannel
-} from "discord.js";
+import {ApplicationCommandOptionType, StageChannel, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {FindTrackInfo} from "../../Core/Player/Audio/FindResource";
@@ -39,7 +35,7 @@ export class CommandPlay extends Command {
             enable: true,
             slash: true,
             CoolDown: 8
-        })
+        });
     };
 
     public readonly run = (message: ClientMessage, args: string[]): void => {
@@ -70,14 +66,19 @@ export class CommandPlay extends Command {
 
         try {
             //Отправляем сообщение о поиске трека
-            message.client.Send({
-                text: `🔍 | Поиск -> ${search}`,
-                message,
-                color: "RED",
-                type: "css"
-            });
+            message.client.Send({ text: `🔍 | Поиск -> ${search}`, message, color: "RED", type: "css" });
 
-            return this.#getInfoPlatform(search, message, voiceChannel);
+            const TypeSearch = this.#typeSong(search);
+            const Platform = this.#PlatformSong(search, message);
+            const Search = TypeSearch === "search" && search.match(Platform) ? search.split(Platform)[1] : search;
+
+            switch (Platform) {
+                case "yt": return getYouTube(TypeSearch, Search, message, voiceChannel);
+                case "sp": return getSpotify(TypeSearch, Search, message, voiceChannel);
+                case "sc": return getSoundCloud(TypeSearch, Search, message, voiceChannel);
+                case "vk": return getVk(TypeSearch, Search, message, voiceChannel);
+                case "ds": return getDiscord(TypeSearch, Search, message, voiceChannel);
+            }
         } catch (e) {
             console.log(`[Command: Play]: ${e}`);
             return message.client.Send({
@@ -88,50 +89,39 @@ export class CommandPlay extends Command {
             });
         }
     };
-    //Выбираем платформу
-    readonly #getInfoPlatform = (search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel): void => {
-        if (search.match(UrlSrt)) {
-            const TypeSearch = this.#typeSong(search);
-
-            if (search.match(youtubeStr)) return getYouTube(TypeSearch, search, message, voiceChannel);
-            else if (search.match(spotifySrt)) return getSpotify(TypeSearch, search, message, voiceChannel);
-            else if (search.match(/vk.com/)) return getVk(TypeSearch, search, message, voiceChannel);
-            else if (search.match(SoundCloudSrt)) return getSoundCloud(TypeSearch, search, message, voiceChannel);
-            else if (search.match(/cdn.discordapp.com/) || message.attachments?.last()?.url) return getDiscord(TypeSearch, search, message, voiceChannel);
-        }
-        const SplitSearch = search.split(' ');
-        const SearchType = SplitSearch[0].toLowerCase();
-
-        //Ищем если аргумент не ссылка
-        switch (SearchType) {
-            case "sp": { //Ищем в Spotify
-                delete SplitSearch[0];
-                return getSpotify("search", SplitSearch.join(' '), message, voiceChannel);
-            }
-            case "vk": { //Ищем в VK
-                delete SplitSearch[0];
-                return getVk("search", SplitSearch.join(' '), message, voiceChannel);
-            }
-            case "sc": { //Ищем на SoundCloud
-                delete SplitSearch[0];
-                return getSoundCloud("search", SplitSearch.join(' '), message, voiceChannel);
-            }
-            default: {
-                //Ищем на YouTube
-                return getYouTube("search", SplitSearch.join(' '), message, voiceChannel);
-            }
-        }
-    };
-
+    //====================== ====================== ====================== ======================
     /**
      * @description Независимо от платформы делаем проверку типа ссылки
-     * @param search
+     * @param search {string} Что там написал пользователь
      * @private
      */
     readonly #typeSong = (search: string) => {
         if (search.match(/v=/) && search.match(/list=/)) return "change";
         else if (search.match(/playlist/)) return "playlist";
         else if (search.match(/album/) || search.match(/sets/)) return "album";
-        return "track";
+        else if (search.match(UrlSrt)) return "track";
+        return "search";
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Получаем инициалы платформы
+     * @param search {string} Что там написал пользователь
+     * @param message {ClientMessage} Сообщение
+     * @private
+     */
+    readonly #PlatformSong = (search: string, message: ClientMessage): "yt" | "sp" | "vk" | "sc" | "ds" => {
+        if (search.match(UrlSrt)) {
+            if (search.match(youtubeStr)) return "yt";
+            else if (search.match(spotifySrt)) return "sp";
+            else if (search.match(/vk.com/)) return "vk";
+            else if (search.match(SoundCloudSrt)) return "sc";
+            else if (search.match(/cdn.discordapp.com/) || message.attachments?.last()?.url) return "ds";
+        }
+
+        const SplitSearch = search.split(' ');
+        const FindType = SplitSearch[0].toLowerCase();
+
+        if (FindType.length > 2) return "yt";
+        return FindType as any;
     };
 }

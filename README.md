@@ -12,7 +12,7 @@
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
 - [Настройки](./DataBase/Config.json)
-- [Все команды](./src/Commands)
+- [Все команды](./src/Commands) | `Slash + Standart`
 
 ## Гайд по запуску
 1. [`Node.js`](https://nodejs.org/ru/) 18

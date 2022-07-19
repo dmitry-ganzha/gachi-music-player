@@ -139,6 +139,7 @@ export namespace FindTrackInfo {
      * @param search {string} Что ищем
      * @param message {ClientMessage} Сообщение пользователя
      * @param voiceChannel {VoiceChannel | StageChannel} Голосовой канал
+     * @requires {AutoCompileData, AutoCatch, Reaction, deleteMessage}
      */
     export function getYouTube(type: TypeFindTrack, search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) {
         const types: Types = {platform: "YouTube", typeSong: type};
@@ -175,14 +176,20 @@ export namespace FindTrackInfo {
                 const FindString = "Я обнаружил в этой ссылке, видео и плейлист. Что включить\n\n1️⃣ - Включить плейлист\n2️⃣ - Включить видео";
                 message.channel.send(`\`\`\`css\n${FindString}\`\`\``).then((msg: ClientMessage) => {
                     setImmediate(() => {
-                        Reaction(msg, message, "1️⃣", () => {
-                            deleteMessage(msg as any);
-                            return getYouTube("playlist", search, message, voiceChannel);
-                        });
-                        Reaction(msg, message, "2️⃣", () => {
-                            deleteMessage(msg as any);
-                            return getYouTube("track", search, message, voiceChannel);
-                        });
+                        [{
+                             emoji: "1️⃣",
+                             callback: () => {
+                                 deleteMessage(msg);
+                                 return getYouTube("playlist", search, message, voiceChannel);
+                             }
+                        },
+                        {
+                            emoji: "2️⃣",
+                            callback: () => {
+                                deleteMessage(msg);
+                                return getYouTube("track", search, message, voiceChannel);
+                            }
+                        }].forEach((info) => Reaction(msg, message, info.emoji, info.callback));
 
                         setTimeout(() => {
                             [msg, message].forEach(m => deleteMessage(m));
@@ -199,6 +206,7 @@ export namespace FindTrackInfo {
      * @param search {string} Что ищем
      * @param message {ClientMessage} Сообщение пользователя
      * @param voiceChannel {VoiceChannel | StageChannel} Голосовой канал
+     * @requires {AutoCompileData, AutoCatch}
      */
     export function getSpotify(type: TypeFindTrack, search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) {
         const types: Types = {platform: "Spotify", typeSong: type};
@@ -246,6 +254,7 @@ export namespace FindTrackInfo {
      * @param search {string} Что ищем
      * @param message {ClientMessage} Сообщение пользователя
      * @param voiceChannel {VoiceChannel | StageChannel} Голосовой канал
+     * @requires {AutoCompileData, AutoCatch}
      */
     export function getVk(type: TypeFindTrack, search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) {
         const types: Types = {platform: "VK", typeSong: type};
@@ -286,6 +295,7 @@ export namespace FindTrackInfo {
      * @param search {string} Что ищем
      * @param message {ClientMessage} Сообщение пользователя
      * @param voiceChannel {VoiceChannel | StageChannel} Голосовой канал
+     * @requires {AutoCompileData, AutoCatch}
      */
     export function getSoundCloud(type: TypeFindTrack, search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) {
         const types: Types = {platform: "SoundCloud", typeSong: type};
@@ -327,6 +337,7 @@ export namespace FindTrackInfo {
      * @param search {string} Что ищем
      * @param message {ClientMessage} Сообщение пользователя
      * @param voiceChannel {VoiceChannel | StageChannel} Голосовой канал
+     * @requires {AutoCompileData, sendMessage}
      */
     export function getDiscord(type: TypeFindTrack, search: string, message: ClientMessage, voiceChannel: VoiceChannel | StageChannel) {
         setImmediate(() => {
