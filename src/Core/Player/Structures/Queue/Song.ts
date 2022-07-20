@@ -48,7 +48,7 @@ export class Song {
         this.#_author = {
             url: track.author?.url ?? `https://discordapp.com/users/${author.id}`,
             title: track.author?.title ?? author.username,
-            image: track.author?.image ?? {url: `https://cdn.discordapp.com/avatars/${author.id}/${author.avatar}.webp`},
+            image: track.author?.image ?? {url: EmbedHelper.NotImage},
             isVerified: track.author?.isVerified ?? undefined
         };
         this.#_duration = ConstDuration(track.duration);
