@@ -117,15 +117,14 @@ export namespace Spotify {
      * @param search {string} Что ищем
      * @param options {limit: number} Настройки поиска
      */
-    export function SearchTracks(search: string, options: {limit: number} = {limit: 15}): Promise<{ items: InputTrack[] } | null> {
-        return new Promise<{items: InputTrack[]} | null>(async (resolve) => {
+    export function SearchTracks(search: string, options: {limit: number} = {limit: 15}): Promise<InputTrack[] | null> {
+        return new Promise<InputTrack[] | null>(async (resolve) => {
             try {
                 const result = (await Promise.all([RequestSpotify(`search?q=${search}&type=track&limit=${options.limit}`)]))[0] as SearchTracks & FailResult;
 
                 if (!result) return resolve(null);
 
-                return resolve({
-                    items: await Promise.all(result.tracks.items.map((track: SpotifyTrack) => {
+                return resolve(await Promise.all(result.tracks.items.map((track: SpotifyTrack) => {
                         return {
                             title: track.name,
                             url: `${DefaultUrlSpotify}/track/${track.id}`,
@@ -142,7 +141,7 @@ export namespace Spotify {
                             //PrevFile: track.preview_url
                         };
                     }))
-                });
+                );
             } catch (e) {
                 console.log(e);
                 return resolve(null);

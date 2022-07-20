@@ -2,13 +2,12 @@ import {Command} from "../Constructor";
 import {ApplicationCommandOptionType, StageChannel, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
-import {FindTrackInfo} from "../../Core/Player/Audio/FindResource";
+import {Searcher} from "../../Core/Player/Structures/Resource/Searcher";
 
 const youtubeStr = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi;
 const spotifySrt = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;
 const SoundCloudSrt = /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/(.*)$/;
 const UrlSrt = /^(https?:\/\/)/gi;
-const {getSoundCloud, getVk, getSpotify, getYouTube, getDiscord} = FindTrackInfo;
 
 export class CommandPlay extends Command {
     public constructor() {
@@ -58,7 +57,7 @@ export class CommandPlay extends Command {
         });
 
         //Если пользователь не указал аргумент
-        if (!search && !message.attachments) return message.client.Send({
+        if (!search && !message.attachments?.last()?.url) return message.client.Send({
             text: `${message.author}, Укажи ссылку, название или прикрепи файл!`,
             message,
             color: "RED"
@@ -70,15 +69,14 @@ export class CommandPlay extends Command {
 
             const TypeSearch = this.#typeSong(search);
             const Platform = this.#PlatformSong(search, message);
-            const Search = TypeSearch === "search" && search.match(Platform) ? search.split(Platform)[1] : search;
+            const Search = TypeSearch === "search" && search?.match(Platform) ? search.split(Platform)[1] : search;
 
-            switch (Platform) {
-                case "yt": return getYouTube(TypeSearch, Search, message, voiceChannel);
-                case "sp": return getSpotify(TypeSearch, Search, message, voiceChannel);
-                case "sc": return getSoundCloud(TypeSearch, Search, message, voiceChannel);
-                case "vk": return getVk(TypeSearch, Search, message, voiceChannel);
-                case "ds": return getDiscord(TypeSearch, Search, message, voiceChannel);
-            }
+            return Searcher.toPlayer({
+                type: TypeSearch,
+                platform: Platform,
+                message, voiceChannel,
+                search: Platform === "ds" ? message.attachments?.last()?.url : Search
+            })
         } catch (e) {
             console.log(`[Command: Play]: ${e}`);
             return message.client.Send({
@@ -96,6 +94,8 @@ export class CommandPlay extends Command {
      * @private
      */
     readonly #typeSong = (search: string) => {
+        if (!search) return "track"; //Если нет search, значит пользователь прикрепил файл
+
         if (search.match(/v=/) && search.match(/list=/)) return "change";
         else if (search.match(/playlist/)) return "playlist";
         else if (search.match(/album/) || search.match(/sets/)) return "album";
@@ -110,6 +110,8 @@ export class CommandPlay extends Command {
      * @private
      */
     readonly #PlatformSong = (search: string, message: ClientMessage): "yt" | "sp" | "vk" | "sc" | "ds" => {
+        if (!search) return "ds"; //Если нет search, значит пользователь прикрепил файл
+
         if (search.match(UrlSrt)) {
             if (search.match(youtubeStr)) return "yt";
             else if (search.match(spotifySrt)) return "sp";

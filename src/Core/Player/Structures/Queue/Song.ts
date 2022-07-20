@@ -9,6 +9,7 @@ import {
 import {ClientMessage} from "../../../Client";
 import {Colors} from "../../../Utils/LiteUtils";
 import {DurationUtils} from "../../Manager/DurationUtils";
+import {EmbedHelper} from "../EmbedMessages";
 
 type SongType = "SPOTIFY" | "YOUTUBE" | "VK" | "SOUNDCLOUD" | "UNKNOWN";
 
@@ -45,7 +46,10 @@ export class Song {
         this.#_title = track.title;
         this.#_url = track.url;
         this.#_author = {
-            url: track.author.url, title: track.author.title, image: track.author.image, isVerified: track.author.isVerified
+            url: track.author?.url ?? `https://discordapp.com/users/${author.id}`,
+            title: track.author?.title ?? author.username,
+            image: track.author?.image ?? {url: `https://cdn.discordapp.com/avatars/${author.id}/${author.avatar}.webp`},
+            isVerified: track.author?.isVerified ?? undefined
         };
         this.#_duration = ConstDuration(track.duration);
         this.#_image = track.image;

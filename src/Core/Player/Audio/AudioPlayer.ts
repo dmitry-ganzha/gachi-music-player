@@ -1,5 +1,5 @@
 import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
-import {FindResourceInfo} from "./FindResource";
+import {Searcher} from "../Structures/Resource/Searcher";
 import {AudioFilters, Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
 import {ClientMessage} from "../../Client";
@@ -320,7 +320,7 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
     return new Promise(async (resolve) => {
         if (req > 2) return resolve(Error("[AudioPlayer]: has not found format this song!"));
 
-        const CheckResource = await FindResourceInfo(song);
+        const CheckResource = await Searcher.CheckHeadResource(song);
         const RetryCheck = () => { //Повторно делаем запрос
             req++;
             return CreateResource(song, audioFilters, seek, req);

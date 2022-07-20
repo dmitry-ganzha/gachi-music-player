@@ -48,7 +48,7 @@ export namespace VK {
      * @param str {string} Что ищем
      * @param options {{limit: number}}
      */
-    export function SearchTracks(str: string, options: {limit: number} = {limit: 15}): Promise<null | {items: InputTrack[]}> {
+    export function SearchTracks(str: string, options: {limit: number} = {limit: 15}): Promise<null | InputTrack[]> {
         return new Promise(async (resolve) => {
             const items: InputTrack[] = [];
             const Request = await RequestVK("audio","search", `&q=${str}`) as VK_Search;
@@ -76,7 +76,7 @@ export namespace VK {
                 });
             }
 
-            return resolve({items});
+            return resolve(items);
         });
     }
     //====================== ====================== ====================== ======================
