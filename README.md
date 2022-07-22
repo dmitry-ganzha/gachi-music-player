@@ -76,7 +76,7 @@
       }
     }
     ```
-3. [`FFmpeg.json`](./DataBase/FFmpeg.json) | Можно теперь управлять FFmpeg'ом из конфига | [`FFmpeg Docs`](https://ffmpeg.org/ffmpeg.html)
+3. [`FFmpeg.json`](./DataBase/FFmpeg.json) | Можно управлять FFmpeg'ом из конфига | [`FFmpeg Docs`](https://ffmpeg.org/ffmpeg.html)
     ```json5
        {
          "Names": [], //Путь(и) к ffmpeg
