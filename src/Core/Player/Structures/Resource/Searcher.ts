@@ -4,16 +4,14 @@ import {FFmpegFormat, InputFormat, InputPlaylist, InputTrack} from "../../../Uti
 import {SoundCloud, Spotify, VK, YouTube} from "../../../Platforms";
 import {IncomingMessage} from "http";
 import {DurationUtils} from "../../Manager/DurationUtils";
-import ParsingTimeToNumber = DurationUtils.ParsingTimeToNumber;
 import {ClientMessage} from "../../../Client";
 import {MessageCollector, MessageReaction, StageChannel, User, VoiceChannel} from "discord.js";
-import ParsingTimeToString = DurationUtils.ParsingTimeToString;
 import {FFprobe} from "../Media/FFprobe";
 import {EmbedHelper} from "../EmbedMessages";
 
 
 //Типы данных
-type TypeFindTrack = "track" | "playlist" | "search" | "album" | "change";
+type TypeFindTrack = "track" | "playlist" | "search" | "album";
 //Платформы
 type TypeSearch = "yt" | "sp" | "vk" | "sc" | "ds";
 //Данные которые необходимо передать для поиска
@@ -29,28 +27,33 @@ interface Options {
 const GlobalOptions: httpsClientOptions = {request: {method: "HEAD"}};
 //Все возможные запросы данных в JSON формате
 const localPlatform = {
+    //YouTube
     "yt": {
         "track": (search: string) => YouTube.getVideo(search),
         "playlist": (search: string) => YouTube.getPlaylist(search),
         "search": (search: string) => YouTube.SearchVideos(search)
     },
+    //Spotify
     "sp": {
         "track": (search: string) => Spotify.getTrack(search),
         "playlist": (search: string) => Spotify.getPlaylist(search),
         "search": (search: string) => Spotify.SearchTracks(search),
         "album": (search: string) => Spotify.getAlbum(search)
     },
+    //SoundCloud
     "sc": {
         "track": (search: string) => SoundCloud.getTrack(search),
         "playlist": (search: string) => SoundCloud.getPlaylist(search),
         "search": (search: string) => SoundCloud.SearchTracks(search),
         "album": (search: string) => SoundCloud.getPlaylist(search)
     },
+    //VK
     "vk": {
         "track": (search: string) => VK.getTrack(search),
         "playlist": (search: string) => VK.getPlaylist(search),
         "search": (search: string) => VK.SearchTracks(search),
     },
+    //Discord
     "ds": {
         "track": (search: string) => new FFprobe(["-i", search]).getInfo().then((trackInfo: any) => {
             //Если не найдена звуковая дорожка
@@ -190,7 +193,7 @@ function getFormatYouTube(url: string): Promise<InputFormat> {
 }
 
 function Filter(track: InputTrack, NeedDuration: number) {
-    const DurationSong = ParsingTimeToNumber(track.duration.seconds);
+    const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);
 
     //Как надо фильтровать треки
     return DurationSong === NeedDuration || DurationSong < NeedDuration + 10 && DurationSong > NeedDuration - 10;
@@ -301,7 +304,7 @@ function ArrayToString(results: InputTrack[], message: ClientMessage, type: Type
     // @ts-ignore
     results.ArraySort(15).forEach((tracks: InputTrack[]) => {
         StringTracks = tracks.map((track) => {
-            const Duration = type === "yt" ? track.duration : ParsingTimeToString(parseInt(track.duration as any)); //Проверяем надо ли конвертировать время
+            const Duration = type === "yt" ? track.duration.seconds : DurationUtils.ParsingTimeToString(parseInt(track.duration.seconds)); //Проверяем надо ли конвертировать время
             const NameTrack = `[${message.client.ConvertedText(track.title, 80, true)}]`; //Название трека
             const DurationTrack = `[${Duration ?? "LIVE"}]`; //Длительность трека
             const AuthorTrack = `[${message.client.ConvertedText(track.author.title, 12, true)}]`; //Автор трека

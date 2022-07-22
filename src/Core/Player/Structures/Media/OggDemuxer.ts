@@ -16,7 +16,7 @@ type TransformDone = (error?: Error | null) => void;
 export class OggDemuxer extends Transform {
     readonly #segment: {bit: number, head: boolean} = {bit: null, head: null};
     public constructor(options: TransformOptions = {}) {
-        super({ autoDestroy: true, readableObjectMode: true, ...options });
+        super({ readableObjectMode: true, ...options });
     };
 
     readonly _destroy = (error?: Error | null, callback?: TransformDone): void => {
@@ -29,17 +29,13 @@ export class OggDemuxer extends Transform {
     };
 
     readonly _transform = (chunk: Buffer, encoding: string, done: TransformDone): void => {
-        //Если произойдет ошибка во время чтения потока завершим декодирование
-        try {
-            while (chunk) {
-                const result = this.#ReadBufferStream(chunk);
+        while (chunk) {
+            const result = this.#ReadBufferStream(chunk);
 
-                if (result) chunk = result;
-                else break;
-            }
-        } catch (error) {
-            return done(error);
+            if (result) chunk = result;
+            else break;
         }
+
         return done();
     };
 

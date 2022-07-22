@@ -65,7 +65,7 @@ export class CommandPlay extends Command {
 
         try {
             //Отправляем сообщение о поиске трека
-            message.client.Send({ text: `🔍 | Поиск -> ${search}`, message, color: "RED", type: "css" });
+            if (!message.attachments?.last()?.url) message.client.Send({ text: `🔍 | Поиск -> ${search}`, message, color: "RED", type: "css" });
 
             const TypeSearch = this.#typeSong(search);
             const Platform = this.#PlatformSong(search, message);
@@ -96,8 +96,7 @@ export class CommandPlay extends Command {
     readonly #typeSong = (search: string) => {
         if (!search) return "track"; //Если нет search, значит пользователь прикрепил файл
 
-        if (search.match(/v=/) && search.match(/list=/)) return "change";
-        else if (search.match(/playlist/)) return "playlist";
+        if (search.match(/playlist/)) return "playlist";
         else if (search.match(/album/) || search.match(/sets/)) return "album";
         else if (search.match(UrlSrt)) return "track";
         return "search";

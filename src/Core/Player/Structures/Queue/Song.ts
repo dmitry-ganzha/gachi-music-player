@@ -57,7 +57,7 @@ export class Song {
         this.#_isLive = track.isLive;
         this.#_color = Color(type);
         this.#_type = type;
-        this.format = {url: track?.format?.url}
+        this.#_format = {url: track?.format?.url}
     }
     //Название трека
     public get title() {
