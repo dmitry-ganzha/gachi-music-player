@@ -25,7 +25,7 @@ export class CommandDeploy extends Command {
     readonly #createSlashCommand = (message: ClientMessage) => {
         let TotalCommands: number = 0;
 
-        for (let [key, command] of message.client.commands) {
+        message.client.commands.Array.forEach((command) => {
             if (command.isOwner || !command.slash) return null;
 
             let CommandSlash: TypeSlashCommand = {
@@ -36,7 +36,9 @@ export class CommandDeploy extends Command {
             if (command.options.length > 0) CommandSlash = {...CommandSlash, options: command.options};
 
             message.client.application.commands.create(CommandSlash as any).catch((err) => console.log(`[Command: ${command.name}]: ${err}`));
-        }
+            TotalCommands++;
+        });
+
         return TotalCommands;
     };
 }
