@@ -1,6 +1,6 @@
 import {ChannelType} from "discord.js";
 import {Command} from "../../Commands/Constructor";
-import cfg from '../../../DataBase/Config.json';
+import {Bot} from '../../../DataBase/Config.json';
 import {ClientMessage} from "../../Core/Client";
 import {Channel, EmbedConstructor} from "../../Core/Utils/TypeHelper";
 import {Colors} from "../../Core/Utils/LiteUtils";
@@ -15,7 +15,7 @@ export class GuildMessage {
     public readonly enable: boolean = true;
 
     public readonly run = (message: ClientMessage) => {
-        const prefix = message.client.cfg.Bot.prefix;
+        const prefix = Bot.prefix;
 
         if (message.author.bot || !message.content.startsWith(prefix) || message.channel.type === ChannelType.DM) return;
 
@@ -111,7 +111,7 @@ function NotPermissions({author, client}: ClientMessage, name: string, text: str
 }
 // Пользователь owner?
 export function isOwner(isOwner: CommandIsOwner, AuthorID: string) {
-    if (isOwner) return !cfg.Bot.OwnerIDs.includes(AuthorID);
+    if (isOwner) return !Bot.OwnerIDs.includes(AuthorID);
     return false;
 }
 // У пользователя есть ограничения?

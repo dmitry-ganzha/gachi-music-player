@@ -9,7 +9,8 @@ import {
 import {ClientMessage} from "../../../Client";
 import {Colors} from "../../../Utils/LiteUtils";
 import {DurationUtils} from "../../Manager/DurationUtils";
-import {EmbedHelper} from "../EmbedMessages";
+import {Images} from "../EmbedMessages";
+import {Searcher} from "../Resource/Searcher";
 
 type SongType = "SPOTIFY" | "YOUTUBE" | "VK" | "SOUNDCLOUD" | "UNKNOWN";
 
@@ -48,7 +49,7 @@ export class Song {
         this.#_author = {
             url: track.author?.url ?? `https://discordapp.com/users/${author.id}`,
             title: track.author?.title ?? author.username,
-            image: track.author?.image ?? {url: EmbedHelper.NotImage},
+            image: track.author?.image ?? {url: Images.NotImage},
             isVerified: track.author?.isVerified ?? undefined
         };
         this.#_duration = ConstDuration(track.duration);
@@ -101,6 +102,19 @@ export class Song {
     };
     public set format(format) {
         this.#_format = format;
+    };
+
+    //Получаем song.format + проверяем его на работоспособность
+    public getFormat = (req = 1): Promise<Song["format"]> => {
+        return new Promise(async (resolve) => {
+            if (req > 4) return resolve(null);
+
+            const CheckResource = await Searcher.CheckHeadResource(this);
+
+            //Если выходит ошибка или нет ссылки на исходный ресурс
+            if (CheckResource instanceof Error || !this.format?.url) return resolve(this.getFormat(req++));
+            return resolve(this.format);
+        });
     };
 }
 //====================== ====================== ====================== ======================

@@ -1,5 +1,4 @@
 import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
-import {Searcher} from "../Structures/Resource/Searcher";
 import {AudioFilters, Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
 import {ClientMessage} from "../../Client";
@@ -314,28 +313,14 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
  * @param song {Song} Трек
  * @param audioFilters {AudioFilters} Аудио фильтры которые включил пользователь
  * @param seek {number} Пропуск музыки до 00:00:00
- * @param req
  */
-function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0, req: number = 1): Promise<PlayerResource | Error> {
-    return new Promise(async (resolve) => {
-        if (req > 2) return resolve(Error("[AudioPlayer]: has not found format this song!"));
-
-        const CheckResource = await Searcher.CheckHeadResource(song);
-        const RetryCheck = () => { //Повторно делаем запрос
-            req++;
-            return CreateResource(song, audioFilters, seek, req);
-        };
-
-        //Если выходит ошибка или нет ссылки на исходный ресурс
-        if (CheckResource instanceof Error || !song.format?.url) return RetryCheck();
-        if (song.isLive) { //Если будет включен поток
-            seek = 0;
-            audioFilters = [];
-        }
-
-        //Отправляем данные для дальнейшей загрузки
-        return resolve(new FFmpegDecoder({url: song.format.url, seek, Filters: audioFilters}));
-    });
+function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0): Promise<PlayerResource | null> {
+    if (song.isLive) { //Если будет включен поток
+        seek = 0;
+        audioFilters = [];
+    }
+    //Отправляем данные для дальнейшей загрузки
+    return song.getFormat().then((format) => format ? new FFmpegDecoder({url: format?.url, seek, Filters: audioFilters}) : null);
 }
 //====================== ====================== ====================== ======================
 /**

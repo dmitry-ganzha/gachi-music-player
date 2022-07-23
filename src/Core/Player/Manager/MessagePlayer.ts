@@ -17,8 +17,10 @@ const Buttons = new ActionRowBuilder().addComponents([
 const ButtonID = new Set(["skip", "resume_pause", "replay", "last"]);
 
 //Баса с сообщениями
-const Message = new CollectionMap<string, ClientMessage>();
-let MessageTimer: NodeJS.Timeout = null; //Таймер
+const MessagesData = {
+    messages: new CollectionMap<string, ClientMessage>(),
+    timer: null as NodeJS.Timeout
+}
 
 /**
  * Сообщения, которые отправляет плеер
@@ -31,7 +33,7 @@ export namespace MessagePlayer {
      * @constructor
      */
     export function PlaySong(message: ClientMessage) {
-        if (Message.get(message.channelId)) removeMessage(message);
+        if (MessagesData.messages.get(message.channelId)) removeMessage(message);
 
         pushCurrentSongMessage(message).then(addMessage);
     }
@@ -200,38 +202,38 @@ function DeleteMessage(send: Promise<ClientMessage>, time: number = 5e3): void {
  * @requires {StepCycleMessage}
  */
 function addMessage(message: ClientMessage) {
-    if (Message.get(message.channelId)) return;
-    Message.set(message.channelId, message);
+    if (MessagesData.messages.get(message.channelId)) return;
+    MessagesData.messages.set(message.channelId, message);
 
-    if (Message.size === 1) setImmediate(StepCycleMessage);
+    if (MessagesData.messages.size === 1) setImmediate(StepCycleMessage);
 }
 //====================== ====================== ====================== ======================
 /**
  * @description Удаляем сообщение из <Message[]>, так-же проверяем отключить ли таймер
  * @param message {ClientMessage} Сообщение
- * @requires {MessageTimer, Message}
+ * @requires {Message}
  */
 function removeMessage(message: ClientMessage) {
-    const Find = Message.get(message.channelId);
+    const Find = MessagesData.messages.get(message.channelId);
     if (!Find) return;
 
     if (Find.deletable) Find.delete().catch(() => undefined);
-    Message.delete(message.channelId);
+    MessagesData.messages.delete(message.channelId);
 
-    if (Message.size === 0) {
-        if (typeof MessageTimer !== "undefined") clearTimeout(MessageTimer);
+    if (MessagesData.messages.size === 0) {
+        if (typeof MessagesData.timer !== "undefined") clearTimeout(MessagesData.timer);
     }
 }
 //====================== ====================== ====================== ======================
 /**
  * @description Обновляем сообщения на текстовый каналах
- * @requires {UpdateMessage, Message, MessageTimer}
+ * @requires {UpdateMessage, Message}
  * @constructor
  */
 function StepCycleMessage() {
     try {
-        setImmediate(() => Message.forEach(UpdateMessage));
+        setImmediate(() => MessagesData.messages.forEach(UpdateMessage));
     } finally {
-        MessageTimer = setTimeout(StepCycleMessage, 12e3);
+        MessagesData.timer = setTimeout(StepCycleMessage, 12e3);
     }
 }

@@ -7,8 +7,7 @@ import {DurationUtils} from "../../Manager/DurationUtils";
 import {ClientMessage} from "../../../Client";
 import {MessageCollector, MessageReaction, StageChannel, User, VoiceChannel} from "discord.js";
 import {FFprobe} from "../Media/FFprobe";
-import {EmbedHelper} from "../EmbedMessages";
-
+import {Images} from "../EmbedMessages";
 
 //Типы данных
 type TypeFindTrack = "track" | "playlist" | "search" | "album";
@@ -63,7 +62,7 @@ const localPlatform = {
                 url: search,
                 title: search.split("/").pop(),
                 author: undefined,
-                image: {url: EmbedHelper.NotImage},
+                image: {url: Images.NotImage},
                 duration: {seconds: trackInfo.format.duration},
                 format: {url: trackInfo.format.filename}
             };

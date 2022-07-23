@@ -15,22 +15,22 @@ import {PlayerEmitter} from "./Player/execute";
 import {Command} from "../Commands/Constructor";
 import {Queue} from "./Player/Structures/Queue/Queue";
 import {CollectionMap, Connections, MessageChannelSend, ConvertedText, ConsoleLog} from "./Utils/LiteUtils";
+import {Bot, Channels} from "../../DataBase/Config.json";
 
 const keepOverLimit = (value: any): boolean => value.id !== value.client.user.id;
 
 export class WatKLOK extends Client {
-    public readonly commands = new CollectionMap<string, Command>();
-    public readonly aliases = new CollectionMap<string, string>();
-    public readonly queue = new CollectionMap<string, Queue>();
-    public readonly cfg = require("../../DataBase/Config.json");
+    public readonly commands = new CollectionMap<string, Command>(); //База, со всеми командами
+    public readonly aliases = new CollectionMap<string, string>(); //База, с сокращениями названий команд
+    public readonly queue = new CollectionMap<string, Queue>(); //База, в ней содержатся данные о серверах на которых играет музыка
 
-    public readonly Send = MessageChannelSend;
-    public readonly ConvertedText = ConvertedText;
-    public readonly console: (text: string) => NodeJS.Timeout;
-    public readonly connections = Connections;
-    public readonly player = new PlayerEmitter();
+    public readonly Send = MessageChannelSend; //Отправить не полное embed сообщение
+    public readonly ConvertedText = ConvertedText; //Обрезка текста
+    public readonly console: (text: string) => NodeJS.Timeout; //Самый обычный console.log
+    public readonly connections = Connections; //Все пользователи в голосовом канале
+    public readonly player = new PlayerEmitter(); //Плеер
 
-    public readonly ShardID: number | null;
+    public readonly ShardID: number | null; //Если запущен ShardManager, будет отображаться номер дубликата
 
     public constructor() {
         super({
@@ -103,16 +103,16 @@ export interface ClientInteraction extends BaseInteraction {
 
 const client = new WatKLOK();
 
-client.login(client.cfg.Bot.token).then(() => {
+client.login(Bot.token).then(() => {
     Promise.all([FileSystemLoad(client)]).catch(console.error);
 
-    if (client.cfg.Bot.ignoreError) {
+    if (Bot.ignoreError) {
         process.on("uncaughtException", (err: Error): void | Promise<ClientMessage> => {
             console.error(err);
             if (err.toString() === "Error: connect ECONNREFUSED 127.0.0.1:443") return null;
 
             try {
-                const channel = client.channels.cache.get(client.cfg.Channels.SendErrors) as MessageChannel
+                const channel = client.channels.cache.get(Channels.SendErrors) as MessageChannel
                 if (channel) return channel.send(`${err.toString()}`);
                 return null;
             } catch {/* Continue */}

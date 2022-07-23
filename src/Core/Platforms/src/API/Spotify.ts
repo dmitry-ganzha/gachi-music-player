@@ -1,12 +1,11 @@
 import {httpsClient} from "../../../httpsClient";
-import cfg from "../../../../../DataBase/Config.json";
+import {spotify} from "../../../../../DataBase/Config.json";
 import {InputAuthor, InputPlaylist, InputTrack} from "../../../Utils/TypeHelper";
 
-const ApiLink = "https://accounts.spotify.com/api"; //token
-const GetApi = "https://api.spotify.com/v1"; //type/id/params
-const DefaultUrlSpotify = 'https://open.spotify.com';
-const SpotifyStr = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;
-const {clientID, clientSecret} = cfg.spotify;
+const AccountUrl = "https://accounts.spotify.com/api"; //token
+const ApiUrl = "https://api.spotify.com/v1"; //type/id/params
+const SpotifyUrl = 'https://open.spotify.com';
+
 const SpotifyRes = {
     Token: "",
     Time: 0
@@ -55,7 +54,7 @@ export namespace Spotify {
                     items: await Promise.all(result.tracks.items.map(async ({track}) => {
                         return {
                             title: track?.name,
-                            url: `${DefaultUrlSpotify}/track/${track?.id}`,
+                            url: `${SpotifyUrl}/track/${track?.id}`,
                             author: (await Promise.all([getAuthorTrack(track.artists[0].external_urls.spotify)]))[0],
                             duration: {
                                 seconds: (track.duration_ms / 1000).toFixed(0)
@@ -65,7 +64,7 @@ export namespace Spotify {
                         }
                     })),
                     image: result.images[0],
-                    author: (await Promise.all([getAuthorTrack(`${DefaultUrlSpotify}/artist/${result.owner.id}`, result?.owner?.type !== "artist")]))[0]
+                    author: (await Promise.all([getAuthorTrack(`${SpotifyUrl}/artist/${result.owner.id}`, result?.owner?.type !== "artist")]))[0]
                 });
             } catch (e) {
                 console.log(e);
@@ -93,7 +92,7 @@ export namespace Spotify {
                     items: await Promise.all(result.tracks.items.map(async (track: SpotifyTrack) => {
                         return {
                             title: track.name,
-                            url: `${DefaultUrlSpotify}/track/${track.id}`,
+                            url: `${SpotifyUrl}/track/${track.id}`,
                             author: (await Promise.all([getAuthorTrack(track.artists[0].external_urls.spotify)]))[0],
                             duration: {
                                 seconds: (track.duration_ms / 1000).toFixed(0)
@@ -103,7 +102,7 @@ export namespace Spotify {
                         }
                     })),
                     image: result?.images[0],
-                    author: (await Promise.all([getAuthorTrack(`${DefaultUrlSpotify}/artist/${result.artists[0].id}`, result?.artists[0]?.type !== "artist")]))[0]
+                    author: (await Promise.all([getAuthorTrack(`${SpotifyUrl}/artist/${result.artists[0].id}`, result?.artists[0]?.type !== "artist")]))[0]
                 });
             } catch (e) {
                 console.log(e);
@@ -127,9 +126,9 @@ export namespace Spotify {
                 return resolve(await Promise.all(result.tracks.items.map((track: SpotifyTrack) => {
                         return {
                             title: track.name,
-                            url: `${DefaultUrlSpotify}/track/${track.id}`,
+                            url: `${SpotifyUrl}/track/${track.id}`,
                             author: {
-                                url: `${DefaultUrlSpotify}/artist/${track.artists[0].id}`,
+                                url: `${SpotifyUrl}/artist/${track.artists[0].id}`,
                                 title: track.artists[0].name,
                                 image: null,
                                 isVerified: track.artists[0].popularity >= 500
@@ -154,12 +153,12 @@ export namespace Spotify {
  * @description Получаем токен
  */
 function getToken(): Promise<void> {
-    return httpsClient.parseJson(`${ApiLink}/token`, {
+    return httpsClient.parseJson(`${AccountUrl}/token`, {
         request: {
             method: "POST",
             headers: {
                 "Accept": "application/json",
-                "Authorization": `Basic ${Buffer.from(clientID + ":" + clientSecret).toString("base64")}`,
+                "Authorization": `Basic ${Buffer.from(spotify.clientID + ":" + spotify.clientSecret).toString("base64")}`,
                 "Content-Type": "application/x-www-form-urlencoded",
                 "accept-encoding": "gzip, deflate, br"
             },
@@ -178,7 +177,7 @@ function getToken(): Promise<void> {
 function RequestSpotify(method: string): Promise<SpotifyRes> {
     return new Promise<SpotifyRes>(async (resolve) => {
         await login();
-        return httpsClient.parseJson(`${GetApi}/${method}`, {
+        return httpsClient.parseJson(`${ApiUrl}/${method}`, {
             request: {
                 method: "GET",
                 headers: {
@@ -223,7 +222,6 @@ function isLoggedIn() {
 //Получаем ID трека, плейлиста, альбома
 function getID(url: string): string {
     if (typeof url !== "string") return undefined;
-    if (!url.match(SpotifyStr)) return undefined;
 
     return new URL(url).pathname.split('/')[2];
 }

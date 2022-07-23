@@ -11,9 +11,9 @@ const ProgressBarValue: boolean = true;
 /**
  * Вспомогательный элемент
  */
-export namespace EmbedHelper {
-    export const Ver = "https://cdn.discordapp.com/attachments/860113484493881365/986005795038715904/Ok.png";
-    export const NotVer = "https://cdn.discordapp.com/attachments/860113484493881365/986005794849980486/Not.png";
+export namespace Images {
+    export const Verification = "https://cdn.discordapp.com/attachments/860113484493881365/986005795038715904/Ok.png";
+    export const NotVerification = "https://cdn.discordapp.com/attachments/860113484493881365/986005794849980486/Not.png";
     export const NotFound = "https://cdn.discordapp.com/attachments/860113484493881365/986005794627670086/WTF.png";
     export const NotImage = "https://cdn.discordapp.com/attachments/860113484493881365/940926476746883082/MusciNote.png";
 }
@@ -33,11 +33,11 @@ export namespace EmbedMessages {
             color: song.color,
             author: {
                 name: client.ConvertedText(song.author.title, 45, false),
-                iconURL: song.author.isVerified === undefined ? EmbedHelper.NotFound : song.author.isVerified ? EmbedHelper.Ver : EmbedHelper.NotVer,
+                iconURL: song.author.isVerified === undefined ? Images.NotFound : song.author.isVerified ? Images.Verification : Images.NotVerification,
                 url: song.author.url,
             },
             thumbnail: {
-                url: song.author?.image?.url ?? EmbedHelper.NotImage,
+                url: song.author?.image?.url ?? Images.NotImage,
             },
             fields: createFields(song, queue, client),
             image: {
@@ -68,11 +68,11 @@ export namespace EmbedMessages {
             color,
             author: {
                 name: client.ConvertedText(author.title, 45, false),
-                iconURL: author.isVerified === undefined ? EmbedHelper.NotFound : author.isVerified ? EmbedHelper.Ver : EmbedHelper.NotVer,
+                iconURL: author.isVerified === undefined ? Images.NotFound : author.isVerified ? Images.Verification : Images.NotVerification,
                 url: author.url,
             },
             thumbnail: {
-                url: !image?.url ? author?.image.url : image?.url ?? EmbedHelper.NotImage,
+                url: !image?.url ? author?.image.url : image?.url ?? Images.NotImage,
             },
             fields: [{
                 name: "Добавлено в очередь",
@@ -100,11 +100,11 @@ export namespace EmbedMessages {
             color: Colors.BLUE,
             author: {
                 name: author?.title,
-                iconURL: author?.image?.url ?? EmbedHelper.NotImage,
+                iconURL: author?.image?.url ?? Images.NotImage,
                 url: author?.url,
             },
             thumbnail: {
-                url: typeof image === "string" ? image : image.url ?? EmbedHelper.NotImage
+                url: typeof image === "string" ? image : image.url ?? Images.NotImage
             },
             description: `Найден плейлист [${title}](${url})`,
             timestamp: new Date(),
@@ -135,11 +135,11 @@ export namespace EmbedMessages {
             description: `\n[${title}](${url})\n\`\`\`js\n${err}...\`\`\``,
             author: {
                 name: client.ConvertedText(author.title, 45, false),
-                iconURL: author.isVerified === undefined ? EmbedHelper.NotFound : author.isVerified ? EmbedHelper.Ver : EmbedHelper.NotVer,
+                iconURL: author.isVerified === undefined ? Images.NotFound : author.isVerified ? Images.Verification : Images.NotVerification,
                 url: author.url,
             },
             thumbnail: {
-                url: image?.url ?? EmbedHelper.NotImage,
+                url: image?.url ?? Images.NotImage,
             },
             timestamp: new Date(),
             footer: {

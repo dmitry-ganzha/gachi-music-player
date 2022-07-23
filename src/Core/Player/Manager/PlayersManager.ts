@@ -1,22 +1,24 @@
 import {AudioPlayer} from "../Audio/AudioPlayer";
 
-const audioPlayers: AudioPlayer[] = []; //База с плеерами
-let AudioCycleTimer: NodeJS.Timeout | undefined;
-let TimeToFrame = -1;
+const PlayerData = {
+    players: [] as AudioPlayer[],
+    timer: undefined as NodeJS.Timeout,
+    time: -1
+}
 
 export namespace PlayersManager {
     /**
      * @description Добавляем плеер в базу
      * @param player {AudioPlayer}
-     * @requires {audioPlayers, playerCycleStep, TimeToFrame}
+     * @requires {playerCycleStep}
      */
     export function push(player: AudioPlayer): void {
-        if (audioPlayers.includes(player)) return;
-        audioPlayers.push(player);
+        if (PlayerData.players.includes(player)) return;
+        PlayerData.players.push(player);
 
         //Запускаем систему
-        if (audioPlayers.length === 1) {
-            TimeToFrame = Date.now();
+        if (PlayerData.players.length === 1) {
+            PlayerData.time = Date.now();
             setImmediate(playerCycleStep);
         }
     }
@@ -24,33 +26,31 @@ export namespace PlayersManager {
     /**
      * @description Удаляем плеер из базы
      * @param player {AudioPlayer}
-     * @requires {AudioCycleTimer, audioPlayers, TimeToFrame}
      */
     export function remove(player: AudioPlayer): void {
-        const index = audioPlayers.indexOf(player);
-        if (index != -1) audioPlayers.splice(index, 1);
+        const index = PlayerData.players.indexOf(player);
+        if (index != -1) PlayerData.players.splice(index, 1);
 
         //Чистим систему
-        if (audioPlayers.length === 0) {
-            TimeToFrame = -1;
-            if (typeof AudioCycleTimer !== "undefined") clearTimeout(AudioCycleTimer);
+        if (PlayerData.players.length === 0) {
+            PlayerData.time = -1;
+            if (typeof PlayerData.timer !== "undefined") clearTimeout(PlayerData.timer);
         }
     }
 }
 /**
  * @description Цикл жизни плеера
  * @param players {AudioPlayer[]} Плееры
- * @requires {audioPlayers, AudioCycleTimer, TimeToFrame}
  */
 function playerCycleStep(players: AudioPlayer[] = null): void {
     //Проверяем плееры на возможность включить музыку в голосовые каналы
     if (players === null) {
-        if (TimeToFrame === -1) return;
+        if (PlayerData.time === -1) return;
 
-        TimeToFrame += 20;
+        PlayerData.time += 20;
 
         //Фильтруем какой плеер готов проигрывать музыку
-        const available = audioPlayers.filter((player) => player.checkPlayable);
+        const available = PlayerData.players.filter((player) => player.checkPlayable);
         return playerCycleStep(available);
     }
 
@@ -58,8 +58,8 @@ function playerCycleStep(players: AudioPlayer[] = null): void {
 
     //Если Array<AudioPLayer> пуст, то запрашиваем новый Array
     if (!nextPlayer) {
-        if (TimeToFrame !== -1) {
-            AudioCycleTimer = setTimeout(playerCycleStep, TimeToFrame - Date.now());
+        if (PlayerData.time !== -1) {
+            PlayerData.timer = setTimeout(playerCycleStep, PlayerData.time - Date.now());
         }
         return;
     }
