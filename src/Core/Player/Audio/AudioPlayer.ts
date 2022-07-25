@@ -6,6 +6,8 @@ import {FFmpegDecoder} from "../Structures/Media/FFmpegDecoder";
 import {MessagePlayer} from "../Manager/MessagePlayer";
 import {PlayersManager} from "../Manager/PlayersManager";
 import {TypedEmitter} from "tiny-typed-emitter";
+import {Searcher} from "../Structures/Resource/Searcher";
+import {FFmpegFormat} from "../../Utils/TypeHelper";
 
 //Статусы плеера для пропуска музыки
 export const StatusPlayerHasSkipped: Set<string> = new Set(["playing", "paused", "buffering", "idle"]);
@@ -315,12 +317,15 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
  * @param seek {number} Пропуск музыки до 00:00:00
  */
 function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0): Promise<PlayerResource | null> {
-    if (song.isLive) { //Если будет включен поток
-        seek = 0;
-        audioFilters = [];
-    }
-    //Отправляем данные для дальнейшей загрузки
-    return song.getFormat().then((format) => format ? new FFmpegDecoder({url: format?.url, seek, Filters: audioFilters}) : null);
+    const Resource = Searcher.getResourceSong(song);
+
+    return Resource.then((format: FFmpegFormat) => {
+        if (!format) return null;
+
+        //Если будет включен поток
+        if (song.isLive) return new FFmpegDecoder({url: format?.url});
+        return new FFmpegDecoder({url: format?.url, seek, Filters: audioFilters});
+    });
 }
 //====================== ====================== ====================== ======================
 /**

@@ -233,6 +233,7 @@ export interface YouTubeFormat {
     work?: boolean;
     duration?: number;
     targetDurationSec?: number;
+    mimeType?: string;
 }
 /**
  * @description vm<Script>

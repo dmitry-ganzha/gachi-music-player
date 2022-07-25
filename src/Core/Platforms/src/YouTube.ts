@@ -24,7 +24,7 @@ export namespace YouTube {
                 }
             })]))[0];
 
-            if (body.includes("Our systems have detected unusual traffic from your computer network.")) throw reject('Google понял что я бот! Это может занять много времени!');
+            if (body.match(/Our systems have detected unusual traffic from your computer network/)) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));
 
             const PlayerResponse = body.split('var ytInitialPlayerResponse = ')?.[1]?.split(';</script>')[0].split(/(?<=}}});\s*(var|const|let)\s/)[0];
             if (!PlayerResponse) throw new Error("Данные на странице не были найдены");
@@ -32,23 +32,20 @@ export namespace YouTube {
             const VideoFinalData = JSON.parse(PlayerResponse);
             if (VideoFinalData.playabilityStatus?.status !== "OK") throw reject(new Error(`Не удалось получить данные из-за: ${VideoFinalData.playabilityStatus.status}`));
 
-            const html5player = `https://www.youtube.com${body.split('"jsUrl":"')[1].split('"')[0]}`;
             const videoDetails = VideoFinalData.videoDetails;
-            let format: YouTubeFormat[];
-
+            let VideoFormats: YouTubeFormat[] = [];
             const LiveData: LiveData = {
                 isLive: videoDetails.isLiveContent,
                 url: VideoFinalData.streamingData?.hlsManifestUrl ?? null //dashManifestUrl, hlsManifestUrl
             };
 
-            const VideoFormats: YouTubeFormat[] = [...VideoFinalData.streamingData.formats ?? [], ...VideoFinalData.streamingData.adaptiveFormats ?? []].filter((d: any) => d?.mimeType?.match(/opus/) || d?.mimeType?.match(/audio/)) ?? [];
-
             if (!LiveData.isLive) {
-                if (VideoFormats[0].signatureCipher || VideoFormats[0].cipher) format = (await Promise.all([Decipher(VideoFormats, html5player)]))[0];
-                else format = [...VideoFormats];
-            } else format = [{url: LiveData.url, work: true}];
+                const html5player = `https://www.youtube.com${body.split('"jsUrl":"')[1].split('"')[0]}`;
+                const FilteredFormats = [...VideoFinalData.streamingData?.formats, ...VideoFinalData.streamingData?.adaptiveFormats].filter((format) => format.mimeType?.match(/opus/) || format?.mimeType?.match(/audio/));
+                VideoFormats = (await Promise.all([Decipher(FilteredFormats, html5player)]))[0];
+            } else VideoFormats.push({url: LiveData.url});
 
-            if (options?.onlyFormats) return resolve(format.pop() as InputFormat);
+            if (options?.onlyFormats) return resolve(VideoFormats.pop() as InputFormat);
 
             const VideoData: InputTrack = {
                 url: `${YouTubeURL}/watch?v=${VideoID}`,
@@ -59,8 +56,7 @@ export namespace YouTube {
                 isLive: videoDetails.isLiveContent,
                 isPrivate: videoDetails.isPrivate,
             };
-
-            return resolve({...VideoData, format: format.pop()});
+            return resolve({...VideoData, format: VideoFormats.pop()});
         });
     }
     //====================== ====================== ====================== ======================
@@ -109,7 +105,7 @@ export namespace YouTube {
                 }
             })]))[0];
 
-            if (body.includes("Our systems have detected unusual traffic from your computer network.")) throw reject("Google понял что я бот! Это может занять много времени!");
+            if (body.match(/Our systems have detected unusual traffic from your computer network/)) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));
 
             const parsed = JSON.parse(`${body.split("{\"playlistVideoListRenderer\":{\"contents\":")[1].split("}],\"playlistId\"")[0]}}]`);
             const playlistDetails = JSON.parse(body.split("{\"playlistSidebarRenderer\":")[1].split("}};</script>")[0]).items;

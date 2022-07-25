@@ -99,32 +99,50 @@ export namespace Searcher {
     }
     //====================== ====================== ====================== ======================
     /**
-     * @description Ищет трек и проверяем его работоспособность
-     * @requires {getFormatYouTube, CheckLink}
+     * @description Получаем ссылку на ресурс трека
+     * @param song {Song} Трек
+     * @param req {number} Номер запроса
      */
-    export function CheckHeadResource(song: Song): Promise<true | Error> {
+    export function getResourceSong(song: Song, req = 1): Promise<Song["format"] | null> {
         return new Promise(async (resolve) => {
-            if (!song.format || !song.format?.url) {
-                let format = await getFormatSong(song);
+            if (req > 4) return resolve(null);
 
-                if (!format || !format?.url) {
-                    song.format = {url: null};
-                    return resolve(new Error(`[FindResource]: [Song: ${song.title}]: Has not found format`));
-                }
-                //Добавляем ссылку в трек
-                song.format = {url: format.url};
-            }
+            const CheckResource = await CheckHeadResource(song);
 
-            //Делаем head запрос на сервер
-            const resource = await CheckLink(song.format?.url);
-            if (resource === "Fail") { //Если выходит ошибка
-                song.format.url = null;
-                return resolve(new Error(`[FindResource]: [Song: ${song.title}]: Has fail checking resource link`));
-            }
-            return resolve(true);
+            //Если выходит ошибка или нет ссылки на исходный ресурс
+            if (CheckResource instanceof Error || !song.format?.url) return resolve(getResourceSong(song, req++));
+            return resolve(song.format);
         });
     }
 }
+//====================== ====================== ====================== ======================
+/**
+ * @description Ищет трек и проверяем его работоспособность
+ * @requires {getFormatYouTube, CheckLink}
+ */
+function CheckHeadResource(song: Song): Promise<true | Error> {
+    return new Promise(async (resolve) => {
+        if (!song.format || !song.format?.url) {
+            let format = await getFormatSong(song);
+
+            if (!format || !format?.url) {
+                song.format = {url: null};
+                return resolve(new Error(`[FindResource]: [Song: ${song.title}]: Has not found format`));
+            }
+            //Добавляем ссылку в трек
+            song.format = {url: format.url};
+        }
+
+        //Делаем head запрос на сервер
+        const resource = await CheckLink(song.format?.url);
+        if (resource === "Fail") { //Если выходит ошибка
+            song.format.url = null;
+            return resolve(new Error(`[FindResource]: [Song: ${song.title}]: Has fail checking resource link`));
+        }
+        return resolve(true);
+    });
+}
+
 //используется в Searcher.CheckHeadResource
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================

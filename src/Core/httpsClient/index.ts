@@ -24,16 +24,16 @@ export namespace httpsClient {
                 headers: options?.request?.headers ?? {},
                 method: options?.request?.method ?? "GET"
             };
-            const Requesting = request(Options, resolve);
+            const httpsRequest = request(Options, resolve);
 
             //Если возникла ошибка
-            Requesting.on("error", reject);
+            httpsRequest.on("error", reject);
 
             //Если запрос POST, отправляем ответ на сервер
-            if (options?.request?.method === "POST") Requesting.write(options.request?.body);
+            if (options?.request?.method === "POST") httpsRequest.write(options.request?.body);
 
             //Заканчиваем запрос
-            Requesting.end();
+            httpsRequest.end();
         });
     }
     //====================== ====================== ====================== ======================
