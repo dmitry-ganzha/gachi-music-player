@@ -9,14 +9,19 @@ import {MessageCollector, MessageReaction, StageChannel, User, VoiceChannel} fro
 import {FFprobe} from "../Media/FFprobe";
 import {Images} from "../EmbedMessages";
 
+const youtubeStr = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi;
+const spotifySrt = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;
+const SoundCloudSrt = /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/(.*)$/;
+const UrlSrt = /^(https?:\/\/)/gi;
+
 //Типы данных
 type TypeFindTrack = "track" | "playlist" | "search" | "album";
 //Платформы
 type TypeSearch = "yt" | "sp" | "vk" | "sc" | "ds";
 //Данные которые необходимо передать для поиска
 interface Options {
-    type: TypeFindTrack
-    platform: TypeSearch
+    type?: TypeFindTrack
+    platform?: TypeSearch
     search: string
     message: ClientMessage
     voiceChannel: VoiceChannel | StageChannel
@@ -28,33 +33,35 @@ const GlobalOptions: httpsClientOptions = {request: {method: "HEAD"}};
 const localPlatform = {
     //YouTube
     "yt": {
-        "track": (search: string) => YouTube.getVideo(search),
-        "playlist": (search: string) => YouTube.getPlaylist(search),
-        "search": (search: string) => YouTube.SearchVideos(search)
+        "track": (search: string): Promise<InputTrack> => YouTube.getVideo(search) as Promise<InputTrack>,
+        "playlist": (search: string): Promise<InputPlaylist> => YouTube.getPlaylist(search),
+        "search": (search: string): Promise<InputTrack[]> => YouTube.SearchVideos(search),
+        "album": (): null => null
     },
     //Spotify
     "sp": {
-        "track": (search: string) => Spotify.getTrack(search),
-        "playlist": (search: string) => Spotify.getPlaylist(search),
-        "search": (search: string) => Spotify.SearchTracks(search),
-        "album": (search: string) => Spotify.getAlbum(search)
+        "track": (search: string): Promise<InputTrack> => Spotify.getTrack(search),
+        "playlist": (search: string): Promise<InputPlaylist> => Spotify.getPlaylist(search),
+        "search": (search: string): Promise<InputTrack[]> => Spotify.SearchTracks(search),
+        "album": (search: string): Promise<InputPlaylist> => Spotify.getAlbum(search)
     },
     //SoundCloud
     "sc": {
-        "track": (search: string) => SoundCloud.getTrack(search),
-        "playlist": (search: string) => SoundCloud.getPlaylist(search),
-        "search": (search: string) => SoundCloud.SearchTracks(search),
-        "album": (search: string) => SoundCloud.getPlaylist(search)
+        "track": (search: string): Promise<InputTrack> => SoundCloud.getTrack(search),
+        "playlist": (search: string): Promise<InputPlaylist | InputTrack> => SoundCloud.getPlaylist(search),
+        "search": (search: string): Promise<InputTrack[]> => SoundCloud.SearchTracks(search),
+        "album": (search: string): Promise<InputPlaylist | InputTrack> => SoundCloud.getPlaylist(search)
     },
     //VK
     "vk": {
-        "track": (search: string) => VK.getTrack(search),
-        "playlist": (search: string) => VK.getPlaylist(search),
-        "search": (search: string) => VK.SearchTracks(search),
+        "track": (search: string): Promise<InputTrack> => VK.getTrack(search),
+        "playlist": (search: string): Promise<InputPlaylist> => VK.getPlaylist(search),
+        "search": (search: string): Promise<InputTrack[]> => VK.SearchTracks(search),
+        "album": (): null => null
     },
     //Discord
     "ds": {
-        "track": (search: string) => new FFprobe(["-i", search]).getInfo().then((trackInfo: any) => {
+        "track": (search: string): Promise<InputTrack> => new FFprobe(["-i", search]).getInfo().then((trackInfo: any) => {
             //Если не найдена звуковая дорожка
             if (!trackInfo) return null;
 
@@ -66,7 +73,10 @@ const localPlatform = {
                 duration: {seconds: trackInfo.format.duration},
                 format: {url: trackInfo.format.filename}
             };
-        })
+        }),
+        "playlist": (): null => null,
+        "search": (): null => null,
+        "album": (): null => null
     }
 }
 /**
@@ -80,22 +90,36 @@ export namespace Searcher {
      * @constructor
      */
     export function toPlayer(options: Options): void {
-        const {platform, search, type, message, voiceChannel} = options
-        // @ts-ignore
-        const promise = localPlatform[platform][type](search) as Promise<InputTrack | InputPlaylist | InputTrack[]>;
+        const {search, message, voiceChannel} = options;
+        const type: TypeFindTrack = typeSong(search);
+        const platform: TypeSearch = PlatformSong(search, message);
+        const searchEnd = type === "search" && search?.match(platform) ? search.split(platform)[1] : search;
 
-        //
-        promise.then((info) => {
-            if (!info) return message.client.Send({text: `${message.author}, данные не были найдены!`, color: "RED", message});
+        //Отправляем сообщение о поиске трека
+        if (!message.attachments?.last()?.url) message.client.Send({ text: `🔍 | Поиск -> ${search}`, message, color: "RED", type: "css" });
 
-            //Если пользователь делает поиск
-            if (info instanceof Array) return SearchMessage(info, ArrayToString(info, message, platform), info.length, options);
+        //Ищем в базе запрос в соответствии с платформой и типом
+        const promise = localPlatform[platform][type](searchEnd);
 
-            //Если это трек или плейлист
-            return message.client.player.emit("play", message, voiceChannel, info);
-        });
-        //Если выходит ошибка
-        promise.catch((err) => message.client.Send({text: `${message.author}, данные не были найдены! Error: ${err}`, color: "RED", message}));
+        if (promise) {
+            //
+            promise.then((info: InputTrack | InputPlaylist | InputTrack[]) => {
+                if (!info) return message.client.Send({text: `${message.author}, данные не были найдены!`, color: "RED", message});
+
+                //Если пользователь делает поиск
+                if (info instanceof Array) return SearchMessage(info, ArrayToString(info, message, platform), info.length, options);
+
+                //Сообщаем что трек или плейлист был найден
+                message.client.Send({ text: `🔍 | Найден: ${type} - ${info.title}`, message, color: "RED", type: "css" });
+
+                //Если это трек или плейлист
+                return message.client.player.emit("play", message, voiceChannel, info);
+            });
+            //Если выходит ошибка
+            promise.catch((err) => message.client.Send({text: `${message.author}, данные не были найдены! Error: ${err}`, color: "RED", message}));
+            return;
+        }
+        return message.client.Send({text: `${message.author}, у меня нет поддержки такой платформы!`, color: "RED", message});
     }
     //====================== ====================== ====================== ======================
     /**
@@ -191,7 +215,12 @@ function getFormatSong({type, url, title, author, duration}: Song): Promise<Inpu
 function FindTrack(nameSong: string, duration: number): Promise<InputFormat> {
     return YouTube.SearchVideos(nameSong, {limit: 5}).then((Tracks) => {
         //Фильтруем треки оп времени
-        const FindTracks = Tracks.filter((track) => Filter(track, duration));
+        const FindTracks = Tracks.filter((track) => {
+            const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);
+
+            //Как надо фильтровать треки
+            return DurationSong === duration || DurationSong < duration + 10 && DurationSong > duration - 10;
+        });
 
         //Если треков нет
         if (FindTracks.length === 0) return null;
@@ -208,14 +237,6 @@ function FindTrack(nameSong: string, duration: number): Promise<InputFormat> {
 function getFormatYouTube(url: string): Promise<InputFormat> {
     return YouTube.getVideo(url, {onlyFormats: true}) as Promise<InputFormat>;
 }
-
-function Filter(track: InputTrack, NeedDuration: number) {
-    const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);
-
-    //Как надо фильтровать треки
-    return DurationSong === NeedDuration || DurationSong < NeedDuration + 10 && DurationSong > NeedDuration - 10;
-}
-
 //используется в Searcher.toPlayer
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
@@ -338,4 +359,42 @@ function ArrayToString(results: InputTrack[], message: ClientMessage, type: Type
  */
 function deleteMessage(msg: ClientMessage): void {
     setTimeout(() => msg.delete().catch(() => null), 1e3);
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Независимо от платформы делаем проверку типа ссылки
+ * @param search {string} Что там написал пользователь
+ * @private
+ */
+function typeSong(search: string) {
+    if (!search) return "track"; //Если нет search, значит пользователь прикрепил файл
+
+    if (search.match(/playlist/)) return "playlist";
+    else if (search.match(/album/) || search.match(/sets/)) return "album";
+    else if (search.match(UrlSrt)) return "track";
+    return "search";
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Получаем инициалы платформы
+ * @param search {string} Что там написал пользователь
+ * @param message {ClientMessage} Сообщение
+ * @private
+ */
+function PlatformSong(search: string, message: ClientMessage): "yt" | "sp" | "vk" | "sc" | "ds" {
+    if (!search) return "ds"; //Если нет search, значит пользователь прикрепил файл
+
+    if (search.match(UrlSrt)) {
+        if (search.match(youtubeStr)) return "yt";
+        else if (search.match(spotifySrt)) return "sp";
+        else if (search.match(/vk.com/)) return "vk";
+        else if (search.match(SoundCloudSrt)) return "sc";
+        else if (search.match(/cdn.discordapp.com/) || message.attachments?.last()?.url) return "ds";
+    }
+
+    const SplitSearch = search.split(' ');
+    const FindType = SplitSearch[0].toLowerCase();
+
+    if (FindType.length > 2) return "yt";
+    return FindType as any;
 }

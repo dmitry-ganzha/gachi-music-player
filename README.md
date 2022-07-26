@@ -11,8 +11,10 @@
 
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
+- Лицензия: [`MIT`](https://github.com/SNIPPIK/WatKLOK/blob/main/LICENSE)
 - [Настройки](./DataBase/Config.json)
 - [Все команды](./src/Commands) | `Slash + Standart`
+- Все сообщения удаляют автоматически через время
 
 ## Гайд по запуску
 1. [`Node.js`](https://nodejs.org/ru/) 18
