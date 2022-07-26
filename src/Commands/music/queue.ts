@@ -6,7 +6,7 @@ import {CollectorSortReaction} from "../../Core/Utils/ReactionMenu";
 import {Song} from "../../Core/Player/Structures/Queue/Song";
 import {DurationUtils} from "../../Core/Player/Manager/DurationUtils";
 
-export class CommandQueue extends Command {
+export default class CommandQueue extends Command {
     public constructor() {
         super({
             name: "queue",

@@ -5,7 +5,7 @@ import {CollectorSortReaction} from "../../Core/Utils/ReactionMenu";
 import {Colors} from "../../Core/Utils/LiteUtils";
 import {MessageReaction, User} from "discord.js";
 
-export class CommandHelp extends Command {
+export default class Help extends Command {
     public constructor() {
         super({
             name: "help",

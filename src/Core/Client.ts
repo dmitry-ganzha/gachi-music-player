@@ -14,20 +14,20 @@ import {Channel, MessageChannel, sendType} from "./Utils/TypeHelper";
 import {PlayerEmitter} from "./Player/execute";
 import {Command} from "../Commands/Constructor";
 import {Queue} from "./Player/Structures/Queue/Queue";
-import {CollectionMap, Connections, MessageChannelSend, ConvertedText, ConsoleLog} from "./Utils/LiteUtils";
+import {LiteUtils, MessageSend} from "./Utils/LiteUtils";
 import {Bot, Channels} from "../../DataBase/Config.json";
 
 const keepOverLimit = (value: any): boolean => value.id !== value.client.user.id;
 
 export class WatKLOK extends Client {
-    public readonly commands = new CollectionMap<string, Command>(); //База, со всеми командами
-    public readonly aliases = new CollectionMap<string, string>(); //База, с сокращениями названий команд
-    public readonly queue = new CollectionMap<string, Queue>(); //База, в ней содержатся данные о серверах на которых играет музыка
+    public readonly commands = new LiteUtils.CollectionMap<string, Command>(); //База, со всеми командами
+    public readonly aliases = new LiteUtils.CollectionMap<string, string>(); //База, с сокращениями названий команд
+    public readonly queue = new LiteUtils.CollectionMap<string, Queue>(); //База, в ней содержатся данные о серверах на которых играет музыка
 
-    public readonly Send = MessageChannelSend; //Отправить не полное embed сообщение
-    public readonly ConvertedText = ConvertedText; //Обрезка текста
+    public readonly Send = MessageSend.Send; //Отправить не полное embed сообщение
+    public readonly ConvertedText = LiteUtils.ConvertedText; //Обрезка текста
     public readonly console: (text: string) => NodeJS.Timeout; //Самый обычный console.log
-    public readonly connections = Connections; //Все пользователи в голосовом канале
+    public readonly connections = LiteUtils.Connections; //Все пользователи в голосовом канале
     public readonly player = new PlayerEmitter(); //Плеер
 
     public readonly ShardID: number | null = this.shard?.ids[0]; //Если запущен ShardManager, будет отображаться номер дубликата
@@ -67,8 +67,8 @@ export class WatKLOK extends Client {
             }
         });
         this.console = (text: string) => {
-            if (this.ShardID !== undefined) return ConsoleLog(`[ShardID: ${this.ShardID}] -> ` + text);
-            return ConsoleLog(text);
+            if (this.ShardID !== undefined) return LiteUtils.ConsoleLog(`[ShardID: ${this.ShardID}] -> ` + text);
+            return LiteUtils.ConsoleLog(text);
         };
     };
 }

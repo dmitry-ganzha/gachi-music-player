@@ -1,6 +1,6 @@
 import {WatKLOK} from "../../Core/Client";
 
-export class shardDisconnect {
+export default class shardDisconnect {
     public readonly name: string = "shardDisconnect";
     public readonly enable: boolean = true;
 

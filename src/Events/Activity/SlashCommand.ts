@@ -1,10 +1,10 @@
 import {CommandInteractionOption} from "discord.js";
-import {CoolDownBase, isOwner} from './Message';
 import {ClientInteraction, WatKLOK} from "../../Core/Client";
 import {DurationUtils} from "../../Core/Player/Manager/DurationUtils";
 import ParsingTimeToString = DurationUtils.ParsingTimeToString;
+import {CoolDownBase, UtilsPermissions} from "../../Core/Utils/LiteUtils";
 
-export class SlashCommand {
+export default class SlashCommand {
     public readonly name: string = "interactionCreate";
     public readonly enable: boolean = true;
 
@@ -17,7 +17,7 @@ export class SlashCommand {
         const CoolDownFind = CoolDownBase.get(interaction.author.id);
 
         //
-        if (isOwner(null, interaction.author.id)) {
+        if (UtilsPermissions.isOwner(null, interaction.author.id)) {
             if (CoolDownFind) return client.Send({ text: `${interaction.author.username}, Воу воу, ты слишком быстро вызываешь "Interaction". Подожди ${ParsingTimeToString(CoolDownFind.time)}`, message: interaction as any, type: "css" });
             else {
                 CoolDownBase.set(interaction.author.id, {

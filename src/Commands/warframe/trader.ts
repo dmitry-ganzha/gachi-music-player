@@ -8,7 +8,7 @@ import {CollectorSortReaction} from "../../Core/Utils/ReactionMenu";
 
 const TraderApi = "https://api.warframestat.us/pc/ru/voidTrader/";
 const VoidIcon = "https://cdn.discordapp.com/attachments/850775689107865641/996413936595378256/BaroBanner.webp";
-export class Trader extends Command {
+export default class Trader extends Command {
     public constructor() {
         super({
             name: "baro",

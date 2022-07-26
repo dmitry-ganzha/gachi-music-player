@@ -4,7 +4,7 @@ import {ClientMessage} from "../../Core/Client";
 import {Song} from "../../Core/Player/Structures/Queue/Song";
 import {ApplicationCommandOptionType} from "discord.js";
 
-export class CommandShuffle extends Command {
+export default class Shuffle extends Command {
     public constructor() {
         super({
             name: "shuffle",

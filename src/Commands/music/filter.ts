@@ -4,7 +4,7 @@ import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {ApplicationCommandOptionType} from "discord.js";
 import FFmpegConfiguration from "../../../DataBase/FFmpeg.json";
 
-export class CommandLoop extends Command {
+export default class Filter extends Command {
     public constructor() {
         super({
             name: "filter",

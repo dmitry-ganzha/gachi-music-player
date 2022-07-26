@@ -2,7 +2,7 @@ import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 
-export class CommandResume extends Command {
+export default class Resume extends Command {
     public constructor() {
         super({
             name: "resume",

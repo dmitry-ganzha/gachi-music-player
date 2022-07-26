@@ -4,7 +4,7 @@ import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {Searcher} from "../../Core/Player/Structures/Resource/Searcher";
 
-export class CommandPlay extends Command {
+export default class Play extends Command {
     public constructor() {
         super({
             name: "play",

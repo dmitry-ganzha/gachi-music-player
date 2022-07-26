@@ -1,4 +1,4 @@
-export class ArraySort {
+export default class ArraySort {
     public readonly enable: boolean = true;
 
     public run = (): void => {

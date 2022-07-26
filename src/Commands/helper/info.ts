@@ -14,7 +14,7 @@ interface OptionsEmbed {
     guilds: number;
 }
 
-export class CommandInfo extends Command {
+export default class Info extends Command {
     public constructor() {
         super({
             name: "info",

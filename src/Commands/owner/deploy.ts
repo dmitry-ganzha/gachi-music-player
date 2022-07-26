@@ -1,7 +1,7 @@
 import {Command, TypeSlashCommand} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
 
-export class CommandDeploy extends Command {
+export default class Deploy extends Command {
     public constructor() {
         super({
             name: "deploy",

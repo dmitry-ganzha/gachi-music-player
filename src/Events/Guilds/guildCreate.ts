@@ -3,9 +3,9 @@ import {
 } from "discord.js";
 import {WatKLOK} from "../../Core/Client";
 import {EmbedConstructor} from "../../Core/Utils/TypeHelper";
-import {Colors, getButtons} from "../../Core/Utils/LiteUtils";
+import {Colors, LiteUtils} from "../../Core/Utils/LiteUtils";
 
-export class guildCreate {
+export default class guildCreate {
     public readonly name: string = "guildCreate";
     public readonly enable: boolean = true;
 
@@ -15,7 +15,7 @@ export class guildCreate {
         setImmediate(() => {
             try {
                 // @ts-ignore
-                return guild.systemChannel.send({ embeds: [ConstructEmbed(guild)], components: [getButtons(client.user.id)] });
+                return guild.systemChannel.send({ embeds: [ConstructEmbed(guild)], components: [LiteUtils.getButtons(client.user.id)] });
             } catch (e) {
                 console.log(e);
                 return;

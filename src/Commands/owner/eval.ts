@@ -3,7 +3,7 @@ import {ClientMessage} from "../../Core/Client";
 import {EmbedConstructor} from "../../Core/Utils/TypeHelper";
 import {Colors} from "../../Core/Utils/LiteUtils";
 
-export class CommandEval extends Command {
+export default class Eval extends Command {
     public constructor() {
         super({
             name: "eval",

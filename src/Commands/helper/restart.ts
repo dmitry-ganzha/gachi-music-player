@@ -4,7 +4,7 @@ import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {Colors} from "../../Core/Utils/LiteUtils";
 
-export class CommandRestart extends Command {
+export default class Restart extends Command {
     public constructor() {
         super({
             name: 'restart',

@@ -3,7 +3,7 @@ import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {ApplicationCommandOptionType} from "discord.js";
 
-export class CommandRemove extends Command {
+export default class Remove extends Command {
     public constructor() {
         super({
             name: "remove",

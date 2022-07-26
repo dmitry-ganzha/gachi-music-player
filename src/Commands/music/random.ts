@@ -2,7 +2,7 @@ import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 
-export class CommandRandom extends Command {
+export default class Random extends Command {
     public constructor() {
         super({
             name: 'random',

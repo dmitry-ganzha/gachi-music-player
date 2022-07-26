@@ -3,7 +3,7 @@ import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {WatKLOK} from "../../Core/Client";
 import {Voice} from "../../Core/Player/Structures/Voice";
 
-export class voiceStateUpdate {
+export default class voiceStateUpdate {
     public readonly name: string = "voiceStateUpdate";
     public readonly enable: boolean = true;
 

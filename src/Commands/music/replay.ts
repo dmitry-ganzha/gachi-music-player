@@ -1,7 +1,7 @@
 import {Command} from "../Constructor";
 import {ClientMessage} from "../../Core/Client";
 
-export class CommandReplay extends Command {
+export default class Replay extends Command {
     public constructor() {
         super({
             name: "replay",

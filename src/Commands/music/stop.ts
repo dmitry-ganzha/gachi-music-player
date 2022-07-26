@@ -3,7 +3,7 @@ import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {Voice} from "../../Core/Player/Structures/Voice";
 
-export class CommandStop extends Command {
+export default class Stop extends Command {
     public constructor() {
         super({
             name: "stop",

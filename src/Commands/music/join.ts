@@ -4,7 +4,7 @@ import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
 import {Voice} from "../../Core/Player/Structures/Voice";
 
-export class CommandJoin extends Command {
+export default class Join extends Command {
     public constructor() {
         super({
             name: "join",

@@ -1,7 +1,7 @@
 import {ClientMessage} from "../../Client";
 import {Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
-import {CollectionMap} from "../../Utils/LiteUtils";
+import {LiteUtils} from "../../Utils/LiteUtils";
 import {InputPlaylist} from "../../Utils/TypeHelper";
 import {EmbedMessages} from "../Structures/EmbedMessages";
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType} from "discord.js";
@@ -18,7 +18,7 @@ const ButtonID = new Set(["skip", "resume_pause", "replay", "last"]);
 
 //Баса с сообщениями
 const MessagesData = {
-    messages: new CollectionMap<string, ClientMessage>(),
+    messages: new LiteUtils.CollectionMap<string, ClientMessage>(),
     timer: null as NodeJS.Timeout
 }
 

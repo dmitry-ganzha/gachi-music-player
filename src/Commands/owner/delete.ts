@@ -2,7 +2,7 @@ import {Command} from "../Constructor";
 import {TextChannel} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
 
-export class CommandDelete extends Command {
+export default class Delete extends Command {
     public constructor() {
         super({
             name: "delete",
