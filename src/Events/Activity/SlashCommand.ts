@@ -1,4 +1,4 @@
-import {ApplicationCommand, GuildResolvable} from "discord.js";
+import {CommandInteractionOption} from "discord.js";
 import {CoolDownBase, isOwner} from './Message';
 import {ClientInteraction, WatKLOK} from "../../Core/Client";
 import {DurationUtils} from "../../Core/Player/Manager/DurationUtils";
@@ -26,6 +26,12 @@ export class SlashCommand {
                 setTimeout(() => CoolDownBase.delete(interaction.author.id), 10e3);
             }
         }
+        if (interaction.isChatInputCommand()) {
+            const Command = client.commands.get(interaction.commandName);
+            const Args = interaction.options?._hoistedOptions?.map((f: CommandInteractionOption) => `${f.value}`) || [""];
+
+            if (Command) Command.run(interaction, Args);
+        }
     };
 }
 // Удаляем через 200 мс взаимодействие
@@ -42,9 +48,11 @@ function editInteraction(interaction: ClientInteraction): void {
     interaction.delete = (): null => null;
 }
 
+/*
 // Если нет такой команды удаляем из взаимодействия
 function DeleteCommandInInteraction(client: WatKLOK, interaction: ClientInteraction): void | Promise<ApplicationCommand<{guild: GuildResolvable}>> {
     if (!interaction.commandId) return;
 
     return client.application?.commands.delete(interaction.commandId);
 }
+ */
