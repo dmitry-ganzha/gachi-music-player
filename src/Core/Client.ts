@@ -30,7 +30,7 @@ export class WatKLOK extends Client {
     public readonly connections = Connections; //Все пользователи в голосовом канале
     public readonly player = new PlayerEmitter(); //Плеер
 
-    public readonly ShardID: number | null; //Если запущен ShardManager, будет отображаться номер дубликата
+    public readonly ShardID: number | null = this.shard?.ids[0]; //Если запущен ShardManager, будет отображаться номер дубликата
 
     public constructor() {
         super({
@@ -61,12 +61,11 @@ export class WatKLOK extends Client {
             },
             presence: {
                 activities: [{
-                    name: "music on youtube, spotify, soundcloud",
+                    name: "music on youtube, spotify, soundcloud, vk",
                     type: ActivityType.Listening
                 }]
             }
         });
-        this.ShardID = this.shard?.ids[0];
         this.console = (text: string) => {
             if (this.ShardID !== undefined) return ConsoleLog(`[ShardID: ${this.ShardID}] -> ` + text);
             return ConsoleLog(text);

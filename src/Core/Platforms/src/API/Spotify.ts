@@ -11,6 +11,9 @@ const SpotifyRes = {
     Time: 0
 };
 
+/**
+ * Все доступные взаимодействия с Spotify-API
+ */
 export namespace Spotify {
     /**
      * @description Получаем данные о треке

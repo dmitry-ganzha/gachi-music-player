@@ -8,6 +8,9 @@ const connectString = `?access_token=${vk.token}`;
 type requestType = "get" | "getById" | "search" | "getPlaylistById" | "getPlaylist";
 type methodType = "audio" | "execute" | "catalog";
 
+/**
+ * Все доступные взаимодействия с VK-API
+ */
 export namespace VK {
     /**
      * @description Делаем запрос к VK API (через account), получаем данные о треке

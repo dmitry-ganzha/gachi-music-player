@@ -1,9 +1,57 @@
 import {httpsClient} from "../../../httpsClient";
 import {FFmpegFormat, InputPlaylist, InputTrack} from "../../../Utils/TypeHelper";
+import {soundcloud} from "../../../../../DataBase/Config.json";
 
 const APiLink = "https://api-v2.soundcloud.com";
-const clientID = '';
+const clientID = soundcloud.clientID;
 
+/**
+ * @description Делаем запрос с привязкой ClientID
+ * @param url {string} Ссылка
+ */
+function parseJson(url: string): Promise<{result: any, ClientID: string}> {
+    return new Promise(async (resolve) => {
+        const ClientID = await getClientID();
+        const result = await httpsClient.parseJson(`${url}&client_id=${ClientID}`);
+
+        return resolve({
+            result, ClientID
+        });
+    });
+}
+
+/**
+ * @description Получаем ClientID
+ */
+function getClientID(): Promise<string> {
+    return new Promise<string>(async (resolve) => {
+        if (clientID) return resolve(clientID);
+
+        const body = await httpsClient.parseBody("https://soundcloud.com/", {
+            options: {userAgent: true},
+            request: {
+                method: "GET",
+                headers: {
+                    "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
+                    "accept-encoding": "gzip, deflate, br"
+                }
+            }
+        });
+        const BodySplit = body.split("<script crossorigin src=\"");
+        const urls: string[] = [];
+        BodySplit.forEach((r) => {
+            if (r.startsWith("https")) {
+                urls.push(r.split("\"")[0]);
+            }
+        });
+        const body2 = await httpsClient.parseBody(urls.pop());
+        return resolve(body2.split(",client_id:\"")[1].split("\"")[0]);
+    });
+}
+
+/**
+ * Все доступные взаимодействия с SoundCloud-API
+ */
 export namespace SoundCloud {
     /**
      * @description Получаем трек
@@ -11,8 +59,7 @@ export namespace SoundCloud {
      */
     export function getTrack(url: string): Promise<InputTrack> {
         return new Promise<InputTrack>(async (resolve) => {
-            const ClientID = await getClientID();
-            const result = await httpsClient.parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
+            const {result, ClientID} = await parseJson(`${APiLink}/resolve?url=${url}`);
 
             if (!result?.id || !result) return resolve(null);
 
@@ -40,8 +87,7 @@ export namespace SoundCloud {
      */
     export function getPlaylist(url: string): Promise<InputPlaylist | InputTrack> {
         return new Promise(async (resolve) => {
-            const ClientID = await getClientID();
-            const result = await httpsClient.parseJson(`${APiLink}/resolve?url=${url}&client_id=${ClientID}`);
+            const {result} = await parseJson(`${APiLink}/resolve?url=${url}`);
             const PlaylistItems: InputTrack[] = [];
 
             if (!result?.id || !result) return resolve(null);
@@ -80,7 +126,7 @@ export namespace SoundCloud {
      */
     export function SearchTracks(search: string, options = {limit: 15}): Promise<InputTrack[]> {
         return new Promise<InputTrack[]>(async (resolve) => {
-            const result = await httpsClient.parseJson(`${APiLink}/search/tracks?q=${search}&client_id=${await getClientID()}&limit=${options.limit}`);
+            const {result} = await parseJson(`${APiLink}/search/tracks?q=${search}&limit=${options.limit}`)
             const Items: InputTrack[] = [];
 
             if (!result) return resolve(null);
@@ -96,35 +142,6 @@ export namespace SoundCloud {
             return resolve(Items);
         });
     }
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Получаем ClientID, без регистрации
- */
-function getClientID(): Promise<string> {
-    return new Promise<string>(async (resolve) => {
-        if (clientID) return resolve(clientID);
-
-        const body = await httpsClient.parseBody("https://soundcloud.com/", {
-            options: {userAgent: true},
-            request: {
-                method: "GET",
-                headers: {
-                    "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
-                    "accept-encoding": "gzip, deflate, br"
-                }
-            }
-        });
-        const BodySplit = body.split("<script crossorigin src=\"");
-        const urls: string[] = [];
-        BodySplit.forEach((r) => {
-            if (r.startsWith("https")) {
-                urls.push(r.split("\"")[0]);
-            }
-        });
-        const body2 = await httpsClient.parseBody(urls.pop());
-        return resolve(body2.split(",client_id:\"")[1].split("\"")[0]);
-    });
 }
 //====================== ====================== ====================== ======================
 /**

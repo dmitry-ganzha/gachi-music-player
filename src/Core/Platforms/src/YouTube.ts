@@ -5,6 +5,9 @@ import {InputAuthor, InputFormat, InputPlaylist, InputTrack} from "../../Utils/T
 const VerAuthor = new Set(["Verified", "Official Artist Channel"]);
 const YouTubeURL = "https://www.youtube.com";
 
+/**
+ * Все доступные взаимодействия с YouTube
+ */
 export namespace YouTube {
     /**
      * @name getVideo
