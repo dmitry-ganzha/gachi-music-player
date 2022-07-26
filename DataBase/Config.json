@@ -13,6 +13,9 @@
     "clientID": "",
     "clientSecret": ""
   },
+  "soundcloud": {
+    "clientID": ""
+  },
   "vk": {
     "token": ""
   }
