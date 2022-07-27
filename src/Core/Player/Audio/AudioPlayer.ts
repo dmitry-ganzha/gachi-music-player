@@ -229,7 +229,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
      */
     readonly #play = (resource: PlayerResource | Error): void => {
         if (!resource || resource instanceof Error) {
-            this.emit("error", "[AudioPlayer]: fail playing this song!");
+            this.emit("error", "[AudioPlayer]: not found track resource!");
             return;
         }
 

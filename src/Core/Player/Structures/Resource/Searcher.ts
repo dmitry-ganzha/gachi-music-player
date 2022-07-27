@@ -129,12 +129,15 @@ export namespace Searcher {
      */
     export function getResourceSong(song: Song, req = 1): Promise<Song["format"] | null> {
         return new Promise(async (resolve) => {
-            if (req > 4) return resolve(null);
+            if (req > 2) return resolve(null);
 
             const CheckResource = await CheckHeadResource(song);
 
             //Если выходит ошибка или нет ссылки на исходный ресурс
-            if (CheckResource instanceof Error || !song.format?.url) return resolve(getResourceSong(song, req++));
+            if (CheckResource instanceof Error || !song.format?.url) {
+                req++;
+                return resolve(getResourceSong(song, req));
+            }
             return resolve(song.format);
         });
     }
@@ -213,7 +216,7 @@ function getFormatSong({type, url, title, author, duration}: Song): Promise<Inpu
  * @constructor
  */
 function FindTrack(nameSong: string, duration: number): Promise<InputFormat> {
-    return YouTube.SearchVideos(nameSong, {limit: 5}).then((Tracks) => {
+    return YouTube.SearchVideos(nameSong, {limit: 15}).then((Tracks) => {
         //Фильтруем треки оп времени
         const FindTracks = Tracks.filter((track) => {
             const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);
