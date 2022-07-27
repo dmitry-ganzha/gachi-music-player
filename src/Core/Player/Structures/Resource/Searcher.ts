@@ -96,7 +96,7 @@ export namespace Searcher {
         const searchEnd = type === "search" && search?.match(platform) ? search.split(platform)[1] : search;
 
         //Отправляем сообщение о поиске трека
-        if (!message.attachments?.last()?.url) message.client.Send({ text: `🔍 | Поиск -> ${search}`, message, color: "RED", type: "css" });
+        if (!message.attachments?.last()?.url) message.client.Send({ text: `Поиск 🔍 | ${search}`, message, color: "RED", type: "css" });
 
         //Ищем в базе запрос в соответствии с платформой и типом
         const promise = localPlatform[platform][type](searchEnd);
@@ -110,7 +110,7 @@ export namespace Searcher {
                 if (info instanceof Array) return SearchMessage(info, ArrayToString(info, message, platform), info.length, options);
 
                 //Сообщаем что трек или плейлист был найден
-                message.client.Send({ text: `🔍 | Найден: ${type} - ${info.title}`, message, color: "RED", type: "css" });
+                message.client.Send({ text: `Найден 🔍 | ${type} | ${info.title}`, message, color: "RED", type: "css" });
 
                 //Если это трек или плейлист
                 return message.client.player.emit("play", message, voiceChannel, info);
@@ -396,8 +396,8 @@ function PlatformSong(search: string, message: ClientMessage): "yt" | "sp" | "vk
     }
 
     const SplitSearch = search.split(' ');
-    const FindType = SplitSearch[0].toLowerCase();
+    const FindType = SplitSearch[0].toLowerCase() as "yt" | "sp" | "vk" | "sc";
 
     if (FindType.length > 2) return "yt";
-    return FindType as any;
+    return FindType;
 }

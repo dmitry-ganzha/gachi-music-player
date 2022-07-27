@@ -219,5 +219,5 @@ function ProgressBar(currentTime: number, maxTime: number, size: number = 15): s
     }
     const progressText = "─".repeat(15);
 
-    return `${progressText}⚪`;
+    return `⚪${progressText}`;
 }

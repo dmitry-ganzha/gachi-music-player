@@ -84,14 +84,6 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         }
     };
     //====================== ====================== ====================== ======================
-    public constructor(msg: ClientMessage) {
-        super();
-        this.on("idle", () => this.#onIdlePlayer(msg));
-        this.on("error", (err: any) => this.#onErrorPlayer(err, msg));
-        //this.on("autoPaused", () => this.#onAutoPaused(msg));
-        this.setMaxListeners(3);
-    };
-    //====================== ====================== ====================== ======================
     /**
      * @description Включаем музыку с пропуском
      * @param message {ClientMessage} Сообщение с сервера
@@ -229,7 +221,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
      */
     readonly #play = (resource: PlayerResource | Error): void => {
         if (!resource || resource instanceof Error) {
-            this.emit("error", "[AudioPlayer]: not found track resource!");
+            this.emit("error", "[AudioPlayer]: not found track resource");
             return;
         }
 
@@ -271,43 +263,6 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
      * @private
      */
     readonly #playOpusPacket = (packet: Buffer, receivers: VoiceConnection[]): void => receivers.forEach((connection) => connection.playOpusPacket(packet));
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Когда плеер завершит песню, он возвратит эту функцию
-     * @param message {ClientMessage} Сообщение с сервера
-     * @requires {isRemoveSong}
-     * @private
-     */
-    readonly #onIdlePlayer = (message: ClientMessage): void => {
-        const {client, guild} = message;
-        const queue: Queue = client.queue.get(guild.id);
-
-        setTimeout(() => {
-            if (queue?.songs) isRemoveSong(queue); //Определяем тип loop
-
-            //Рандомим номер трека, просто меняем их местами
-            if (queue?.options?.random) {
-                const RandomNumSong = Math.floor(Math.random() * queue.songs.length)
-                queue.swapSongs(RandomNumSong);
-            }
-
-            return this.PlayCallback(message); //Включаем трек
-        }, 500);
-    };
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Когда плеер выдает ошибку, он возвратит эту функцию
-     * @param err {Error | string} Ошибка
-     * @param message {ClientMessage} Сообщение с сервера
-     * @private
-     */
-    readonly #onErrorPlayer = (err: Error | string, message: ClientMessage): void => {
-        const queue: Queue = message.client.queue.get(message.guild.id);
-
-        //Выводим сообщение об ошибке
-        MessagePlayer.ErrorPlayer(message, queue.songs[0], err);
-        return this.stop(); //Останавливаем плеер
-    };
 }
 //====================== ====================== ====================== ======================
 /**
@@ -326,25 +281,6 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
         if (song.isLive) return new FFmpegDecoder({url: format?.url});
         return new FFmpegDecoder({url: format?.url, seek, Filters: audioFilters});
     });
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Повтор музыки
- * @param queue {Queue} Очередь сервера
- */
-function isRemoveSong({options, songs}: Queue): void {
-    switch (options?.loop) {
-        case "song": return;
-        case "songs": {
-            const repeat = songs.shift();
-            songs.push(repeat);
-            return;
-        }
-        default: {
-            songs.shift();
-            return;
-        }
-    }
 }
 //====================== ====================== ====================== ======================
 

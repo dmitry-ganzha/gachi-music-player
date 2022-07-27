@@ -4,13 +4,14 @@ import {Song} from "./Song";
 import {ClientMessage} from "../../../Client";
 import {VoiceConnection} from "@discordjs/voice";
 import {TypedEmitter} from "tiny-typed-emitter";
+import {MessagePlayer} from "../../Manager/MessagePlayer";
 
 export type LoopType = "song" | "songs" | "off";
 export type AudioFilters = Array<string> | Array<string | number>;
 
 export class Queue {
     readonly #_player: AudioPlayer;
-    readonly #_emitter: QueueEvents = new QueueEvents();
+    readonly #_emitter: QueueEvent = new QueueEvent();
     readonly #_channels: { message: ClientMessage, voice: VoiceChannel | StageChannel, connection: VoiceConnection };
     readonly #_options: { random: boolean, loop: LoopType, stop: boolean } = {
         random: false,
@@ -22,8 +23,11 @@ export class Queue {
 
     //Создаем очередь
     public constructor(message: ClientMessage, voice: VoiceChannel) {
-        this.#_player = new AudioPlayer(message);
+        this.#_player = new AudioPlayer();
         this.#_channels = { message, voice, connection: null};
+
+        this.player.on("idle", () => onIdlePlayer(message));
+        this.player.on("error", (err: any) => onErrorPlayer(err, message));
     };
 
     /**
@@ -60,11 +64,66 @@ export class Queue {
         return this.#_options;
     };
 }
+//====================== ====================== ====================== ======================
+/**
+ * @description Когда плеер завершит песню, он возвратит эту функцию
+ * @param message {ClientMessage} Сообщение с сервера
+ * @requires {isRemoveSong}
+ * @private
+ */
+function onIdlePlayer(message: ClientMessage): void {
+    const {client, guild} = message;
+    const queue: Queue = client.queue.get(guild.id);
 
+    setTimeout(() => {
+        if (queue?.songs) isRemoveSong(queue); //Определяем тип loop
+
+        //Рандомим номер трека, просто меняем их местами
+        if (queue?.options?.random) {
+            const RandomNumSong = Math.floor(Math.random() * queue.songs.length)
+            queue.swapSongs(RandomNumSong);
+        }
+
+        return queue.player.PlayCallback(message); //Включаем трек
+    }, 500);
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Когда плеер выдает ошибку, он возвратит эту функцию
+ * @param err {Error | string} Ошибка
+ * @param message {ClientMessage} Сообщение с сервера
+ * @private
+ */
+function onErrorPlayer(err: Error | string, message: ClientMessage): void {
+    const queue: Queue = message.client.queue.get(message.guild.id);
+
+    //Выводим сообщение об ошибке
+    MessagePlayer.ErrorPlayer(message, queue.songs[0], err);
+    return queue.player.stop(); //Останавливаем плеер
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Повтор музыки
+ * @param queue {Queue} Очередь сервера
+ */
+function isRemoveSong({options, songs}: Queue): void {
+    switch (options?.loop) {
+        case "song": return;
+        case "songs": return void songs.push(songs.shift());
+        default: return void songs.shift();
+    }
+}
+//====================== ====================== ====================== ======================
+//Доступные ивенты QueueEvent
+interface QueueEvents {
+    DeleteQueue: (message: ClientMessage, sendDelQueue?: boolean) => void;
+    StartDelete: (queue: Queue) => void;
+    CancelDelete: (player: AudioPlayer) => void;
+}
 /**
  * @description Нужно только для того что-бы удалить очередь один раз)
  */
-class QueueEvents extends TypedEmitter<Events> {
+class QueueEvent extends TypedEmitter<QueueEvents> {
     Timer: NodeJS.Timeout;
     hasDestroying: boolean;
 
@@ -136,9 +195,4 @@ function onDeleteQueue(message: ClientMessage, sendDelQueue: boolean = true) {
 //Отправляем сообщение в тестовый канал
 function sendMessage(message: ClientMessage, text: string) {
     return message.client.Send({text, message, type: "css"});
-}
-interface Events {
-    DeleteQueue: (message: ClientMessage, sendDelQueue?: boolean) => void;
-    StartDelete: (queue: Queue) => void;
-    CancelDelete: (player: AudioPlayer) => void;
 }
