@@ -30,7 +30,7 @@ export namespace QueueConstructor {
 
         //Добавляем песню в очередь
         PushSong(Queue, info, Queue.songs.length >= 1);
-        if (Queue.songs.length === 1) return Queue.player.PlayCallback(message);
+        if (Queue.songs.length === 1) return Queue.player.play(message);
     }
 }
 //====================== ====================== ====================== ======================

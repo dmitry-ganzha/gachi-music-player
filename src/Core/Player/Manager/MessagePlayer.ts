@@ -172,7 +172,7 @@ function CreateCollector(message: ClientMessage, queue: Queue) {
             //Пропуск текущей музыки
             case "skip": return queue?.player.stop();
             //Повторно включить текущую музыку
-            case "replay": return queue?.player.seek(message, 0);
+            case "replay": return queue?.player.play(message);
             //Включить последнею из списка музыку
             case "last": return queue?.swapSongs();
         }

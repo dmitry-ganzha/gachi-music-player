@@ -84,7 +84,7 @@ function onIdlePlayer(message: ClientMessage): void {
             queue.swapSongs(RandomNumSong);
         }
 
-        return queue.player.PlayCallback(message); //Включаем трек
+        return queue.player.play(message); //Включаем трек
     }, 500);
 }
 //====================== ====================== ====================== ======================
@@ -99,7 +99,9 @@ function onErrorPlayer(err: Error | string, message: ClientMessage): void {
 
     //Выводим сообщение об ошибке
     MessagePlayer.ErrorPlayer(message, queue.songs[0], err);
-    return queue.player.stop(); //Останавливаем плеер
+
+    queue.songs.shift();
+    setTimeout(() => queue.player.play(message), 1e3);
 }
 //====================== ====================== ====================== ======================
 /**

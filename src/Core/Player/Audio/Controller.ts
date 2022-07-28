@@ -93,7 +93,7 @@ export namespace PlayerController {
 
         try {
             client.Send({text: `⏭️ | Seeking to [${ParsingTimeToString(seek)}] song | ${title}`, message, type: "css", color});
-            return player.seek(message, seek);
+            return player.play(message, seek);
         } catch {
             return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: "RED"});
         }
@@ -147,7 +147,7 @@ export namespace PlayerController {
 
         try {
             client.Send({text: `🔂 | Replay | ${title}`, message, color, type: "css"});
-            return player.seek(message);
+            return player.play(message);
         } catch {
             return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: "RED"});
         }
@@ -163,7 +163,7 @@ export namespace PlayerController {
         const seek: number = player.playbackDuration;
 
         try {
-            return player.seek(message, seek);
+            return player.play(message, seek);
         } catch {
             return client.Send({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: "RED"});
         }

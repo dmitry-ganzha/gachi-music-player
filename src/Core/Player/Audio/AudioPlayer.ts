@@ -85,45 +85,28 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     };
     //====================== ====================== ====================== ======================
     /**
-     * @description Включаем музыку с пропуском
+     * @description Включаем музыку
      * @param message {ClientMessage} Сообщение с сервера
      * @param seek {number} Пропуск музыки до 00:00:00
      * @requires {CreateResource}
      */
-    public readonly seek = (message: ClientMessage, seek: number = 0): void => {
+    public readonly play = (message: ClientMessage, seek: number = 0): void => {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
 
-        //Получаем исходный поток
-        CreateResource(queue.songs[0], queue.audioFilters, seek).then(stream => {
-            this.#play(stream);
-            if (seek) this.playbackDuration = seek;
-        });
-    };
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Включаем музыку
-     * @param message {ClientMessage} Сообщение с сервера
-     * @requires {CreateResource}
-     */
-    public readonly PlayCallback = (message: ClientMessage): void => {
-        const {client, guild} = message;
-        const queue: Queue = client.queue.get(guild.id);
+        if (queue?.songs[0]) {
+            //Получаем исходный поток
+            CreateResource(queue.songs[0], queue.audioFilters, seek).then(stream => {
+                this.#play(stream);
 
-        //Если нет музыки в очереди или нет самой очереди, завершаем проигрывание!
-        if (!queue || !queue?.songs?.length) {
-            if (queue?.emitter) queue.emitter.emit("DeleteQueue", message);
-            return;
-        }
-
-        //Получаем исходный поток
-        CreateResource(queue.songs[0], queue.audioFilters).then(stream => {
-            this.#play(stream);
-            client.console(`[GuildID: ${guild.id}]: ${queue.songs[0].title}`);
-
-            //Если стрим не пустышка отправляем сообщение
-            if (stream instanceof FFmpegDecoder) MessagePlayer.PlaySong(queue.channels.message);
-        });
+                //Если стрим не пустышка отправляем сообщение
+                if (stream instanceof FFmpegDecoder) MessagePlayer.PlaySong(queue.channels.message);
+                //Если есть пропуск меняем время
+                if (seek) this.playbackDuration = seek;
+                //Если это не пропуск, то отправляем лог
+                if (!seek) client.console(`[GuildID: ${guild.id}]: ${queue.songs[0].title}`);
+            });
+        } else if (queue?.emitter) queue.emitter.emit("DeleteQueue", message);
     };
     //====================== ====================== ====================== ======================
     /**
