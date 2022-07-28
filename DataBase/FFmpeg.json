@@ -11,6 +11,38 @@
     }
   },
   "FilterConfigurator": {
+    "treble": {
+      "value": false,
+      "arg": "treble=g=5"
+    },
+    "reverse": {
+      "value": false,
+      "arg": "areverse"
+    },
+    "tremolo": {
+      "value": false,
+      "arg": "tremolo"
+    },
+    "surround": {
+      "value": false,
+      "arg": "surround"
+    },
+    "flanger": {
+      "value": false,
+      "arg": "flanger"
+    },
+    "gate": {
+      "value": false,
+      "arg": "agate"
+    },
+    "haas": {
+      "value": false,
+      "arg": "haas"
+    },
+    "mcompand": {
+      "value": false,
+      "arg": "mcompand"
+    },
     "nightcore": {
       "speedModification": 1.25,
       "value": false,
