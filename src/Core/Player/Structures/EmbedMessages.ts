@@ -6,7 +6,18 @@ import {AudioPlayer} from "../Audio/AudioPlayer";
 import {Colors} from "../../Utils/LiteUtils";
 import {DurationUtils} from "../Manager/DurationUtils";
 
-const ProgressBarValue: boolean = true;
+// Настройки прогресс бара текущей музыки
+const Bar = {
+    //Состояние прогресс бара
+    Enable: true,
+
+    //Текст после кнопкой
+    empty: "─",
+    //Текст перед кнопкой
+    full: "─",
+    //Если оставить пустым не будет деления между empty и full
+    button: "⚪"
+}
 
 /**
  * Вспомогательный элемент
@@ -163,10 +174,7 @@ function createFields(song: Song, {player, songs, audioFilters}: Queue, client: 
     const playbackDuration = ConvertCurrentTime(player, audioFilters);
     const VisualDuration = MusicDuration(song, playbackDuration);
 
-    let fields = [{
-        name: "Щас играет",
-        value: `**❯** [${client.ConvertedText(song.title, 29, true)}](${song.url})\n${VisualDuration}`
-    }];
+    let fields = [{ name: "Щас играет", value: `**❯** [${client.ConvertedText(song.title, 29, true)}](${song.url})\n${VisualDuration}` }];
     if (songs[1]) fields.push({ name: "Потом", value: `**❯** [${client.ConvertedText(songs[1].title, 29, true)}](${songs[1].url})` });
     return fields;
 }
@@ -185,7 +193,7 @@ function MusicDuration({isLive, duration}: Song, curTime: number | string): stri
     const parsedTimeSong = curTime >= duration.seconds ? duration.StringTime : DurationUtils.ParsingTimeToString(curTime as number);
     const progress = ProgressBar(curTime as number, duration.seconds, 15);
 
-    if (ProgressBarValue) return `**❯** [${parsedTimeSong} - ${str}\n${progress}`;
+    if (Bar.Enable) return `**❯** [${parsedTimeSong} - ${str}\n${progress}`;
     return `**❯** [${curTime} - ${str}`;
 }
 //====================== ====================== ====================== ======================
@@ -196,7 +204,7 @@ function MusicDuration({isLive, duration}: Song, curTime: number | string): stri
  * @constructor
  */
 function ConvertCurrentTime({playbackDuration}: AudioPlayer, filters: AudioFilters): number | string {
-    if (ProgressBarValue) return playbackDuration;
+    if (Bar.Enable) return playbackDuration;
     return DurationUtils.ParsingTimeToString(playbackDuration);
 }
 //====================== ====================== ====================== ======================
@@ -207,17 +215,14 @@ function ConvertCurrentTime({playbackDuration}: AudioPlayer, filters: AudioFilte
  * @param size {number} Кол-во символов
  */
 function ProgressBar(currentTime: number, maxTime: number, size: number = 15): string {
-    if (currentTime < maxTime) {
-        const progressSize = Math.round(size * (currentTime / maxTime));
-        const emptySize = size - progressSize;
-        const progressText = "─".repeat(progressSize);
-        const emptyText = "─".repeat(emptySize || size);
+    if (currentTime > maxTime) {
+        const progressText = Bar.empty.repeat(15);
 
-        if (progressText.length === emptyText.length) return `${progressText}⚪`;
-
-        return `${progressText}⚪${emptyText}`;
+        return `${Bar.button}${progressText}`;
     }
-    const progressText = "─".repeat(15);
+    const progressSize = Math.round(size * (currentTime / maxTime));
+    const progressText = Bar.full.repeat(progressSize);
+    const emptyText = Bar.empty.repeat(size - progressSize);
 
-    return `⚪${progressText}`;
+    return `${progressText}${Bar.button}${emptyText}`;
 }
