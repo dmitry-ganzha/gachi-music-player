@@ -15,7 +15,7 @@ export namespace PlayerController {
      * @description Продолжает воспроизведение музыки
      * @param message {ClientMessage} Сообщение с сервера
      */
-    export function PlayerResume (message: ClientMessage): void {
+    export function toResume (message: ClientMessage): void {
         const {client, guild, author} = message;
         const {player, songs}: Queue = client.queue.get(guild.id);
         const {title, color}: Song = songs[0];
@@ -31,7 +31,7 @@ export namespace PlayerController {
      * @description Приостанавливает воспроизведение музыки
      * @param message {ClientMessage} Сообщение с сервера
      */
-    export function PlayerPause(message: ClientMessage): void {
+    export function toPause(message: ClientMessage): void {
         const {client, guild, author} = message;
         const {player, songs}: Queue = client.queue.get(guild.id);
         const {title, color}: Song = songs[0];
@@ -47,9 +47,9 @@ export namespace PlayerController {
      * @description Убираем музыку из очереди
      * @param message {ClientMessage} Сообщение с сервера
      * @param args {string} Аргументы Пример: команда аргумент1 аргумент2
-     * @requires {PlayerEnd}
+     * @requires {toStop}
      */
-    export function PlayerRemove(message: ClientMessage, args: number): void {
+    export function toRemove(message: ClientMessage, args: number): void {
         const {client, guild, member, author} = message;
         const {player, songs}: Queue = client.queue.get(guild.id);
         const {title, color, requester, url}: Song = songs[args - 1];
@@ -66,12 +66,12 @@ export namespace PlayerController {
             });
 
             //Если всего один трек
-            if (songs.length <= 1) return PlayerEnd(message);
+            if (songs.length <= 1) return toStop(message);
 
             //Если пользователю позволено убрать из очереди этот трек
             if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {
                 songs.splice(args - 1, 1);
-                if (args === 1) PlayerEnd(message);
+                if (args === 1) toStop(message);
                 return client.Send({text: `⏭️ | Remove song | ${title}`, message, type: "css", color});
             }
 
@@ -86,7 +86,7 @@ export namespace PlayerController {
      * @param seek {number} музыка будет играть с нужной секунды (не работает без ffmpeg)
      * @requires {ParsingTimeToString}
      */
-    export function PlayerSeek(message: ClientMessage, seek: number): void {
+    export function toSeek(message: ClientMessage, seek: number): void {
         const {client, guild, author} = message;
         const {player, songs}: Queue = client.queue.get(guild.id);
         const {title, color}: Song = songs[0];
@@ -103,10 +103,10 @@ export namespace PlayerController {
      * @description Пропускает текущую музыку
      * @param message {ClientMessage} Сообщение с сервера
      * @param args {number} Сколько треков пропускаем
-     * @requires {PlayerSkipTo, PlayerEnd}
+     * @requires {toSkipNumber, toStop}
      */
-    export function PlayerSkip(message: ClientMessage, args: number): void {
-        if (args) return PlayerSkipTo(message, args);
+    export function toSkip(message: ClientMessage, args: number): void {
+        if (args) return toSkipNumber(message, args);
 
         const {client, guild, member, author} = message;
         const {songs, player}: Queue = client.queue.get(guild.id);
@@ -127,7 +127,7 @@ export namespace PlayerController {
             if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {
                 if (StatusPlayerHasSkipped.has(player.state.status)) {
                     client.Send({text: `⏭️ | Skip song | ${title}`, message, type: "css", color});
-                    return PlayerEnd(message);
+                    return toStop(message);
                 }
             }
 
@@ -140,7 +140,7 @@ export namespace PlayerController {
      * @description Повтор текущей музыки
      * @param message {ClientMessage} Сообщение с сервера
      */
-    export function PlayerReplay(message: ClientMessage): void {
+    export function toReplay(message: ClientMessage): void {
         const {client, guild, author} = message;
         const {player, songs}: Queue = client.queue.get(guild.id);
         const {title, color}: Song = songs[0];
@@ -157,7 +157,7 @@ export namespace PlayerController {
      * @description Применяем фильтры для плеера
      * @param message {ClientMessage} Сообщение с сервера
      */
-    export function PlayerFilter(message: ClientMessage): void {
+    export function toFilter(message: ClientMessage): void {
         const {client, guild, author} = message;
         const {player}: Queue = client.queue.get(guild.id);
         const seek: number = player.playbackDuration;
@@ -174,9 +174,9 @@ export namespace PlayerController {
  * @description Пропускает музыку под номером
  * @param message {ClientMessage} Сообщение с сервера
  * @param args {string} Аргументы Пример: команда аргумент1 аргумент2
- * @requires {PlayerEnd}
+ * @requires {toStop}
  */
-function PlayerSkipTo(message: ClientMessage, args: number): void {
+function toSkipNumber(message: ClientMessage, args: number): void {
     const {client, guild, member, author} = message;
     const queue: Queue = client.queue.get(guild.id);
     const {title, color, requester, url}: Song = queue.songs[args - 1];
@@ -205,7 +205,7 @@ function PlayerSkipTo(message: ClientMessage, args: number): void {
             else queue.songs = queue.songs.slice(args - 2);
 
             client.Send({text: `⏭️ | Skip to song [${args}] | ${title}`, message, type: "css", color});
-            return PlayerEnd(message);
+            return toStop(message);
         }
 
         //Если пользователю нельзя это сделать
@@ -217,7 +217,7 @@ function PlayerSkipTo(message: ClientMessage, args: number): void {
  * @description Завершает текущую музыку
  * @param message {ClientMessage} Сообщение с сервера
  */
-function PlayerEnd(message: ClientMessage): void {
+function toStop(message: ClientMessage): void {
     const {client, guild} = message;
     const {player}: Queue = client.queue.get(guild.id);
 

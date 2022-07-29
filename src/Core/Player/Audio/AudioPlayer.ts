@@ -70,9 +70,9 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         //Удаляем плеер если статус "idle"
         if (newState.status === "idle") {
             this.#signalStopSpeaking();
-            PlayersManager.remove(this);
+            PlayersManager.toRemove(this);
         }
-        if (newResource) PlayersManager.push(this);
+        if (newResource) PlayersManager.toPush(this);
 
         const isNewResources = OldState.status !== "idle" && newState.status === "playing" && OldState.resource !== newState.resource;
         this.#_state = newState; //Обновляем статистику плеера
@@ -99,12 +99,15 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
             CreateResource(queue.songs[0], queue.audioFilters, seek).then(stream => {
                 this.#play(stream);
 
-                //Если стрим не пустышка отправляем сообщение
-                if (stream instanceof FFmpegDecoder) MessagePlayer.PlaySong(queue.channels.message);
                 //Если есть пропуск меняем время
                 if (seek) this.playbackDuration = seek;
-                //Если это не пропуск, то отправляем лог
-                if (!seek) client.console(`[GuildID: ${guild.id}]: ${queue.songs[0].title}`);
+                //Если это не пропуск
+                if (!seek) {
+                    //Отправляем лог о текущем треке
+                    client.console(`[GuildID: ${guild.id}]: ${queue.songs[0].title}`);
+                    //Если стрим не пустышка отправляем сообщение
+                    if (stream instanceof FFmpegDecoder) MessagePlayer.toPlay(queue.channels.message);
+                }
             });
         } else if (queue?.emitter) queue.emitter.emit("DeleteQueue", message);
     };

@@ -2,7 +2,7 @@ import {PlayerController} from "./Audio/Controller";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../Client";
 import {InputPlaylist, InputTrack} from "../Utils/TypeHelper";
-import {QueueConstructor} from "./Structures/Queue/QueueConstructor";
+import {QueueManager} from "./Manager/QueueManager";
 import {TypedEmitter} from "tiny-typed-emitter";
 
 interface PlayerEvents {
@@ -22,15 +22,15 @@ interface PlayerEvents {
 export class PlayerEmitter extends TypedEmitter<PlayerEvents> {
     public constructor() {
         super();
-        this.on("play", QueueConstructor.CheckQueue);
+        this.on("play", QueueManager.toQueue);
 
-        this.on("pause", PlayerController.PlayerPause);
-        this.on("resume", PlayerController.PlayerResume);
-        this.on("remove", PlayerController.PlayerRemove);
-        this.on("seek", PlayerController.PlayerSeek);
-        this.on("skip", PlayerController.PlayerSkip);
-        this.on("replay", PlayerController.PlayerReplay);
-        this.on("filter", PlayerController.PlayerFilter);
+        this.on("pause", PlayerController.toPause);
+        this.on("resume", PlayerController.toResume);
+        this.on("remove", PlayerController.toRemove);
+        this.on("seek", PlayerController.toSeek);
+        this.on("skip", PlayerController.toSkip);
+        this.on("replay", PlayerController.toReplay);
+        this.on("filter", PlayerController.toFilter);
         this.setMaxListeners(9);
     };
 }

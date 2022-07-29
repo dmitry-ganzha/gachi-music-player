@@ -131,7 +131,7 @@ export namespace Searcher {
         return new Promise(async (resolve) => {
             if (req > 2) return resolve(null);
 
-            const CheckResource = await CheckHeadResource(song);
+            const CheckResource = await ResourceSong.CheckHeadResource(song);
 
             //Если выходит ошибка или нет ссылки на исходный ресурс
             if (CheckResource instanceof Error || !song.format?.url) {
@@ -142,106 +142,107 @@ export namespace Searcher {
         });
     }
 }
-//====================== ====================== ====================== ======================
-/**
- * @description Ищет трек и проверяем его работоспособность
- * @requires {getFormatYouTube, CheckLink}
- */
-function CheckHeadResource(song: Song): Promise<true | Error> {
-    return new Promise(async (resolve) => {
-        if (!song.format || !song.format?.url) {
-            let format = await getFormatSong(song);
 
-            if (!format || !format?.url) {
-                song.format = {url: null};
-                return resolve(new Error(`[FindResource]: [Song: ${song.title}]: Has not found format`));
+//Функции getResourceSong
+namespace ResourceSong {
+    /**
+     * @description Ищет трек и проверяем его работоспособность
+     * @param song {Song} Трек
+     */
+    export function CheckHeadResource(song: Song): Promise<true | Error> {
+        return new Promise(async (resolve) => {
+            if (!song.format || !song.format?.url) {
+                let format = await getFormatSong(song);
+
+                if (!format || !format?.url) {
+                    song.format = {url: null};
+                    return resolve(new Error(`[FindResource]: [Song: ${song.title}]: Has not found format`));
+                }
+                //Добавляем ссылку в трек
+                song.format = {url: format.url};
             }
-            //Добавляем ссылку в трек
-            song.format = {url: format.url};
-        }
 
-        //Делаем head запрос на сервер
-        const resource = await CheckLink(song.format?.url);
-        if (resource === "Fail") { //Если выходит ошибка
-            song.format.url = null;
-            return resolve(new Error(`[FindResource]: [Song: ${song.title}]: Has fail checking resource link`));
-        }
-        return resolve(true);
-    });
-}
+            //Делаем head запрос на сервер
+            const resource = await CheckLink(song.format?.url);
+            if (resource === "Fail") { //Если выходит ошибка
+                song.format.url = null;
+                return resolve(new Error(`[FindResource]: [Song: ${song.title}]: Has fail checking resource link`));
+            }
+            return resolve(true);
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Проверяем ссылку
+     * @param url {string} Ссылка
+     * @constructor
+     */
+    function CheckLink(url: string) {
+        if (!url) return "Fail";
 
-//используется в Searcher.CheckHeadResource
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-/**
- * @description Проверяем ссылку
- * @param url {string} Ссылка
- * @constructor
- */
-function CheckLink(url: string) {
-    if (!url) return "Fail";
-
-    return httpsClient.Request(url, GlobalOptions).then((resource: IncomingMessage) => {
-        if (resource instanceof Error) return "Fail"; //Если есть ошибка
-        if (resource.statusCode >= 200 && resource.statusCode < 400) return "OK"; //Если возможно скачивать ресурс
-        return "Fail"; //Если прошлые варианты не подходят, то эта ссылка не рабочая
-    });
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Получаем данные формата
- * @param song {Song} Трек
- * @requires {FindTrack, getFormatYouTube}
- */
-function getFormatSong({type, url, title, author, duration}: Song): Promise<InputFormat | FFmpegFormat> {
-    try {
-        switch (type) {
-            case "SPOTIFY": return FindTrack(`${author.title} - ${title}`, duration.seconds);
-            case "SOUNDCLOUD": return SoundCloud.getTrack(url).then((d) => d?.format);
-            case "VK": return VK.getTrack(url).then((d) => d?.format);
-            case "YOUTUBE": return getFormatYouTube(url);
-            default: return null
+        return httpsClient.Request(url, GlobalOptions).then((resource: IncomingMessage) => {
+            if (resource instanceof Error) return "Fail"; //Если есть ошибка
+            if (resource.statusCode >= 200 && resource.statusCode < 400) return "OK"; //Если возможно скачивать ресурс
+            return "Fail"; //Если прошлые варианты не подходят, то эта ссылка не рабочая
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Получаем данные формата
+     * @param song {Song} Трек
+     * @requires {FindTrack, getFormatYouTube}
+     */
+    function getFormatSong({type, url, title, author, duration}: Song): Promise<InputFormat | FFmpegFormat> {
+        try {
+            switch (type) {
+                case "SPOTIFY": return FindTrack(`${author.title} - ${title}`, duration.seconds);
+                case "SOUNDCLOUD": return SoundCloud.getTrack(url).then((d) => d?.format);
+                case "VK": return VK.getTrack(url).then((d) => d?.format);
+                case "YOUTUBE": return getFormatYouTube(url);
+                default: return null
+            }
+        } catch {
+            console.log("[FindResource]: Fail to found format");
+            return null;
         }
-    } catch {
-        console.log("[FindResource]: Fail to found format");
-        return null;
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Ищем трек на youtube
+     * @param nameSong {string} Название музыки
+     * @param duration
+     * @requires {getFormatYouTube}
+     * @constructor
+     */
+    function FindTrack(nameSong: string, duration: number): Promise<InputFormat> {
+        return YouTube.SearchVideos(nameSong, {limit: 15}).then((Tracks) => {
+            //Фильтруем треки оп времени
+            const FindTracks = Tracks.filter((track) => {
+                const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);
+
+                //Как надо фильтровать треки
+                return DurationSong === duration || DurationSong < duration + 10 && DurationSong > duration - 10;
+            });
+
+            //Если треков нет
+            if (FindTracks.length === 0) return null;
+
+            //Получаем данные о треке
+            return getFormatYouTube(FindTracks[0].url);
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Получаем от видео аудио формат
+     * @param url {string} Ссылка
+     */
+    function getFormatYouTube(url: string): Promise<InputFormat> {
+        return YouTube.getVideo(url, {onlyFormats: true}) as Promise<InputFormat>;
     }
 }
+
 //====================== ====================== ====================== ======================
-/**
- * @description Ищем трек на youtube
- * @param nameSong {string} Название музыки
- * @param duration
- * @requires {getFormatYouTube}
- * @constructor
- */
-function FindTrack(nameSong: string, duration: number): Promise<InputFormat> {
-    return YouTube.SearchVideos(nameSong, {limit: 15}).then((Tracks) => {
-        //Фильтруем треки оп времени
-        const FindTracks = Tracks.filter((track) => {
-            const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);
-
-            //Как надо фильтровать треки
-            return DurationSong === duration || DurationSong < duration + 10 && DurationSong > duration - 10;
-        });
-
-        //Если треков нет
-        if (FindTracks.length === 0) return null;
-
-        //Получаем данные о треке
-        return getFormatYouTube(FindTracks[0].url);
-    });
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Получаем от видео аудио формат
- * @param url {string} Ссылка
- */
-function getFormatYouTube(url: string): Promise<InputFormat> {
-    return YouTube.getVideo(url, {onlyFormats: true}) as Promise<InputFormat>;
-}
 //используется в Searcher.toPlayer
-//====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
 /**
  * @description Отправляем сообщение о том что удалось найти

@@ -29,13 +29,13 @@ export namespace MessagePlayer {
     /**
      * @description Отправляем сообщение о текущем треке, обновляем раз в 15 сек
      * @param message {ClientMessage} Сообщение
-     * @requires {removeMessage, addMessage, pushCurrentSongMessage, Message}
+     * @requires {MessageUpdater, pushCurrentSongMessage, Message}
      * @constructor
      */
-    export function PlaySong(message: ClientMessage) {
-        if (MessagesData.messages.get(message.channelId)) removeMessage(message);
+    export function toPlay(message: ClientMessage) {
+        if (MessagesData.messages.get(message.channelId)) MessageUpdater.toRemove(message);
 
-        pushCurrentSongMessage(message).then(addMessage);
+        pushCurrentSongMessage(message).then(MessageUpdater.toPush);
     }
     //====================== ====================== ====================== ======================
     /**
@@ -48,11 +48,11 @@ export namespace MessagePlayer {
      * @requires {DeleteMessage}
      * @constructor
      */
-    export function ErrorPlayer({channel, client, guild}: ClientMessage, song: Song, err: Error | string = null) {
+    export function toError({channel, client, guild}: ClientMessage, song: Song, err: Error | string = null) {
         setImmediate(() => {
             try {
                 const queue: Queue = client.queue.get(guild.id);
-                const Embed = EmbedMessages.Warning(client, song, queue, err);
+                const Embed = EmbedMessages.toError(client, song, queue, err);
                 const WarningChannelSend = channel.send({embeds: [Embed]});
 
                 return DeleteMessage(WarningChannelSend, 5e3);
@@ -71,11 +71,11 @@ export namespace MessagePlayer {
      * @requires {DeleteMessage}
      * @constructor
      */
-    export function pushSong({channel, client, guild}: ClientMessage, song: Song) {
+    export function toPush({channel, client, guild}: ClientMessage, song: Song) {
         setImmediate(() => {
             try {
                 const queue: Queue = client.queue.get(guild.id);
-                const EmbedPushedSong = EmbedMessages.pushSong(client, song, queue);
+                const EmbedPushedSong = EmbedMessages.toPushSong(client, song, queue);
                 const PushChannel = channel.send({embeds: [EmbedPushedSong]});
 
                 return DeleteMessage(PushChannel, 8e3);
@@ -91,12 +91,12 @@ export namespace MessagePlayer {
      * @param playlist {InputPlaylist} Сам плейлист
      * @requires {DeleteMessage}
      */
-    export function pushPlaylist(message: ClientMessage, playlist: InputPlaylist) {
+    export function toPushPlaylist(message: ClientMessage, playlist: InputPlaylist) {
         const {channel, client} = message;
 
         setImmediate(() => {
             try {
-                const EmbedPushPlaylist = EmbedMessages.pushPlaylist(message, playlist);
+                const EmbedPushPlaylist = EmbedMessages.toPushPlaylist(message, playlist);
                 const PushChannel = channel.send({embeds: [EmbedPushPlaylist]});
 
                 return DeleteMessage(PushChannel, 8e3);
@@ -110,16 +110,16 @@ export namespace MessagePlayer {
 /**
  * @description Обновляем сообщение
  * @param message {ClientMessage} Сообщение
- * @requires {removeMessage}
+ * @requires {MessageUpdater}
  * @constructor
  */
 function UpdateMessage(message: ClientMessage): void {
     const queue: Queue = message.client.queue.get(message.guild.id);
 
-    if (!queue || queue?.songs?.length === 0) return removeMessage(message);
+    if (!queue || queue?.songs?.length === 0) return MessageUpdater.toRemove(message);
 
     setImmediate(() => {
-        const CurrentPlayEmbed = EmbedMessages.CurrentPlay(message.client, queue?.songs[0], queue);
+        const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue?.songs[0], queue);
 
         try {
             return message.edit({embeds: [CurrentPlayEmbed]});
@@ -137,7 +137,7 @@ function UpdateMessage(message: ClientMessage): void {
  */
 function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> {
     const queue: Queue = message.client.queue.get(message.guild.id);
-    const CurrentPlayEmbed = EmbedMessages.CurrentPlay(message.client, queue.songs[0], queue); // @ts-ignore
+    const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue.songs[0], queue); // @ts-ignore
     const sendMessage = message.channel.send({embeds: [CurrentPlayEmbed], components: [Buttons]});
 
     sendMessage.then((msg) => CreateCollector(msg, queue));
@@ -197,31 +197,36 @@ function DeleteMessage(send: Promise<ClientMessage>, time: number = 5e3): void {
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
 /**
- * @description Добавляем сообщение в <Message[]>
- * @param message {message} Сообщение
- * @requires {StepCycleMessage}
+ * Система для обновления данных сообщения
  */
-function addMessage(message: ClientMessage) {
-    if (MessagesData.messages.get(message.channelId)) return;
-    MessagesData.messages.set(message.channelId, message);
+namespace MessageUpdater {
+    /**
+     * @description Добавляем сообщение в <Message[]>
+     * @param message {message} Сообщение
+     * @requires {StepCycleMessage}
+     */
+    export function toPush(message: ClientMessage) {
+        if (MessagesData.messages.get(message.channelId)) return;
+        MessagesData.messages.set(message.channelId, message);
 
-    if (MessagesData.messages.size === 1) setImmediate(StepCycleMessage);
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Удаляем сообщение из <Message[]>, так-же проверяем отключить ли таймер
- * @param message {ClientMessage} Сообщение
- * @requires {Message}
- */
-function removeMessage(message: ClientMessage) {
-    const Find = MessagesData.messages.get(message.channelId);
-    if (!Find) return;
+        if (MessagesData.messages.size === 1) setImmediate(StepCycleMessage);
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Удаляем сообщение из <Message[]>, так-же проверяем отключить ли таймер
+     * @param message {ClientMessage} Сообщение
+     * @requires {Message}
+     */
+    export function toRemove(message: ClientMessage) {
+        const Find = MessagesData.messages.get(message.channelId);
+        if (!Find) return;
 
-    if (Find.deletable) Find.delete().catch(() => undefined);
-    MessagesData.messages.delete(message.channelId);
+        if (Find.deletable) Find.delete().catch(() => undefined);
+        MessagesData.messages.delete(message.channelId);
 
-    if (MessagesData.messages.size === 0) {
-        if (typeof MessagesData.timer !== "undefined") clearTimeout(MessagesData.timer);
+        if (MessagesData.messages.size === 0) {
+            if (typeof MessagesData.timer !== "undefined") clearTimeout(MessagesData.timer);
+        }
     }
 }
 //====================== ====================== ====================== ======================

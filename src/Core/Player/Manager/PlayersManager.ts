@@ -12,7 +12,7 @@ export namespace PlayersManager {
      * @param player {AudioPlayer}
      * @requires {playerCycleStep}
      */
-    export function push(player: AudioPlayer): void {
+    export function toPush(player: AudioPlayer): void {
         if (PlayerData.players.includes(player)) return;
         PlayerData.players.push(player);
 
@@ -27,7 +27,7 @@ export namespace PlayersManager {
      * @description Удаляем плеер из базы
      * @param player {AudioPlayer}
      */
-    export function remove(player: AudioPlayer): void {
+    export function toRemove(player: AudioPlayer): void {
         const index = PlayerData.players.indexOf(player);
         if (index != -1) PlayerData.players.splice(index, 1);
 

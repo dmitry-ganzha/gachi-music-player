@@ -98,7 +98,7 @@ function onErrorPlayer(err: Error | string, message: ClientMessage): void {
     const queue: Queue = message.client.queue.get(message.guild.id);
 
     //Выводим сообщение об ошибке
-    MessagePlayer.ErrorPlayer(message, queue.songs[0], err);
+    MessagePlayer.toError(message, queue.songs[0], err);
 
     queue.songs.shift();
     setTimeout(() => queue.player.play(message), 1e3);
