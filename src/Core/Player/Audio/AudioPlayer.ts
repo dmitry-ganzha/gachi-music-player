@@ -97,7 +97,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         if (queue?.songs[0]) {
             //Получаем исходный поток
             CreateResource(queue.songs[0], queue.audioFilters, seek).then(stream => {
-                this.#play(stream);
+                this.#toPlayResource(stream);
 
                 //Если есть пропуск меняем время
                 if (seek) this.playbackDuration = seek;
@@ -205,7 +205,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
      * @param resource {PlayerResource | Error} Поток или ошибка из-за которой невозможно включить трек
      * @private
      */
-    readonly #play = (resource: PlayerResource | Error): void => {
+    readonly #toPlayResource = (resource: PlayerResource | Error): void => {
         if (!resource || resource instanceof Error) {
             this.emit("error", "[AudioPlayer]: not found track resource");
             return;
