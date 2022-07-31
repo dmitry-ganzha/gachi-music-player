@@ -71,7 +71,7 @@ export namespace MessagePlayer {
      * @requires {DeleteMessage}
      * @constructor
      */
-    export function toPush({channel, client, guild}: ClientMessage, song: Song) {
+    export function toPushSong({channel, client, guild}: ClientMessage, song: Song) {
         setImmediate(() => {
             try {
                 const queue: Queue = client.queue.get(guild.id);

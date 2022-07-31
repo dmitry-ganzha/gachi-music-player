@@ -2,7 +2,7 @@ import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 import {AudioFilters, Queue} from "../Structures/Queue/Queue";
 import {Song} from "../Structures/Queue/Song";
 import {ClientMessage} from "../../Client";
-import {FFmpegDecoder} from "../Structures/Media/FFmpegDecoder";
+import {Decoder} from "../Structures/Media/Decoder";
 import {MessagePlayer} from "../Manager/MessagePlayer";
 import {PlayersManager} from "../Manager/PlayersManager";
 import {TypedEmitter} from "tiny-typed-emitter";
@@ -106,7 +106,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
                     //Отправляем лог о текущем треке
                     client.console(`[GuildID: ${guild.id}]: ${queue.songs[0].title}`);
                     //Если стрим не пустышка отправляем сообщение
-                    if (stream instanceof FFmpegDecoder) MessagePlayer.toPlay(queue.channels.message);
+                    if (stream instanceof Decoder.All) MessagePlayer.toPlay(queue.channels.message);
                 }
             });
         } else if (queue?.emitter) queue.emitter.emit("DeleteQueue", message);
@@ -264,8 +264,8 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
         if (!format) return null;
 
         //Если будет включен поток
-        if (song.isLive) return new FFmpegDecoder({url: format?.url});
-        return new FFmpegDecoder({url: format?.url, seek, Filters: audioFilters});
+        if (song.isLive) return new Decoder.All({url: format?.url});
+        return new Decoder.All({url: format?.url, seek, Filters: audioFilters});
     });
 }
 //====================== ====================== ====================== ======================
@@ -274,7 +274,7 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
  * @description Все статусы
  */
 type PlayerState = PlayerStateBuffering | PlayerStateIdle | PlayerStatePaused | PlayerStatePlaying;
-type PlayerResource = FFmpegDecoder;
+type PlayerResource = Decoder.All;
 
 /**
  * @description Статус в котором плеер простаивает

@@ -4,6 +4,7 @@ import {InputAuthor, InputFormat, InputPlaylist, InputTrack} from "../../Utils/T
 
 const VerAuthor = new Set(["Verified", "Official Artist Channel"]);
 const YouTubeURL = "https://www.youtube.com";
+const YouTubeMusic = "https://music.youtube.com/watch?v="
 
 /**
  * Все доступные взаимодействия с YouTube

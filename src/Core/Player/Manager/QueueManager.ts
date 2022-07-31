@@ -18,7 +18,7 @@ export namespace QueueManager {
      * @requires {CreateQueue, PushSong}
      * @constructor
      */
-    export function toQueue(message: ClientMessage, VoiceChannel: VoiceChannel, info: InputTrack | InputPlaylist) {
+    export function toQueue(message: ClientMessage, VoiceChannel: VoiceChannel, info: InputTrack | InputPlaylist): void {
         const Queue = CreateQueue(message, VoiceChannel);
 
         //Если поступает плейлист
@@ -40,7 +40,7 @@ export namespace QueueManager {
  * @param VoiceChannel {VoiceChannel} К какому голосовому каналу надо подключатся
  * @constructor
  */
-function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel) {
+function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel): Queue {
     const {client, guild} = message;
     const queue = client.queue.get(guild.id);
 
@@ -68,5 +68,5 @@ function PushSong(queue: Queue, InputTrack: InputTrack, sendMessage: boolean = t
     const song: Song = new Song(InputTrack, queue.channels.message);
 
     queue.songs.push(song);
-    if (sendMessage) setImmediate(() => MessagePlayer.toPush(queue.channels.message, song));
+    if (sendMessage) setImmediate(() => MessagePlayer.toPushSong(queue.channels.message, song));
 }
