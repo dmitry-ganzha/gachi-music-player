@@ -6,8 +6,8 @@ import {IncomingMessage} from "http";
 import {DurationUtils} from "../../Manager/DurationUtils";
 import {ClientMessage} from "../../../Client";
 import {MessageCollector, MessageReaction, StageChannel, User, VoiceChannel} from "discord.js";
-import {FFprobe} from "../Media/FFprobe";
 import {Images} from "../EmbedMessages";
+import {FFmpeg} from "../Media/FFmpeg";
 
 const youtubeStr = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi;
 const spotifySrt = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;
@@ -61,14 +61,14 @@ const localPlatform = {
     },
     //Discord
     "ds": {
-        "track": (search: string): Promise<InputTrack> => new FFprobe(["-i", search]).getInfo().then((trackInfo: any) => {
+        "track": (search: string): Promise<InputTrack> => new FFmpeg.FFprobe(["-i", search]).getInfo().then((trackInfo: any) => {
             //Если не найдена звуковая дорожка
             if (!trackInfo) return null;
 
             return {
                 url: search,
                 title: search.split("/").pop(),
-                author: undefined,
+                author: null,
                 image: {url: Images.NotImage},
                 duration: {seconds: trackInfo.format.duration},
                 format: {url: trackInfo.format.filename}

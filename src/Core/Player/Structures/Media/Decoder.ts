@@ -1,8 +1,9 @@
 import JsonFFmpeg from "../../../../../DataBase/FFmpeg.json";
-import {FFmpeg, FFmpegArgs} from "./FFmpeg";
+import {FFmpeg} from "./FFmpeg";
 import {AudioFilters} from "../Queue/Queue";
 import {opus} from "prism-media";
 
+//Сюда после запуска файла будут записаны статичные фильтры. Статичные фильтры - фильтры в которых модификатор скорости записан и его не может указать пользователь
 let FiltersStatic = {};
 
 //Загружаем статичные фильтры
@@ -18,7 +19,7 @@ export namespace Decoder {
      * С помощью FFmpeg конвертирует любой формат в opus
      */
     export class All extends opus.OggDemuxer {
-        readonly #FFmpeg: FFmpeg;
+        readonly #FFmpeg: FFmpeg.FFmpeg;
         readonly #TimeFrame: number;
         #started = false;
         #playbackDuration = 0;
@@ -46,7 +47,7 @@ export namespace Decoder {
         public constructor(parameters: {url: string, seek?: number, Filters?: AudioFilters}) {
             super();
             //Даем FFmpeg'у, ссылку с которой надо скачать поток
-            this.#FFmpeg = new FFmpeg(DecoderUtils.CreateArguments(parameters.url, parameters?.Filters, parameters?.seek));
+            this.#FFmpeg = new FFmpeg.FFmpeg(DecoderUtils.CreateArguments(parameters.url, parameters?.Filters, parameters?.seek));
             this.#FFmpeg.pipe(this); //Загружаем из FFmpeg'a в декодер
 
             //Проверяем сколько времени длится пакет
@@ -88,7 +89,7 @@ export namespace Decoder {
     }
 }
 
-//
+//Вспомогательные функции Decoder'а
 namespace DecoderUtils {
     /**
      * @description Создаем аргументы для FFmpeg
@@ -97,7 +98,7 @@ namespace DecoderUtils {
      * @param seek {number} Пропуск музыки до 00:00:00
      * @constructor
      */
-    export function CreateArguments (url: string, AudioFilters: AudioFilters, seek: number): FFmpegArgs {
+    export function CreateArguments (url: string, AudioFilters: AudioFilters, seek: number): FFmpeg.Arguments {
         let thisArgs = [...JsonFFmpeg.Args.Reconnect, "-vn", ...JsonFFmpeg.Args.Seek, seek ?? 0];
         if (url) thisArgs = [...thisArgs, "-i", url];
 
