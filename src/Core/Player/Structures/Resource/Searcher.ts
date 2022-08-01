@@ -347,9 +347,9 @@ function ArrayToString(results: InputTrack[], message: ClientMessage, type: Type
     results.ArraySort(15).forEach((tracks: InputTrack[]) => {
         StringTracks = tracks.map((track) => {
             const Duration = type === "yt" ? track.duration.seconds : DurationUtils.ParsingTimeToString(parseInt(track.duration.seconds)); //Проверяем надо ли конвертировать время
-            const NameTrack = `[${message.client.ConvertedText(track.title, 80, true)}]`; //Название трека
+            const NameTrack = `[${message.client.replaceText(track.title, 80, true)}]`; //Название трека
             const DurationTrack = `[${Duration ?? "LIVE"}]`; //Длительность трека
-            const AuthorTrack = `[${message.client.ConvertedText(track.author.title, 12, true)}]`; //Автор трека
+            const AuthorTrack = `[${message.client.replaceText(track.author.title, 12, true)}]`; //Автор трека
 
             return `${NumberTrack++} ➜ ${DurationTrack} | ${AuthorTrack} | ${NameTrack}`;
         }).join("\n");

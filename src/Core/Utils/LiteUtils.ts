@@ -53,9 +53,9 @@ export namespace LiteUtils {
      * @param clearText {boolean} Чистить текст от []
      * @constructor
      */
-    export function ConvertedText(text: string, value: number | any, clearText: boolean = false) {
+    export function replaceText(text: string, value: number | any, clearText: boolean = false) {
         try {
-            if (clearText) text = text.replace("[", "").replace("]", "").replace(/`/, "");
+            if (clearText) text = text.replace(/[\[,\]}{"`']/gi, "");
             if (text.length > value && value !== false) return `${text.substring(0, value)}...`;
             return text;
         } catch { return text; }

@@ -28,7 +28,7 @@ export default class CommandQueue extends Command {
             color: "RED"
         });
         //Получаем то что надо было преобразовать в string[]
-        const pages = this.#parsedSongs(queue.songs, message.client.ConvertedText);
+        const pages = this.#parsedSongs(queue.songs, message.client.replaceText);
         const CurrentPlaying = `Current playing -> [${queue.songs[0].title}]`; //Музыка, которая играет сейчас
         const Footer = `${message.author.username} | ${this.#getTime(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}`; //Что будет снизу сообщения
 

@@ -25,7 +25,7 @@ export class WatKLOK extends Client {
     public readonly queue = new LiteUtils.CollectionMap<string, Queue>(); //База, в ней содержатся данные о серверах на которых играет музыка
 
     public readonly Send = MessageSend.Send; //Отправить не полное embed сообщение
-    public readonly ConvertedText = LiteUtils.ConvertedText; //Обрезка текста
+    public readonly replaceText = LiteUtils.replaceText; //Обрезка текста
     public readonly console: (text: string) => NodeJS.Timeout; //Самый обычный console.log
     public readonly connections = LiteUtils.Connections; //Все пользователи в голосовом канале
     public readonly player = new PlayerEmitter(); //Плеер

@@ -43,7 +43,7 @@ export namespace EmbedMessages {
         return {
             color: song.color,
             author: {
-                name: client.ConvertedText(song.author.title, 45, false),
+                name: client.replaceText(song.author.title, 45, false),
                 iconURL: song.author.isVerified === undefined ? Images.NotFound : song.author.isVerified ? Images.Verification : Images.NotVerification,
                 url: song.author.url,
             },
@@ -78,7 +78,7 @@ export namespace EmbedMessages {
         return {
             color,
             author: {
-                name: client.ConvertedText(author.title, 45, false),
+                name: client.replaceText(author.title, 45, false),
                 iconURL: author.isVerified === undefined ? Images.NotFound : author.isVerified ? Images.Verification : Images.NotVerification,
                 url: author.url,
             },
@@ -87,7 +87,7 @@ export namespace EmbedMessages {
             },
             fields: [{
                 name: "Добавлено в очередь",
-                value: `**❯** [${client.ConvertedText(title, 40, true)}](${url}})\n**❯** [${duration.StringTime}]`
+                value: `**❯** [${client.replaceText(title, 40, true)}](${url}})\n**❯** [${duration.StringTime}]`
             }],
             footer: {
                 text: `${requester.username} | ${DurationUtils.getTimeQueue(songs)} | 🎶: ${songs.length}`,
@@ -145,7 +145,7 @@ export namespace EmbedMessages {
             color,
             description: `\n[${title}](${url})\n\`\`\`js\n${err}...\`\`\``,
             author: {
-                name: client.ConvertedText(author.title, 45, false),
+                name: client.replaceText(author.title, 45, false),
                 iconURL: author.isVerified === undefined ? Images.NotFound : author.isVerified ? Images.Verification : Images.NotVerification,
                 url: author.url,
             },
@@ -176,8 +176,8 @@ namespace CurrentPlayFunction {
         const playbackDuration = ConvertTime(player, audioFilters);
         const VisualDuration = MusicDuration(song, playbackDuration);
 
-        let fields = [{ name: "Щас играет", value: `**❯** [${client.ConvertedText(song.title, 29, true)}](${song.url})\n${VisualDuration}` }];
-        if (songs[1]) fields.push({ name: "Потом", value: `**❯** [${client.ConvertedText(songs[1].title, 29, true)}](${songs[1].url})` });
+        let fields = [{ name: "Щас играет", value: `**❯** [${client.replaceText(song.title, 29, true)}](${song.url})\n${VisualDuration}` }];
+        if (songs[1]) fields.push({ name: "Потом", value: `**❯** [${client.replaceText(songs[1].title, 29, true)}](${songs[1].url})` });
         return fields;
     }
 //====================== ====================== ====================== ======================
