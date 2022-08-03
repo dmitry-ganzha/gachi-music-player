@@ -12,8 +12,9 @@ export default class Cetus extends Command {
     public constructor() {
         super({
             name: "cetus",
+            description: "Сколько щас времени на цетусе!",
             aliases: ["цетус"],
-            slash: false,
+            slash: true,
             enable: true
         });
     };

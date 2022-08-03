@@ -7,7 +7,6 @@ import {MessagePlayer} from "../Manager/MessagePlayer";
 import {PlayersManager} from "../Manager/PlayersManager";
 import {TypedEmitter} from "tiny-typed-emitter";
 import {Searcher} from "../Structures/Resource/Searcher";
-import {FFmpegFormat} from "../../Utils/TypeHelper";
 
 //Статусы плеера для пропуска музыки
 export const StatusPlayerHasSkipped: Set<string> = new Set(["playing", "paused", "buffering", "idle"]);
@@ -260,7 +259,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
 function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0): Promise<PlayerResource | null> {
     const Resource = Searcher.getResourceSong(song);
 
-    return Resource.then((format: FFmpegFormat) => {
+    return Resource.then((format: Song["format"]) => {
         if (!format) return null;
 
         //Если будет включен поток

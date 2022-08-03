@@ -12,8 +12,10 @@ export default class Trader extends Command {
     public constructor() {
         super({
             name: "baro",
+            description: "Когда прейдет баро или когда он уйдет, так-же что он щас продает!",
             aliases: ["торговец", "trader", "voidtrader", "void", "KiTeer"],
 
+            slash: true,
             enable: true
         });
     }

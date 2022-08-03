@@ -1,9 +1,21 @@
 import {
+    ActionRowBuilder,
+    ButtonBuilder, ButtonStyle,
     Guild, Message,
 } from "discord.js";
 import {WatKLOK} from "../../Core/Client";
 import {EmbedConstructor} from "../../Core/Utils/TypeHelper";
-import {Colors, LiteUtils} from "../../Core/Utils/LiteUtils";
+import {Colors} from "../../Core/Utils/LiteUtils";
+import cfg from "../../../DataBase/Config.json";
+
+const Buttons = (ClientID: string) => {
+    const Buttons = {
+        MyUrl: new ButtonBuilder().setURL(`https://discord.com/oauth2/authorize?client_id=${ClientID}&permissions=8&scope=bot+applications.commands`).setEmoji({name: "🔗"}).setLabel("Invite").setStyle(ButtonStyle.Link),
+        ServerUrl: new ButtonBuilder().setURL(cfg.Bot.DiscordServer).setEmoji({name: "🛡"}).setLabel("Help server").setStyle(ButtonStyle.Link),
+        Git: new ButtonBuilder().setURL("https://github.com/SNIPPIK/WatKLOK").setEmoji({name: "🗂"}).setLabel("GitHub").setStyle(ButtonStyle.Link)
+    };
+    return new ActionRowBuilder().addComponents([Buttons.MyUrl, Buttons.ServerUrl, Buttons.Git]);
+}
 
 export default class guildCreate {
     public readonly name: string = "guildCreate";
@@ -15,7 +27,7 @@ export default class guildCreate {
         setImmediate(() => {
             try {
                 // @ts-ignore
-                return guild.systemChannel.send({ embeds: [ConstructEmbed(guild)], components: [LiteUtils.getButtons(client.user.id)] });
+                return guild.systemChannel.send({ embeds: [ConstructEmbed(guild)], components: [Buttons(client.user.id)] });
             } catch (e) {
                 console.log(e);
                 return;

@@ -105,16 +105,13 @@ const client = new WatKLOK();
 client.login(Bot.token).then(() => {
     Promise.all([FileSystemLoad(client)]).catch(console.error);
 
-    if (Bot.ignoreError) {
-        process.on("uncaughtException", (err: Error): void | Promise<ClientMessage> => {
-            console.error(err);
-            if (err.toString() === "Error: connect ECONNREFUSED 127.0.0.1:443") return null;
+    if (Bot.ignoreError) process.on("uncaughtException", (err: Error): void | Promise<ClientMessage> => {
+        console.log(`[IgnoreError]:`, err);
+        try {
+            const channel = client.channels.cache.get(Channels.SendErrors) as MessageChannel
+            if (channel) return channel.send(`${err.toString()}`);
+            return null;
+        } catch {/* Continue */}
+    });
 
-            try {
-                const channel = client.channels.cache.get(Channels.SendErrors) as MessageChannel
-                if (channel) return channel.send(`${err.toString()}`);
-                return null;
-            } catch {/* Continue */}
-        });
-    }
 });

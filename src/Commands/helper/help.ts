@@ -19,7 +19,7 @@ export default class Help extends Command {
     };
 
     public readonly run = (message: ClientMessage): void => {
-        const Commands: Command[] = message.client.commands.Array;
+        const Commands: Command[] = message.client.commands.Array.filter((command) => !command.isOwner);
 
         // @ts-ignore
         let List: Command[] = Commands.ArraySort(5);

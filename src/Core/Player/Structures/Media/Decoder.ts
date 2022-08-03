@@ -115,7 +115,7 @@ namespace DecoderUtils {
         let NumberDuration = 20;
 
         if (AudioFilters) AudioFilters.forEach((filter: string | number) => {
-            //Если filter чисто, пропускаем!
+            //Если filter число, пропускаем!
             if (typeof filter === "number") return;
 
             // @ts-ignore

@@ -110,7 +110,7 @@ export namespace Searcher {
                 if (info instanceof Array) return SearchMessage(info, ArrayToString(info, message, platform), info.length, options);
 
                 //Сообщаем что трек или плейлист был найден
-                message.client.Send({ text: `Найден 🔍 | ${type} | ${info.title}`, message, color: "RED", type: "css" });
+                if (type !== "playlist") message.client.Send({ text: `Найден 🔍 | ${type} | ${info.title}`, message, color: "RED", type: "css" });
 
                 //Если это трек или плейлист
                 return message.client.player.emit("play", message, voiceChannel, info);

@@ -1,5 +1,5 @@
-import {Guild, ActionRowBuilder, ButtonBuilder, ButtonStyle, VoiceState} from "discord.js";
-import cfg, {Bot} from "../../../DataBase/Config.json";
+import {Guild, ButtonStyle, VoiceState} from "discord.js";
+import {Bot} from "../../../DataBase/Config.json";
 import {getVoiceConnection} from "@discordjs/voice";
 import {ColorResolvable, EmbedConstructor} from "./TypeHelper";
 import {ClientMessage} from "../Client";
@@ -59,19 +59,6 @@ export namespace LiteUtils {
             if (text.length > value && value !== false) return `${text.substring(0, value)}...`;
             return text;
         } catch { return text; }
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Заранее заготовленные кнопки
-     * @param ClientID {string} ID бота
-     */
-    export function getButtons(ClientID: string) {
-        const Buttons = {
-            MyUrl: new ButtonBuilder().setURL(`https://discord.com/oauth2/authorize?client_id=${ClientID}&permissions=8&scope=bot+applications.commands`).setEmoji({name: "🔗"}).setLabel("Invite").setStyle(ButtonStyle.Link),
-            ServerUrl: new ButtonBuilder().setURL(cfg.Bot.DiscordServer).setEmoji({name: "🛡"}).setLabel("Help server").setStyle(ButtonStyle.Link),
-            Git: new ButtonBuilder().setURL("https://github.com/SNIPPIK/WatKLOK").setEmoji({name: "🗂"}).setLabel("GitHub").setStyle(ButtonStyle.Link)
-        };
-        return new ActionRowBuilder().addComponents([Buttons.MyUrl, Buttons.ServerUrl, Buttons.Git]);
     }
     //====================== ====================== ====================== ======================
     /**
