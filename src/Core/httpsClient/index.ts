@@ -24,7 +24,12 @@ export namespace httpsClient {
                 headers: options?.request?.headers ?? {},
                 method: options?.request?.method ?? "GET"
             };
-            const httpsRequest = request(Options, resolve);
+            const httpsRequest = request(Options, (res) => {
+                //Автоматическое перенаправление
+                if (res.headers?.location) return Request(res.headers.location, options);
+
+                return resolve(res);
+            });
 
             //Если возникла ошибка
             httpsRequest.on("error", reject);
@@ -38,35 +43,14 @@ export namespace httpsClient {
     }
     //====================== ====================== ====================== ======================
     /**
-     * @description Автоматическая переадресация
-     * @param url {string} Ссылка
-     * @param options {httpsClientOptions} Настройки запроса
-     * @requires {Request}
-     * @constructor
-     */
-    function AutoRedirect(url: string, options?: httpsClientOptions): Promise<IncomingMessage> {
-        return new Promise((resolve) => {
-            return Request(url, options).then((res: IncomingMessage) => {
-                if (res instanceof Error) {
-                    resolve(res);
-                    return;
-                }
-
-                if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location !== undefined) return AutoRedirect(res.headers.location, options);
-                resolve(res);
-            });
-        });
-    }
-    //====================== ====================== ====================== ======================
-    /**
      * @description Получаем страницу в формате string
      * @param url {string} Ссылка
      * @param options {httpsClientOptions} Настройки запроса
-     * @requires {AutoRedirect, uploadCookie, getCookies}
+     * @requires {uploadCookie, getCookies}
      */
     export function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
         return new Promise((resolve) => {
-            return AutoRedirect(url, options).then((res: IncomingMessage) => {
+            return Request(url, options).then((res: IncomingMessage) => {
                 const encoding = res.headers["content-encoding"];
                 const data: string[] = [];
                 let decoder: BrotliDecompress | Gunzip | Deflate | null = null;
