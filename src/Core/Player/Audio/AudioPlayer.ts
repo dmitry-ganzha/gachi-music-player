@@ -92,21 +92,20 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     public readonly play = (message: ClientMessage, seek: number = 0): void => {
         const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
+        const song = queue?.songs[0];
 
-        if (queue?.songs[0]) {
+        if (song) {
             //Получаем исходный поток
-            CreateResource(queue.songs[0], queue.audioFilters, seek).then(stream => {
+            CreateResource(song, queue.audioFilters, seek).then(stream => {
                 this.#toPlayResource(stream);
 
-                //Если есть пропуск меняем время
-                if (seek) this.playbackDuration = seek;
                 //Если это не пропуск
                 if (!seek) {
                     //Отправляем лог о текущем треке
-                    client.console(`[GuildID: ${guild.id}]: ${queue.songs[0].title}`);
+                    client.console(`[GuildID: ${guild.id}]: ${song.title}`);
                     //Если стрим не пустышка отправляем сообщение
                     if (stream instanceof Decoder.All) MessagePlayer.toPlay(queue.channels.message);
-                }
+                } else this.playbackDuration = seek; //Если есть пропуск меняем время
             });
         } else if (queue?.emitter) queue.emitter.emit("DeleteQueue", message);
     };
@@ -176,15 +175,16 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         //Если стоит статус плеера (autoPaused) и есть канал или каналы в которые можно воспроизвести музыку, стартуем!
         if (this.state.status === "autoPaused" && Receivers.length > 0) this.state = { ...this.state, status: "playing" };
 
+        //Если некуда проигрывать музыку ставить плеер на паузу
+        if (Receivers.length === 0) {
+            this.state = { ...this.state, status: "autoPaused" };
+            return;
+        }
+
         //Не читать пакеты при статусе плеера (paused | autoPaused)
         if (this.state.status === "paused" || this.state.status === "autoPaused") {
             this.#playOpusPacket(EmptyFrame, Receivers);
             this.#signalStopSpeaking();
-            return;
-        }
-        //Если некуда проигрывать музыку ставить плеер на паузу
-        if (Receivers.length === 0) {
-            this.state = { ...this.state, status: "autoPaused" };
             return;
         }
 

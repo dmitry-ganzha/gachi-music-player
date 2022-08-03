@@ -135,7 +135,6 @@ export namespace Searcher {
 
             //Если выходит ошибка или нет ссылки на исходный ресурс
             if (!CheckResource || !song.format?.url) {
-                //console.log(`[Reply checking]: [REQ: ${req++}]: ${song.title}`); //Это для тестов
                 req++;
                 return resolve(getResourceSong(song, req));
             }

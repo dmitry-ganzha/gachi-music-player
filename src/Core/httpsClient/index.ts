@@ -26,7 +26,9 @@ export namespace httpsClient {
             };
             const httpsRequest = request(Options, (res) => {
                 //Автоматическое перенаправление
-                if (res.headers?.location) return Request(res.headers.location, options);
+                if (res.statusCode >= 300 && res.statusCode < 400) {
+                    if (res.headers?.location) return resolve(Request(res.headers.location, options));
+                }
 
                 return resolve(res);
             });

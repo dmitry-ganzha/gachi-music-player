@@ -40,7 +40,7 @@ export class Song {
     readonly #_type: SongType;
     #_format: FFmpegFormat;
 
-    public constructor(track: InputTrack, {author}: ClientMessage) {
+    public constructor(track: InputTrack, author: ClientMessage["author"]) {
         const type = Type(track.url);
 
         this.#_title = track.title;

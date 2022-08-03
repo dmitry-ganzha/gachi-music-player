@@ -26,8 +26,8 @@ export class Queue {
         this.#_player = new AudioPlayer();
         this.#_channels = { message, voice, connection: null};
 
-        this.player.on("idle", () => onIdlePlayer(message));
-        this.player.on("error", (err: any) => onErrorPlayer(err, message));
+        this.player.on("idle", () => onPlayerFunction.onIdlePlayer(message));
+        this.player.on("error", (err: any) => onPlayerFunction.onErrorPlayer(err, message));
     };
 
     /**
@@ -64,44 +64,45 @@ export class Queue {
         return this.#_options;
     };
 }
-//====================== ====================== ====================== ======================
-/**
- * @description Когда плеер завершит песню, он возвратит эту функцию
- * @param message {ClientMessage} Сообщение с сервера
- * @requires {isRemoveSong}
- * @private
- */
-function onIdlePlayer(message: ClientMessage): void {
-    const {client, guild} = message;
-    const queue: Queue = client.queue.get(guild.id);
+namespace onPlayerFunction {
+    /**
+     * @description Когда плеер завершит песню, он возвратит эту функцию
+     * @param message {ClientMessage} Сообщение с сервера
+     * @requires {isRemoveSong}
+     * @private
+     */
+    export function onIdlePlayer(message: ClientMessage): void {
+        const {client, guild} = message;
+        const queue: Queue = client.queue.get(guild.id);
 
-    setTimeout(() => {
-        if (queue?.songs) isRemoveSong(queue); //Определяем тип loop
+        setTimeout(() => {
+            if (queue?.songs) isRemoveSong(queue); //Определяем тип loop
 
-        //Рандомим номер трека, просто меняем их местами
-        if (queue?.options?.random) {
-            const RandomNumSong = Math.floor(Math.random() * queue.songs.length)
-            queue.swapSongs(RandomNumSong);
-        }
+            //Рандомим номер трека, просто меняем их местами
+            if (queue?.options?.random) {
+                const RandomNumSong = Math.floor(Math.random() * queue.songs.length)
+                queue.swapSongs(RandomNumSong);
+            }
 
-        return queue.player.play(message); //Включаем трек
-    }, 500);
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Когда плеер выдает ошибку, он возвратит эту функцию
- * @param err {Error | string} Ошибка
- * @param message {ClientMessage} Сообщение с сервера
- * @private
- */
-function onErrorPlayer(err: Error | string, message: ClientMessage): void {
-    const queue: Queue = message.client.queue.get(message.guild.id);
+            return queue.player.play(message); //Включаем трек
+        }, 500);
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Когда плеер выдает ошибку, он возвратит эту функцию
+     * @param err {Error | string} Ошибка
+     * @param message {ClientMessage} Сообщение с сервера
+     * @private
+     */
+    export function onErrorPlayer(err: Error | string, message: ClientMessage): void {
+        const queue: Queue = message.client.queue.get(message.guild.id);
 
-    //Выводим сообщение об ошибке
-    MessagePlayer.toError(message, queue.songs[0], err);
+        //Выводим сообщение об ошибке
+        MessagePlayer.toError(message, queue.songs[0], err);
 
-    queue.songs.shift();
-    setTimeout(() => queue.player.play(message), 1e3);
+        queue.songs.shift();
+        setTimeout(() => queue.player.play(message), 1e3);
+    }
 }
 //====================== ====================== ====================== ======================
 /**

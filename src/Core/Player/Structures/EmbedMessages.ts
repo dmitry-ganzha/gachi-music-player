@@ -217,12 +217,8 @@ namespace CurrentPlayFunction {
      * @param size {number} Кол-во символов
      */
     function ProgressBar(currentTime: number, maxTime: number, size: number = 15): string {
-        if (currentTime > maxTime) {
-            const progressText = Bar.empty.repeat(15);
-
-            return `${Bar.button}${progressText}`;
-        }
-        const progressSize = Math.round(size * (currentTime / maxTime));
+        const CurrentDuration = currentTime > maxTime ? maxTime : currentTime;
+        const progressSize = Math.round(size * (CurrentDuration / maxTime));
         const progressText = Bar.full.repeat(progressSize);
         const emptyText = Bar.empty.repeat(size - progressSize);
 

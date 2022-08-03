@@ -30,7 +30,10 @@ export namespace QueueManager {
 
         //Добавляем песню в очередь
         PushSong(Queue, info, Queue.songs.length >= 1);
-        if (Queue.songs.length <= 1) return Queue.player.play(message);
+
+        setImmediate(() => {
+            if (Queue.songs.length <= 1) return Queue.player.play(message);
+        });
     }
 }
 //====================== ====================== ====================== ======================
@@ -65,7 +68,7 @@ function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel): Queue 
  * @param sendMessage {boolean} Отправить сообщение?
  */
 function PushSong(queue: Queue, InputTrack: InputTrack, sendMessage: boolean = true): void {
-    const song: Song = new Song(InputTrack, queue.channels.message);
+    const song: Song = new Song(InputTrack, queue.channels.message.author);
 
     queue.songs.push(song);
     if (sendMessage) setImmediate(() => MessagePlayer.toPushSong(queue.channels.message, song));
