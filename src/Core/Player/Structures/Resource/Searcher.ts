@@ -134,7 +134,8 @@ export namespace Searcher {
             const CheckResource = await ResourceSong.CheckHeadResource(song);
 
             //Если выходит ошибка или нет ссылки на исходный ресурс
-            if (CheckResource instanceof Error || !song.format?.url) {
+            if (!CheckResource || !song.format?.url) {
+                console.log(`[Reply checking]: [REQ: ${req++}]: ${song.title}`);
                 req++;
                 return resolve(getResourceSong(song, req));
             }
@@ -149,14 +150,14 @@ namespace ResourceSong {
      * @description Ищет трек и проверяем его работоспособность
      * @param song {Song} Трек
      */
-    export function CheckHeadResource(song: Song): Promise<true | Error> {
+    export function CheckHeadResource(song: Song): Promise<boolean> {
         return new Promise(async (resolve) => {
             if (!song.format || !song.format?.url) {
                 let format = await getFormatSong(song);
 
                 if (!format || !format?.url) {
                     song.format = {url: null};
-                    return resolve(new Error(`[FindResource]: [Song: ${song.title}]: Has not found format`));
+                    return resolve(false);
                 }
                 //Добавляем ссылку в трек
                 song.format = {url: format.url};
@@ -165,8 +166,8 @@ namespace ResourceSong {
             //Делаем head запрос на сервер
             const resource = await CheckLink(song.format?.url);
             if (resource === "Fail") { //Если выходит ошибка
-                song.format.url = null;
-                return resolve(new Error(`[FindResource]: [Song: ${song.title}]: Has fail checking resource link`));
+                song.format = {url: null};
+                return resolve(false);
             }
             return resolve(true);
         });
