@@ -43,22 +43,29 @@ export namespace FFmpeg {
      * As a general rule, options are applied to the next specified file. Therefore, order is important, and you can have the same option on the command line multiple times. Each occurrence is then applied to the next input or output file. Exceptions from this rule are the global options (e.g. verbosity level), which should be specified first.
      */
     export class FFmpeg extends Duplex {
+        readonly _readableState: Readable;
+        readonly _writableState: Writable;
         readonly #process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
-        get #input() { return this.#process.stdout; };
-        get #output() { return this.#process.stdin; };
 
         public constructor(args: Arguments) {
             super({autoDestroy: true, objectMode: true});
             //Используется для загрузки потока в ffmpeg. Неообходимо не указывать параметр -i
-            if (!args.includes("-i")) {
-                args.unshift("-i", "-");
-                this.#Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
-            }
+            if (!args.includes("-i")) args = ["-i", "-", ...args];
 
             this.#process = this.#SpawnFFmpeg(args);
+            this._readableState = this.#input._readableState;
+            this._writableState = this.#output._writableState;
+
             this.#Binding(["write", "end"], this.#output);
             this.#Binding(["read", "setEncoding", "pipe", "unpipe"], this.#input);
+            this.#Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
+            ["end", "close"].forEach((event) => this.#process.once(event, this.destroy));
         };
+
+        get #input() { return this.#process.stdout; };
+        get #output() { return this.#process.stdin; };
+
+
         //====================== ====================== ====================== ======================
         /**
          * @description Создаем "привязанные функции" (ПФ - термин из ECMAScript 6)
@@ -66,7 +73,7 @@ export namespace FFmpeg {
          * @param target {Readable | Writable}
          * @constructor
          */
-            // @ts-ignore
+        // @ts-ignore
         readonly #Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
         readonly #Calling = (methods: string[]) => {
             const EVENTS = {

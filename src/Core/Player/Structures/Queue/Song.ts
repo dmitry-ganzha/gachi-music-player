@@ -140,6 +140,7 @@ function Color(type: string): number {
         case "SPOTIFY": return Colors.GREEN;
         case "SOUNDCLOUD": return Colors.ORANGE;
         case "VK": return Colors.BLUE_DARK;
+        case "TWITCH": return Colors.PURPLE;
         default: return Colors.BLUE;
     }
 }

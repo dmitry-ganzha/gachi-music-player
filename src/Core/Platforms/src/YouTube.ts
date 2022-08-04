@@ -40,7 +40,7 @@ export namespace YouTube {
             let VideoFormats: YouTubeFormat[] = [];
             const LiveData: LiveData = {
                 isLive: videoDetails.isLiveContent,
-                url: VideoFinalData.streamingData?.hlsManifestUrl ?? null //dashManifestUrl, hlsManifestUrl
+                url: VideoFinalData.streamingData?.dashManifestUrl ?? null //dashManifestUrl, hlsManifestUrl
             };
 
             if (!LiveData.isLive) {

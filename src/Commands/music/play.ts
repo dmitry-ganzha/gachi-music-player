@@ -2,7 +2,7 @@ import {Command} from "../Constructor";
 import {ApplicationCommandOptionType, StageChannel, VoiceChannel} from "discord.js";
 import {ClientMessage} from "../../Core/Client";
 import {Queue} from "../../Core/Player/Structures/Queue/Queue";
-import {Searcher} from "../../Core/Player/Structures/Resource/Searcher";
+import {Searcher} from "../../Core/Player/Manager/Resource/Searcher";
 
 export default class Play extends Command {
     public constructor() {

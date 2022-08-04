@@ -1,7 +1,10 @@
 import JsonFFmpeg from "../../../../../DataBase/FFmpeg.json";
-import {FFmpeg} from "./FFmpeg";
 import {AudioFilters} from "../Queue/Queue";
 import {opus} from "prism-media";
+import {PassThrough} from "stream";
+import {httpsClient} from "../../../httpsClient";
+import {IncomingMessage} from "http";
+import {FFmpeg} from "./FFmpeg";
 
 //Сюда после запуска файла будут записаны статичные фильтры. Статичные фильтры - фильтры в которых модификатор скорости записан и его не может указать пользователь
 let FiltersStatic = {};
@@ -20,7 +23,7 @@ export namespace Decoder {
      */
     export class All extends opus.OggDemuxer {
         readonly #FFmpeg: FFmpeg.FFmpeg;
-        readonly #TimeFrame: number;
+        readonly #TimeFrame: number = 20;
         #started = false;
         #playbackDuration = 0;
 
@@ -44,14 +47,21 @@ export namespace Decoder {
          * @param parameters {Options}
          * @requires {DecoderUtils}
          */
-        public constructor(parameters: {url: string, seek?: number, Filters?: AudioFilters}) {
-            super();
-            //Даем FFmpeg'у, ссылку с которой надо скачать поток
-            this.#FFmpeg = new FFmpeg.FFmpeg(DecoderUtils.CreateArguments(parameters.url, parameters?.Filters, parameters?.seek));
-            this.#FFmpeg.pipe(this); //Загружаем из FFmpeg'a в декодер
+        public constructor(parameters: {url: string | Decoder.Dash, seek?: number, Filters?: AudioFilters}) {
+            super({autoDestroy: true});
+            if (parameters.url instanceof Decoder.Dash) {
+                //Даем FFmpeg'у, ссылку с которой надо скачать поток
+                this.#FFmpeg = new FFmpeg.FFmpeg(DecoderUtils.CreateArguments(null, null, 0));
+                parameters.url.pipe(this.#FFmpeg);
+                this.#FFmpeg.pipe(this); //Загружаем из FFmpeg'a в декодер
+            } else {
+                //Даем FFmpeg'у, ссылку с которой надо скачать поток
+                this.#FFmpeg = new FFmpeg.FFmpeg(DecoderUtils.CreateArguments(parameters.url, parameters?.Filters, parameters?.seek));
+                this.#FFmpeg.pipe(this); //Загружаем из FFmpeg'a в декодер
 
-            //Проверяем сколько времени длится пакет
-            this.#TimeFrame = DecoderUtils.timeFrame(parameters?.Filters);
+                //Проверяем сколько времени длится пакет
+                this.#TimeFrame = DecoderUtils.timeFrame(parameters?.Filters);
+            }
 
             //Когда можно будет читать поток записываем его в <this.#started>
             this.once("readable", () => (this.#started = true));
@@ -79,12 +89,116 @@ export namespace Decoder {
 
             //Удаляем с задержкой (чтоб убрать некоторые ошибки)
             setTimeout(() => {
+                this.emit("close");
+
                 if (this && !this?.destroyed) {
                     super.destroy();
                     this?.removeAllListeners();
                     this?.destroy();
                 }
             }, 125);
+        };
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Загружаем стрим для дальнейшей расшифровки
+     */
+    export class Dash extends PassThrough {
+        #request: IncomingMessage; //httpsClient<Request>
+        #NumberUrl: number = 0; //Номер ссылки
+
+        readonly #precache: number = 3; //Буфер
+        readonly #urls: {
+            dash: string; //Dash ссылка
+            base: string; //Ссылка на домен
+        }
+        //====================== ====================== ====================== ======================
+        /**
+         * @description Для начала нужна dash ссылка (работает только с youtube)
+         * @param dash {string} Ссылка на dash файл
+         */
+        public constructor(dash: string) {
+            super({highWaterMark: 5 * 1000 * 1000, autoDestroy: true});
+            this.#urls = {
+                dash, base: ""
+            };
+
+            this.#DecodeDashManifest().catch((err) => console.log(err));
+            this.once("end", this.destroy);
+        };
+        //====================== ====================== ====================== ======================
+        /**
+         * @description Расшифровывает DashManifest, требуется сделать только один раз
+         * @private
+         */
+        readonly #DecodeDashManifest = async () => {
+            const req = await httpsClient.parseBody(this.#urls.dash);
+            const audioFormat = req.split('<AdaptationSet id="0"')[1].split('</AdaptationSet>')[0].split('</Representation>');
+
+            if (audioFormat[audioFormat.length - 1] === '') audioFormat.pop();
+
+            //Записываем домен с которого будет скачивать поток
+            this.#urls.base = audioFormat[audioFormat.length - 1].split('<BaseURL>')[1].split('</BaseURL>')[0];
+
+            //Просим домен сгенерировать ссылки для дальнейшей загрузки потока
+            await httpsClient.Request(`https://${new URL(this.#urls.base).host}/generate_204`);
+
+            //Если нет определенного номера для старта
+            if (this.#NumberUrl === 0) {
+                //Получаем лист ссылками
+                const list = audioFormat[audioFormat.length - 1].split('<SegmentList>')[1].split('</SegmentList>')[0]
+                    .replaceAll('<SegmentURL media="', '').split('"/>');
+
+                //Если последняя ссылка не является ссылкой, убираем
+                if (list[list.length - 1] === '') list.pop();
+                if (list.length > this.#precache) list.splice(0, list.length - this.#precache);
+
+                //Записываем номер ссылки с которой надо начать
+                this.#NumberUrl = Number(list[0].split('sq/')[1].split('/')[0]);
+                await this.#PipeStream();
+            }
+        };
+        //====================== ====================== ====================== ======================
+        /**
+         * @description Загружаем фрагменты в класс
+         * @private
+         */
+        readonly #PipeStream = () => {
+            return new Promise(async (resolve) => {
+                const request = await httpsClient.Request(`${this.#urls.base}sq/${this.#NumberUrl}`).catch((err: Error) => err);
+
+                if (this.destroyed) return;
+
+                //Если Request является ошибкой
+                if (request instanceof Error) {
+                    this.emit('error', request);
+                    return;
+                }
+                //Записываем request в this.#request
+                this.#request = request;
+
+                //Записываем данные в текущий класс
+                request.on('data', (c) => {
+                    this.push(c);
+                });
+                //Если выгружать больше нечего, запускаем по новой
+                request.on('end', () => {
+                    console.log(`${this.#NumberUrl}`)
+                    this.#NumberUrl++;
+                    return resolve(this.#PipeStream())
+                });
+                //Если произошла ошибка
+                request.once('error', (err) => {
+                    this.emit('error', err);
+                });
+            });
+        };
+
+        //Удаляем request
+        readonly _destroy = () => {
+            super.destroy();
+            this.#request?.removeAllListeners();
+            this.#request?.destroy();
         };
     }
 }
@@ -98,12 +212,12 @@ namespace DecoderUtils {
      * @param seek {number} Пропуск музыки до 00:00:00
      * @constructor
      */
-    export function CreateArguments (url: string, AudioFilters: AudioFilters, seek: number): FFmpeg.Arguments {
+    export function CreateArguments (url: string, AudioFilters: AudioFilters, seek: number): any[] {
         let thisArgs = [...JsonFFmpeg.Args.Reconnect, "-vn", ...JsonFFmpeg.Args.Seek, seek ?? 0];
         if (url) thisArgs = [...thisArgs, "-i", url];
 
         //Всегда есть один фильтр <AudioFade>
-        return [...thisArgs, "-af", CreateFilters(AudioFilters), ...JsonFFmpeg.Args.OggOpus, ...JsonFFmpeg.Args.DecoderPreset];
+        return [...thisArgs, "-af", CreateFilters(AudioFilters), ...JsonFFmpeg.Args.OggOpus, ...JsonFFmpeg.Args.DecoderPreset, "-shortest"];
     }
     //====================== ====================== ====================== ======================
     /**

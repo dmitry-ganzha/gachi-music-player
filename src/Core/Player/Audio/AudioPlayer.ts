@@ -6,7 +6,7 @@ import {Decoder} from "../Structures/Media/Decoder";
 import {MessagePlayer} from "../Manager/MessagePlayer";
 import {PlayersManager} from "../Manager/PlayersManager";
 import {TypedEmitter} from "tiny-typed-emitter";
-import {Searcher} from "../Structures/Resource/Searcher";
+import {Searcher} from "../Manager/Resource/Searcher";
 
 //Статусы плеера для пропуска музыки
 export const StatusPlayerHasSkipped: Set<string> = new Set(["playing", "paused", "buffering", "idle"]);
@@ -262,9 +262,25 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
     return Resource.then((format: Song["format"]) => {
         if (!format) return null;
 
+        let LiveStream: Decoder.Dash, params: {url: string | Decoder.Dash, seek?: number, Filters?: AudioFilters};
+
         //Если будет включен поток
-        if (song.isLive) return new Decoder.All({url: format?.url});
-        return new Decoder.All({url: format?.url, seek, Filters: audioFilters});
+        if (song.isLive) {
+            LiveStream = new Decoder.Dash(format.url);
+            params = {url: LiveStream};
+        }
+        else params = {url: format.url, seek, Filters: audioFilters};
+
+        //Следую параметра начинам расшифровку
+        const DecodeFFmpeg = new Decoder.All(params);
+
+        //Удаляем поток следую Decoder.All<events>
+        ["close", "end", "error"].forEach(event => DecodeFFmpeg.once(event, () => {
+            DecodeFFmpeg.destroy();
+            if (LiveStream) LiveStream.destroy();
+        }));
+
+        return DecodeFFmpeg;
     });
 }
 //====================== ====================== ====================== ======================
