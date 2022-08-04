@@ -183,7 +183,6 @@ export namespace Decoder {
                 });
                 //Если выгружать больше нечего, запускаем по новой
                 request.on('end', () => {
-                    console.log(`${this.#NumberUrl}`)
                     this.#NumberUrl++;
                     return resolve(this.#PipeStream())
                 });
