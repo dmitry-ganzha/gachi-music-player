@@ -59,7 +59,6 @@ export namespace FFmpeg {
             this.#Binding(["write", "end"], this.#output);
             this.#Binding(["read", "setEncoding", "pipe", "unpipe"], this.#input);
             this.#Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
-            ["end", "close"].forEach((event) => this.#process.once(event, this.destroy));
         };
 
         get #input() { return this.#process.stdout; };
@@ -105,7 +104,6 @@ export namespace FFmpeg {
                 this.#process.removeAllListeners();
                 this.#process.kill("SIGKILL");
             }
-            super.destroy();
 
             if (error) return console.error(error);
         };

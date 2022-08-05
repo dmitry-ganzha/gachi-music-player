@@ -266,18 +266,18 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
 
         //Если будет включен поток
         if (song.isLive) {
-            LiveStream = new Decoder.Dash(format.url);
+            LiveStream = new Decoder.Dash(format.url, song.url);
             params = {url: LiveStream};
-        }
-        else params = {url: format.url, seek, Filters: audioFilters};
+        } else params = {url: format.url, seek, Filters: audioFilters};
 
         //Следую параметра начинам расшифровку
         const DecodeFFmpeg = new Decoder.All(params);
 
         //Удаляем поток следую Decoder.All<events>
         ["close", "end", "error"].forEach(event => DecodeFFmpeg.once(event, () => {
-            DecodeFFmpeg.destroy();
-            if (LiveStream) LiveStream.destroy();
+            [DecodeFFmpeg, LiveStream].forEach((clas) => {
+                if (!clas?.destroyed && clas !== undefined) clas?.destroy();
+            });
         }));
 
         return DecodeFFmpeg;

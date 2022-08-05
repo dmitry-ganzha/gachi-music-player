@@ -11,7 +11,6 @@ export class GuildMessage {
 
     public readonly run = (message: ClientMessage) => {
         const prefix = Bot.prefix;
-
         if (message.author.bot || !message.content.startsWith(prefix) || message.channel.type === ChannelType.DM) return;
 
         const args = message.content.split(" ").slice(1);
