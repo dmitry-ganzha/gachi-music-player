@@ -50,7 +50,17 @@ function playerCycleStep(players: AudioPlayer[] = null): void {
         PlayerData.time += 20;
 
         //Фильтруем какой плеер готов проигрывать музыку
-        const available = PlayerData.players.filter((player) => player.checkPlayable);
+        const available = PlayerData.players.filter((player) => {
+            if (player.state.status === "idle" || player.state.status === "buffering") return false;
+
+            //Если невозможно прочитать поток выдать false
+            if (!player.state.stream?.readable) {
+                player.state = { status: "idle" };
+                return false;
+            }
+            return true;
+        });
+
         return playerCycleStep(available);
     }
 
