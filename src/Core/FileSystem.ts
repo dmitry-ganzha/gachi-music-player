@@ -1,156 +1,134 @@
-import {readdirSync} from "fs";
-import {ClientEvents} from "discord.js";
 import {Command} from "../Commands/Constructor";
+import {readdirSync} from "node:fs";
 import {WatKLOK} from "./Client";
 
-const BaseLoader = {
-    total: 0,
-    skip: 0,
-    ok: 0,
-    error: 0
+type FileSystemSupport = Command | EventType | ModuleType;
+type FileSystemCallback = { dir: string, file: string, reason: string };
+
+type EventType = {name: string, enable: boolean, run: (ev: any, ev2: any, client: WatKLOK) => void};
+type ModuleType = {name: string, enable: boolean, run: (client: WatKLOK) => void}
+
+let FileBase = {
+    commands: [] as string[],
+    events: [] as string[],
+    modules: [] as string[],
+};
+
+//Добавляем лог в Array базу
+function SendLog(type: "commands" | "events" | "modules", file: string, reason?: string) {
+    const Status = `Status: [${reason ? "🟥" : "🟩"}]`;
+    const File = `File: [${file}]`;
+    let EndStr = `${Status} | ${File}`;
+
+    if (reason) EndStr += ` | Reason: [${reason}]`; //Если есть ошибка добавляем ее
+
+    return FileBase[type].push(EndStr);
 }
 
-class MultiLoader {
-    protected readonly name: string;
-    protected readonly path: string;
-    protected readonly callback: Function;
+export function FileSystemLoad(client: WatKLOK) {
+    if (!client.ShardID) {
+        console.clear(); //Чистим консоль
 
-    public constructor(options: {name: string, path: string, callback: Function}) {
-        this.name = options.name;
+        //Отправляем логи после загрузки всех системы
+        setImmediate(() => {
+            Object.entries(FileBase).forEach(([key, value]) => {
+                const AllLogs = value.join("\n");
+                console.log(`| FileSystem... Loaded [Dir: ${key}, total: ${value.length}]\n${AllLogs}\n`);
+            });
+
+            //После вывода в консоль удаляем
+            delete FileBase.commands;
+            delete FileBase.events;
+            delete FileBase.modules;
+            //
+
+            console.log("\nProcess logs:");
+        });
+    }
+
+    //Загружаем команды
+    new MultiFileSystem({
+        path: "Commands",
+        callback: (pull: Command, {file, reason, dir}) => {
+            if (reason) return SendLog("commands", `./Commands/${dir}/${file}`, reason);
+            else if (!pull.name) return SendLog("commands", `./Commands/${dir}/${file}`, "Parameter name has undefined");
+
+            client.commands.set(pull.name, pull);
+            SendLog("commands", `./Commands/${dir}/${file}`);
+
+            if (pull.aliases && pull.aliases.length > 0) pull.aliases.forEach((alias: string) => client.aliases.set(alias, pull.name));
+        }
+    });
+    //Загружаем ивенты
+    new MultiFileSystem({
+        path: "Events",
+        callback: (pull, {file, reason, dir}) => {
+            if (reason) return SendLog("events", `./Events/${dir}/${file}`, reason);
+            else if (!pull.name) return SendLog("events", `./Events/${dir}/${file}`, "Parameter name has undefined");
+
+            client.on(pull.name, (ev: any, ev2: any) => pull.run(ev, ev2, client));
+            SendLog("events", `./Events/${dir}/${file}`);
+        }
+    });
+    //Загружаем модули
+    new MultiFileSystem({
+        path: "Modules",
+        callback: (pull: ModuleType, {file, reason, dir}) => {
+            if (reason) return SendLog("modules", `./Modules/${dir}/${file}`, reason);
+
+            pull.run(client);
+            SendLog("modules", `./Modules/${dir}/${file}`);
+        }
+    });
+}
+
+class MultiFileSystem {
+    private readonly path: string;
+    private readonly callback: (pull: FileSystemSupport, option: FileSystemCallback) => void;
+
+    public constructor(options: {path: string, callback: (pull: FileSystemSupport, option: FileSystemCallback) => void}) {
         this.path = options.path;
         this.callback = options.callback;
+
+        this.readDir();
     };
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Открываем директорию (папку) и смотрим что в ней, проверяем что-бы были файлы js или ts. Загружаем...
-     */
-    public readonly readdirSync = async (): Promise<void> => readdirSync(`./src/${this.path}`).forEach((dir: string) => {
-        if (dir.endsWith(".js") || dir.endsWith(".ts")) return;
 
-        const Files = readdirSync(`./src/${this.path}/${dir}/`).filter((file: string) => (file.endsWith(".js") || file.endsWith(".ts")));
-        return this.#ForLoad(Files, dir);
-    });
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Загружаем файлы находящиеся в dir
-     * @param Files {string[]} Все файлы в этой директории
-     * @param dir {string} Директория из которой загружаем файлы
-     * @private
-     */
-    readonly #ForLoad = async (Files: string[], dir: string): Promise<void> => {
-        for (let file of Files) {
-            let pull: Command;
+    private readDir = () => {
+        //Смотрим что находится в папке
+        readdirSync(`./src/${this.path}`).forEach(async (dir: string) => {
+            if (dir.endsWith(".js") || dir.endsWith(".ts")) return;
 
-            try {
-                pull = await this.#getFile(`../${this.path}/${dir}/${file}`);
+            //Берем файлы мз папки
+            const files = readdirSync(`./src/${this.path}/${dir}/`).filter((file: string) => (file.endsWith(".js") || file.endsWith(".ts")));
 
-                pull.type = dir;
-                BaseLoader.total++;
+            for (let file of files) {
+                let reason: string = null;
+                const pull = await this.findExport(`../${this.path}/${dir}/${file}`);
 
-                if (!pull.enable) {
-                    BaseLoader.skip++;
-                    continue;
+                //Добавляем ошибки если они как таковые есть
+                if (!pull) reason = "Exports length has 0";
+                else if (!pull.enable) reason = "Parameter enable has false";
+                else if (!pull.run) reason = "Function run has not found";
+
+                //Если при загрузке произошла ошибка
+                if (pull instanceof Error) {
+                    reason = pull.message;
                 }
-            } catch (e) {
-                console.log(e);
-                continue;
+
+                if ("type" in pull) pull.type = dir; //Если есть type в pull
+
+                this.callback(pull, {dir, file, reason}); //Отправляем данные в callback
             }
-            // Передаем все данные в callback для дальнейшей загрузки
-            this.callback(pull, { dir: dir, file: file });
-        }
+        });
     };
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Получаем сам класс
-     * @param path {string} Путь до файла
-     * @private
-     */
-    readonly #getFile = async (path: string): Promise<Command> => {
-        const cmd = (await import(path));
-        const name = Object.keys(cmd)[0];
-        return new cmd[name];
+
+    //Загружаем export
+    private findExport = async (path: string): Promise<null | FileSystemSupport> => {
+        const importFile = (await import(path));
+        const keysFile = Object.keys(importFile);
+
+        if (keysFile.length <= 0) return null;
+
+        return new importFile[keysFile[0]];
     };
 }
-
-export async function FileSystemLoad (client: WatKLOK): Promise<void> {
-    const ClientShard = client.ShardID !== undefined;
-    if (!ClientShard) console.clear();
-
-    await Promise.all([
-        new MultiLoader({
-            name: "Commands",
-            path: "Commands",
-            callback: (pull: Command, op: { dir: string, file: string }): void => {
-                const {dir, file} = op;
-
-                if (pull.name) {
-                    client.commands.set(pull.name, pull);
-                    if (!ClientShard) SendLog(file, `./Commands/${dir}/${file}`, "✔️");
-                    BaseLoader.ok++;
-                } else {
-                    if (!ClientShard) SendLog(file, `./Commands/${dir}/${file}`, "✖️");
-                    BaseLoader.error++;
-                }
-                if (pull.aliases && Array.isArray(pull.aliases)) pull.aliases.forEach((alias: string) => client.aliases.set(alias, pull.name));
-            }
-        }).readdirSync(),
-        //====================== ====================== ====================== ======================
-        new MultiLoader({
-            name: "Events",
-            path: "Events",
-            callback: (pull: { name: ClientEvents, run (ev: any, ev2: any, client: WatKLOK): Promise<void> | void }, op: { dir: string, file: string }): void => {
-                const {dir, file} = op;
-
-                if (pull) {
-                    client.on(pull.name as any, async (ev: any, ev2: any) => pull.run(ev, ev2, client));
-                    if (!ClientShard) SendLog(file, `./Events/${dir}/${file}`, "✔️");
-                    BaseLoader.ok++;
-                } else {
-                    if (!ClientShard) SendLog(file, `./Events/${dir}/${file}`, "✖️");
-                    BaseLoader.error++;
-                }
-            }
-        }).readdirSync(),
-        //====================== ====================== ====================== ======================
-        new MultiLoader({
-            name: "Modules",
-            path: "Modules",
-            callback: (pull: {run (client: WatKLOK): Promise<void> | void }, op: { dir: string, file: string }): void => {
-                const {dir, file} = op;
-
-                if (pull) {
-                    pull.run(client);
-                    if (!ClientShard) SendLog(file, `./Modules/${dir}/${file}`, "✔️");
-                    BaseLoader.ok++;
-                } else {
-                    if (!ClientShard) SendLog(file, `./Modules/${dir}/${file}`, "✖️");
-                    BaseLoader.error++;
-                }
-            }
-        }).readdirSync(),
-        setImmediate(() => {
-            if (!ClientShard) console.log(`[FileSystem] ->  Status: [Total: ${BaseLoader.total} | Success: ${BaseLoader.ok} | Skip: ${BaseLoader.skip} | Error: ${BaseLoader.error}]
-            \n\nProcess Log:`);
-        })
-    ]);
-}
-//
-function FileType(file: string): string {
-    return file.endsWith(".ts") ? "TS" : "JS";
-}
-function NameFilesSystem(): string {
-    return "[FileSystem]";
-}
-
-/**
- * @description Отправляем лог
- * @param File {string} Файл
- * @param Path {string} Путь
- * @param status {emoji} Статус загрузки
- * @requires {FileType, NameFilesSystem}
- * @constructor
- */
-function SendLog(File: string, Path: string, status: "✖️" | "✔️") {
-    return console.log(`${NameFilesSystem()} ->  Status: [${status}] | Type: [${FileType(File)}] | Path: [${Path}]`);
-}
-//

@@ -96,7 +96,7 @@ export namespace Searcher {
         const searchEnd = type === "search" && search?.match(platform) ? search.split(platform)[1] : search;
 
         //Отправляем сообщение о поиске трека
-        if (!message.attachments?.last()?.url) message.client.Send({ text: `Поиск 🔍 | ${search}`, message, color: "RED", type: "css" });
+        if (!message.attachments?.last()?.url) message.client.Send({ text: `Поиск 🔍 | ${search}`, message, color: "YELLOW", type: "css" });
 
         //Ищем в базе запрос в соответствии с платформой и типом
         const promise = localPlatform[platform][type](searchEnd);
@@ -104,13 +104,13 @@ export namespace Searcher {
         if (promise) {
             //
             promise.then((info: InputTrack | InputPlaylist | InputTrack[]) => {
-                if (!info) return message.client.Send({text: `${message.author}, данные не были найдены!`, color: "RED", message});
+                if (!info) return message.client.Send({text: `${message.author}, данные не были найдены!`, color: "YELLOW", message});
 
                 //Если пользователь делает поиск
-                if (info instanceof Array) return SearchMessage(info, ArrayToString(info, message, platform), info.length, options);
+                if (info instanceof Array) return SearchMessage(info, ArrayToString(info, message, platform), info.length, {...options, platform, type});
 
                 //Сообщаем что трек или плейлист был найден
-                if (type !== "playlist") message.client.Send({ text: `Найден 🔍 | ${type} | ${info.title}`, message, color: "RED", type: "css" });
+                if (type !== "playlist") message.client.Send({ text: `Найден 🔍 | ${type} | ${info.title}`, message, color: "YELLOW", type: "css" });
 
                 //Если это трек или плейлист
                 return message.client.player.emit("play", message, voiceChannel, info);
@@ -253,7 +253,7 @@ namespace ResourceSong {
  * @requires {Reaction, CreateMessageCollector, deleteMessage, Searcher}
  * @constructor
  */
-function SearchMessage(results: any[], resp: string, num: number, options: Options): void {
+function SearchMessage(results: InputTrack[], resp: string, num: number, options: Options): void {
     const {message, platform} = options;
 
     setImmediate(() => {
@@ -298,7 +298,7 @@ function SearchMessage(results: any[], resp: string, num: number, options: Optio
  * @param callback {Function} Что будет происходить при нажатии на эмодзи
  * @constructor
  */
-function Reaction(msg: ClientMessage | any, message: ClientMessage, emoji: string, callback: any): void {
+function Reaction(msg: ClientMessage, message: ClientMessage, emoji: string, callback: Function): void {
     setImmediate(() => {
         //Добавляем реакцию под сообщением
         msg.react(emoji).then(() => {
@@ -323,7 +323,7 @@ function Reaction(msg: ClientMessage | any, message: ClientMessage, emoji: strin
  * @param num {number} Кол-во треков
  * @constructor
  */
-function CreateMessageCollector(msg: ClientMessage, message: ClientMessage, num: any): MessageCollector {
+function CreateMessageCollector(msg: ClientMessage, message: ClientMessage, num: number): MessageCollector {
     //Сборщик чисел, отправленных пользователем
     return msg.channel.createMessageCollector({
         filter: (m: any) => !isNaN(m.content) && m.content <= num && m.content > 0 && m.author.id === message.author.id,
