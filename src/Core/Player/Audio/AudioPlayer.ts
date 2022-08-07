@@ -42,9 +42,9 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         const OldState = this.#_state; //Старая статистика плеера
         const newResource = state?.stream; //Новый поток. Есть ли он?
 
-        if (OldState.status !== "idle" && OldState.stream !== newResource) {
+        //Если пользователь пропустил трек или введен новый поток удаляем старый
+        if (OldState.status === "playing" && state.status === "idle" || OldState.status !== "idle" && OldState.stream !== newResource) {
             OldState.stream.destroy();
-            OldState.stream.read();
             delete OldState.stream;
         }
 
