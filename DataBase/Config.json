@@ -1,10 +1,9 @@
 {
   "Channels": {
-    "Start": "",
-    "SendErrors": ""
+    "sendErrors": ""
   },
   "Bot": {
-    "ignoreError": true,
+    "ignoreErrors": true,
     "token": "",
     "prefix": "!",
     "DiscordServer": "https://discord.gg/qMf2Sv3"
