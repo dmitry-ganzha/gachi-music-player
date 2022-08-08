@@ -40,28 +40,28 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     //Заменяет или выдает статистику плеера
     public set state(state: PlayerState) {
         const OldState = this.#_state; //Старая статистика плеера
-        const newResource = state?.stream; //Новый поток. Есть ли он?
+        const isNewResources = OldState.status !== "idle" && state.status === "playing" && OldState.stream !== state.stream;
+
+        this.#_state = state; //Обновляем статистику плеера
 
         //Если пользователь пропустил трек или введен новый поток удаляем старый
-        if (OldState.status === "playing" && state.status === "idle" || OldState.status !== "idle" && OldState.stream !== newResource) {
+        if (OldState.status === "playing" && state.status === "idle" || OldState.status !== "idle" && OldState.stream !== state.stream) {
             OldState.stream.destroy();
             delete OldState.stream;
         }
 
-        //Удаляем плеер если статус "idle"
+        //Если статус "idle"
         if (state.status === "idle") {
             this.#signalStopSpeaking();
-            PlayersManager.toRemove(this);
+            PlayersManager.toRemove(this); //Удаляем плеер
         }
-        if (newResource) PlayersManager.toPush(this);
-
-        const isNewResources = OldState.status !== "idle" && state.status === "playing" && OldState.stream !== state.stream;
-        this.#_state = state; //Обновляем статистику плеера
+        //Если есть поток добавляем плеер обратно
+        if (state.stream) PlayersManager.toPush(this);
 
         if (OldState.status !== state.status || isNewResources) {
             //Перед сменой статуса плеера отправляем пустой пакет. Необходим, так мы правим повышение задержки гс!
             this.#sendPackets(EmptyFrame);
-            void this.emit(state.status, OldState, this.#_state);
+            void this.emit(state.status, OldState, state);
         }
     };
     public get state(): PlayerState {
@@ -82,7 +82,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     };
     //====================== ====================== ====================== ======================
     /**
-     * @description Убираем из <this.subscribers> голосовой канал
+     * @description Убираем из <this.#_voices> голосовой канал
      * @param connection {VoiceConnection} Голосовой канал на котором будет играть музыка
      */
     public readonly subscribe = (connection: VoiceConnection): void => {
@@ -93,13 +93,13 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     };
     //====================== ====================== ====================== ======================
     /**
-     * @description Убираем из <this.subscribers> голосовой канал
+     * @description Убираем из <this.#_voices> голосовой канал
      * @param subscription {PlayerSubscription} Голосовой канал на котором больше не будет играть музыка
      */
     public readonly unsubscribe = (subscription?: PlayerSubscription): void => {
         const index = this.#_voices.indexOf(subscription.connection);
 
-        //Если был найден отключаемый голосовой канал, то удаляем из <this.#subscribers>
+        //Если был найден отключаемый голосовой канал, то удаляем из <this.#_voices>
         if (index !== -1) {
             this.#_voices.splice(index, 1);
             subscription.connection.setSpeaking(false);
@@ -213,7 +213,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
  * @param seek {number} Пропуск музыки до 00:00:00
  */
 function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0): Promise<PlayerResource | null> {
-    const Resource = Searcher.getResourceSong(song);
+    const Resource = Searcher.toCheckResource(song);
 
     return Resource.then((format: Song["format"]) => {
         if (!format) return null;

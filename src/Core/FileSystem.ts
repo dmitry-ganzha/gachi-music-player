@@ -33,7 +33,7 @@ export function FileSystemLoad(client: WatKLOK) {
         setImmediate(() => {
             Object.entries(FileBase).forEach(([key, value]) => {
                 const AllLogs = value.join("\n");
-                console.log(`| FileSystem... Loaded [Dir: ${key}, total: ${value.length}]\n${AllLogs}\n`);
+                console.log(`| FileSystem... Loaded [dir: ${key}, total: ${value.length}]\n${AllLogs}\n`);
             });
 
             //После вывода в консоль удаляем

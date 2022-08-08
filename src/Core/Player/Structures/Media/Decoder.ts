@@ -85,7 +85,7 @@ export namespace Decoder {
          * @description Чистим память!
          */
         public readonly _destroy = (): void => {
-            if (this.#FFmpeg) this.#FFmpeg?.destroy();
+            if (!this.#FFmpeg?.destroyed) this.#FFmpeg?.destroy();
             if (!super.destroyed) super.destroy();
 
             //Удаляем с задержкой (чтоб убрать некоторые ошибки)

@@ -99,7 +99,7 @@ export namespace FFmpeg {
          * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
          */
         public readonly _destroy = (error?: Error | null) => {
-            if (this.#process) {
+            if (!this.#process.killed) {
                 this.removeAllListeners();
                 this.#process.removeAllListeners();
                 this.#process.kill("SIGKILL");
