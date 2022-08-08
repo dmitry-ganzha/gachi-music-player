@@ -8,19 +8,20 @@ import {CoolDownBase, UtilsPermissions} from "../../Core/Utils/LiteUtils";
 const DefaultPrefix = Bot.prefix; //Префикс
 
 export class messageCreate {
-    public readonly name: "messageCreate";
-    public readonly enable: true;
+    public readonly name = "messageCreate";
+    public readonly enable = true;
 
     public readonly run = (message: ClientMessage) => {
         const {author, client, channel, content} = message;
-        if (author.bot || content.startsWith(DefaultPrefix) || channel.type === ChannelType.DM) return;
+        if (author.bot || !content.startsWith(DefaultPrefix) || channel.type === ChannelType.DM) return;
 
         const CoolDownAuthor = CoolDownBase.get(author.id); //Если ли пользователь в базе
-        const Command = client.commands.get(this.#parsingMessageContent(content)); //Сама команда
+        const CommandName = this.#parsingMessageContent(content);
+        const Command = client.commands.get(CommandName) ?? client.commands.get(client.aliases.get(CommandName)); //Сама команда
         const args = content.split(" ").slice(1); //Аргументы к команде
 
         //Если пользователь является одним из разработчиков, не добавляем его в CoolDown!
-        if (!UtilsPermissions.isOwner(true, author.id)) {
+        if (UtilsPermissions.isOwner(true, author.id)) {
             //Проверяем находится ли пользователь в базе
             if (CoolDownAuthor) return client.Send({
                 text: `${author}, я тебе что квантовый компьютер. Подожди ${ParsingTimeToString(CoolDownAuthor.time)}`,
