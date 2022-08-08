@@ -3,9 +3,10 @@
 		<a href="https://discord.gg/qMf2Sv3"><img src="https://img.shields.io/discord/332947799605772289?color=5865F2&logo=discord&logoColor=white&style=flat-square" alt="Discord server" /></a>
 		<a href=""><img src="https://img.shields.io/github/stars/SNIPPIK/WatKLOK?logo=github&style=flat-square" alt="Stars"/></a>
     	<a href=""><img src="https://img.shields.io/github/forks/SNIPPIK/WatKLOK?logo=github&style=flat-square" alt="Forks"/></a>
-        <a href=""><img src="https://img.shields.io/github/watchers/SNIPPIK/WatKLOK?logo=github&style=flat-square" alt="Watchers"/></a>
+        <a href=""><img src="https://img.shields.io/github/repo-size/SNIPPIK/WatKLOK?logo=github&style=flat-square" alt="Watchers"/></a>
     </p>
 </div>
+
 
 [<img align="right" alt="Avatar bot" width="240px" src="https://cdn.discordapp.com/avatars/678588856588697610/466d3d51e6d497541622085ed18a1ad1.webp?size=4096" />](https://discordapp.com/users/623170593268957214)
 
@@ -33,24 +34,14 @@
 
 | Платформы                                 | Что доступно                         | Аудио       |
 |-------------------------------------------|--------------------------------------|-------------|
-| [**YouTube**](https://www.youtube.com/)   | **видео, плейлисты, поиск, стримы**  | ✔           |
+| [**YouTube**](https://www.youtube.com/)   | **видео, плейлисты, поиск**          | ✔           |
 | [**Spotify**](https://open.spotify.com/)  | **треки, плейлисты, поиск, альбомы** | ✖ (YouTube) |
 | [**VK**](https://vk.com/)                 | **треки, плейлисты, поиск**          | ✔           |
 | [**SoundCloud**](https://soundcloud.com/) | **треки, плейлисты, поиск, альбомы** | ✔           |
 
-## Требования к хостингу
-- 2.4 ghz процессор [`Heroku`](http://heroku.com/)
-   - `RAM`: 28-35 Мб в ожидании, +5-8 Мб за каждый новый плеер
-   - `CPU`: 1-2% в ожидании, 1-3% поиск треков, все фильтры работают на FFmpeg'е
-   - `FFmpeg`: 3-12 мб за каждый плеер
-- 3.6 ghz процессор `R7 3700x`
-   - `RAM`: 28-35 Мб в ожидании, +5-8 Мб за каждый новый плеер
-   - `CPU`: 0.1% в ожидании, 0.6-3% поиск треков, все фильтры работают на FFmpeg'е
-   - `FFmpeg`: 3-12 мб за каждый плеер
-
     
 ## Настройки
-1. [`Cookie.json`](./DataBase/Cookie.json) | для прослушивания видео на youtube без ограничений (Авто-обновление)
+1. [`Cookie.json`](./DataBase/Cookie.json) | необходим для видео 18+
     ```json5
    {   
       "Cookie": "КУКИ" 
@@ -60,11 +51,10 @@
     ```json5
     {
       "Channels": {
-        "Start": "", //Канал на который будет отправляться сообщение о запуске
-        "SendErrors": "" //Канал на который будет отправляться сообщение об ошибке
+        "sendErrors": "" //ID канала на который будут отправляться ошибки
       },
       "Bot": {
-        "ignoreError": true, //Игнорировать критические ошибки
+        "ignoreErrors": true, //Игнорировать ошибки
         "token": "", //Токен
         "prefix": "!", //Префикс
         "DiscordServer": "https://discord.gg/qMf2Sv3" //Твой дискорд сервер, можешь оставить мой)
@@ -80,18 +70,18 @@
     ```
 3. [`FFmpeg.json`](./DataBase/FFmpeg.json) | Можно управлять FFmpeg'ом из конфига | [`FFmpeg Docs`](https://ffmpeg.org/ffmpeg.html)
     ```json5
-       {
-         "Names": [], //Путь(и) к ffmpeg
-         "Args": {}, //Аргументы для работы (не менять)
-         "FilterConfigurator": { //Для создания кастомных фильтров
-           "nameFilter": {
-             "speedModification": 0, //Модификатор скорости, есть использовать value, то надо указать вместо 0, value
-             "value": {       //Нужно использовать значение, указать false если оно не нужно
-               "max": 200,      //Макс значение
-               "min": 0       //Мин значение
-             },
-             "arg": "" //Сам аргумент
-           }
-         }
-       }  
+    {
+      "Names": [], //Путь(и) к ffmpeg
+      "Args": {}, //Аргументы для работы (не менять)
+      "FilterConfigurator": { //Для создания кастомных фильтров
+        "nameFilter": {
+          "speedModification": 0, //Модификатор скорости, есть использовать value, то надо указать вместо 0, value
+           "value": {       //Нужно использовать значение, указать false если оно не нужно
+             "max": 200,      //Макс значение
+             "min": 0       //Мин значение
+           },
+         "arg": "" //Сам аргумент
+        }
+      }
+    }  
      ```

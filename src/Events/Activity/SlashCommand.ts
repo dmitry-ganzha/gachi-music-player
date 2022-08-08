@@ -1,34 +1,21 @@
 import {CommandInteractionOption} from "discord.js";
 import {ClientInteraction, WatKLOK} from "../../Core/Client";
-import {DurationUtils} from "../../Core/Player/Manager/DurationUtils";
-import ParsingTimeToString = DurationUtils.ParsingTimeToString;
-import {CoolDownBase, UtilsPermissions} from "../../Core/Utils/LiteUtils";
 
-export default class SlashCommand {
+export class SlashCommand {
     public readonly name: string = "interactionCreate";
     public readonly enable: boolean = true;
 
-    public readonly run = (interaction: ClientInteraction, f2: any, client: WatKLOK): Promise<void | NodeJS.Timeout> | void => {
-        if (!interaction.guildId) return;
+    public readonly run = (interaction: ClientInteraction, f2: null, client: WatKLOK) => {
+        if (!interaction.inGuild()) return; //Если это не сервер, игнорируем!
 
         DeleteInteraction(interaction);
         editInteraction(interaction);
 
-        const CoolDownFind = CoolDownBase.get(interaction.author.id);
+        const {commandName, options} = interaction;
 
-        //
-        if (UtilsPermissions.isOwner(null, interaction.author.id)) {
-            if (CoolDownFind) return client.Send({ text: `${interaction.author.username}, Воу воу, ты слишком быстро вызываешь "Interaction". Подожди ${ParsingTimeToString(CoolDownFind.time)}`, message: interaction as any, type: "css" });
-            else {
-                CoolDownBase.set(interaction.author.id, {
-                    time: 10
-                });
-                setTimeout(() => CoolDownBase.delete(interaction.author.id), 10e3);
-            }
-        }
         if (interaction.isChatInputCommand()) {
-            const Command = client.commands.get(interaction.commandName);
-            const Args = interaction.options?._hoistedOptions?.map((f: CommandInteractionOption) => `${f.value}`) || [""];
+            const Command = client.commands.get(commandName);
+            const Args = options?._hoistedOptions?.map((f: CommandInteractionOption) => `${f.value}`) || [""];
 
             if (Command) Command.run(interaction, Args);
         }

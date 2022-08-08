@@ -104,10 +104,10 @@ const client = new WatKLOK();
 client.login(Bot.token).then(() => {
     Promise.all([FileSystemLoad(client)]).catch(console.error);
 
-    if (Bot.ignoreError) process.on("uncaughtException", (err: Error): void | Promise<ClientMessage> => {
+    if (Bot.ignoreErrors) process.on("uncaughtException", (err: Error): void | Promise<ClientMessage> => {
         console.log(`[IgnoreError]:`, err);
         try {
-            const channel = client.channels.cache.get(Channels.SendErrors) as MessageChannel
+            const channel = client.channels.cache.get(Channels.sendErrors) as MessageChannel
             if (channel) return channel.send(`${err.toString()}`);
             return null;
         } catch {/* Continue */}

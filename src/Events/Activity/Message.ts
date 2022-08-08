@@ -5,42 +5,50 @@ import {DurationUtils} from "../../Core/Player/Manager/DurationUtils";
 import ParsingTimeToString = DurationUtils.ParsingTimeToString;
 import {CoolDownBase, UtilsPermissions} from "../../Core/Utils/LiteUtils";
 
-export class GuildMessage {
-    public readonly name: string = "messageCreate";
-    public readonly enable: boolean = true;
+const DefaultPrefix = Bot.prefix; //Префикс
+
+export class messageCreate {
+    public readonly name: "messageCreate";
+    public readonly enable: true;
 
     public readonly run = (message: ClientMessage) => {
-        const prefix = Bot.prefix;
-        if (message.author.bot || !message.content.startsWith(prefix) || message.channel.type === ChannelType.DM) return;
+        const {author, client, channel, content} = message;
+        if (author.bot || content.startsWith(DefaultPrefix) || channel.type === ChannelType.DM) return;
 
-        const args = message.content.split(" ").slice(1);
-        const command = this.#getCommand(message, prefix);
-        const CoolDownFind = CoolDownBase.get(message.author.id);
+        const CoolDownAuthor = CoolDownBase.get(author.id); //Если ли пользователь в базе
+        const Command = client.commands.get(this.#parsingMessageContent(content)); //Сама команда
+        const args = content.split(" ").slice(1); //Аргументы к команде
 
-        if (UtilsPermissions.isOwner(true, message.author.id)) {
-            if (CoolDownFind) return message.client.Send({
-                text: `${message.author.username}, Воу воу, ты слишком быстро отправляешь сообщения. Подожди ${ParsingTimeToString(CoolDownFind.time)}`,
-                message,
-                type: "css"
+        //Если пользователь является одним из разработчиков, не добавляем его в CoolDown!
+        if (!UtilsPermissions.isOwner(true, author.id)) {
+            //Проверяем находится ли пользователь в базе
+            if (CoolDownAuthor) return client.Send({
+                text: `${author}, я тебе что квантовый компьютер. Подожди ${ParsingTimeToString(CoolDownAuthor.time)}`,
+                message
             });
-
-            CoolDownBase.set(message.author.id, {time: command?.CoolDown ?? 5});
-            setTimeout(() => CoolDownBase.delete(message.author.id), (command?.CoolDown ?? 5) * 1e3 ?? 5e3);
+            else {
+                //Добавляем пользователя в CoolDown базу
+                CoolDownBase.set(author.id, {time: Command?.CoolDown ?? 5});
+                setTimeout(() => CoolDownBase.delete(author.id), (Command?.CoolDown ?? 5) * 1e3 ?? 5e3);
+            }
         }
 
-        if (command) {
-            setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, 12e3);
+        //Если нет команды
+        if (!Command) return client.Send({ text: `${author}, Я не нахожу такой команды, используй ${DefaultPrefix}help  :confused:`, message, color: "RED"});
 
-            if (UtilsPermissions.isOwner(command?.isOwner, message.author.id)) return message.client.Send({ text: `${message.author}, Эта команда не для тебя!`, message, color: "RED"})
-            if (UtilsPermissions.isPermissions(command?.permissions, message)) return;
+        //Удаляем сообщение через 12 сек
+        setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, 12e3);
 
-            return command.run(message, args);
-        }
-        return message.client.Send({ text: `${message.author}, Я не нахожу такой команды, используй ${prefix}help  :confused:`, message, color: "RED"});
+        //Если команда предназначена для разработчика
+        if (UtilsPermissions.isOwner(Command?.isOwner, author.id)) return client.Send({ text: `${author}, Эта команда не для тебя!`, message, color: "RED"});
+        //Если нет прав у пользователя или бота
+        if (UtilsPermissions.isPermissions(Command?.permissions, message)) return;
+
+        return Command.run(message, args);
     };
-    // Получаем данные о команде
-    readonly #getCommand = ({content, client}: ClientMessage, prefix: string) => {
-        let cmd = content.slice(prefix.length).trim().split(/ +/g).shift().toLowerCase();
-        return client.commands.get(cmd) ?? client.commands.get(client.aliases.get(cmd));
+    //Получаем command<name>
+    readonly #parsingMessageContent = (content: string) => {
+        const ArrayContent = content.split(" ");
+        return ArrayContent[0].slice(DefaultPrefix.length).toLowerCase();
     };
 }

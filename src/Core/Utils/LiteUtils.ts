@@ -22,7 +22,7 @@ const Colors = {
 };
 
 export {Colors};
-export const CoolDownBase = new Map();
+export const CoolDownBase = new Map<string, {time: number}>();
 
 export namespace LiteUtils {
     /**
@@ -132,7 +132,7 @@ type CommandIsOwner = Command['isOwner'];
 export namespace UtilsPermissions {
     // Пользователь owner?
     export function isOwner(isOwner: CommandIsOwner, AuthorID: string) {
-        if (isOwner) return !Bot.OwnerIDs.includes(AuthorID);
+        if (isOwner) return Bot.OwnerIDs.includes(AuthorID);
         return false;
     }
     // У пользователя есть ограничения?
