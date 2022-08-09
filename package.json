@@ -3,7 +3,7 @@
   "description": "Discord music bot",
   "type": "commonjs",
   "author": "SNIPPIK",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "main": "src/Core/Client.js",
   "scripts": {
     "client": "node ./src/Core/Client.js",
