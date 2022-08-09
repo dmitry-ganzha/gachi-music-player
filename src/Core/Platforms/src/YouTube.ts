@@ -4,7 +4,6 @@ import {InputAuthor, InputFormat, InputPlaylist, InputTrack} from "../../Utils/T
 
 const VerAuthor = new Set(["Verified", "Official Artist Channel"]);
 const YouTubeURL = "https://www.youtube.com";
-const YouTubeMusic = "https://music.youtube.com/watch?v="
 
 /**
  * Все доступные взаимодействия с YouTube
@@ -111,19 +110,23 @@ export namespace YouTube {
 
             if (body.match(/Our systems have detected unusual traffic from your computer network/)) throw reject(new Error('Google понял что я бот! Это может занять много времени!'));
 
-            const parsed = JSON.parse(`${body.split("{\"playlistVideoListRenderer\":{\"contents\":")[1].split("}],\"playlistId\"")[0]}}]`);
-            const playlistDetails = JSON.parse(body.split("{\"playlistSidebarRenderer\":")[1].split("}};</script>")[0]).items;
-            const playlistInfo = playlistDetails[0].playlistSidebarPrimaryInfoRenderer;
-            const channel = (playlistDetails[1] ?? playlistDetails[0])?.playlistSidebarSecondaryInfoRenderer?.videoOwner?.videoOwnerRenderer.title.runs[0] ?? null;
+            const jsonPage = JSON.parse(body.split('var ytInitialData = ')[1].split(';</script>')[0].split(/;\s*(var|const|let)\s/)[0]);
+            const playlistInfo = jsonPage.sidebar.playlistSidebarRenderer.items[0].playlistSidebarPrimaryInfoRenderer;
+            const playlistAuthor = jsonPage.sidebar.playlistSidebarRenderer.items[1].playlistSidebarSecondaryInfoRenderer.videoOwner.videoOwnerRenderer;
+
+            const Videos = jsonPage.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0]
+                .itemSectionRenderer.contents[0].playlistVideoListRenderer.contents;
 
             return resolve({
-                url: `${YouTubeURL}/playlist?list=${playlistID}`,
-                title: playlistInfo?.title?.runs[0]?.text ?? "Not found",
-                items: (await Promise.all([parsePlaylistVideos(parsed)]))[0],
-                author: channel === null ? null : (await Promise.all([getChannel({ id: channel.navigationEndpoint.browseEndpoint.browseId, name: channel.text })]))[0],
-                image: {
-                    url: playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer?.thumbnail.thumbnails?.pop().url?.split("?sqp=")[0]
-                }
+                title: playlistInfo.title.runs[0].text, url,
+                items: parsePlaylistVideos(Videos),
+                author: {
+                    title: playlistAuthor.title.runs[0].text,
+                    url: `https://www.youtube.com/channel/${playlistAuthor.navigationEndpoint.browseEndpoint.browseId}`,
+                    image: playlistAuthor.thumbnail.thumbnails.pop(),
+                    isVerified: undefined
+                },
+                image: playlistInfo.thumbnailRenderer.playlistVideoThumbnailRenderer.thumbnail
             });
         });
     }
@@ -170,14 +173,14 @@ function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
             url: `${YouTubeURL}/channel/${id}`,
             image: avatar?.thumbnails.pop() ?? null,
             isVerified: !!badges?.find((badge: any) => VerAuthor.has(badge?.metadataBadgeRenderer?.tooltip))
-        })
-    })
+        });
+    });
 }
 //====================== ====================== ====================== ======================
 /**
  * @description Парсим видео из поиска
- * @param videos Array<Videos>
- * @param limit Макс кол-во видео
+ * @param videos {Array<any>} Array видео которое надо изменить на InputTrack
+ * @param limit {number} Макс кол-во видео
  */
 function parseSearchVideos(videos: any[], {limit}: SearchOptions): InputTrack[] {
     let num = 0, VideosEnd: InputTrack[] = [];
@@ -213,7 +216,7 @@ function parseSearchVideos(videos: any[], {limit}: SearchOptions): InputTrack[] 
 //====================== ====================== ====================== ======================
 /**
  * @description Парсим видео из плейлиста
- * @param videos Array<Videos>
+ * @param videos {Array<any>} Array видео которое надо изменить на InputTrack
  */
 function parsePlaylistVideos(videos: any[]): InputTrack[] {
     let num = 0, VideosEnd: InputTrack[] = [];
@@ -239,8 +242,7 @@ function parsePlaylistVideos(videos: any[]): InputTrack[] {
                 title: video.shortBylineText.runs[0].text || undefined,
                 url: `https://www.youtube.com${video.shortBylineText.runs[0].navigationEndpoint.browseEndpoint.canonicalBaseUrl || video.shortBylineText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url}`,
             },
-            isLive: video?.isLive || video?.is_live,
-            isPrivate: video.isPlayable
+            isLive: video?.isLive || video?.is_live
         });
     }
 

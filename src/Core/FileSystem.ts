@@ -25,7 +25,7 @@ function SendLog(type: "commands" | "events" | "modules", file: string, reason?:
     return FileBase[type].push(EndStr);
 }
 
-export function FileSystemLoad(client: WatKLOK) {
+export function FileSystemLoad(client: WatKLOK): void {
     if (!client.ShardID) {
         console.clear(); //Чистим консоль
 

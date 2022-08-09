@@ -11,7 +11,7 @@ import {MessagePlayer} from "./MessagePlayer";
  */
 export namespace QueueManager {
     /**
-     * @description Проверяем что надо сделать с очередью
+     * @description Добавляем плейлист или трек в очередь
      * @param message {ClientMessage} Сообщение с сервера
      * @param VoiceChannel {VoiceChannel} К какому голосовому каналу надо подключатся
      * @param info {InputTrack | InputPlaylist} Входные данные это трек или плейлист?
@@ -24,13 +24,15 @@ export namespace QueueManager {
         //Если поступает плейлист
         if ("items" in info) {
             MessagePlayer.toPushPlaylist(message, info);
-            setImmediate(() => info.items.forEach((track) => PushSong(Queue, track, false)));
+            setImmediate(() => {
+                info.items.forEach((track) => PushSong(Queue, track, false));
+                return Queue.player.play(message);
+            });
             return;
         }
 
-        //Добавляем песню в очередь
+        //Добавляем трек в очередь
         PushSong(Queue, info, Queue.songs.length >= 1);
-
         setImmediate(() => {
             if (Queue.songs.length <= 1) return Queue.player.play(message);
         });
