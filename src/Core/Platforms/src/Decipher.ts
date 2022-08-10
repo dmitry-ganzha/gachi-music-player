@@ -1,9 +1,10 @@
 import {httpsClient} from "../../httpsClient";
 import * as vm from "vm";
-import * as querystring from "querystring";
+import {parse} from "node:querystring";
 
 /**
  * @author ytdl-core (https://github.com/fent/node-ytdl-core)
+ * @description Немного изменил под свои нужны
  */
 //====================== ====================== ====================== ======================
 
@@ -62,7 +63,7 @@ function setDownloadURL(format: YouTubeFormat, decipherScript: Script, nTransfor
  * @param decipherScript {Script} vm.Script
  */
 function _decipher(url: string, decipherScript: Script): string {
-    const args = querystring.parse(url) as { url: string, sp: string, s: string };
+    const args = parse(url) as { url: string, sp: string, s: string };
 
     if (!args.s || !decipherScript) return args.url;
 
@@ -86,9 +87,39 @@ function EncodeCode(url: string, nTransformScript: Script): string {
  */
 function extractFunctions(body: string): string[] {
     const functions: string[] = [];
+    const extractDecipher = () => {
+        const functionName = body.split("a.set(\"alr\",\"yes\");c&&(c=")[1].split("(decodeURIC")[0];
 
-    extractDecipher(body, functions);
-    extractNCode(body, functions);
+        if (functionName && functionName.length) {
+            const functionStart = `${functionName}=function(a)`;
+            const ndx = body.indexOf(functionStart);
+
+            if (ndx >= 0) {
+                const subBody = body.slice(ndx + functionStart.length);
+                let functionBody = `var ${functionStart}${cutAfterJSON(subBody)}`;
+                functionBody = `${extractManipulations(functionBody, body)};${functionBody};${functionName}(sig);`;
+                functions.push(functionBody);
+            }
+        }
+    };
+    const extractNCode = () => {
+        let functionName = body.split("&&(b=a.get(\"n\"))&&(b=")[1].split("(b)")[0];
+
+        if (functionName.includes('[')) functionName = body.split(`${functionName.split("[")[0]}=[`)[1].split("]")[0];
+        if (functionName && functionName.length) {
+            const functionStart = `${functionName}=function(a)`;
+            const ndx = body.indexOf(functionStart);
+
+            if (ndx >= 0) {
+                const subBody = body.slice(ndx + functionStart.length);
+                const functionBody = `var ${functionStart}${cutAfterJSON(subBody)};${functionName}(ncode);`;
+                functions.push(functionBody);
+            }
+        }
+    }
+
+    extractDecipher();
+    extractNCode();
     return functions;
 }
 //====================== ====================== ====================== ======================
@@ -98,7 +129,7 @@ function extractFunctions(body: string): string[] {
  * @param body {string} Страничка
  */
 function extractManipulations(caller: string, body: string): string {
-    const functionName = between(caller, "a=a.split(\"\");", ".");
+    const functionName = caller.split("a=a.split(\"\");")[1].split(".")[0];
     if (!functionName) return '';
 
     const functionStart = `var ${functionName}={`;
@@ -111,110 +142,40 @@ function extractManipulations(caller: string, body: string): string {
 }
 //====================== ====================== ====================== ======================
 /**
- * @description Вырезаем Decipher
- * @param body {string} Страничка
- * @param functions {string[]} данные youtube htmlPlayer
- */
-function extractDecipher(body: string, functions: string[]): void {
-    const functionName = between(body, "a.set(\"alr\",\"yes\");c&&(c=", "(decodeURIC");
-
-    if (functionName && functionName.length) {
-        const functionStart = `${functionName}=function(a)`;
-        const ndx = body.indexOf(functionStart);
-
-        if (ndx >= 0) {
-            const subBody = body.slice(ndx + functionStart.length);
-            let functionBody = `var ${functionStart}${cutAfterJSON(subBody)}`;
-            functionBody = `${extractManipulations(functionBody, body)};${functionBody};${functionName}(sig);`;
-            functions.push(functionBody);
-        }
-    }
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Вырезаем параметр n
- * @param body {string} Страничка
- * @param functions {string[]} данные youtube htmlPlayer
- */
-function extractNCode(body: string, functions: string[]): void {
-    let functionName = between(body, "&&(b=a.get(\"n\"))&&(b=", "(b)");
-
-    if (functionName.includes('[')) functionName = between(body, `${functionName.split("[")[0]}=[`, "]");
-    if (functionName && functionName.length) {
-        const functionStart = `${functionName}=function(a)`;
-        const ndx = body.indexOf(functionStart);
-
-        if (ndx >= 0) {
-            const subBody = body.slice(ndx + functionStart.length);
-            const functionBody = `var ${functionStart}${cutAfterJSON(subBody)};${functionName}(ncode);`;
-            functions.push(functionBody);
-        }
-    }
-}
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-/**
- * @description Функция ytdl-core
- * @param haystack {string} точно не понял
- * @param left {string | RegExpConstructor} точно не понял
- * @param right {string} точно не понял
- */
-function between(haystack: string, left: string | RegExpConstructor, right: string) {
-    let pos;
-
-    if (left instanceof RegExp) {
-        const match = haystack.match(left);
-        if (!match) return "";
-        pos = match.index + match[0].length;
-    } else {
-        pos = haystack.indexOf(left as string);
-        if (pos === -1) return "";
-        pos += left.length;
-    }
-
-    haystack = haystack.slice(pos);
-    pos = haystack.indexOf(right);
-
-    if (pos === -1) return "";
-
-    haystack = haystack.slice(0, pos);
-    return haystack;
-}
-//====================== ====================== ====================== ======================
-/**
  * @description Функция ytdl-core
  * @param mixedJson {string[] | string} точно не понял
  */
-function cutAfterJSON(mixedJson: string[] | string) {
-    let open, close, isString, isEscaped, counter = 0;
-
-    if (mixedJson[0] === "[") {
-        open = "[";
-        close = "]";
-    }
-    else if (mixedJson[0] === "{") {
-        open = "{";
-        close = "}";
+function cutAfterJSON(mixedJson: string) {
+    let open, close;
+    if (mixedJson[0] === '[') {
+        open = '[';
+        close = ']';
+    } else if (mixedJson[0] === '{') {
+        open = '{';
+        close = '}';
     }
 
     if (!open) throw new Error(`Can't cut unsupported JSON (need to begin with [ or { ) but got: ${mixedJson[0]}`);
 
-    for (let i = 0; i < mixedJson.length; i++) {
-        if (mixedJson[i] === "\"" && !isEscaped) {
+    let isString = false, isEscaped = false, counter = 0, i;
+
+    for (i = 0; i < mixedJson.length; i++) {
+        if (mixedJson[i] === '"' && !isEscaped) {
             isString = !isString;
             continue;
         }
-        isEscaped = mixedJson[i] === "\\" && !isEscaped;
+
+        isEscaped = mixedJson[i] === '\\' && !isEscaped;
 
         if (isString) continue;
 
         if (mixedJson[i] === open) counter++;
         else if (mixedJson[i] === close) counter--;
-        if (counter === 0) return (mixedJson as string).substring(0, i + 1);
+
+        if (counter === 0) return mixedJson.substring(0, i + 1);
     }
+
+    // We ran through the whole string and ended up with an unclosed bracket
     throw Error("Can't cut unsupported JSON (no matching closing bracket found)");
 }
 //====================== ====================== ====================== ======================

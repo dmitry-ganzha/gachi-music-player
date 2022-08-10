@@ -32,7 +32,7 @@ export namespace YouTube {
             if (!videoDetails.isLiveContent) {
                 const html5player = `https://www.youtube.com${body.split('"jsUrl":"')[1].split('"')[0]}`;
                 const filterFormats = [...VideoFinalData.streamingData?.formats, ...VideoFinalData.streamingData?.adaptiveFormats].filter((format) => format.mimeType?.match(/opus/) || format?.mimeType?.match(/audio/)).pop();
-                audioFormats = await Decipher([filterFormats], html5player);
+                audioFormats = (await Promise.all([Decipher([filterFormats], html5player)]))[0];
             } else audioFormats = [{url: VideoFinalData.streamingData?.dashManifestUrl ?? null}]; //dashManifestUrl, hlsManifestUrl
 
             return resolve({
@@ -66,7 +66,7 @@ export namespace YouTube {
 
             if (!details) throw reject(new Error(`Не удалось найти: ${search}`));
 
-            return resolve((await Promise.all([parse.SearchVideos(details, options)]))[0]);
+            return resolve(parse.SearchVideos(details, options));
         });
     }
     /**
