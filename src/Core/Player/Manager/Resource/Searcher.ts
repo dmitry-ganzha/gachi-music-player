@@ -170,7 +170,7 @@ namespace ResourceSong {
     /**
      * @description Получаем данные формата
      * @param song {Song} Трек
-     * @requires {FindTrack, getFormatYouTube}
+     * @requires {FindTrack}
      */
     function getFormatSong({type, url, title, author, duration}: Song): Promise<InputFormat | FFmpegFormat> {
         try {
@@ -178,7 +178,7 @@ namespace ResourceSong {
                 case "SPOTIFY": return FindTrack(`${author.title} - ${title}`, duration.seconds);
                 case "SOUNDCLOUD": return SoundCloud.getTrack(url).then((d) => d?.format);
                 case "VK": return VK.getTrack(url).then((d) => d?.format);
-                case "YOUTUBE": return getFormatYouTube(url);
+                case "YOUTUBE": return YouTube.getVideo(url).then((video) => video.format) as Promise<InputFormat>
                 default: return null
             }
         } catch {
@@ -191,13 +191,12 @@ namespace ResourceSong {
      * @description Ищем трек на youtube
      * @param nameSong {string} Название музыки
      * @param duration
-     * @requires {getFormatYouTube}
      * @constructor
      */
     function FindTrack(nameSong: string, duration: number): Promise<InputFormat> {
         return YouTube.SearchVideos(nameSong, {limit: 15}).then((Tracks) => {
             //Фильтруем треки оп времени
-            const FindTracks = Tracks.filter((track) => {
+            const FindTracks = Tracks.filter((track: InputTrack) => {
                 const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);
 
                 //Как надо фильтровать треки
@@ -208,16 +207,8 @@ namespace ResourceSong {
             if (FindTracks.length === 0) return null;
 
             //Получаем данные о треке
-            return getFormatYouTube(FindTracks[0].url);
+            return YouTube.getVideo(FindTracks[0].url).then((video) => video.format) as Promise<InputFormat>;
         });
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Получаем от видео аудио формат
-     * @param url {string} Ссылка
-     */
-    function getFormatYouTube(url: string): Promise<InputFormat> {
-        return YouTube.getVideo(url, {onlyFormats: true}) as Promise<InputFormat>;
     }
 }
 //====================== ====================== ====================== ======================

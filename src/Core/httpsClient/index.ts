@@ -1,7 +1,7 @@
 import {BrotliDecompress, createBrotliDecompress, createDeflate, createGunzip, Deflate, Gunzip} from 'node:zlib';
 import {IncomingMessage} from "http";
 import {request, RequestOptions} from "https";
-import {getCookies, uploadCookie} from "../Platforms/src/youtube/Cookie";
+import {getCookies, uploadCookie} from "./Cookie";
 import UserAgents from "./UserAgents.json";
 
 let Cookie = getCookies(); //Получаем куки если он был указан в файле
