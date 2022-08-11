@@ -1,12 +1,12 @@
+import {PassThrough} from "stream";
+import {IncomingMessage} from "http";
 import JsonFFmpeg from "../../../../../DataBase/FFmpeg.json";
 import {AudioFilters} from "../Queue/Queue";
-import {opus} from "prism-media";
-import {PassThrough} from "stream";
 import {httpsClient} from "../../../httpsClient";
-import {IncomingMessage} from "http";
 import {FFmpeg} from "./FFmpeg";
 import {YouTube} from "../../../Platforms";
 import {InputTrack} from "../../../Utils/TypeHelper";
+import {Opus} from "./Opus";
 
 //Сюда после запуска файла будут записаны статичные фильтры. Статичные фильтры - фильтры в которых модификатор скорости записан и его не может указать пользователь
 let FiltersStatic = {};
@@ -23,7 +23,7 @@ export namespace Decoder {
     /**
      * С помощью FFmpeg конвертирует любой формат в opus
      */
-    export class All extends opus.OggDemuxer {
+    export class All extends Opus.Ogg {
         readonly #FFmpeg: FFmpeg.FFmpeg;
         readonly #TimeFrame: number;
         #started = false;

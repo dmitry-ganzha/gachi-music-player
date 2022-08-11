@@ -5,6 +5,12 @@ import {getCookies, uploadCookie} from "./Cookie";
 import UserAgents from "./UserAgents.json";
 
 let Cookie = getCookies(); //Получаем куки если он был указан в файле
+const decoderBase = {
+    "gzip": (): Gunzip => createGunzip(),
+    "br": (): BrotliDecompress => createBrotliDecompress(),
+    "deflate": (): Deflate => createDeflate()
+}
+type Decoder = BrotliDecompress | Gunzip | Deflate;
 
 export namespace httpsClient {
     /**
@@ -29,6 +35,12 @@ export namespace httpsClient {
                 if (res.statusCode >= 300 && res.statusCode < 400) {
                     if (res.headers?.location) return resolve(Request(res.headers.location, options));
                 }
+                //Обновляем куки
+                if (options?.options?.cookie && res.headers && res.headers["set-cookie"]) setImmediate(() => {
+                    uploadCookie(res.headers["set-cookie"]);
+                    //Обновляем куки вне запроса что-бы снизить задержки!
+                    if (Cookie) Cookie = getCookies();
+                });
 
                 return resolve(res);
             });
@@ -51,39 +63,23 @@ export namespace httpsClient {
      * @requires {uploadCookie, getCookies}
      */
     export function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
-        return new Promise((resolve) => {
-            return Request(url, options).then((res: IncomingMessage) => {
-                const encoding = res.headers["content-encoding"];
-                const data: string[] = [];
-                let decoder: BrotliDecompress | Gunzip | Deflate | null = null;
+        return new Promise((resolve) => Request(url, options).then((res: IncomingMessage) => {
+            const encoding = res.headers["content-encoding"] as "br" | "gzip" | "deflate";
+            const data: string[] = [];
+            const decoder: Decoder | null = decoderBase[encoding] ? decoderBase[encoding]() : null;
+            const runDecode = (decoder: Decoder | IncomingMessage) => {
+                decoder.setEncoding("utf-8");
+                decoder.on("data", (c) => data.push(c));
+                decoder.once("end", () => {
+                    if (!decoder.destroyed) res.destroy();
 
-                if (encoding === "gzip") decoder = createGunzip();
-                else if (encoding === "br") decoder = createBrotliDecompress();
-                else if (encoding === "deflate") decoder = createDeflate();
-
-                //Нужно ли использовать декодер (без декодера могут быть символы вместо букв или цифр)
-                if (decoder) {
-                    res.pipe(decoder);
-                    decoder.setEncoding("utf-8");
-                    decoder.on("data", (c) => data.push(c));
-                    decoder.once("end", () => resolve(data.join("")));
-                } else {
-                    res.setEncoding("utf-8");
-                    res.on("data", (c) => data.push(c));
-                    res.once("end", () => resolve(data.join("")));
-                }
-
-                //Обновляем куки в конце
-                setImmediate(() => {
-                    if (options?.options?.cookie && res.headers && res.headers["set-cookie"]) {
-                        uploadCookie(res.headers["set-cookie"]);
-
-                        //Обновляем куки вне запроса что-бы снизить задержки!
-                        if (Cookie) Cookie = getCookies();
-                    }
+                    return resolve(data.join(""));
                 });
-            });
-        });
+            };
+
+            if (!decoder) return runDecode(res);
+            return runDecode(res.pipe(decoder));
+        }));
     }
     //====================== ====================== ====================== ======================
     /**
@@ -116,7 +112,7 @@ function GetUserAgent(): {Agent: string, Version: string} {
     //Сам агент
     const Agent = UserAgents[Math.floor(Math.random() * (MaxAgents - MinAgents + 1)) + MinAgents];
     //Версия агента
-    const Version = Agent.split("Chrome/")[1].split(" ")[0];
+    const Version = Agent?.split("Chrome/")[1]?.split(" ")[0];
 
     return { Agent, Version };
 }
@@ -138,9 +134,7 @@ function ChangeReqOptions(options: httpsClientOptions): void {
     }
 
     //Добавляем куки
-    if (options.options?.cookie) {
-        if (Cookie) options.request.headers = {...options.request.headers, "cookie": Cookie};
-    }
+    if (options.options?.cookie && Cookie) options.request.headers = {...options.request.headers, "cookie": Cookie};
 }
 //====================== ====================== ====================== ======================
 // @ts-ignore

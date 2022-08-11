@@ -1,5 +1,5 @@
 import {httpsClient} from "../../httpsClient";
-import {Decipher} from "./Decipher";
+import {Decipher, YouTubeFormat} from "./Decipher";
 import {InputAuthor, InputTrack} from "../../Utils/TypeHelper";
 
 const VerAuthor = new Set(["Verified", "Official Artist Channel"]);
@@ -27,21 +27,24 @@ export namespace YouTube {
             if (VideoFinalData.playabilityStatus?.status !== "OK") throw reject(new Error(`Не удалось получить данные из-за: ${VideoFinalData.playabilityStatus.status}`));
 
             const videoDetails = VideoFinalData.videoDetails;
-            let audioFormats: any[];
+            let audioFormats: YouTubeFormat;
 
             if (!videoDetails.isLiveContent) {
                 const html5player = `https://www.youtube.com${body.split('"jsUrl":"')[1].split('"')[0]}`;
-                const filterFormats = [...VideoFinalData.streamingData?.formats, ...VideoFinalData.streamingData?.adaptiveFormats].filter((format) => format.mimeType?.match(/opus/) || format?.mimeType?.match(/audio/)).pop();
-                audioFormats = (await Promise.all([Decipher([filterFormats], html5player)]))[0];
-            } else audioFormats = [{url: VideoFinalData.streamingData?.dashManifestUrl ?? null}]; //dashManifestUrl, hlsManifestUrl
+                const allFormats = [...VideoFinalData.streamingData?.formats, ...VideoFinalData.streamingData?.adaptiveFormats];
+                const FindOpus: YouTubeFormat[] = allFormats.filter((format: YouTubeFormat) => format.mimeType?.match(/opus/) || format?.mimeType?.match(/audio/));
+
+                audioFormats = (await Promise.all([Decipher(FindOpus, html5player)]))[0].pop();
+            } else audioFormats = {url: VideoFinalData.streamingData?.dashManifestUrl ?? null}; //dashManifestUrl, hlsManifestUrl
 
             return resolve({
-                url, title: videoDetails.title,
+                url: `https://www.youtube.com/watch?v=${VideoID}`,
+                title: videoDetails.title,
                 duration: {seconds: videoDetails.lengthSeconds},
                 image: videoDetails.thumbnail.thumbnails.pop(),
                 author: (await Promise.all([Utils.getChannel({ id: videoDetails.channelId, name: videoDetails.author })]))[0],
                 isLive: videoDetails.isLiveContent,
-                format: audioFormats.pop()
+                format: audioFormats
             });
         });
     }
