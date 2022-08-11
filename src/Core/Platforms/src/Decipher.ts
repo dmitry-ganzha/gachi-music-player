@@ -1,6 +1,6 @@
 import {httpsClient} from "../../httpsClient";
 import * as vm from "vm";
-import {parse} from "node:querystring";
+import querystring from "node:querystring";
 
 /**
  * @author ytdl-core (https://github.com/fent/node-ytdl-core)
@@ -17,7 +17,16 @@ export function Decipher(formats: YouTubeFormat[], html5player: string): Promise
     return getFunctions(html5player).then((functions: string[] | null) => {
         const decipherScript = functions.length ? new vm.Script(functions[0]) : null;
         const nTransformScript = functions.length > 1 ? new vm.Script(functions[1]) : null;
-        formats.forEach((format: YouTubeFormat) => setDownloadURL(format, decipherScript, nTransformScript));
+
+        formats.forEach((format: YouTubeFormat, index: number) => {
+            //Если нет decipherScript или nTransformScript, то этот формат невозможно расшифровать
+            if (!decipherScript || !nTransformScript) {
+                formats.splice(index, 1);
+                return;
+            }
+            setDownloadURL(format, decipherScript, nTransformScript); //Расшифровываем формат
+        });
+
         return formats;
     });
 }
@@ -39,7 +48,8 @@ function getFunctions(html5player: string): Promise<null | string[]> {
     }).then((body: string) => {
         const functions = extractFunctions(body);
 
-        return !functions || !functions.length ? null : functions;
+        if (!functions || !functions?.length) return null;
+        return functions;
     });
 }
 //====================== ====================== ====================== ======================
@@ -51,34 +61,28 @@ function getFunctions(html5player: string): Promise<null | string[]> {
  */
 function setDownloadURL(format: YouTubeFormat, decipherScript: Script, nTransformScript: Script) {
     const url = format.url ?? format.signatureCipher ?? format.cipher;
+    const decipher = () => {
+        const args = querystring.parse(url) as { url: string, sp: string, s: string };
+        if (!args.s || !decipherScript) return args.url;
 
-    format.url = !format.url ? EncodeCode(_decipher(url, decipherScript), nTransformScript) : EncodeCode(url, nTransformScript);
+        const components = new URL(decodeURIComponent(args.url));
+        components.searchParams.set(args.sp ?? "signature", decipherScript.runInNewContext({ sig: decodeURIComponent(args.s) }));
+
+        return components.toString();
+    };
+    const EncodeCode = (url: string) => {
+        const components = new URL(decodeURIComponent(url));
+        const n = components.searchParams.get("n");
+
+        if (!n || !nTransformScript) return url;
+
+        components.searchParams.set("n", nTransformScript.runInNewContext({ ncode: n }));
+        return components.toString();
+    };
+
+    format.url = !format.url ? EncodeCode(decipher()) : EncodeCode(url);
     delete format.signatureCipher;
     delete format.cipher;
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Добавляем в url signature
- * @param url {string} Ссылка
- * @param decipherScript {Script} vm.Script
- */
-function _decipher(url: string, decipherScript: Script): string {
-    const args = parse(url) as { url: string, sp: string, s: string };
-
-    if (!args.s || !decipherScript) return args.url;
-
-    const components = new URL(decodeURIComponent(args.url));
-    components.searchParams.set(args.sp ? args.sp : "signature", decipherScript.runInNewContext({ sig: decodeURIComponent(args.s) }));
-    return components.toString();
-}
-function EncodeCode(url: string, nTransformScript: Script): string {
-    const components = new URL(decodeURIComponent(url));
-    const n = components.searchParams.get("n");
-
-    if (!n || !nTransformScript) return url;
-
-    components.searchParams.set("n", nTransformScript.runInNewContext({ ncode: n }));
-    return components.toString();
 }
 //====================== ====================== ====================== ======================
 /**
@@ -116,7 +120,7 @@ function extractFunctions(body: string): string[] {
                 functions.push(functionBody);
             }
         }
-    }
+    };
 
     extractDecipher();
     extractNCode();
@@ -135,7 +139,7 @@ function extractManipulations(caller: string, body: string): string {
     const functionStart = `var ${functionName}={`;
     const ndx = body.indexOf(functionStart);
 
-    if (ndx < 0) return "";
+    if (ndx <= 0) return "";
 
     const subBody = body.slice(ndx + functionStart.length - 1);
     return `var ${functionName}=${cutAfterJSON(subBody)}`;
@@ -147,19 +151,13 @@ function extractManipulations(caller: string, body: string): string {
  */
 function cutAfterJSON(mixedJson: string) {
     let open, close;
-    if (mixedJson[0] === '[') {
-        open = '[';
-        close = ']';
-    } else if (mixedJson[0] === '{') {
-        open = '{';
-        close = '}';
-    }
-
+    if (mixedJson[0] === '[') {open = "["; close = "]"}
+    else if (mixedJson[0] === '{') {open = "{"; close = "}"}
     if (!open) throw new Error(`Can't cut unsupported JSON (need to begin with [ or { ) but got: ${mixedJson[0]}`);
 
-    let isString = false, isEscaped = false, counter = 0, i;
+    let isString = false, isEscaped = false, counter = 0;
 
-    for (i = 0; i < mixedJson.length; i++) {
+    for (let i = 0; i < mixedJson.length; i++) {
         if (mixedJson[i] === '"' && !isEscaped) {
             isString = !isString;
             continue;
@@ -201,6 +199,6 @@ export interface YouTubeFormat {
  * @description vm<Script>
  */
 // @ts-ignore
-interface Script extends vm<Script> {
+interface Script extends vm["Script"] {
     runInNewContext(param: { sig?: string, ncode?: string }): string;
 }
