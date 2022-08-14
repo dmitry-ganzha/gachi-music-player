@@ -30,7 +30,6 @@ function getClientID(): Promise<string> {
         const body = await httpsClient.parseBody("https://soundcloud.com/", {
             options: {userAgent: true},
             request: {
-                method: "GET",
                 headers: {
                     "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
                     "accept-encoding": "gzip, deflate, br"

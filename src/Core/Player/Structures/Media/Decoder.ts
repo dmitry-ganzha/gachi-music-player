@@ -30,39 +30,28 @@ export namespace Decoder {
         #playbackDuration = 0;
 
         //Общее время проигрывание текущего ресурса
-        public get duration() {
-            return this.#playbackDuration;
-        };
-        public set duration(duration: number) {
-            this.#playbackDuration = duration;
-        };
-        //====================== ====================== ====================== ======================
-        /**
-         * @description Проверяем можно ли читать поток
-         */
-        public get hasStarted() {
-            return this.#started;
-        };
-        //====================== ====================== ====================== ======================
+        public get duration() { return this.#playbackDuration; };
+        public set duration(duration: number) { this.#playbackDuration = duration; };
+        public get hasStarted() { return this.#started; }; //Проверяем можно ли читать поток
         /**
          * @description Декодируем в opus
          * @param parameters {Options}
-         * @requires {DecoderUtils}
+         * @requires {ArgsHelper}
          */
-        public constructor(parameters: {url: string | Decoder.Dash, seek?: number, Filters?: AudioFilters}) {
+        public constructor(parameters: {url: string | Decoder.Dash, seek?: number, filters?: AudioFilters}) {
             super({autoDestroy: true});
             if (parameters.url instanceof Decoder.Dash) {
                 //Даем FFmpeg'у, ссылку с которой надо скачать поток
-                this.#FFmpeg = new FFmpeg.FFmpeg(DecoderUtils.CreateArguments(null, null, 0));
+                this.#FFmpeg = new FFmpeg.FFmpeg(ArgsHelper.createArgs(null, null, 0));
                 parameters.url.pipe(this.#FFmpeg);
             } else {
                 //Даем FFmpeg'у, ссылку с которой надо скачать поток
-                this.#FFmpeg = new FFmpeg.FFmpeg(DecoderUtils.CreateArguments(parameters.url, parameters?.Filters, parameters?.seek));
+                this.#FFmpeg = new FFmpeg.FFmpeg(ArgsHelper.createArgs(parameters.url, parameters?.filters, parameters?.seek));
             }
             this.#FFmpeg.pipe(this); //Загружаем из FFmpeg'a в opus.OggDemuxer
 
             //Проверяем сколько времени длится пакет
-            this.#TimeFrame = parameters?.Filters.length > 0 ? DecoderUtils.timeFrame(parameters?.Filters) : 20;
+            this.#TimeFrame = parameters?.filters.length > 0 ? ArgsHelper.timeFrame(parameters?.filters) : 20;
 
             //Когда можно будет читать поток записываем его в <this.#started>
             this.once("readable", () => (this.#started = true));
@@ -120,10 +109,7 @@ export namespace Decoder {
          */
         public constructor(dash: string, video: string) {
             super({highWaterMark: 5 * 1000 * 1000, autoDestroy: true});
-            this.#urls = {
-                dash, base: "", video
-            };
-
+            this.#urls = { dash, base: "", video };
             this.#DecodeDashManifest().catch((err) => console.log(err));
             this.once("end", this.destroy);
         };
@@ -205,7 +191,7 @@ export namespace Decoder {
 }
 
 //Вспомогательные функции Decoder'а
-namespace DecoderUtils {
+namespace ArgsHelper {
     /**
      * @description Создаем аргументы для FFmpeg
      * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
@@ -213,12 +199,12 @@ namespace DecoderUtils {
      * @param seek {number} Пропуск музыки до 00:00:00
      * @constructor
      */
-    export function CreateArguments (url: string, AudioFilters: AudioFilters, seek: number): any[] {
+    export function createArgs (url: string, AudioFilters: AudioFilters, seek: number): any[] {
         let thisArgs = [...JsonFFmpeg.Args.Reconnect, "-vn", ...JsonFFmpeg.Args.Seek, seek ?? 0];
         if (url) thisArgs = [...thisArgs, "-i", url];
 
         //Всегда есть один фильтр <AudioFade>
-        return [...thisArgs, "-af", CreateFilters(AudioFilters), ...JsonFFmpeg.Args.OggOpus, ...JsonFFmpeg.Args.DecoderPreset];
+        return [...thisArgs, "-af", parseFilters(AudioFilters), ...JsonFFmpeg.Args.OggOpus, ...JsonFFmpeg.Args.DecoderPreset];
     }
     //====================== ====================== ====================== ======================
     /**
@@ -258,7 +244,7 @@ namespace DecoderUtils {
      * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
      * @constructor
      */
-    function CreateFilters(AudioFilters: AudioFilters): string {
+    function parseFilters(AudioFilters: AudioFilters): string {
         const response: Array<string> = [];
 
         if (AudioFilters) AudioFilters.forEach((name: string | number) => {

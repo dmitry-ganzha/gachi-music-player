@@ -39,7 +39,6 @@ function getFunctions(html5player: string): Promise<null | string[]> {
     return httpsClient.parseBody(html5player, {
         options: { userAgent: true },
         request: {
-            method: "GET",
             headers: {
                 "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
                 "accept-encoding": "gzip, deflate, br"
@@ -116,8 +115,7 @@ function extractFunctions(body: string): string[] {
 
             if (ndx >= 0) {
                 const subBody = body.slice(ndx + functionStart.length);
-                const functionBody = `var ${functionStart}${cutAfterJSON(subBody)};${functionName}(ncode);`;
-                functions.push(functionBody);
+                functions.push(`var ${functionStart}${cutAfterJSON(subBody)};${functionName}(ncode);`);
             }
         }
     };

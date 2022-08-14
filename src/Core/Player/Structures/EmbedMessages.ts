@@ -162,7 +162,6 @@ export namespace EmbedMessages {
 }
 
 namespace CurrentPlayFunction {
-    //====================== ====================== ====================== ======================
     /**
      * @description Создаем Message<Fields>
      * @param song {Song} Трек
@@ -180,7 +179,7 @@ namespace CurrentPlayFunction {
         if (songs[1]) fields.push({ name: "Потом", value: `**❯** [${client.replaceText(songs[1].title, 29, true)}](${songs[1].url})` });
         return fields;
     }
-//====================== ====================== ====================== ======================
+    //====================== ====================== ====================== ======================
     /**
      * @description Создаем визуал таймера трека
      * @param isLive {Song<isLive>} Текущий трек, стрим?
@@ -198,7 +197,7 @@ namespace CurrentPlayFunction {
         if (Bar.Enable) return `**❯** [${parsedTimeSong} - ${str}\n${progress}`;
         return `**❯** [${curTime} - ${str}`;
     }
-//====================== ====================== ====================== ======================
+    //====================== ====================== ====================== ======================
     /**
      * @description Конвертируем секунды проигранные плеером
      * @param CurrentTime {number} Время проигрывания
@@ -209,7 +208,7 @@ namespace CurrentPlayFunction {
         if (Bar.Enable) return playbackDuration;
         return DurationUtils.ParsingTimeToString(playbackDuration);
     }
-//====================== ====================== ====================== ======================
+    //====================== ====================== ====================== ======================
     /**
      * @description Вычисляем прогресс бар
      * @param currentTime {number} Текущие время

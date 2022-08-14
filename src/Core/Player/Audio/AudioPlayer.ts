@@ -218,13 +218,13 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
     return Resource.then((format: Song["format"]) => {
         if (!format) return null;
 
-        let LiveStream: Decoder.Dash, params: {url: string | Decoder.Dash, seek?: number, Filters?: AudioFilters};
+        let LiveStream: Decoder.Dash, params: {url: string | Decoder.Dash, seek?: number, filters?: AudioFilters};
 
         //Если будет включен поток
         if (song.isLive) {
             LiveStream = new Decoder.Dash(format.url, song.url);
             params = {url: LiveStream};
-        } else params = {url: format.url, seek, Filters: audioFilters};
+        } else params = {url: format.url, seek, filters: audioFilters};
 
         //Следую параметра начинам расшифровку
         const DecodeFFmpeg = new Decoder.All(params);

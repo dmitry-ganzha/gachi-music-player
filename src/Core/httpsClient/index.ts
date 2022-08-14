@@ -10,7 +10,6 @@ const decoderBase = {
     "br": (): BrotliDecompress => createBrotliDecompress(),
     "deflate": (): Deflate => createDeflate()
 }
-type Decoder = BrotliDecompress | Gunzip | Deflate;
 
 export namespace httpsClient {
     /**
@@ -38,7 +37,6 @@ export namespace httpsClient {
                 //Обновляем куки
                 if (options?.options?.cookie && res.headers && res.headers["set-cookie"]) setImmediate(() => {
                     uploadCookie(res.headers["set-cookie"]);
-                    //Обновляем куки вне запроса что-бы снизить задержки!
                     if (Cookie) Cookie = getCookies();
                 });
 
@@ -137,6 +135,7 @@ function ChangeReqOptions(options: httpsClientOptions): void {
     if (options.options?.cookie && Cookie) options.request.headers = {...options.request.headers, "cookie": Cookie};
 }
 //====================== ====================== ====================== ======================
+type Decoder = BrotliDecompress | Gunzip | Deflate;
 // @ts-ignore
 interface ReqOptions extends RequestOptions {
     path?: string,

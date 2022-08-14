@@ -182,7 +182,6 @@ function RequestSpotify(method: string): Promise<SpotifyRes> {
         await login();
         return httpsClient.parseJson(`${ApiUrl}/${method}`, {
             request: {
-                method: "GET",
                 headers: {
                     "Accept": "application/json",
                     "Content-Type": "application/x-www-form-urlencoded",

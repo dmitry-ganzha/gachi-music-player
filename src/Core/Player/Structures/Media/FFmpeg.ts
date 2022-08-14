@@ -63,8 +63,6 @@ export namespace FFmpeg {
 
         get #input() { return this.#process.stdout; };
         get #output() { return this.#process.stdin; };
-
-
         //====================== ====================== ====================== ======================
         /**
          * @description Создаем "привязанные функции" (ПФ - термин из ECMAScript 6)
