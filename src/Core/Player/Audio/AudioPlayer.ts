@@ -70,15 +70,18 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
 
     //Ставим на паузу плеер
     public pause = () => {
-        if (this.state.status === "playing") this.state = {status: "paused"};
+        if (this.state.status !== "playing") return;
+        this.state = { ...this.state, status: "paused" };
     };
     //Убираем с паузы плеер
     public resume = () => {
-        if (this.state.status === "paused") this.state = {...this.state, status: "playing"};
+        if (this.state.status !== "paused") return;
+        this.state = { ...this.state, status: "playing" };
     };
     //Останавливаем воспроизведение текущего трека
     public stop = () => {
-        if (this.state.status !== "idle") this.state = {...this.state, status: "idle"};
+        if (this.state.status === "idle") return;
+        this.state = { status: "idle" };
     };
     //====================== ====================== ====================== ======================
     /**
@@ -137,20 +140,21 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
      * @constructor
      */
     protected readonly CheckStatusPlayer = (): void => {
+        const state = this.state;
         //Если статус (idle или buffering или paused) прекратить выполнение функции
-        if (this.state.status === "idle" || this.state.status === "buffering" || this.state.status === "paused") return;
+        if (state.status === "idle" || state.status === "buffering") return;
 
         //Если некуда проигрывать музыку ставить плеер на паузу
         if (this.#_voices.length === 0) {
             this.state = { ...this.state, status: "autoPaused" };
             return;
-        } else if (this.state.status === "autoPaused") {
+        } else if (this.state.status === "autoPaused" && this.#_voices.length > 0) {
             //Если стоит статус плеера (autoPaused) и есть канал или каналы в которые можно воспроизвести музыку, стартуем!
             this.state = { ...this.state, status: "playing", stream: this.state.stream };
         }
 
-        //Не читать пакеты при статусе плеера (paused | autoPaused)
-        if (this.state.status === "paused" || this.state.status === "autoPaused") {
+        //Не читать пакеты при статусе плеера (autoPaused | paused)
+        if (state.status === "autoPaused" || state.status === "paused") {
             this.#sendPackets(EmptyFrame);
             this.#signalStopSpeaking();
             return;

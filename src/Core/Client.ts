@@ -112,5 +112,6 @@ client.login(Bot.token).then(() => {
             return null;
         } catch {/* Continue */}
     });
+
     if (Debug) client.on("debug", null);
 });
