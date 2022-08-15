@@ -50,6 +50,7 @@
 2. [`Config.json`](./DataBase/Config.json) | основные настройки
     ```json5
     {
+      "Debug": false, //Включение дебаг режима
       "Channels": {
         "sendErrors": "" //ID канала на который будут отправляться ошибки
       },
