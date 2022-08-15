@@ -15,7 +15,7 @@ import {PlayerEmitter} from "./Player/execute";
 import {Command} from "../Commands/Constructor";
 import {Queue} from "./Player/Structures/Queue/Queue";
 import {LiteUtils, MessageSend} from "./Utils/LiteUtils";
-import {Bot, Channels} from "../../DataBase/Config.json";
+import {Bot, Channels, Debug} from "../../DataBase/Config.json";
 
 const keepOverLimit = (value: any): boolean => value.id !== value.client.user.id;
 
@@ -112,4 +112,5 @@ client.login(Bot.token).then(() => {
             return null;
         } catch {/* Continue */}
     });
+    if (Debug) client.on("debug", null);
 });
