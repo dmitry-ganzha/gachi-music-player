@@ -181,18 +181,22 @@ function onDeleteQueue(message: ClientMessage, sendDelQueue: boolean = true) {
 
     //Если нет очереди
     if (!Queue) return;
+    const {channels, player, emitter, options} = Queue;
 
     //Удаляем сообщение о текущем треке
-    if (Queue.channels.message?.deletable) Queue.channels.message?.delete().catch(() => undefined);
-    if (Queue.player) Queue.player.stop();
+    if (channels.message?.deletable) channels.message?.delete().catch(() => undefined);
+    if (player) {
+        player.unsubscribe({connection: channels.connection});
+        player.stop();
+    }
     [Queue.songs, Queue.audioFilters].forEach(data => data = null);
 
     if (sendDelQueue) {
-        if (Queue.options.stop) sendMessage(message, "🎵 | Музыка была выключена");
+        if (options.stop) sendMessage(message, "🎵 | Музыка была выключена");
         else sendMessage(message, "🎵 | Музыка закончилась");
     }
 
-    Queue.emitter.cleanup();
+    emitter.cleanup();
     client.queue.delete(guild.id);
 }
 //Отправляем сообщение в тестовый канал

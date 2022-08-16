@@ -9,7 +9,7 @@ import {Searcher} from "../Manager/Resource/Searcher";
 import {PlayersManager} from "../Manager/PlayersManager";
 
 export const StatusPlayerHasSkipped: Set<string> = new Set(["playing", "paused", "buffering", "idle"]);
-const EmptyFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe]);
+const SilentFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe, 0xfae]);
 
 interface AudioPlayerEvents {
     idle: (oldState: PlayerState, newState: PlayerState) => void;
@@ -38,30 +38,32 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         this.state.stream.duration = time * 1e3;
     };
     //Заменяет или выдает статистику плеера
-    public set state(state: PlayerState) {
-        const OldState = this.#_state; //Старая статистика плеера
-        const isNewResources = OldState.status !== "idle" && state.status === "playing" && OldState.stream !== state.stream;
+    public set state(newState: PlayerState) {
+        const oldState = this.#_state; //Старая статистика плеера
+        const isNewResources = oldState.status !== "idle" && newState.status === "playing" && oldState.stream !== newState.stream;
 
-        this.#_state = state; //Обновляем статистику плеера
+        this.#_state = newState; //Обновляем статистику плеера
 
         //Если пользователь пропустил трек или введен новый поток удаляем старый
-        if (OldState.status === "playing" && state.status === "idle" || OldState.status !== "idle" && OldState.stream !== state.stream) {
-            OldState.stream.destroy();
-            delete OldState.stream;
+        if (oldState.status === "playing" && newState.status === "idle" || oldState.status !== "idle" && oldState.stream !== newState.stream) {
+            if (newState.status !== "paused") { //Если это не пауза, то удаляем поток
+                oldState.stream.destroy();
+                delete oldState.stream;
+            }
         }
 
         //Если статус "idle"
-        if (state.status === "idle") {
+        if (newState.status === "idle") {
             this.#signalStopSpeaking();
             PlayersManager.toRemove(this); //Удаляем плеер
         }
         //Если есть поток добавляем плеер обратно
-        if (state.stream) PlayersManager.toPush(this);
+        if (newState.stream) PlayersManager.toPush(this);
 
-        if (OldState.status !== state.status || isNewResources) {
+        if (oldState.status !== newState.status || isNewResources) {
             //Перед сменой статуса плеера отправляем пустой пакет. Необходим, так мы правим повышение задержки гс!
-            this.#sendPackets(EmptyFrame);
-            void this.emit(state.status, OldState, state);
+            this.#sendPackets(SilentFrame);
+            void this.emit(newState.status, oldState, newState);
         }
     };
     public get state(): PlayerState {
@@ -99,7 +101,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
      * @description Убираем из <this.#_voices> голосовой канал
      * @param subscription {PlayerSubscription} Голосовой канал на котором больше не будет играть музыка
      */
-    public readonly unsubscribe = (subscription?: PlayerSubscription): void => {
+    public readonly unsubscribe = (subscription: PlayerSubscription | {connection: VoiceConnection}): void => {
         const index = this.#_voices.indexOf(subscription.connection);
 
         //Если был найден отключаемый голосовой канал, то удаляем из <this.#_voices>
@@ -121,7 +123,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
 
         if (song) {
             //Получаем исходный поток
-            CreateResource(song, queue.audioFilters, seek).then(stream => {
+            CreateResource(song, queue.audioFilters, seek).then((stream) => {
                 this.#readStream(stream);
 
                 //Если это не пропуск
@@ -142,7 +144,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     protected readonly CheckStatusPlayer = (): void => {
         const state = this.state;
         //Если статус (idle или buffering или paused) прекратить выполнение функции
-        if (state.status === "idle" || state.status === "buffering") return;
+        if (state.status === "idle" || state.status === "buffering" || state.status === "paused") return;
 
         //Если некуда проигрывать музыку ставить плеер на паузу
         if (this.#_voices.length === 0) {
@@ -153,9 +155,9 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
             this.state = { ...this.state, status: "playing", stream: this.state.stream };
         }
 
-        //Не читать пакеты при статусе плеера (autoPaused | paused)
-        if (state.status === "autoPaused" || state.status === "paused") {
-            this.#sendPackets(EmptyFrame);
+        //Не читать пакеты при статусе плеера (autoPaused)
+        if (state.status === "autoPaused") {
+            this.#sendPackets(SilentFrame);
             this.#signalStopSpeaking();
             return;
         }
@@ -234,7 +236,7 @@ function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: num
         const DecodeFFmpeg = new Decoder.All(params);
 
         //Удаляем поток следую Decoder.All<events>
-        ["close", "end", "error"].forEach(event => DecodeFFmpeg.once(event, () => {
+        ["close", "end", "error"].forEach((event: string) => DecodeFFmpeg.once(event, () => {
             [DecodeFFmpeg, LiveStream].forEach((clas) => {
                 if (clas !== undefined) clas.destroy();
             });
@@ -267,5 +269,5 @@ interface PlayerStates {
     error: { //Плеер выводит ошибку
         status: "error";
         stream?: PlayerResource
-    }
+    };
 }
