@@ -34,7 +34,7 @@ export namespace YouTube {
                 const allFormats = [...VideoFinalData.streamingData?.formats, ...VideoFinalData.streamingData?.adaptiveFormats];
                 const FindOpus: YouTubeFormat[] = allFormats.filter((format: YouTubeFormat) => format.mimeType?.match(/opus/) || format?.mimeType?.match(/audio/));
 
-                audioFormats = (await Promise.all([Decipher(FindOpus, html5player)]))[0].pop();
+                audioFormats = (await Promise.all([Decipher.parseFormats(FindOpus, html5player)]))[0].pop();
             } else audioFormats = {url: VideoFinalData.streamingData?.dashManifestUrl ?? null}; //dashManifestUrl, hlsManifestUrl
 
             return resolve({

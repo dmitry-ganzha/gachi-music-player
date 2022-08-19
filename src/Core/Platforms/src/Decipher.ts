@@ -1,184 +1,5 @@
+import { URL, URLSearchParams } from 'node:url';
 import {httpsClient} from "../../httpsClient";
-import * as vm from "vm";
-import querystring from "node:querystring";
-
-/**
- * @author ytdl-core (https://github.com/fent/node-ytdl-core)
- * @description Немного изменил под свои нужны
- */
-//====================== ====================== ====================== ======================
-
-/**
- * @description Применяет преобразование параметра расшифровки и n ко всем URL-адресам формата.
- * @param formats {YouTubeFormat[]} Зашифрованные форматы
- * @param html5player {string} Ссылка на html5player
- */
-export function Decipher(formats: YouTubeFormat[], html5player: string): Promise<YouTubeFormat[]> {
-    return getFunctions(html5player).then((functions: string[] | null) => {
-        const decipherScript = functions.length ? new vm.Script(functions[0]) : null;
-        const nTransformScript = functions.length > 1 ? new vm.Script(functions[1]) : null;
-
-        formats.forEach((format: YouTubeFormat, index: number) => {
-            //Если нет decipherScript или nTransformScript, то этот формат невозможно расшифровать
-            if (!decipherScript || !nTransformScript) {
-                formats.splice(index, 1);
-                return;
-            }
-            setDownloadURL(format, decipherScript, nTransformScript); //Расшифровываем формат
-        });
-
-        return formats;
-    });
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Извлечь функции расшифровки подписи и преобразования n параметров из файла html5player.
- * @param html5player {string} Ссылка на html5player
- */
-function getFunctions(html5player: string): Promise<null | string[]> {
-    return httpsClient.parseBody(html5player, {
-        options: { userAgent: true },
-        request: {
-            headers: {
-                "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
-                "accept-encoding": "gzip, deflate, br"
-            }
-        }
-    }).then((body: string) => {
-        const functions = extractFunctions(body);
-
-        if (!functions || !functions?.length) return null;
-        return functions;
-    });
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Применить расшифровку и n-преобразование к индивидуальному формату
- * @param format {YouTubeFormat} Формат youtube
- * @param decipherScript {Script} vm.Script
- * @param nTransformScript {Script} vm.Script
- */
-function setDownloadURL(format: YouTubeFormat, decipherScript: Script, nTransformScript: Script) {
-    const url = format.url ?? format.signatureCipher ?? format.cipher;
-    const decipher = () => {
-        const args = querystring.parse(url) as { url: string, sp: string, s: string };
-        if (!args.s || !decipherScript) return args.url;
-
-        const components = new URL(decodeURIComponent(args.url));
-        components.searchParams.set(args.sp ?? "signature", decipherScript.runInNewContext({ sig: decodeURIComponent(args.s) }));
-
-        return components.toString();
-    };
-    const EncodeCode = (url: string) => {
-        const components = new URL(decodeURIComponent(url));
-        const n = components.searchParams.get("n");
-
-        if (!n || !nTransformScript) return url;
-
-        components.searchParams.set("n", nTransformScript.runInNewContext({ ncode: n }));
-        return components.toString();
-    };
-
-    format.url = !format.url ? EncodeCode(decipher()) : EncodeCode(url);
-    delete format.signatureCipher;
-    delete format.cipher;
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Извлекает действия, которые необходимо предпринять для расшифровки подписи и преобразования параметра n.
- * @param body {string} Страничка
- */
-function extractFunctions(body: string): string[] {
-    const functions: string[] = [];
-    const extractDecipher = () => {
-        const functionName = body.split("a.set(\"alr\",\"yes\");c&&(c=")[1].split("(decodeURIC")[0];
-
-        if (functionName && functionName.length) {
-            const functionStart = `${functionName}=function(a)`;
-            const ndx = body.indexOf(functionStart);
-
-            if (ndx >= 0) {
-                const subBody = body.slice(ndx + functionStart.length);
-                let functionBody = `var ${functionStart}${cutAfterJSON(subBody)}`;
-                functionBody = `${extractManipulations(functionBody, body)};${functionBody};${functionName}(sig);`;
-                functions.push(functionBody);
-            }
-        }
-    };
-    const extractNCode = () => {
-        let functionName = body.split("&&(b=a.get(\"n\"))&&(b=")[1].split("(b)")[0];
-
-        if (functionName.includes('[')) functionName = body.split(`${functionName.split("[")[0]}=[`)[1].split("]")[0];
-        if (functionName && functionName.length) {
-            const functionStart = `${functionName}=function(a)`;
-            const ndx = body.indexOf(functionStart);
-
-            if (ndx >= 0) {
-                const subBody = body.slice(ndx + functionStart.length);
-                functions.push(`var ${functionStart}${cutAfterJSON(subBody)};${functionName}(ncode);`);
-            }
-        }
-    };
-
-    extractDecipher();
-    extractNCode();
-    return functions;
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Извлекает действия, которые необходимо предпринять для расшифровки подписи и преобразования параметра n.
- * @param caller {string} Данные
- * @param body {string} Страничка
- */
-function extractManipulations(caller: string, body: string): string {
-    const functionName = caller.split("a=a.split(\"\");")[1].split(".")[0];
-    if (!functionName) return '';
-
-    const functionStart = `var ${functionName}={`;
-    const ndx = body.indexOf(functionStart);
-
-    if (ndx <= 0) return "";
-
-    const subBody = body.slice(ndx + functionStart.length - 1);
-    return `var ${functionName}=${cutAfterJSON(subBody)}`;
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Функция ytdl-core
- * @param mixedJson {string[] | string} точно не понял
- */
-function cutAfterJSON(mixedJson: string) {
-    let open, close;
-    if (mixedJson[0] === '[') {open = "["; close = "]"}
-    else if (mixedJson[0] === '{') {open = "{"; close = "}"}
-    if (!open) throw new Error(`Can't cut unsupported JSON (need to begin with [ or { ) but got: ${mixedJson[0]}`);
-
-    let isString = false, isEscaped = false, counter = 0;
-
-    for (let i = 0; i < mixedJson.length; i++) {
-        if (mixedJson[i] === '"' && !isEscaped) {
-            isString = !isString;
-            continue;
-        }
-
-        isEscaped = mixedJson[i] === '\\' && !isEscaped;
-
-        if (isString) continue;
-
-        if (mixedJson[i] === open) counter++;
-        else if (mixedJson[i] === close) counter--;
-
-        if (counter === 0) return mixedJson.substring(0, i + 1);
-    }
-
-    // We ran through the whole string and ended up with an unclosed bracket
-    throw Error("Can't cut unsupported JSON (no matching closing bracket found)");
-}
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
 
 export interface YouTubeFormat {
     url: string;
@@ -193,10 +14,161 @@ export interface YouTubeFormat {
     targetDurationSec?: number;
     mimeType?: string;
 }
-/**
- * @description vm<Script>
- */
-// @ts-ignore
-interface Script extends vm["Script"] {
-    runInNewContext(param: { sig?: string, ncode?: string }): string;
+
+
+// RegExp for various js functions
+const var_js = '[a-zA-Z_\\$]\\w*';
+const singlequote_js = `'[^'\\\\]*(:?\\\\[\\s\\S][^'\\\\]*)*'`;
+const duoblequote_js = `"[^"\\\\]*(:?\\\\[\\s\\S][^"\\\\]*)*"`;
+const quote_js = `(?:${singlequote_js}|${duoblequote_js})`;
+const key_js = `(?:${var_js}|${quote_js})`;
+const prop_js = `(?:\\.${var_js}|\\[${quote_js}\\])`;
+const empty_js = `(?:''|"")`;
+const reverse_function = ':function\\(a\\)\\{' + '(?:return )?a\\.reverse\\(\\)' + '\\}';
+const slice_function = ':function\\(a,b\\)\\{' + 'return a\\.slice\\(b\\)' + '\\}';
+const splice_function = ':function\\(a,b\\)\\{' + 'a\\.splice\\(0,b\\)' + '\\}';
+const swap_function =
+    ':function\\(a,b\\)\\{' +
+    'var c=a\\[0\\];a\\[0\\]=a\\[b(?:%a\\.length)?\\];a\\[b(?:%a\\.length)?\\]=c(?:;return a)?' +
+    '\\}';
+const obj_regexp = new RegExp(
+    `var (${var_js})=\\{((?:(?:${key_js}${reverse_function}|${key_js}${slice_function}|${key_js}${splice_function}|${key_js}${swap_function}),?\\r?\\n?)+)\\};`
+);
+const function_regexp = new RegExp(
+    `${
+        `function(?: ${var_js})?\\(a\\)\\{` + `a=a\\.split\\(${empty_js}\\);\\s*` + `((?:(?:a=)?${var_js}`
+    }${prop_js}\\(a,\\d+\\);)+)` +
+    `return a\\.join\\(${empty_js}\\)` +
+    `\\}`
+);
+const reverse_regexp = new RegExp(`(?:^|,)(${key_js})${reverse_function}`, 'm');
+const slice_regexp = new RegExp(`(?:^|,)(${key_js})${slice_function}`, 'm');
+const splice_regexp = new RegExp(`(?:^|,)(${key_js})${splice_function}`, 'm');
+const swap_regexp = new RegExp(`(?:^|,)(${key_js})${swap_function}`, 'm');
+
+
+namespace parseTokens {
+    /**
+     * @description Берем данные с youtube html5player
+     * @param page
+     */
+    export function getTokens(page: string): string[] {
+        const funAction = function_regexp.exec(page);
+        const objAction = obj_regexp.exec(page);
+
+        if (!funAction || !objAction) return null;
+
+        const object = objAction[1].replace(/\$/g, '\\$');
+        const objPage = objAction[2].replace(/\$/g, '\\$');
+        const funPage = funAction[1].replace(/\$/g, '\\$');
+
+        let result: RegExpExecArray, tokens: string[] = [], keys: string[] = [];
+
+        [reverse_regexp, slice_regexp, splice_regexp, swap_regexp].forEach((res) => (result = res.exec(objPage), keys.push(replacer(result))));
+
+        const parsedKeys = `(${keys.join('|')})`;
+        const tokenizeRegexp = new RegExp(`(?:a=)?${object}(?:\\.${parsedKeys}|\\['${parsedKeys}'\\]|\\["${parsedKeys}"\\])` + `\\(a,(\\d+)\\)`, 'g');
+
+        while ((result = tokenizeRegexp.exec(funPage)) !== null) {
+            (() => {
+                const key = result[1] || result[2] || result[3];
+                switch (key) {
+                    case keys[3]: return tokens.push(`sw${result[4]}`);
+                    case keys[0]: return tokens.push('rv');
+                    case keys[1]: return tokens.push(`sl${result[4]}`);
+                    case keys[2]: return tokens.push(`sp${result[4]}`);
+                }
+            })();
+        }
+        return tokens;
+    }
+
+    /**
+     * @description Уменьшаем кол-во кода
+     * @param res {RegExpExecArray}
+     */
+    function replacer(res: RegExpExecArray) {
+        return res && res[1].replace(/\$/g, '\\$').replace(/\$|^'|^"|'$|"$/g, '');
+    }
+}
+export namespace Decipher {
+    /**
+     * @description Изменение форматов перед их использованием
+     * @param formats {YouTubeFormat[]} YouTube форматы
+     * @param html5player {string} Страница html5player
+     */
+    export async function parseFormats(formats: YouTubeFormat[], html5player: string) {
+        const body = await httpsClient.parseBody(html5player); //Берем html5player страницу
+        const tokens = parseTokens.getTokens(body);
+
+        formats.forEach((format) => {
+            const cipher = format.signatureCipher || format.cipher;
+
+            if (cipher) {
+                const params = Object.fromEntries(new URLSearchParams(cipher));
+                Object.assign(format, params);
+                delete format.signatureCipher;
+                delete format.cipher;
+            }
+
+            if (tokens && format.s) {
+                //Удаляем формат без ссылки
+                if (!format.url) {
+                    const index = formats.indexOf(format);
+                    if (index > 0) formats.splice(index, 1);
+                    return;
+                }
+
+                const signature = DecodeSignature(tokens, format.s);
+                const Url = new URL(decodeURIComponent(format.url));
+                Url.searchParams.set('ratebypass', 'yes');
+
+                if (signature) Url.searchParams.set(format.sp || 'signature', signature);
+                format.url = Url.toString();
+
+                delete format.s;
+                delete format.sp;
+            }
+        });
+
+        return formats;
+    }
+
+    /**
+     * @description Проводим некоторые манипуляции с signature
+     * @param tokens {string[]}
+     * @param signature {string}
+     */
+    function DecodeSignature(tokens: string[], signature: string) {
+        let sig = signature.split("");
+
+        tokens.forEach((token) => {
+            let pos: number;
+
+            switch (token.slice(0, 2)) {
+                case 'sw':
+                    pos = parseInt(token.slice(2));
+                    swapPositions(sig, pos);
+                    break;
+                case 'rv':
+                    sig.reverse();
+                    break;
+                case 'sl':
+                    pos = parseInt(token.slice(2));
+                    sig = sig.slice(pos);
+                    break;
+                case 'sp':
+                    pos = parseInt(token.slice(2));
+                    sig.splice(0, pos);
+                    break;
+            }
+        });
+        return sig.join("");
+    }
+}
+
+function swapPositions(array: string[], position: number) {
+    const first = array[0];
+    array[0] = array[position];
+    array[position] = first;
 }
