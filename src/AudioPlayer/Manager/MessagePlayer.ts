@@ -8,10 +8,10 @@ import {CollectionMap, GlobalUtils} from "../../Core/Utils/LiteUtils";
 
 //Кнопки над сообщением о проигрывании трека
 const Buttons = new ActionRowBuilder().addComponents([
-    new ButtonBuilder().setCustomId("last").setEmoji({name: "⏪"}).setStyle(ButtonStyle.Secondary), //id: "986009800867479572"
-    new ButtonBuilder().setCustomId("resume_pause").setEmoji({name: "⏯"}).setStyle(ButtonStyle.Secondary), //id: "986009725432893590"
-    new ButtonBuilder().setCustomId("skip").setEmoji({name: "⏩"}).setStyle(ButtonStyle.Secondary), //id: "986009774015520808"
-    new ButtonBuilder().setCustomId("replay").setEmoji({name: "🔃"}).setStyle(ButtonStyle.Secondary)] //id: "986009690716667964"
+    new ButtonBuilder().setCustomId("last")        .setEmoji({name: "⏪"}).setStyle(ButtonStyle.Secondary), //id: "986009800867479572" или name: "⏪"
+    new ButtonBuilder().setCustomId("resume_pause").setEmoji({name: "⏯"}).setStyle(ButtonStyle.Secondary), //id: "986009725432893590" или name: "⏯"
+    new ButtonBuilder().setCustomId("skip")        .setEmoji({name: "⏩"}).setStyle(ButtonStyle.Secondary), //id: "986009774015520808" или name: "⏩"
+    new ButtonBuilder().setCustomId("replay")      .setEmoji({name: "🔃"}).setStyle(ButtonStyle.Secondary)] //id: "986009690716667964" или name: "🔃"
 );
 //Кнопки с которыми можно взаимодействовать
 const ButtonID = new Set(["skip", "resume_pause", "replay", "last"]);
