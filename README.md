@@ -13,8 +13,8 @@
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
 - Лицензия: [`MIT`](https://github.com/SNIPPIK/WatKLOK/blob/main/LICENSE)
-- [Настройки](./DataBase/Config.json)
-- [Все команды](./src/Commands) | `Slash + Standart`
+- [Настройки](DataBase/Config.json)
+- [Все команды](src/Handler/Commands) | `Slash + Standart`
 - Все сообщения удаляют автоматически через время
 
 ## Гайд по запуску
@@ -24,9 +24,9 @@
     - `sodium-native`: ^3.3.0 (рекомендуется)
     - `sodium`: ^3.0.2
     - `libsodium-wrappers`: ^0.7.9
-4. Запускаем `_tsBuild.bat` для Windows
-5. Настраиваем бота [тут](./DataBase)
-6. Запускаем [тут](./_Build), через командную строку
+4. Настраиваем бота [тут](DataBase)
+5. Запускаем `_tsBuild.bat` для Windows
+6. Запускаем [тут](_Build), через командную строку
    - `node ./src/Core/Client.js` Для 1к серверов
    - `node ./src/Core/ShardManager.js` Для 1к и более серверов
 
@@ -41,16 +41,15 @@
 
     
 ## Настройки
-1. [`Cookie.json`](./DataBase/Cookie.json) | необходим для видео 18+
+1. [`Cookie.json`](DataBase/Cookie.json) | необходим для видео 18+
     ```json5
    {   
       "Cookie": "КУКИ" 
    }
    ```
-2. [`Config.json`](./DataBase/Config.json) | основные настройки
+2. [`Config.json`](DataBase/Config.json) | основные настройки
     ```json5
     {
-      "Debug": false, //Включение дебаг режима
       "Channels": {
         "sendErrors": "" //ID канала на который будут отправляться ошибки
       },
@@ -69,7 +68,7 @@
       }
     }
     ```
-3. [`FFmpeg.json`](./DataBase/FFmpeg.json) | Можно управлять FFmpeg'ом из конфига | [`FFmpeg Docs`](https://ffmpeg.org/ffmpeg.html)
+3. [`FFmpeg.json`](DataBase/FFmpeg.json) | Можно управлять FFmpeg'ом из конфига | [`FFmpeg Docs`](https://ffmpeg.org/ffmpeg.html)
     ```json5
     {
       "Names": [], //Путь(и) к ffmpeg
