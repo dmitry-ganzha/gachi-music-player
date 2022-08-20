@@ -27,8 +27,8 @@
 4. Настраиваем бота [тут](DataBase)
 5. Запускаем `_tsBuild.bat` для Windows
 6. Запускаем [тут](_Build), через командную строку
-   - `node ./src/Core/Client.js` Для 1к серверов
-   - `node ./src/Core/ShardManager.js` Для 1к и более серверов
+   - `node ./src/Core/Client/Client.js` Для 1к серверов
+   - `node ./src/Core/Client/ShardManager.js` Для 1к и более серверов
 
 ## Поддерживаемые платформы
 
