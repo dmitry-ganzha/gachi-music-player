@@ -9,7 +9,7 @@ import {PlayersManager} from "../Manager/PlayersManager";
 import {ClientMessage} from "../../Handler/Events/Activity/Message";
 
 export const StatusPlayerHasSkipped: Set<string> = new Set(["playing", "paused", "buffering", "idle"]);
-const SilentFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe, 0xfae]);
+const SilentFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe]);
 
 interface AudioPlayerEvents {
     idle: (oldState: PlayerState, newState: PlayerState) => void;
