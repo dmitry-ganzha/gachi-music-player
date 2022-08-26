@@ -16,7 +16,7 @@ export namespace httpsClient {
      * @description Создаем запрос по ссылке, модифицируем по необходимости
      * @param url {string} Ссылка
      * @param options {httpsClientOptions} Настройки запроса
-     * @requires {ChangeReqOptions}
+     * @requires {ChangeReqOptions, uploadCookie, getCookies}
      */
     export function Request(url: string, options?: httpsClientOptions): Promise<IncomingMessage> {
         ChangeReqOptions(options);
@@ -58,7 +58,7 @@ export namespace httpsClient {
      * @description Получаем страницу в формате string
      * @param url {string} Ссылка
      * @param options {httpsClientOptions} Настройки запроса
-     * @requires {uploadCookie, getCookies}
+     * @requires {Request}
      */
     export function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
         return new Promise((resolve) => Request(url, options).then((res: IncomingMessage) => {

@@ -74,10 +74,13 @@ export interface ClientMessage extends Message {
         send(options: SendMessageOptions): Promise<ClientMessage>
     } & Channel
 }
+//Все текстовые каналы
 export type Channel = DMChannel | PartialDMChannel | NewsChannel | TextChannel | ThreadChannel;
+//ClientMessage<channel>
 export type MessageChannel = ClientMessage["channel"];
 //Типы для ClientMessage<channel<send>>, ClientMessage<edit>
 export type SendMessageOptions = string | MessagePayload | MessageOptions | {embeds?: EmbedConstructor[], components?: ActionRow<any> | ActionRowBuilder<any>};
+//Embed JSON
 export interface EmbedConstructor extends EmbedData {}
 //Цвета, которые есть в базе
 export type ColorResolvable = "RED" | "BLUE" | "GREEN" | "DARK" | "YELLOW" | "GREY" | "NAVY" | "GOLD" | "ORANGE" | "PURPLE";
