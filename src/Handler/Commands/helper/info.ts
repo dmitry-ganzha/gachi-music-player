@@ -1,7 +1,7 @@
 import {Command} from "../../../Structures/Command";
 import os from 'node:os';
 import pak from "../../../../package.json";
-import {EmbedConstructor} from "../../../Core/Utils/TypeHelper";
+import {EmbedConstructor} from "../../Events/Activity/Message";
 import {Colors, GlobalUtils} from "../../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
 import ParsingTimeToString = DurationUtils.ParsingTimeToString;

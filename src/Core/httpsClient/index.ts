@@ -98,6 +98,21 @@ export namespace httpsClient {
             }
         });
     }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Проверяем ссылку на работоспособность
+     * @param url {string} Ссылка
+     * @requires {Request}
+     */
+    export function checkLink(url: string): Promise<"OK" | "Fail"> | "Fail" {
+        if (!url) return "Fail";
+
+        return Request(url, {request: {method: "HEAD"}}).then((resource: IncomingMessage) => {
+            if (resource instanceof Error) return "Fail"; //Если есть ошибка
+            if (resource.statusCode >= 200 && resource.statusCode < 400) return "OK"; //Если возможно скачивать ресурс
+            return "Fail"; //Если прошлые варианты не подходят, то эта ссылка не рабочая
+        });
+    }
 }
 //====================== ====================== ====================== ======================
 /**

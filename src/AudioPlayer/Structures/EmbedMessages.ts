@@ -1,11 +1,10 @@
 import {WatKLOK} from "../../Core/Client/Client";
-import {Song} from "./Queue/Song";
+import {InputPlaylist, Song} from "./Queue/Song";
 import {AudioFilters, Queue} from "./Queue/Queue";
-import {EmbedConstructor, InputPlaylist} from "../../Core/Utils/TypeHelper";
 import {AudioPlayer} from "../Player/AudioPlayer";
 import {Colors} from "../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../Manager/DurationUtils";
-import {ClientMessage} from "../../Handler/Events/Activity/Message";
+import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
 
 // Настройки прогресс бара текущей музыки
 const Bar = {

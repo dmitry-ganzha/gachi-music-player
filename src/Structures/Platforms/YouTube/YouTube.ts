@@ -1,6 +1,6 @@
 import {httpsClient} from "../../../Core/httpsClient";
 import {Decipher, YouTubeFormat} from "./Decipher";
-import {InputAuthor, InputTrack} from "../../../Core/Utils/TypeHelper";
+import {InputAuthor, InputTrack} from "../../../AudioPlayer/Structures/Queue/Song";
 
 const VerAuthor = new Set(["Verified", "Official Artist Channel"]);
 

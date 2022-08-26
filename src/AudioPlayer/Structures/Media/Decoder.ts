@@ -5,8 +5,8 @@ import {AudioFilters} from "../Queue/Queue";
 import {httpsClient} from "../../../Core/httpsClient";
 import {FFmpeg} from "./FFmpeg";
 import {YouTube} from "../../../Structures/Platforms";
-import {InputTrack} from "../../../Core/Utils/TypeHelper";
 import {Opus} from "./Opus";
+import {InputTrack} from "../Queue/Song";
 
 //Сюда после запуска файла будут записаны статичные фильтры. Статичные фильтры - фильтры в которых модификатор скорости записан и его не может указать пользователь
 let FiltersStatic = {};

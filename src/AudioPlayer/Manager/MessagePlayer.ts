@@ -1,6 +1,5 @@
 import {Queue} from "../Structures/Queue/Queue";
-import {Song} from "../Structures/Queue/Song";
-import {InputPlaylist} from "../../Core/Utils/TypeHelper";
+import {InputPlaylist, Song} from "../Structures/Queue/Song";
 import {EmbedMessages} from "../Structures/EmbedMessages";
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType} from "discord.js";
 import {ClientMessage} from "../../Handler/Events/Activity/Message";

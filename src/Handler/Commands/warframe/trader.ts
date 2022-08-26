@@ -1,6 +1,6 @@
 import {Command} from "../../../Structures/Command";
 import {httpsClient} from "../../../Core/httpsClient";
-import {EmbedConstructor} from "../../../Core/Utils/TypeHelper";
+import {EmbedConstructor} from "../../Events/Activity/Message";
 import {Colors, GlobalUtils} from "../../../Core/Utils/LiteUtils";
 import {MessageReaction, User} from "discord.js";
 import {CollectorSortReaction} from "../../../Core/Utils/ReactionMenu";

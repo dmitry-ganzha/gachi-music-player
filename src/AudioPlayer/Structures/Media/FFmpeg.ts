@@ -35,6 +35,8 @@ if (FFmpegName === undefined) Promise.all([FFmpegCheck()]).catch();
 
 export namespace FFmpeg {
     export type Arguments = Array<string | number> | Array<string>;
+    //FFmpeg формат для воспроизведения
+    export type FFmpegFormat = {url: string}
     /**
      * ffmpeg is a very fast video and audio converter that can also grab from a live audio/video source. It can also convert between arbitrary sample rates and resize video on the fly with a high quality polyphase filter.
      * ffmpeg reads from an arbitrary number of input "files" (which can be regular files, pipes, network streams, grabbing devices, etc.), specified by the -i option, and writes to an arbitrary number of output "files", which are specified by a plain output url. Anything found on the command line which cannot be interpreted as an option is considered to be an output url.

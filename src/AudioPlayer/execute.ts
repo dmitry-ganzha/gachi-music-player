@@ -1,9 +1,9 @@
 import {PlayerController} from "./Player/Controller";
 import {StageChannel, VoiceChannel} from "discord.js";
-import {InputPlaylist, InputTrack} from "../Core/Utils/TypeHelper";
 import {QueueManager} from "./Manager/QueueManager";
 import {TypedEmitter} from "tiny-typed-emitter";
 import {ClientMessage} from "../Handler/Events/Activity/Message";
+import {InputPlaylist, InputTrack} from "./Structures/Queue/Song";
 
 interface PlayerEvents {
     play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack | InputPlaylist) => boolean | void | Promise<void | ClientMessage | NodeJS.Timeout>;

@@ -1,10 +1,18 @@
-import {ChannelType, Message, MessageEditOptions} from "discord.js";
+import {
+    ActionRow, ActionRowBuilder,
+    ChannelType,
+    DMChannel, EmbedData,
+    Message,
+    MessageEditOptions, MessageOptions, MessagePayload,
+    NewsChannel,
+    PartialDMChannel,
+    TextChannel, ThreadChannel
+} from "discord.js";
 import {Bot} from '../../../../DataBase/Config.json';
 import {WatKLOK} from "../../../Core/Client/Client";
 import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
 import ParsingTimeToString = DurationUtils.ParsingTimeToString;
 import {CoolDownBase, UtilsPermissions} from "../../../Core/Utils/LiteUtils";
-import {Channel, sendType} from "../../../Core/Utils/TypeHelper";
 import {Event} from "../../../Structures/Event";
 
 const DefaultPrefix = Bot.prefix; //Префикс
@@ -60,9 +68,16 @@ export class messageCreate extends Event<ClientMessage, null>{
 export interface ClientMessage extends Message {
     client: WatKLOK;
     // @ts-ignore
-    edit(content: sendType | MessageEditOptions): Promise<ClientMessage>
+    edit(content: SendMessageOptions | MessageEditOptions): Promise<ClientMessage>
     // @ts-ignore
     channel: {
-        send(options: sendType): Promise<ClientMessage>
+        send(options: SendMessageOptions): Promise<ClientMessage>
     } & Channel
 }
+export type Channel = DMChannel | PartialDMChannel | NewsChannel | TextChannel | ThreadChannel;
+export type MessageChannel = ClientMessage["channel"];
+//Типы для ClientMessage<channel<send>>, ClientMessage<edit>
+export type SendMessageOptions = string | MessagePayload | MessageOptions | {embeds?: EmbedConstructor[], components?: ActionRow<any> | ActionRowBuilder<any>};
+export interface EmbedConstructor extends EmbedData {}
+//Цвета, которые есть в базе
+export type ColorResolvable = "RED" | "BLUE" | "GREEN" | "DARK" | "YELLOW" | "GREY" | "NAVY" | "GOLD" | "ORANGE" | "PURPLE";

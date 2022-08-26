@@ -1,6 +1,6 @@
 import {httpsClient} from "../../../Core/httpsClient";
 import {vk} from '../../../../DataBase/Config.json';
-import {InputPlaylist, InputTrack} from "../../../Core/Utils/TypeHelper";
+import {InputPlaylist, InputTrack} from "../../../AudioPlayer/Structures/Queue/Song";
 
 const vkApiLink = "https://api.vk.com/method/";
 const connectString = `?access_token=${vk.token}`;

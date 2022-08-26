@@ -1,5 +1,5 @@
 import {Command} from "../../../Structures/Command";
-import {EmbedConstructor} from "../../../Core/Utils/TypeHelper";
+import {EmbedConstructor} from "../../Events/Activity/Message";
 import {Colors, GlobalUtils} from "../../../Core/Utils/LiteUtils";
 import {ClientMessage} from "../../Events/Activity/Message";
 

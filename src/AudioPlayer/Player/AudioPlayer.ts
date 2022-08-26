@@ -1,15 +1,13 @@
 import {TypedEmitter} from "tiny-typed-emitter";
 import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 import {Decoder} from "../Structures/Media/Decoder";
-import {AudioFilters, Queue} from "../Structures/Queue/Queue";
+import {Queue} from "../Structures/Queue/Queue";
 import {MessagePlayer} from "../Manager/MessagePlayer";
-import {Song} from "../Structures/Queue/Song";
-import {Searcher} from "./Searcher";
 import {PlayersManager} from "../Manager/PlayersManager";
 import {ClientMessage} from "../../Handler/Events/Activity/Message";
 
 export const StatusPlayerHasSkipped: Set<string> = new Set(["playing", "paused", "buffering", "idle"]);
-const SilentFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe, 0xfae]);
+const SilentFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe]);
 
 interface AudioPlayerEvents {
     idle: (oldState: PlayerState, newState: PlayerState) => void;
@@ -123,7 +121,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
 
         if (song) {
             //Получаем исходный поток
-            CreateResource(song, queue.audioFilters, seek).then((stream) => {
+            song.resource(seek, queue.audioFilters).then((stream) => {
                 this.#readStream(stream);
 
                 //Если это не пропуск
@@ -210,42 +208,6 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     //Выключаем голос бота на всех голосовых каналах
     readonly #signalStopSpeaking = (): void => this.#_voices.forEach((connection) => connection.setSpeaking(false));
 }
-
-//====================== ====================== ====================== ======================
-/**
- * @description Создаем Opus поток
- * @param song {Song} Трек
- * @param audioFilters {AudioFilters} Аудио фильтры которые включил пользователь
- * @param seek {number} Пропуск музыки до 00:00:00
- */
-function CreateResource(song: Song, audioFilters: AudioFilters = null, seek: number = 0): Promise<PlayerResource | null> {
-    const Resource = Searcher.toCheckResource(song);
-
-    return Resource.then((format: Song["format"]) => {
-        if (!format) return null;
-
-        let LiveStream: Decoder.Dash, params: {url: string | Decoder.Dash, seek?: number, filters?: AudioFilters};
-
-        //Если будет включен поток
-        if (song.isLive) {
-            LiveStream = new Decoder.Dash(format.url, song.url);
-            params = {url: LiveStream};
-        } else params = {url: format.url, seek, filters: audioFilters};
-
-        //Следую параметра начинам расшифровку
-        const DecodeFFmpeg = new Decoder.All(params);
-
-        //Удаляем поток следую Decoder.All<events>
-        ["close", "end", "error"].forEach((event: string) => DecodeFFmpeg.once(event, () => {
-            [DecodeFFmpeg, LiveStream].forEach((clas) => {
-                if (clas !== undefined) clas.destroy();
-            });
-        }));
-
-        return DecodeFFmpeg;
-    });
-}
-
 type PlayerState = PlayerStates["idle"] | PlayerStates["pause"] | PlayerStates["playing"] | PlayerStates["buffering"] | PlayerStates["error"];
 type PlayerResource = Decoder.All; //Все декодировщики доступные к чтению
 

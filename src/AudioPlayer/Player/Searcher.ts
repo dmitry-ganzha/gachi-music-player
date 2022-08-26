@@ -1,64 +1,12 @@
 import {MessageCollector, MessageReaction, StageChannel, User, VoiceChannel} from "discord.js";
-import {httpsClient} from "../../Core/httpsClient";
-import {Song} from "../Structures/Queue/Song";
-import {FFmpegFormat, InputPlaylist, InputTrack} from "../../Core/Utils/TypeHelper";
-import {SoundCloud, Spotify, VK, YouTube} from "../../Structures/Platforms";
-import {FFmpeg} from "../Structures/Media/FFmpeg";
-import {Images} from "../Structures/EmbedMessages";
 import {DurationUtils} from "../Manager/DurationUtils";
-import {IncomingMessage} from "http";
 import {ClientMessage} from "../../Handler/Events/Activity/Message";
+import {InputPlaylist, InputTrack, SupportPlatforms} from "../Structures/Queue/Song";
 
 const youtubeStr = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi;
 const spotifySrt = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;
 const SoundCloudSrt = /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/(.*)$/;
 const UrlSrt = /^(https?:\/\/)/gi;
-
-//Все возможные запросы данных в JSON формате
-const localPlatform = {
-    //YouTube
-    "yt": {
-        "track": (search: string): Promise<InputTrack> => YouTube.getVideo(search) as Promise<InputTrack>,
-        "playlist": (search: string): Promise<InputPlaylist> => YouTube.getPlaylist(search),
-        "search": (search: string): Promise<InputTrack[]> => YouTube.SearchVideos(search),
-    },
-    //Spotify
-    "sp": {
-        "track": (search: string): Promise<InputTrack> => Spotify.getTrack(search),
-        "playlist": (search: string): Promise<InputPlaylist> => Spotify.getPlaylist(search),
-        "search": (search: string): Promise<InputTrack[]> => Spotify.SearchTracks(search),
-        "album": (search: string): Promise<InputPlaylist> => Spotify.getAlbum(search)
-    },
-    //SoundCloud
-    "sc": {
-        "track": (search: string): Promise<InputTrack> => SoundCloud.getTrack(search),
-        "playlist": (search: string): Promise<InputPlaylist | InputTrack> => SoundCloud.getPlaylist(search),
-        "search": (search: string): Promise<InputTrack[]> => SoundCloud.SearchTracks(search),
-        "album": (search: string): Promise<InputPlaylist | InputTrack> => SoundCloud.getPlaylist(search)
-    },
-    //VK
-    "vk": {
-        "track": (search: string): Promise<InputTrack> => VK.getTrack(search),
-        "playlist": (search: string): Promise<InputPlaylist> => VK.getPlaylist(search),
-        "search": (search: string): Promise<InputTrack[]> => VK.SearchTracks(search),
-    },
-    //Discord
-    "ds": {
-        "track": (search: string): Promise<InputTrack> => new FFmpeg.FFprobe(["-i", search]).getInfo().then((trackInfo: any) => {
-            //Если не найдена звуковая дорожка
-            if (!trackInfo) return null;
-
-            return {
-                url: search,
-                title: search.split("/").pop(),
-                author: null,
-                image: {url: Images.NotImage},
-                duration: {seconds: trackInfo.format.duration},
-                format: {url: trackInfo.format.filename}
-            };
-        })
-    }
-}
 
 export namespace Searcher {
     /**
@@ -73,7 +21,7 @@ export namespace Searcher {
         //Отправляем сообщение о поиске трека
         if (!message.attachments?.last()?.url) message.client.sendMessage({ text: `Поиск 🔍 | ${search}`, message, color: "YELLOW", type: "css" });
 
-        const findPlatform = localPlatform[platform];
+        const findPlatform = SupportPlatforms[platform];
         const findCallback = (findPlatform as any)[type];
 
         //Если нет в базе платформы
@@ -98,117 +46,6 @@ export namespace Searcher {
         });
         //Если выходит ошибка
         runPromise.catch((err) => message.client.sendMessage({text: `${message.author}, данные не были найдены! \nError: ${err}`, color: "RED", message}));
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Проверяем статус код на ресурс
-     * @param song {Song} Трек
-     * @param req {number} Какой по счету запрос
-     */
-    export function toCheckResource(song: Song, req = 1): Promise<Song["format"] | null> {
-        return new Promise(async (resolve) => {
-            if (req > 2) return resolve(null);
-
-            const CheckResource = await ResourceSong.CheckHeadResource(song);
-
-            //Если выходит ошибка или нет ссылки на исходный ресурс
-            if (!CheckResource || !song.format?.url) {
-                req++;
-                return resolve(toCheckResource(song, req));
-            }
-            return resolve(song.format);
-        });
-    }
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Searcher<toCheckResource>
- */
-namespace ResourceSong {
-    /**
-     * @description Ищет трек и проверяем его работоспособность
-     * @param song {Song} Трек
-     */
-    export function CheckHeadResource(song: Song): Promise<boolean> {
-        return new Promise(async (resolve) => {
-            if (!song.format || !song.format?.url) {
-                let format = await getFormatSong(song);
-
-                if (!format || !format?.url) {
-                    song.format = {url: null};
-                    return resolve(false);
-                }
-                //Добавляем ссылку в трек
-                song.format = {url: format.url};
-            }
-
-            //Делаем head запрос на сервер
-            const resource = await CheckLink(song.format?.url);
-            if (resource === "Fail") { //Если выходит ошибка
-                song.format = {url: null};
-                return resolve(false);
-            }
-            return resolve(true);
-        });
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Проверяем ссылку
-     * @param url {string} Ссылка
-     * @constructor
-     */
-    function CheckLink(url: string) {
-        if (!url) return "Fail";
-
-        return httpsClient.Request(url, {request: {method: "HEAD"}}).then((resource: IncomingMessage) => {
-            if (resource instanceof Error) return "Fail"; //Если есть ошибка
-            if (resource.statusCode >= 200 && resource.statusCode < 400) return "OK"; //Если возможно скачивать ресурс
-            return "Fail"; //Если прошлые варианты не подходят, то эта ссылка не рабочая
-        });
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Получаем данные формата
-     * @param song {Song} Трек
-     * @requires {FindTrack}
-     */
-    function getFormatSong({type, url, title, author, duration}: Song): Promise<FFmpegFormat> {
-        try {
-            switch (type) {
-                case "SPOTIFY": return FindTrack(`${author.title} - ${title}`, duration.seconds);
-                case "SOUNDCLOUD": return SoundCloud.getTrack(url).then((d) => d?.format);
-                case "VK": return VK.getTrack(url).then((d) => d?.format);
-                case "YOUTUBE": return YouTube.getVideo(url).then((video) => video.format) as Promise<FFmpegFormat>
-                default: return null
-            }
-        } catch {
-            console.log("[FindResource]: Fail to found format");
-            return null;
-        }
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Ищем трек на youtube
-     * @param nameSong {string} Название музыки
-     * @param duration
-     * @constructor
-     */
-    function FindTrack(nameSong: string, duration: number): Promise<FFmpegFormat> {
-        return YouTube.SearchVideos(nameSong, {limit: 15}).then((Tracks) => {
-            //Фильтруем треки оп времени
-            const FindTracks = Tracks.filter((track: InputTrack) => {
-                const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);
-
-                //Как надо фильтровать треки
-                return DurationSong === duration || DurationSong < duration + 10 && DurationSong > duration - 10;
-            });
-
-            //Если треков нет
-            if (FindTracks.length === 0) return null;
-
-            //Получаем данные о треке
-            return YouTube.getVideo(FindTracks[0].url).then((video) => video.format) as Promise<FFmpegFormat>;
-        });
     }
 }
 //====================== ====================== ====================== ======================
@@ -237,20 +74,20 @@ namespace toPlayerUtils {
      * @private
      */
     export function PlatformSong(search: string, message: ClientMessage): TypeSearch {
-        if (!search) return "ds"; //Если нет search, значит пользователь прикрепил файл
+        if (!search) return "Discord"; //Если нет search, значит пользователь прикрепил файл
 
         if (search.match(UrlSrt)) {
-            if (search.match(youtubeStr)) return "yt";
-            else if (search.match(spotifySrt)) return "sp";
-            else if (search.match(/vk.com/)) return "vk";
-            else if (search.match(SoundCloudSrt)) return "sc";
-            else if (search.match(/cdn.discordapp.com/) || message.attachments?.last()?.url) return "ds";
+            if (search.match(youtubeStr)) return "YOUTUBE";
+            else if (search.match(spotifySrt)) return "SPOTIFY";
+            else if (search.match(/vk.com/)) return "VK";
+            else if (search.match(SoundCloudSrt)) return "SOUNDCLOUD";
+            else if (search.match(/cdn.discordapp.com/) || message.attachments?.last()?.url) return "Discord";
         }
 
         const SplitSearch = search.split(' ');
-        const FindType = SplitSearch[0].toLowerCase() as "yt" | "sp" | "vk" | "sc";
+        const FindType = SplitSearch[0].toLowerCase() as TypeSearch;
 
-        if (FindType.length > 2) return "yt";
+        if (FindType.length > 2) return "YOUTUBE";
         return FindType;
     }
 }
@@ -361,7 +198,7 @@ namespace SearchSongMessage {
         // @ts-ignore
         results.ArraySort(15).forEach((tracks: InputTrack[]) => {
             StringTracks = tracks.map((track) => {
-                const Duration = type === "yt" ? track.duration.seconds : DurationUtils.ParsingTimeToString(parseInt(track.duration.seconds)); //Проверяем надо ли конвертировать время
+                const Duration = type === "YOUTUBE" ? track.duration.seconds : DurationUtils.ParsingTimeToString(parseInt(track.duration.seconds)); //Проверяем надо ли конвертировать время
                 const NameTrack = `[${message.client.replaceText(track.title, 80, true)}]`; //Название трека
                 const DurationTrack = `[${Duration ?? "LIVE"}]`; //Длительность трека
                 const AuthorTrack = `[${message.client.replaceText(track.author.title, 12, true)}]`; //Автор трека
@@ -384,7 +221,7 @@ namespace SearchSongMessage {
 //Типы данных
 type TypeFindTrack = "track" | "playlist" | "search" | "album";
 //Платформы
-type TypeSearch = "yt" | "sp" | "vk" | "sc" | "ds";
+type TypeSearch = "YOUTUBE" | "SPOTIFY" | "VK" | "SOUNDCLOUD" | "Discord";
 //Данные которые необходимо передать для поиска
 interface Options {
     type?: TypeFindTrack

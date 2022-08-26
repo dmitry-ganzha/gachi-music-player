@@ -1,6 +1,5 @@
 import {MessageReaction, ReactionCollector, User} from "discord.js";
-import {EmbedConstructor} from "./TypeHelper";
-import {ClientMessage} from "../../Handler/Events/Activity/Message";
+import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
 
 const emojis = {
     back: "⬅️",

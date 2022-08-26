@@ -4,7 +4,7 @@ import {
     Guild, Message,
 } from "discord.js";
 import {WatKLOK} from "../../../Core/Client/Client";
-import {EmbedConstructor} from "../../../Core/Utils/TypeHelper";
+import {EmbedConstructor} from "../Activity/Message";
 import {Colors} from "../../../Core/Utils/LiteUtils";
 import cfg from "../../../../DataBase/Config.json";
 import {Event} from "../../../Structures/Event";

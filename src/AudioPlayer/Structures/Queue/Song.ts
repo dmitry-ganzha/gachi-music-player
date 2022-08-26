@@ -1,29 +1,61 @@
 import {User} from "discord.js";
-import {
-    FFmpegFormat, InputAuthor,
-    InputTrack,
-    InputTrackDuration,
-    InputTrackImage
-} from "../../../Core/Utils/TypeHelper";
 import {Colors} from "../../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../../Manager/DurationUtils";
 import {Images} from "../EmbedMessages";
 import {ClientMessage} from "../../../Handler/Events/Activity/Message";
+import {Decoder} from "../Media/Decoder";
+import {AudioFilters} from "./Queue";
+import {httpsClient} from "../../../Core/httpsClient";
+import {SoundCloud, Spotify, VK, YouTube} from "../../../Structures/Platforms";
+import {FFmpeg} from "../Media/FFmpeg";
 
-type SongType = "SPOTIFY" | "YOUTUBE" | "VK" | "SOUNDCLOUD" | "UNKNOWN";
+//Все возможные запросы данных в JSON формате
+export const SupportPlatforms = {
+    //YouTube
+    "YOUTUBE": {
+        "track": (search: string): Promise<InputTrack> => YouTube.getVideo(search) as Promise<InputTrack>,
+        "playlist": (search: string): Promise<InputPlaylist> => YouTube.getPlaylist(search),
+        "search": (search: string): Promise<InputTrack[]> => YouTube.SearchVideos(search),
+    },
+    //Spotify
+    "SPOTIFY": {
+        "track": (search: string): Promise<InputTrack> => Spotify.getTrack(search),
+        "playlist": (search: string): Promise<InputPlaylist> => Spotify.getPlaylist(search),
+        "search": (search: string): Promise<InputTrack[]> => Spotify.SearchTracks(search),
+        "album": (search: string): Promise<InputPlaylist> => Spotify.getAlbum(search)
+    },
+    //SoundCloud
+    "SOUNDCLOUD": {
+        "track": (search: string): Promise<InputTrack> => SoundCloud.getTrack(search),
+        "playlist": (search: string): Promise<InputPlaylist | InputTrack> => SoundCloud.getPlaylist(search),
+        "search": (search: string): Promise<InputTrack[]> => SoundCloud.SearchTracks(search),
+        "album": (search: string): Promise<InputPlaylist | InputTrack> => SoundCloud.getPlaylist(search)
+    },
+    //VK
+    "VK": {
+        "track": (search: string): Promise<InputTrack> => VK.getTrack(search),
+        "playlist": (search: string): Promise<InputPlaylist> => VK.getPlaylist(search),
+        "search": (search: string): Promise<InputTrack[]> => VK.SearchTracks(search),
+    },
+    //Discord
+    "Discord": {
+        "track": (search: string): Promise<InputTrack> => new FFmpeg.FFprobe(["-i", search]).getInfo().then((trackInfo: any) => {
+            //Если не найдена звуковая дорожка
+            if (!trackInfo) return null;
 
-/**
- * @description Какие данные доступны в <song>.requester
- */
-interface SongRequester {
-    id: string;
-    username: string;
-    avatarURL: () => string | null;
+            return {
+                url: search,
+                title: search.split("/").pop(),
+                author: null,
+                image: {url: Images.NotImage},
+                duration: {seconds: trackInfo.format.duration},
+                format: {url: trackInfo.format.filename}
+            };
+        })
+    }
 }
-//====================== ====================== ====================== ======================
-/**
- * @description Создаем трек для внутреннего использования
- */
+
+//Создаем трек для внутреннего использования
 export class Song {
     readonly #_title: string;
     readonly #_url: string;
@@ -37,7 +69,7 @@ export class Song {
     readonly #_isLive: boolean;
     readonly #_color: number;
     readonly #_type: SongType;
-    #_format: FFmpegFormat;
+    resourceLink: string;
 
     public constructor(track: InputTrack, author: ClientMessage["author"]) {
         const type = Type(track.url);
@@ -56,7 +88,7 @@ export class Song {
         this.#_isLive = track.isLive;
         this.#_color = Color(type);
         this.#_type = type;
-        this.#_format = {url: track?.format?.url}
+        this.resourceLink = track?.format?.url
     }
     //Название трека
     public get title() {
@@ -94,13 +126,60 @@ export class Song {
     public get type() {
         return this.#_type;
     };
-    //Исходные данные на ресурс трека
-    public get format() {
-        return this.#_format;
+
+    //Получаем исходник трека
+    public resource = async (seek: number, filters: AudioFilters, req = 0): Promise<null | Decoder.All> => {
+        if (req > 2) return null;
+        if (!this.resourceLink) this.resourceLink = (await SongFinder.findResource(this))?.url;
+        const checkResource = await httpsClient.checkLink(this.resourceLink);
+
+        if (checkResource === "OK") {
+            let params: { url: string | Decoder.Dash, seek?: number, filters?: AudioFilters };
+            if (this.isLive) params = {url: new Decoder.Dash(this.resourceLink, this.url)};
+            else params = {url: this.resourceLink, seek, filters};
+
+            const DecodeFFmpeg = new Decoder.All(params);
+            //Удаляем поток следую Decoder.All<events>
+            ["close", "end", "error"].forEach((event: string) => DecodeFFmpeg.once(event, () => {
+                [DecodeFFmpeg, params.url].forEach((clas) => typeof clas !== "string" && clas !== undefined ? clas.destroy() : null);
+            }));
+
+            return DecodeFFmpeg;
+        } else return this.resource(seek, filters, req++);
     };
-    public set format(format) {
-        this.#_format = format;
-    };
+}
+
+namespace SongFinder {
+    //Получаем данные о треке заново
+    export function findResource(song: Song): Promise<FFmpeg.FFmpegFormat> {
+        const {type, url, author, title, duration} = song;
+
+        if (type === "SPOTIFY") return FindTrack(`${author.title} - ${title}`, duration.seconds);
+
+        // @ts-ignore
+        const FindPlatform = SupportPlatforms[type];
+        const FindCallback = FindPlatform["track"](url);
+
+        return FindCallback.then((track: InputTrack) => track.format);
+    }
+    //Ищем трек на YouTube
+    function FindTrack(nameSong: string, duration: number): Promise<FFmpeg.FFmpegFormat> {
+        return YouTube.SearchVideos(nameSong, {limit: 15}).then((Tracks) => {
+            //Фильтруем треки оп времени
+            const FindTracks = Tracks.filter((track: InputTrack) => {
+                const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);
+
+                //Как надо фильтровать треки
+                return DurationSong === duration || DurationSong < duration + 10 && DurationSong > duration - 10;
+            });
+
+            //Если треков нет
+            if (FindTracks.length === 0) return null;
+
+            //Получаем данные о треке
+            return YouTube.getVideo(FindTracks[0].url).then((video) => video.format) as Promise<FFmpeg.FFmpegFormat>;
+        });
+    }
 }
 //====================== ====================== ====================== ======================
 /**
@@ -111,9 +190,7 @@ export class Song {
  * @constructor
  */
 function ConstRequester({id, username, avatar}: User) {
-    return {
-        username, id, avatarURL: () => `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp`
-    };
+    return { username, id, avatarURL: () => `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp` };
 }
 //====================== ====================== ====================== ======================
 /**
@@ -123,9 +200,7 @@ function ConstRequester({id, username, avatar}: User) {
  */
 function ConstDuration(duration: InputTrackDuration): { StringTime: string | "Live"; seconds: number } {
     const seconds = parseInt(duration.seconds);
-    return {
-        seconds, StringTime: seconds > 0 ? DurationUtils.ParsingTimeToString(seconds) : "Live"
-    };
+    return { seconds, StringTime: seconds > 0 ? DurationUtils.ParsingTimeToString(seconds) : "Live" };
 }
 //====================== ====================== ====================== ======================
 /**
@@ -157,4 +232,63 @@ function Type(url: string): SongType {
     } catch {
         return "UNKNOWN";
     }
+}
+
+type SongType = "SPOTIFY" | "YOUTUBE" | "VK" | "SOUNDCLOUD" | "UNKNOWN";
+
+/**
+ * @description Какие данные доступны в <song>.requester
+ */
+interface SongRequester {
+    id: string;
+    username: string;
+    avatarURL: () => string | null;
+}
+
+//Пример получаемого трека
+export interface InputTrack {
+    title: string;
+    url: string;
+    duration: {
+        seconds: string;
+    };
+    image?: { url: string; height?: number; width?: number };
+    author: {
+        title: string;
+        url: string | undefined;
+        image?: {
+            url: string | undefined;
+            width?: number;
+            height?: number;
+        };
+        isVerified?: boolean;
+    },
+    format?: FFmpeg.FFmpegFormat | {url: string | undefined};
+    isLive?: boolean;
+    isPrivate?: boolean;
+    isValid?: boolean;
+    PrevFile?: string;
+}
+export type InputTrackDuration = InputTrack["duration"];
+export type InputTrackImage = InputTrack["image"];
+//Пример получаемого автора трека
+export interface InputAuthor {
+    title: string;
+    url: string | undefined;
+    image?: {
+        url: string | undefined;
+        width?: number;
+        height?: number;
+    };
+    isVerified?: boolean;
+}
+//Пример получаемого плейлиста
+export interface InputPlaylist {
+    url: string;
+    title: string;
+    items: InputTrack[];
+    image: {
+        url: string;
+    };
+    author?: InputAuthor;
 }

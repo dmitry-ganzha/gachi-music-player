@@ -1,6 +1,6 @@
 import {httpsClient} from "../../../Core/httpsClient";
 import {spotify} from "../../../../DataBase/Config.json";
-import {InputAuthor, InputPlaylist, InputTrack} from "../../../Core/Utils/TypeHelper";
+import {InputAuthor, InputPlaylist, InputTrack} from "../../../AudioPlayer/Structures/Queue/Song";
 
 const AccountUrl = "https://accounts.spotify.com/api"; //token
 const ApiUrl = "https://api.spotify.com/v1"; //type/id/params

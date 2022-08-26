@@ -1,7 +1,6 @@
 import {VoiceChannel} from "discord.js";
-import {InputPlaylist, InputTrack} from "../../Core/Utils/TypeHelper";
 import {Queue} from "../Structures/Queue/Queue";
-import {Song} from "../Structures/Queue/Song";
+import {InputPlaylist, InputTrack, Song} from "../Structures/Queue/Song";
 import {Voice} from "../Structures/Voice";
 import {MessagePlayer} from "./MessagePlayer";
 import {ClientMessage} from "../../Handler/Events/Activity/Message";

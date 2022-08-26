@@ -1,8 +1,7 @@
 import {ButtonStyle} from "discord.js";
 import {Command} from "../../Structures/Command";
 import {Bot} from "../../../DataBase/Config.json";
-import {ClientMessage} from "../../Handler/Events/Activity/Message";
-import {EmbedConstructor} from "./TypeHelper";
+import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
 
 const Colors = {
     YELLOW: 0xfee75c,

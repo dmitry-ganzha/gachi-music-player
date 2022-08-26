@@ -1,12 +1,11 @@
 import {ActivityType, Client, IntentsBitField, VoiceState, Guild} from "discord.js";
 import {FileSystemLoad} from "../FileSystem";
-import {ColorResolvable, EmbedConstructor, MessageChannel} from "../Utils/TypeHelper";
 import {PlayerEmitter} from "../../AudioPlayer/execute";
 import {Command} from "../../Structures/Command";
 import {Queue} from "../../AudioPlayer/Structures/Queue/Queue";
 import {CollectionMap, Colors, GlobalUtils} from "../Utils/LiteUtils";
 import {Bot, Channels, Debug} from "../../../DataBase/Config.json";
-import {ClientMessage} from "../../Handler/Events/Activity/Message";
+import {ClientMessage, ColorResolvable, EmbedConstructor, MessageChannel} from "../../Handler/Events/Activity/Message";
 import {getVoiceConnection} from "@discordjs/voice";
 
 type SendOptions = {

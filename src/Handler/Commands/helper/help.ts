@@ -1,9 +1,8 @@
 import {Command} from "../../../Structures/Command";
-import {EmbedConstructor} from "../../../Core/Utils/TypeHelper";
 import {CollectorSortReaction} from "../../../Core/Utils/ReactionMenu";
 import {Colors} from "../../../Core/Utils/LiteUtils";
 import {MessageReaction, User} from "discord.js";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
 
 export default class Help extends Command {
     public constructor() {
