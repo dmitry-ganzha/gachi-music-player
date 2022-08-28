@@ -18,7 +18,7 @@
 - Все сообщения удаляют автоматически через время
 
 ## Гайд по запуску
-1. [`Node.js`](https://nodejs.org/ru/) 18
+1. [`Node.js`](https://nodejs.org/ru/) 18, 17, 16
 2. [`FFmpeg & FFprobe`](https://ffmpeg.org/)
 3. Библиотеки шифрования (на выбор)
     - `sodium-native`: ^3.3.0 (рекомендуется)
