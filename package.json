@@ -6,8 +6,8 @@
   "version": "2.0.1",
   "main": "src/Core/Client/Client.js",
   "scripts": {
-    "client": "node ./src/Core/Client/Client.js",
-    "shard": "node ./src/Core/Client/ShardManager.js"
+    "build": "tsc -p ./tsconfig.json",
+    "test": "jest"
   },
   "dependencies": {
     "@discordjs/voice": "^0.12.1-dev.1661472654-13baf75.0",
