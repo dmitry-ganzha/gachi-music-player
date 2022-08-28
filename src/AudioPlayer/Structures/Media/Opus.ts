@@ -11,9 +11,9 @@ type TransformDone = (error?: Error) => void;
 
 export namespace Opus {
     export class Ogg extends Transform {
-        readonly #segment: {bit: number, head: boolean} = {bit: null, head: null};
+        readonly #segment: {bit: number, head: boolean, chunk: Buffer} = {bit: null, head: null, chunk: null};
         public constructor(options: TransformOptions = {}) {
-            super({ readableObjectMode: true, ...options });
+            super({ highWaterMark: 12, readableObjectMode: true, ...options });
         };
 
         readonly _destroy = (error?: Error | null, callback?: TransformDone): void => {
@@ -22,10 +22,16 @@ export namespace Opus {
 
             delete this.#segment.bit;
             delete this.#segment.head;
+            delete this.#segment.chunk;
             super.destroy();
         };
 
         readonly _transform = (chunk: Buffer, encoding: string, done: TransformDone): void => {
+            if (this.#segment.chunk && !chunk.subarray(0, 4).equals(OGGs_HEADER)) { //Если шаблон не совпадает добавляем фрагмент из прошлого куска
+                chunk = Buffer.concat([this.#segment.chunk, chunk]);
+                this.#segment.chunk = null;
+            }
+
             while (chunk) {
                 const result = this.#ReadBufferStream(chunk);
 
@@ -33,6 +39,7 @@ export namespace Opus {
                 else break;
             }
 
+            this.#segment.chunk = chunk;
             return done();
         };
 
@@ -43,7 +50,7 @@ export namespace Opus {
          */
         readonly #ReadBufferStream = (chunk: Buffer): null | Buffer => {
             if (chunk.length < OGG_PAGE_HEADER_SIZE) return null;
-            if (!chunk.subarray(0, 4).equals(OGGs_HEADER)) throw Error(`Шаблон захвата не совпадает с ${OGGs_HEADER}`);
+            //if (!chunk.subarray(0, 4).equals(OGGs_HEADER)) throw Error(`Шаблон захвата не совпадает с ${OGGs_HEADER}`);
             if (chunk.readUInt8(4) !== STREAM_STRUCTURE_VERSION) throw Error(`Структура потока не совпадает с ${STREAM_STRUCTURE_VERSION}`);
 
             if (chunk.length < 27) return null;
@@ -75,22 +82,22 @@ export namespace Opus {
             let start: number = 27 + pageSegments;
 
             //Начинаем запись сегментов в текущий класс
-            sizes.forEach((size) => {
-                const segment: Buffer = chunk.subarray(start, start + size); //Получаем нужный сегмент
-                const header: Buffer = segment.subarray(0, 8); //Обрезаем сегмент для определения
+            for (const size of sizes) {
+                const segment = chunk.subarray(start, start + size); //Получаем нужный сегмент
+                const header = segment.subarray(0, 8); //Обрезаем сегмент для определения
 
                 //Если есть this.#segment.head
                 if (this.#segment.head) {
-                    if (header.equals(OPUS_TAGS)) this.emit("tags", segment);
+                    if (header.equals(OPUS_TAGS)) this.emit('tags', segment);
                     else if (this.#segment.bit === bitstream) this.push(segment);
                 } else if (header.equals(OPUS_HEAD)) { //Если находим в header, фрагменты OPUS_HEAD
-                    this.emit("head", segment);
+                    this.emit('head', segment);
                     this.#segment.head = true;
                     this.#segment.bit = bitstream;
-                } else this.emit("unknownSegment", segment); //Если больше нечего делать с сегментом
+                } else this.emit('unknownSegment', segment); //Если больше нечего делать с сегментом
 
                 start += size;
-            });
+            }
 
             //Выдаем обрезанный сегмент
             return chunk.subarray(start);

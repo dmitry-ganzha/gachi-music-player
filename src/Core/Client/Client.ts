@@ -64,13 +64,12 @@ export class WatKLOK extends Client {
     };
     //Все пользователи в голосовом канале
     public readonly connections = (Guild: Guild) => {
-        const Users: VoiceState[] = [], set = getVoiceConnection(Guild.id);
-        if (set) {
-            Guild.voiceStates.cache.forEach((fn: VoiceState): any => {
-                if (!(fn.channelId === set.joinConfig.channelId && fn.guild.id === set.joinConfig.guildId)) return;
-                Users.push(fn);
-            });
-        }
+        const Voice = getVoiceConnection(Guild.id), Users: VoiceState[] = [];
+
+        if (Voice) Guild.voiceStates.cache.forEach((state: VoiceState): any => {
+            if (!(state.channelId === Voice.joinConfig.channelId && state.guild.id === Voice.joinConfig.guildId)) return;
+            Users.push(state);
+        });
 
         return Users;
     };

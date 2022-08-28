@@ -22,7 +22,7 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
                 //Если есть очередь сервера, удаляем!
                 if (queue) queue.emitter.emit("StartDelete", queue);
             }
-        })
+        });
     };
     //Отключаемся от голосового канала
     readonly #LeaveVoice = (GuildID: string) => Voice.Disconnect(GuildID);

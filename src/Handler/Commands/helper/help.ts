@@ -36,7 +36,7 @@ export default class Help extends Command {
      */
     readonly #CreateEmbedMessage = (message: ClientMessage, CommandsList: Command[]): { embed: EmbedConstructor, pages: any[] } => {
         const pages: string[] = [];
-        const helpEmbed: EmbedConstructor = {
+        const embed: EmbedConstructor = {
             title: "Help Menu",
             color: Colors.YELLOW,
             thumbnail: {
@@ -57,12 +57,10 @@ export default class Help extends Command {
             if (parsedCommand !== undefined) pages.push(parsedCommand);
         });
 
-        helpEmbed.description = pages[0];
-        helpEmbed.footer = {text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL()}
+        embed.description = pages[0];
+        embed.footer = {text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL()}
 
-        return {
-            embed: helpEmbed, pages
-        };
+        return { embed, pages };
     };
     //====================== ====================== ====================== ======================
     /**

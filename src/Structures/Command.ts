@@ -27,7 +27,7 @@ export class Command {
     public readonly enable: boolean;
 
     //Через сколько пользователь сможет включить команду
-    public readonly CoolDown: number
+    public readonly CoolDown: number;
 
     //Дериктория из которой загрузили команду
     public type: string;
