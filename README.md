@@ -27,19 +27,19 @@
 4. Настраиваем бота [тут](DataBase)
 5. Запускаем `_tsBuild.bat` для Windows
 6. Запускаем [тут](_Build), через командную строку
-   - `node ./src/Core/Client/Client.js` Для 1к серверов
-   - `node ./src/Core/Client/ShardManager.js` Для 1к и более серверов
+   - `node ./src/Core/Client.js` Для 1к серверов
+   - `node ./src/Core/ShardManager.js` Для 1к и более серверов
 
 ## Поддерживаемые платформы
 
 | Платформы                                 | Что доступно                         | Аудио       |
 |-------------------------------------------|--------------------------------------|-------------|
-| [**YouTube**](https://www.youtube.com/)   | **видео, плейлисты, поиск**          | ✔           |
+| [**YouTube**](https://www.youtube.com/)   | **видео, плейлисты, поиск, стримы**  | ✔           |
 | [**Spotify**](https://open.spotify.com/)  | **треки, плейлисты, поиск, альбомы** | ✖ (YouTube) |
 | [**VK**](https://vk.com/)                 | **треки, плейлисты, поиск**          | ✔           |
 | [**SoundCloud**](https://soundcloud.com/) | **треки, плейлисты, поиск, альбомы** | ✔           |
+ | [**Discord**](https://discord.com/)       | **ссылки, файлы**                    | ✔           |
 
-    
 ## Настройки
 1. [`Cookie.json`](DataBase/Cookie.json) | необходим для видео 18+
     ```json5
@@ -55,7 +55,7 @@
       },
       "Bot": {
         "ignoreErrors": true, //Игнорировать ошибки
-        "token": "", //Токен
+        "token": "", //Токен (получить можно тут https://discord.com/developers/applications)
         "prefix": "!", //Префикс
         "DiscordServer": "https://discord.gg/qMf2Sv3" //Твой дискорд сервер, можешь оставить мой)
       },
