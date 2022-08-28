@@ -16,8 +16,5 @@
   },
   "repository": {
     "github": "https://github.com/SNIPPIK/WatKLOK.git"
-  },
-  "engines": {
-    "node": ["18.x", "17.x"]
   }
 }
