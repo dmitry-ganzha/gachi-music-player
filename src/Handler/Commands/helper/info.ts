@@ -81,7 +81,5 @@ export default class Info extends Command {
             }
         }
     };
-    readonly #AutoConverter = (Array: any[], PushBase: any) => {
-        Array.forEach((number) => PushBase += number);
-    };
+    readonly #AutoConverter = (Array: any[], PushBase: any) => Array.forEach((number) => PushBase += number);
 }

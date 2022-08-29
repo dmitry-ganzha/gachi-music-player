@@ -55,7 +55,7 @@ export namespace PlayerController {
         const {title, color, requester, url}: Song = songs[args - 1];
 
         setImmediate(() => {
-            const voiceConnection: VoiceState[] = client.connections(guild);
+            const voiceConnection: VoiceState[] = client.connections(guild) as VoiceState[];
             const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === songs[0].requester.id);
 
             //Если музыка не играет
@@ -113,7 +113,7 @@ export namespace PlayerController {
         const {title, color, requester, url}: Song = songs[0];
 
         setImmediate(() => {
-            const voiceConnection: VoiceState[] = client.connections(guild);
+            const voiceConnection: VoiceState[] = client.connections(guild) as VoiceState[];
             const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === requester.id);
 
             //Если музыка не играет
@@ -182,7 +182,7 @@ function toSkipNumber(message: ClientMessage, args: number): void {
     const {title, color, requester, url}: Song = queue.songs[args - 1];
 
     setImmediate(() => {
-        const voiceConnection: VoiceState[] = client.connections(guild);
+        const voiceConnection: VoiceState[] = client.connections(guild) as VoiceState[];
         const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === queue.songs[0].requester.id);
 
         //Если музыка не играет

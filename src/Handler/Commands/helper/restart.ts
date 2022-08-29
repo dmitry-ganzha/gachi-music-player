@@ -7,9 +7,9 @@ import {ClientMessage} from "../../Events/Activity/Message";
 export default class Restart extends Command {
     public constructor() {
         super({
-            name: 'restart',
+            name: "restart",
             aliases: ["res"],
-            description: 'Перезапуск плеера, очередь этого сервера будет потеряна!',
+            description: "Перезапуск плеера, очередь этого сервера будет потеряна!",
 
             enable: true,
         });

@@ -40,6 +40,12 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         const oldState = this.#_state; //Старая статистика плеера
         const isNewResources = oldState.status !== "idle" && newState.status === "playing" && oldState.stream !== newState.stream;
 
+        //Если статус повторяется и при этом добавлен новый поток то
+        if (this.#_state.status === newState.status && isNewResources) {
+            this.emit("error", "[AudioPlayer]: TypedError: Loop status. Reason: skip this song!");
+            return;
+        }
+
         this.#_state = newState; //Обновляем статистику плеера
 
         //Если пользователь пропустил трек или введен новый поток удаляем старый
@@ -61,7 +67,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         if (oldState.status !== newState.status || isNewResources) {
             //Перед сменой статуса плеера отправляем пустой пакет. Необходим, так мы правим повышение задержки гс!
             this.#sendPackets(SilentFrame);
-            void this.emit(newState.status, oldState, newState);
+            this.emit(newState.status, oldState, newState);
         }
     };
     public get state(): PlayerState {
@@ -132,7 +138,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
                     if (stream instanceof Decoder.All) MessagePlayer.toPlay(queue.channels.message);
                 } else this.playbackDuration = seek; //Если есть пропуск меняем время
             });
-        } else if (queue?.emitter) queue.emitter.emit("DeleteQueue", message);
+        } else if (queue) queue.cleanup();
     };
     //====================== ====================== ====================== ======================
     /**

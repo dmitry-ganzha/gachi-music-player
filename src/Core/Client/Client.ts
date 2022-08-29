@@ -63,7 +63,7 @@ export class WatKLOK extends Client {
         return setTimeout(() => console.log(`[${(new Date).toLocaleString("ru")}] ${text}`), 25);
     };
     //Все пользователи в голосовом канале
-    public readonly connections = (Guild: Guild) => {
+    public readonly connections = (Guild: Guild): VoiceState[] | 404 => {
         const Voice = getVoiceConnection(Guild.id), Users: VoiceState[] = [];
 
         if (Voice) Guild.voiceStates.cache.forEach((state: VoiceState): any => {
@@ -71,7 +71,7 @@ export class WatKLOK extends Client {
             Users.push(state);
         });
 
-        return Users;
+        return Users.length > 0 ? Users : 404;
     };
 }
 

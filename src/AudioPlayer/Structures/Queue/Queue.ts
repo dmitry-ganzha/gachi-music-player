@@ -2,24 +2,27 @@ import {StageChannel, VoiceChannel} from "discord.js";
 import {AudioPlayer} from "../../Player/AudioPlayer";
 import {Song} from "./Song";
 import {VoiceConnection} from "@discordjs/voice";
-import {TypedEmitter} from "tiny-typed-emitter";
 import {MessagePlayer} from "../../Manager/MessagePlayer";
 import {ClientMessage} from "../../../Handler/Events/Activity/Message";
 
 export type LoopType = "song" | "songs" | "off";
 export type AudioFilters = Array<string> | Array<string | number>;
 
+// Очередь серверов
 export class Queue {
-    readonly #_player: AudioPlayer;
-    readonly #_emitter: QueueEvent = new QueueEvent();
+    #Timer: NodeJS.Timeout = null; //Таймер для авто удаления очереди
+    #hasDestroying: boolean = false; //Статус удаления (запущено ли удаление)
+
+    readonly #_player: AudioPlayer; //Сам плеер
+    //Каналы (message: TextChannel, voice: VoiceChannel, connection: VoiceConnection)
     readonly #_channels: { message: ClientMessage, voice: VoiceChannel | StageChannel, connection: VoiceConnection };
-    readonly #_options: { random: boolean, loop: LoopType, stop: boolean } = {
-        random: false,
-        loop: "off",
-        stop: false,
+    readonly #_options: { random: boolean, loop: LoopType, stop: boolean } = { //Уникальные настройки
+        random: false, //Рандомные треки (каждый раз в плеере будет играть разная музыка из очереди)
+        loop: "off", //Тип повтора (off, song, songs)
+        stop: false, //Пользователь выключил музыки или музыка сама закончилась
     };
-    public audioFilters: Array<string> | Array<string | number> = [];
-    public songs: Array<Song> = [];
+    public audioFilters: Array<string> | Array<string | number> = [];  //Фильтры для FFmpeg
+    public songs: Array<Song> = []; //Все треки находятся здесь
 
     //Создаем очередь
     public constructor(message: ClientMessage, voice: VoiceChannel) {
@@ -51,10 +54,6 @@ export class Queue {
     public get player() {
         return this.#_player;
     };
-    //Данные emitter
-    public get emitter() {
-        return this.#_emitter;
-    };
     //Все каналы
     public get channels() {
         return this.#_channels;
@@ -63,7 +62,54 @@ export class Queue {
     public get options() {
         return this.#_options;
     };
+
+    //Удаление очереди
+    public readonly cleanup = (sendDelQueue: boolean = true) => {
+        const message = this.channels.message
+        const {client, guild} = this.channels.message;
+        const Queue = client.queue.get(guild.id);
+
+        //Если нет очереди
+        if (!Queue) return;
+        const {channels, player, options} = Queue;
+
+        //Удаляем сообщение о текущем треке
+        if (message?.deletable) message?.delete().catch(() => undefined);
+        if (player) {
+            player.unsubscribe({connection: channels.connection});
+            player.stop();
+        }
+        [Queue.songs, Queue.audioFilters].forEach(data => data = null);
+
+        if (sendDelQueue) {
+            if (options.stop) client.sendMessage({text: "🎵 | Музыка была выключена", message, type: "css"});
+            else client.sendMessage({text: "🎵 | Музыка закончилась", message, type: "css"});
+        }
+
+        clearTimeout(this.#Timer);
+        client.queue.delete(guild.id);
+    };
+    //Удаление очереди через время
+    public readonly TimeDestroying = (state: "start" | "cancel"): void => {
+        const player = this.player;
+
+        //Запускаем таймер по истечению которого очереди будет удалена!
+        if (state === "start") {
+            if (this.#hasDestroying) return;
+
+            this.#Timer = setTimeout(() => this.cleanup(false), 30e3);
+            this.#hasDestroying = true;
+            player.pause();
+        } else { //Отменяем запущенный таймер
+            if (!this.#hasDestroying) return;
+
+            clearTimeout(this.#Timer);
+            player.resume();
+            this.#hasDestroying = false;
+        }
+    };
 }
+
 namespace onPlayerFunction {
     /**
      * @description Когда плеер завершит песню, он возвратит эту функцию
@@ -115,91 +161,4 @@ function isRemoveSong({options, songs}: Queue): void {
         case "songs": return void songs.push(songs.shift());
         default: return void songs.shift();
     }
-}
-//====================== ====================== ====================== ======================
-//Доступные ивенты QueueEvent
-interface QueueEvents {
-    DeleteQueue: (message: ClientMessage, sendDelQueue?: boolean) => void;
-    StartDelete: (queue: Queue) => void;
-    CancelDelete: (player: AudioPlayer) => void;
-}
-/**
- * @description Нужно только для того что-бы удалить очередь один раз)
- */
-class QueueEvent extends TypedEmitter<QueueEvents> {
-    Timer: NodeJS.Timeout;
-    hasDestroying: boolean;
-
-    public constructor() {
-        super();
-        this.once("DeleteQueue", onDeleteQueue);
-        this.on("StartDelete", this.#onStartDelete);
-        this.on("CancelDelete", this.#onCancelDelete);
-        this.setMaxListeners(3);
-    };
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Создаем таймер (по истечению таймера будет удалена очередь)
-     * @param queue {object} Очередь сервера
-     */
-    readonly #onStartDelete = (queue: Queue): void => {
-        this.Timer = setTimeout(() => {
-            this.emit("DeleteQueue", queue.channels.message, false);
-        }, 30e3);
-        this.hasDestroying = true;
-        queue.player.pause();
-    };
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Удаляем таймер который удаляет очередь
-     * @param player {AudioPlayer} Плеер
-     */
-    readonly #onCancelDelete = (player: AudioPlayer): void => {
-        if (this.hasDestroying) {
-            clearTimeout(this.Timer);
-            player.resume();
-            this.hasDestroying = false;
-        }
-    };
-    readonly cleanup = () => {
-        clearTimeout(this.Timer);
-
-        delete this.hasDestroying;
-        delete this.Timer;
-    };
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Удаление очереди
- * @param message {ClientMessage} Сообщение с сервера
- * @param sendDelQueue {boolean} Отправить сообщение об удалении очереди
- * @requires {sendMessage}
- */
-function onDeleteQueue(message: ClientMessage, sendDelQueue: boolean = true) {
-    const {client, guild} = message;
-    const Queue = client.queue.get(guild.id);
-
-    //Если нет очереди
-    if (!Queue) return;
-    const {channels, player, emitter, options} = Queue;
-
-    //Удаляем сообщение о текущем треке
-    if (channels.message?.deletable) channels.message?.delete().catch(() => undefined);
-    if (player) {
-        player.unsubscribe({connection: channels.connection});
-        player.stop();
-    }
-    [Queue.songs, Queue.audioFilters].forEach(data => data = null);
-
-    if (sendDelQueue) {
-        if (options.stop) sendMessage(message, "🎵 | Музыка была выключена");
-        else sendMessage(message, "🎵 | Музыка закончилась");
-    }
-
-    emitter.cleanup();
-    client.queue.delete(guild.id);
-}
-//Отправляем сообщение в тестовый канал
-function sendMessage(message: ClientMessage, text: string) {
-    return message.client.sendMessage({text, message, type: "css"});
 }

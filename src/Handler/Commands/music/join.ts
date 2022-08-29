@@ -39,16 +39,15 @@ export default class Join extends Command {
         });
 
         if (queue) { //Если есть очередь, то
-            const connection = Voice.Join(voiceChannel); //Подключаемся к Vc
+            const connection = Voice.Join(voiceChannel); //Подключаемся к голосовому каналу
 
             queue.channels.message = message;
             queue.channels.connection = connection;
             queue.channels.voice = voiceChannel;
 
-            queue.player.subscribe(connection); //Подключаем Vc к плееру
-            queue.player.resume(); //Продолжаем воспроизведение
+            queue.player.subscribe(connection); //Подключаем голосовой канал к плееру
 
-            queue.emitter.emit("CancelDelete", queue.player); //Отменяем удаление очереди
+            queue.TimeDestroying("cancel"); //Отменяем удаление очереди
             return;
         }
 

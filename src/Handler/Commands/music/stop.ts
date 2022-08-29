@@ -22,7 +22,7 @@ export default class Stop extends Command {
         if (queue) {
             Voice.Disconnect(message.guild.id);
             queue.songs = [];
-            queue.emitter.emit('DeleteQueue', message, true);
+            queue.cleanup(true);
             return;
         }
 
