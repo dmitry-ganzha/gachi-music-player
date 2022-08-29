@@ -44,7 +44,7 @@ export namespace UtilsPermissions {
     }
     // У пользователя есть ограничения?
     export function isPermissions(permissions: Command['permissions'], message: ClientMessage): boolean {
-        if (permissions.client.length > 0 || permissions.user.length > 0) {
+        if (permissions.client?.length > 0 || permissions.user?.length > 0) {
             const {client, user} = _parsePermissions(permissions, message);
             const Embed = EmbedNotPermissions(message);
 
@@ -69,22 +69,19 @@ function _parsePermissions(permissions: Command['permissions'], message: ClientM
     let ClientString = "", UserString = "";
 
     //Если permissions.client больше 0, то делаем проверку
-    if (permissions.client.length > 0) {
+    if (permissions.client?.length > 0) {
         for (let i in permissions.client) {
             if (!message.guild.members.me?.permissions?.has(permissions.client[i])) ClientString += `•${permissions.client[i]}\n`;
         }
     }
     //Если permissions.user больше 0, то делаем проверку
-    if (permissions.user.length > 0) {
+    if (permissions.user?.length > 0) {
         for (let i in permissions.user) {
             if (!message.member.permissions.has(permissions.user[i])) UserString += `•${permissions.user[i]}\n`;
         }
     }
 
-    return {
-        user: UserString,
-        client: ClientString
-    }
+    return { user: UserString, client: ClientString };
 }
 
 //Message сообщение
