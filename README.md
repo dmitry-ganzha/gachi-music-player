@@ -13,12 +13,13 @@
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
 - Лицензия: [`MIT`](https://github.com/SNIPPIK/WatKLOK/blob/main/LICENSE)
-- [Настройки](DataBase/Config.json)
-- [Все команды](src/Handler/Commands) | `Slash + Standart`
+- Перейти к [настройкам](DataBase/Config.json)
+- Перейти ко [всем командам](src/Handler/Commands) | `Slash + Standart`
+- Перейти к [плееру](src/AudioPlayer)
 - Все сообщения удаляют автоматически через время
 
 ## Гайд по запуску
-1. [`Node.js`](https://nodejs.org/ru/) 18, 17, 16
+1. [`Node.js`](https://nodejs.org/ru/) 18
 2. [`FFmpeg & FFprobe`](https://ffmpeg.org/)
 3. Библиотеки шифрования (на выбор)
     - `sodium-native`: ^3.3.0 (рекомендуется)
