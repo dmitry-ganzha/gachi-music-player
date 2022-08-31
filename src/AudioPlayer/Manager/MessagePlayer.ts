@@ -34,7 +34,13 @@ export namespace MessagePlayer {
     export function toPlay(message: ClientMessage) {
         if (MessagesData.messages.get(message.channelId)) MessageUpdater.toRemove(message);
 
-        pushCurrentSongMessage(message).then(MessageUpdater.toPush).catch(() => undefined);
+        setImmediate(() => {
+            try {
+                pushCurrentSongMessage(message).then(MessageUpdater.toPush);
+            } catch (e) {
+                message.client.console(`[MessagePlayer]: [Method: ${e.method ?? null}]: [on: pushCurrentSong, ${e.code}]: ${e?.message}`);
+            }
+        });
     }
     //====================== ====================== ====================== ======================
     /**

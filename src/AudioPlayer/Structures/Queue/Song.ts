@@ -128,8 +128,8 @@ export class Song {
     };
 
     //Получаем исходник трека
-    public resource = async (seek: number, filters: AudioFilters, req = 0): Promise<null | Decoder.All> => {
-        if (req > 2) return null;
+    public resource = (seek: number, filters: AudioFilters, req = 0): Promise<null | Decoder.All> => new Promise(async (resolve) => {
+        if (req > 2) return resolve(null);
         if (!this.resourceLink) this.resourceLink = (await SongFinder.findResource(this))?.url;
         const checkResource = await httpsClient.checkLink(this.resourceLink);
 
@@ -144,9 +144,12 @@ export class Song {
                 [DecodeFFmpeg, params.url].forEach((clas) => typeof clas !== "string" && clas !== undefined ? clas.destroy() : null);
             }));
 
-            return DecodeFFmpeg;
-        } else return this.resource(seek, filters, req++);
-    };
+            return resolve(DecodeFFmpeg);
+        } else {
+            req++;
+            return resolve(this.resource(seek, filters, req));
+        }
+    });
 }
 
 namespace SongFinder {
@@ -160,7 +163,7 @@ namespace SongFinder {
         const FindPlatform = SupportPlatforms[type];
         const FindCallback = FindPlatform["track"](url);
 
-        return FindCallback.then((track: InputTrack) => track.format);
+        return FindCallback.then((track: InputTrack) => track?.format);
     }
     //Ищем трек на YouTube
     function FindTrack(nameSong: string, duration: number): Promise<FFmpeg.FFmpegFormat> {

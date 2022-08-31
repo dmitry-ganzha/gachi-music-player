@@ -120,24 +120,25 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
      * @param seek {number} Со скольки включить трек
      */
     public readonly play = (queue: Queue, seek: number = 0) => {
+        const CurrentSong = queue.songs[0];
         const message = queue.channels.message;
         const {client, guild} = message;
-        const song = queue?.songs[0];
 
-        if (song) {
-            //Получаем исходный поток
-            song.resource(seek, queue.audioFilters).then((stream) => {
-                this.#readStream(stream);
+        //Если нет трека, то удаляем очередь
+        if (!CurrentSong) return queue.cleanup();
+        const Audio = CurrentSong.resource(seek, queue.audioFilters);
+        Audio.then((stream) => {
+            this.#readStream(stream);
 
-                //Если это не пропуск
-                if (!seek) {
-                    //Отправляем лог о текущем треке
-                    client.console(`[GuildID: ${guild.id}]: ${song.title}`);
-                    //Если стрим не пустышка отправляем сообщение
-                    if (stream instanceof Decoder.All) MessagePlayer.toPlay(message);
-                } else this.playbackDuration = seek; //Если есть пропуск меняем время
-            });
-        } else if (queue) queue.cleanup();
+            if (seek) this.playbackDuration = seek;
+            else {
+                //Отправляем лог о текущем треке
+                client.console(`[GuildID: ${guild.id}]: ${CurrentSong.title}`);
+                //Если стрим не пустышка отправляем сообщение
+                if (stream instanceof Decoder.All) MessagePlayer.toPlay(message);
+            }
+        });
+        Audio.catch((err) => this.emit("error", `[AudioPlayer]: ${err}`));
     };
     //====================== ====================== ====================== ======================
     /**
@@ -182,7 +183,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
      * @private
      */
     readonly #readStream = (stream: PlayerResource): void => {
-        if (!stream) return void this.emit("error", "[AudioPlayer]: stream is null");
+        if (!stream) return void this.emit("error", "[AudioPlayer]: Audio resource not found. Stream is null!");
 
         if (stream.hasStarted) this.state = {status: "playing", stream};
         else {
