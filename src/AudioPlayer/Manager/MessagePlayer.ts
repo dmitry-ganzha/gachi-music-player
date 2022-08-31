@@ -34,7 +34,7 @@ export namespace MessagePlayer {
     export function toPlay(message: ClientMessage) {
         if (MessagesData.messages.get(message.channelId)) MessageUpdater.toRemove(message);
 
-        pushCurrentSongMessage(message).then(MessageUpdater.toPush);
+        pushCurrentSongMessage(message).then(MessageUpdater.toPush).catch(() => undefined);
     }
     //====================== ====================== ====================== ======================
     /**
@@ -156,7 +156,7 @@ function UpdateMessage(message: ClientMessage): void {
  */
 function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> {
     const queue: Queue = message.client.queue.get(message.guild.id);
-    const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue.songs[0], queue); // @ts-ignore
+    const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue?.songs[0], queue); // @ts-ignore
     const sendMessage = message.channel.send({embeds: [CurrentPlayEmbed], components: [Buttons]});
 
     sendMessage.then((msg) => CreateCollector(msg, queue));
