@@ -31,6 +31,7 @@ export class Queue {
 
         this.player.on("idle", () => PlayerEventsCallBacks.onIdlePlayer(this));
         this.player.on("buffering", () => PlayerEventsCallBacks.onBufferingPlayer(this));
+        this.player.on("StartPlaying", (seek) => PlayerEventsCallBacks.onStartPlaying(this, seek));
         this.player.on("error", (err: any) => PlayerEventsCallBacks.onErrorPlayer(err, this));
     };
 

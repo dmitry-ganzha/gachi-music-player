@@ -22,7 +22,7 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
             }
 
             //Все пользователи вышли из чата
-            if (!newState.channel?.members) {
+            if (!newState.channel?.members && UsersVoiceChannel.length < 2) {
                 if (queue) queue.TimeDestroying("start");
                 Voice.Disconnect(Guild);
 

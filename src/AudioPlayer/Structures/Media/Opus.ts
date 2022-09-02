@@ -16,10 +16,7 @@ export namespace Opus {
             super({ highWaterMark: 12, readableObjectMode: true, ...options });
         };
 
-        readonly _destroy = (error?: Error | null, callback?: TransformDone): void => {
-            if (error) console.log(error);
-            if (callback) callback(error);
-
+        readonly _destroy = (): void => {
             delete this.#segment.bit;
             delete this.#segment.head;
             delete this.#segment.chunk;

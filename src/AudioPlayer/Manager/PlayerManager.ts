@@ -85,6 +85,24 @@ export namespace PlayersManager {
 
 export namespace PlayerEventsCallBacks {
     /**
+     * @description Когда плеер начнет чтение потока, он возвратит эту функцию
+     * @param queue {Queue} Сама очередь
+     * @param seek {number} До скольки пропускает времени в треке
+     * @requires {MessagePlayer}
+     */
+    export function onStartPlaying(queue: Queue, seek: number): void {
+        const CurrentSong = queue.songs[0];
+        const message = queue.channels.message;
+        const {client, guild} = message;
+
+        if (seek) queue.player.playbackDuration = seek;
+        else {
+            client.console(`[GuildID: ${guild.id}]: ${CurrentSong.title}`); //Отправляем лог о текущем треке
+            MessagePlayer.toPlay(message); //Если стрим не пустышка отправляем сообщение
+        }
+    }
+    //====================== ====================== ====================== ======================
+    /**
      * @description Когда плеер завершит песню, он возвратит эту функцию
      * @param queue {Queue} Сама очередь
      * @requires {isRemoveSong}

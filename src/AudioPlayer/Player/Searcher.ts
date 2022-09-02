@@ -2,6 +2,7 @@ import {MessageCollector, MessageReaction, StageChannel, User, VoiceChannel} fro
 import {DurationUtils} from "../Manager/DurationUtils";
 import {ClientMessage} from "../../Handler/Events/Activity/Message";
 import {InputPlaylist, InputTrack, SupportPlatforms} from "../Structures/Queue/Song";
+import {GlobalUtils} from "../../Core/Utils/LiteUtils";
 
 const youtubeStr = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi;
 const spotifySrt = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;
@@ -121,14 +122,14 @@ namespace SearchSongMessage {
 
                 //Делаем что-бы при нажатии на эмодзи удалялся сборщик
                 Reaction(msg, message, "❌", () => {
-                    deleteMessage(msg); //Удаляем сообщение
+                    GlobalUtils.DeleteMessage(msg); //Удаляем сообщение
                     collector?.stop();
                 });
 
                 //Что будет делать сборщик после нахождения числа
                 collector.once("collect", (m: any): void => {
                     setImmediate(() => {
-                        [msg, m].forEach((m: ClientMessage) => deleteMessage(m)); //Удаляем сообщения, бота и пользователя
+                        [msg, m].forEach(GlobalUtils.DeleteMessage); //Удаляем сообщения, бота и пользователя
                         collector?.stop(); //Уничтожаем сборщик
 
                         //Получаем ссылку на трек, затем включаем его
@@ -207,14 +208,6 @@ namespace SearchSongMessage {
             }).join("\n");
         });
         return StringTracks;
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Удаляем сообщение
-     * @param msg {ClientMessage} Сообщение которое надо удалить
-     */
-    function deleteMessage(msg: ClientMessage): void {
-        setTimeout(() => msg.delete().catch(() => null), 1e3);
     }
 }
 

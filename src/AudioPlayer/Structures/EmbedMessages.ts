@@ -249,11 +249,16 @@ namespace CurrentPlayFunction {
      * @param size {number} Кол-во символов
      */
     function ProgressBar(currentTime: number, maxTime: number, size: number = 15): string {
-        const CurrentDuration = currentTime > maxTime ? maxTime : currentTime;
-        const progressSize = Math.round(size * (CurrentDuration / maxTime));
-        const progressText = Bar.full.repeat(progressSize);
-        const emptyText = Bar.empty.repeat(size - progressSize);
+        try {
+            const CurrentDuration = isNaN(currentTime) ? 0 : currentTime;
+            const progressSize = Math.round(size * (CurrentDuration / maxTime));
+            const progressText = Bar.full.repeat(progressSize);
+            const emptyText = Bar.empty.repeat(size - progressSize);
 
-        return `${progressText}${Bar.button}${emptyText}`;
+            return `${progressText}${Bar.button}${emptyText}`;
+        } catch (err) {
+            if (err === "RangeError: Invalid count value") return "ProgressBar: Error value";
+            return `${Bar.full.repeat(size)}${Bar.button}`;
+        }
     }
 }
