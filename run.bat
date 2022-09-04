@@ -26,4 +26,4 @@ if "%choice%"=="1" (
 )
 
 goto menu
-pause >nul
+pause
