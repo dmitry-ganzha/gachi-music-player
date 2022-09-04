@@ -48,7 +48,7 @@ export class WatKLOK extends Client {
         const sendMessage = message.channel.send({ embeds: [Embed] });
         sendMessage.then(GlobalUtils.DeleteMessage);
         sendMessage.catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
-    }
+    };
     //Обрезает текс до необходимых значений
     public readonly replaceText = (text: string, value: number | any, clearText: boolean = false) => {
         try {

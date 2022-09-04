@@ -118,7 +118,7 @@ export namespace PlayerEventsCallBacks {
             }
 
             return queue.player.play(queue); //Включаем трек
-        }, 500);
+        }, 450);
     }
     //====================== ====================== ====================== ======================
     /**
@@ -142,7 +142,7 @@ export namespace PlayerEventsCallBacks {
         //Если трек не загружается через 2 сек, отправляем сообщение об этом что-бы пользователь не подумал лишнего
         setTimeout(() => {
             if (queue.player.state.status === "buffering") MessagePlayer.toBuffering(queue, queue.songs[0]);
-        }, 2e3)
+        }, 1800)
     }
     //====================== ====================== ====================== ======================
     /**

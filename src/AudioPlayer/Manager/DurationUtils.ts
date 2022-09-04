@@ -69,7 +69,7 @@ export namespace DurationUtils {
  * @requires {NumberString}
  */
 function toStringTime(duration: number): string | number {
-    return NumberString(parseInt(duration as any));
+    return NumberString(duration.toFixed(0));
 }
 //====================== ====================== ====================== ======================
 /**

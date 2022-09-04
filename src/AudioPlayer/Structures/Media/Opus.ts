@@ -79,7 +79,7 @@ export namespace Opus {
             let start: number = 27 + pageSegments;
 
             //Начинаем запись сегментов в текущий класс
-            for (const size of sizes) {
+            for (let size of sizes) {
                 const segment = chunk.subarray(start, start + size); //Получаем нужный сегмент
                 const header = segment.subarray(0, 8); //Обрезаем сегмент для определения
 
