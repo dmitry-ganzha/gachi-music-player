@@ -6,6 +6,7 @@ Echo Choice number
 Echo 1 - run Client
 Echo 2 - run ShardManager
 Echo 3 - run Builder
+Echo 4 - run Builder + watch mode
 
 echo.
 Set /p choice="Num: "
@@ -21,6 +22,9 @@ if "%choice%"=="1" (
 ) else if "%choice%"=="3"  (
 	echo running builder...
 	tsc -p ./tsconfig.json
+) else if "%choice%"=="4"  (
+  	echo running builder + watch mode...
+  	tsc --watch -p ./tsconfig.json
 ) else (
     echo %choice% is not 1-3
 )
