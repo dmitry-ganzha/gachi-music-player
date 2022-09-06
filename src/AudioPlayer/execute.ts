@@ -16,9 +16,7 @@ interface PlayerEvents {
     seek: (message: ClientMessage, seek: number) => void;
 }
 
-/**
- * @description Запускаем все функции плеера
- */
+//Запускаем все функции плеера
 export class PlayerEmitter extends TypedEmitter<PlayerEvents> {
     public constructor() {
         super();

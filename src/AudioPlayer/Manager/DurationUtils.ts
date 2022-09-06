@@ -5,7 +5,6 @@ export namespace DurationUtils {
     /**
      * @description Совмещаем время всех треков из очереди
      * @param queue {Queue | any[]} Очередь
-     * @constructor
      */
     export function getTimeQueue(queue: Queue | Array<any>): string {
         let Timer: number = 0;
@@ -20,7 +19,6 @@ export namespace DurationUtils {
      * @description Создаем готовый формат времени. Пример 00:00:00:00 (Days:Hours:Minutes:Seconds)
      * @param duration {number} Число
      * @requires {toStringTime}
-     * @constructor
      */
     export function ParsingTimeToString(duration: number): string {
         let days = toStringTime(duration / ((60 * 60) * 24) % 24);
@@ -34,32 +32,21 @@ export namespace DurationUtils {
     /**
      * @description Из формата 00:00:00:00, получаем секунды
      * @param duration {string} Пример 00:00:00:00
-     * @constructor
      */
     export function ParsingTimeToNumber(duration: string): number {
         const Splitter = duration?.split(":");
+        const days = (num: string) => Number(num) * ((60 * 60) * 24);
+        const hours = (num: string) => Number(num) * ((60 * 60) * 24);
+        const minutes = (num: string) => (Number(num) * 60);
+        const seconds = (num: string) => Number(num);
 
-        if (Splitter.length === 4) {
-            const days = Number(Splitter[0]) * ((60 * 60) * 24);
-            const hours = Number(Splitter[1]) * (60 * 60);
-            const minutes = (Number(Splitter[2]) * 60)
-            const seconds = Number(Splitter[3]);
+        if (!Splitter?.length) return Number(duration);
 
-            return days + hours + minutes + seconds;
-        } else if (Splitter.length === 3) {
-            const hours = Number(Splitter[0]) * (60 * 60);
-            const minutes = (Number(Splitter[1]) * 60);
-            const seconds = Number(Splitter[2]);
-
-            return hours + minutes + seconds;
-        } else if (Splitter.length === 2) {
-            const minutes = (Number(Splitter[0]) * 60);
-            const seconds = Number(Splitter[1]);
-
-            return minutes + seconds;
+        switch (Splitter.length) {
+            case 4: return days(Splitter[0]) + hours(Splitter[1]) + minutes(Splitter[2]) + seconds(Splitter[3]);
+            case 3: return hours(Splitter[0]) + minutes(Splitter[1]) + seconds(Splitter[2]);
+            case 2: return minutes(Splitter[0]) + seconds(Splitter[1]);
         }
-
-        return Number(duration);
     }
 }
 //====================== ====================== ====================== ======================
@@ -75,7 +62,6 @@ function toStringTime(duration: number): string | number {
 /**
  * @description Добавляем 0 к числу. Пример: 01:10
  * @param duration {string | number} Число
- * @constructor
  */
 function NumberString(duration: string | number): string | number {
     return (duration < 10) ? ("0" + duration) : duration;

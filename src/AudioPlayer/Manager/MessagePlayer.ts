@@ -17,21 +17,19 @@ const ButtonID = new Set(["skip", "resume_pause", "replay", "last"]);
 
 //База с сообщениями
 const MessagesData = {
-    messages: new CollectionMap<string, ClientMessage>(),
-    timer: null as NodeJS.Timeout
+    messages: new CollectionMap<string, ClientMessage>(), //new Map сообщений, поиск осуществляется по id канала
+    timer: null as NodeJS.Timeout //Общий таймер сообщений
 }
 
-/**
- * Сообщения, которые отправляет плеер
- */
+//Сообщения, которые отправляет плеер
 export namespace MessagePlayer {
     /**
      * @description Отправляем сообщение о текущем треке, обновляем раз в 15 сек
      * @param message {ClientMessage} Сообщение
      * @requires {MessageUpdater, pushCurrentSongMessage, Message}
-     * @constructor
      */
     export function toPlay(message: ClientMessage) {
+        //Если уже есть сообщение то удаляем
         if (MessagesData.messages.get(message.channelId)) MessageUpdater.toRemove(message);
 
         setImmediate(() => pushCurrentSongMessage(message).then(MessageUpdater.toPush).catch(() => undefined));
@@ -43,7 +41,6 @@ export namespace MessagePlayer {
      * @param song {Song} Трек
      * @param err {Error | string} Ошибка
      * @requires {DeleteMessage}
-     * @constructor
      */
     export function toError(queue: Queue, song: Song, err: Error | string = null) {
         const {client, channel} = queue.channels.message;
@@ -65,7 +62,6 @@ export namespace MessagePlayer {
      * @param queue {Queue} Очередь
      * @param song {Song} Трек
      * @requires {DeleteMessage}
-     * @constructor
      */
     export function toBuffering(queue: Queue, song: Song) {
         const {client, channel} = queue.channels.message;
@@ -87,7 +83,6 @@ export namespace MessagePlayer {
      * @param queue {Queue} Очередь
      * @param song {Song} Трек
      * @requires {DeleteMessage}
-     * @constructor
      */
     export function toPushSong(queue: Queue, song: Song) {
         const {client, channel} = queue.channels.message;
@@ -130,17 +125,18 @@ export namespace MessagePlayer {
  * @description Обновляем сообщение
  * @param message {ClientMessage} Сообщение
  * @requires {MessageUpdater}
- * @constructor
  */
 function UpdateMessage(message: ClientMessage): void {
     const queue: Queue = message.client.queue.get(message.guild.id);
 
+    //Если очереди нет, то удаляем сообщение
     if (!queue || queue?.songs?.length === 0) return MessageUpdater.toRemove(message);
 
     setImmediate(() => {
         const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue?.songs[0], queue);
 
         try {
+            //Обновляем сообщение
             return message.edit({embeds: [CurrentPlayEmbed]});
         } catch (e) {
             message.client.console(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: update, ${e.code}]: ${e?.message}`);
@@ -152,14 +148,13 @@ function UpdateMessage(message: ClientMessage): void {
  * @description Отправляем сообщение
  * @param message {ClientMessage} Сообщение
  * @requires {CreateCollector, Buttons}
- * @constructor
  */
 function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> {
     const queue: Queue = message.client.queue.get(message.guild.id);
-    const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue?.songs[0], queue); // @ts-ignore
-    const sendMessage = message.channel.send({embeds: [CurrentPlayEmbed], components: [Buttons]});
+    const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue?.songs[0], queue);
+    const sendMessage = message.channel.send({embeds: [CurrentPlayEmbed as any], components: [Buttons as any]});
 
-    sendMessage.then((msg) => CreateCollector(msg, queue));
+    sendMessage.then((msg) => CreateCollector(msg, queue)); //Добавляем к сообщению кнопки
     sendMessage.catch((e) => console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: playSong, ${e.code}]: ${e?.message}`));
 
     return sendMessage;
@@ -169,7 +164,6 @@ function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> 
  * @description Создаем сборщик кнопок
  * @param message {ClientMessage} Сообщение
  * @param queue {Queue} Очередь сервера
- * @constructor
  */
 function CreateCollector(message: ClientMessage, queue: Queue) {
     //Создаем сборщик кнопок
@@ -199,14 +193,8 @@ function CreateCollector(message: ClientMessage, queue: Queue) {
 
     return collector;
 }
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-//====================== ====================== ====================== ======================
-/**
- * Система для обновления данных сообщения
- */
+
+//Система для обновления данных сообщения
 namespace MessageUpdater {
     /**
      * @description Добавляем сообщение в <Message[]>
@@ -214,9 +202,10 @@ namespace MessageUpdater {
      * @requires {StepCycleMessage}
      */
     export function toPush(message: ClientMessage) {
-        if (MessagesData.messages.get(message.channelId)) return;
-        MessagesData.messages.set(message.channelId, message);
+        if (MessagesData.messages.get(message.channelId)) return; //Если сообщение уже есть в базе, то ничего не делаем
+        MessagesData.messages.set(message.channelId, message); //Добавляем сообщение в базу
 
+        //Если в базе есть хоть одно сообщение, то запускаем таймер
         if (MessagesData.messages.size === 1) setImmediate(StepCycleMessage);
     }
     //====================== ====================== ====================== ======================
@@ -226,27 +215,25 @@ namespace MessageUpdater {
      * @requires {Message}
      */
     export function toRemove(message: ClientMessage) {
-        const Find = MessagesData.messages.get(message.channelId);
-        if (!Find) return;
+        const Find = MessagesData.messages.get(message.channelId); //Ищем сообщение е базе
+        if (!Find) return; //Если его нет ничего не делаем
 
-        if (Find.deletable) Find.delete().catch(() => undefined);
-        MessagesData.messages.delete(message.channelId);
+        if (Find.deletable) Find.delete().catch(() => undefined); //Если его возможно удалить, удаляем!
+        MessagesData.messages.delete(message.channelId); //Удаляем сообщение из базы
 
+        //Если в базе больше нет сообщений
         if (MessagesData.messages.size === 0) {
+            //Если таймер еще работает то удаляем его
             if (typeof MessagesData.timer !== "undefined") clearTimeout(MessagesData.timer);
         }
     }
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Обновляем сообщения на текстовый каналах
- * @requires {UpdateMessage, Message}
- * @constructor
- */
-function StepCycleMessage() {
-    try {
-        setImmediate(() => MessagesData.messages.forEach(UpdateMessage));
-    } finally {
-        MessagesData.timer = setTimeout(StepCycleMessage, 12e3);
+    //====================== ====================== ====================== ======================
+    //Обновляем сообщения на текстовый каналах
+    function StepCycleMessage() {
+        try {
+            setImmediate(() => MessagesData.messages.forEach(UpdateMessage));
+        } finally {
+            MessagesData.timer = setTimeout(StepCycleMessage, 12e3);
+        }
     }
 }

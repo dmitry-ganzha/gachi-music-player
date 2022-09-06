@@ -57,7 +57,6 @@ namespace toPlayerUtils {
     /**
      * @description Независимо от платформы делаем проверку типа ссылки
      * @param search {string} Что там написал пользователь
-     * @private
      */
     export function typeSong(search: string) {
         if (!search) return "track"; //Если нет search, значит пользователь прикрепил файл
@@ -72,7 +71,6 @@ namespace toPlayerUtils {
      * @description Получаем инициалы платформы
      * @param search {string} Что там написал пользователь
      * @param message {ClientMessage} Сообщение
-     * @private
      */
     export function PlatformSong(search: string, message: ClientMessage): TypeSearch {
         if (!search) return "Discord"; //Если нет search, значит пользователь прикрепил файл
@@ -103,7 +101,6 @@ namespace SearchSongMessage {
      * @param num {number} Кол-во найденных треков
      * @param options {Options}
      * @requires {Reaction, CreateMessageCollector, deleteMessage, Searcher}
-     * @constructor
      */
     export function toSend(results: InputTrack[], num: number, options: Options): void {
         const {message, platform} = options;
@@ -149,7 +146,6 @@ namespace SearchSongMessage {
      * @param message {ClientMessage} Сообщение, пользователя
      * @param emoji {string} сам эмодзи
      * @param callback {Function} Что будет происходить при нажатии на эмодзи
-     * @constructor
      */
     function Reaction(msg: ClientMessage, message: ClientMessage, emoji: string, callback: Function): void {
         setImmediate(() => {
@@ -174,7 +170,6 @@ namespace SearchSongMessage {
      * @param msg {ClientMessage} Сообщение, бота
      * @param message {ClientMessage} Сообщение, пользователя
      * @param num {number} Кол-во треков
-     * @constructor
      */
     function CreateMessageCollector(msg: ClientMessage, message: ClientMessage, num: number): MessageCollector {
         //Сборщик чисел, отправленных пользователем
@@ -191,7 +186,6 @@ namespace SearchSongMessage {
      * @param message {ClientMessage} Сообщение
      * @param type {TypeSearch} Платформа на которой искали
      * @requires {ParsingTimeToString}
-     * @constructor
      */
     function ArrayToString(results: InputTrack[], message: ClientMessage, type: TypeSearch): string {
         let NumberTrack = 1, StringTracks;

@@ -1,7 +1,7 @@
 import {WatKLOK} from "../../../Core/Client/Client";
 import {Event} from "../../../Structures/Event";
 
-export default class shardReconnecting extends Event<null, null> {
+export class shardReconnecting extends Event<null, null> {
     public readonly name: string = "shardReconnecting";
     public readonly enable: boolean = true;
 

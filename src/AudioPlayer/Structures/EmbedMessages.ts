@@ -19,19 +19,15 @@ const Bar = {
     button: "⚪"
 }
 
-/**
- * Вспомогательный элемент
- */
+//Вспомогательный элемент
 export namespace Images {
     export const Verification = "https://cdn.discordapp.com/attachments/860113484493881365/986005795038715904/Ok.png";
     export const NotVerification = "https://cdn.discordapp.com/attachments/860113484493881365/986005794849980486/Not.png";
     export const NotFound = "https://cdn.discordapp.com/attachments/860113484493881365/986005794627670086/WTF.png";
     export const NotImage = "https://cdn.discordapp.com/attachments/860113484493881365/940926476746883082/MusciNote.png";
 }
-//====================== ====================== ====================== ======================
-/**
- * Здесь хранятся все EMBED данные о сообщениях (Используется в MessagePlayer)
- */
+
+//Здесь хранятся все EMBED данные о сообщениях (Используется в MessagePlayer)
 export namespace EmbedMessages {
     /**
      * @description Message сообщение о текущем треке
@@ -235,7 +231,6 @@ namespace CurrentPlayFunction {
      * @description Конвертируем секунды проигранные плеером
      * @param CurrentTime {number} Время проигрывания
      * @param filters {AudioFilters} Фильтры
-     * @constructor
      */
     function ConvertTime({playbackDuration}: AudioPlayer, filters: AudioFilters): number | string {
         if (Bar.Enable) return playbackDuration;
@@ -258,7 +253,7 @@ namespace CurrentPlayFunction {
             return `${progressText}${Bar.button}${emptyText}`;
         } catch (err) {
             if (err === "RangeError: Invalid count value") return "ProgressBar: Error value";
-            return `${Bar.full.repeat(size)}${Bar.button}`;
+            return `Не удалось вычислить!`;
         }
     }
 }

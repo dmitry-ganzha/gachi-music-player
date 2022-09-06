@@ -44,7 +44,6 @@ export function uploadCookie(Cookie: string | string[]): void {
 /**
  * @description Создаем из строки json
  * @param headCookie {string[] | string} Что нужно добавить к текущему куки
- * @constructor
  */
 function ParsingCookieToJson(headCookie: string[] | string): {} {
     let Json = {};
@@ -75,7 +74,6 @@ function ParsingCookieToJson(headCookie: string[] | string): {} {
 /**
  * @description Получаем из json формата строку
  * @param JsonCookie {object} Json куки
- * @constructor
  */
 function ParsingCookieToString(JsonCookie: {}) {
     let result = [];

@@ -7,9 +7,7 @@ import {ClientMessage} from "../../Handler/Events/Activity/Message";
 
 const ParsingTimeToString = DurationUtils.ParsingTimeToString;
 
-/**
- * Здесь все функции для взаимодействия с плеером
- */
+//Здесь все функции для взаимодействия с плеером
 export namespace PlayerController {
     /**
      * @description Продолжает воспроизведение музыки

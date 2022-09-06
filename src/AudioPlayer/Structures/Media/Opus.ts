@@ -43,7 +43,6 @@ export namespace Opus {
         /**
          * @description Определяем где нужно взять фрагмент
          * @param chunk {Buffer} Фрагмент потока
-         * @private
          */
         readonly #ReadBufferStream = (chunk: Buffer): null | Buffer => {
             if (chunk.length < OGG_PAGE_HEADER_SIZE) return null;

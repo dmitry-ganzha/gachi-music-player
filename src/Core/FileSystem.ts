@@ -10,7 +10,7 @@ type FileSystemCallback = { dir: string, file: string, reason: string };
 let FileBase = {
     commands: [] as string[],
     events: [] as string[],
-    modules: [] as string[],
+    modules: [] as string[]
 };
 
 //Добавляем лог в Array базу
@@ -25,7 +25,7 @@ function SendLog(type: "commands" | "events" | "modules", file: string, reason?:
 }
 
 export function FileSystemLoad(client: WatKLOK): void {
-    if (!client.ShardID) {
+    if (!client.ShardID && client.ShardID !== 0) {
         console.clear(); //Чистим консоль
 
         //Отправляем логи после загрузки всех системы

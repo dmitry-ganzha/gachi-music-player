@@ -70,7 +70,6 @@ export namespace FFmpeg {
          * @description Создаем "привязанные функции" (ПФ - термин из ECMAScript 6)
          * @param methods {string[]}
          * @param target {Readable | Writable}
-         * @constructor
          */
         // @ts-ignore
         readonly #Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));

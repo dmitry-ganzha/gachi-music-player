@@ -190,7 +190,6 @@ namespace SongFinder {
  * @param id {string} ID пользователя
  * @param username {string} Ник пользователя
  * @param avatarURL {string} Иконка пользователя
- * @constructor
  */
 function ConstRequester({id, username, avatar}: User) {
     return { username, id, avatarURL: () => `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp` };
@@ -199,7 +198,6 @@ function ConstRequester({id, username, avatar}: User) {
 /**
  * @description Подготавливаем время трека для системы
  * @param duration {InputTrackDuration} Время
- * @constructor
  */
 function ConstDuration(duration: InputTrackDuration): { StringTime: string | "Live"; seconds: number } {
     const seconds = parseInt(duration.seconds);
@@ -209,7 +207,6 @@ function ConstDuration(duration: InputTrackDuration): { StringTime: string | "Li
 /**
  * @description Цвет трека из названия платформы
  * @param type {string}
- * @constructor
  */
 function Color(type: string): number {
     switch (type) {
@@ -225,7 +222,6 @@ function Color(type: string): number {
 /**
  * @description Ищем в ссылке тип трека
  * @param url {string} Ссылка
- * @constructor
  */
 function Type(url: string): SongType {
     try {
@@ -239,9 +235,7 @@ function Type(url: string): SongType {
 
 type SongType = "SPOTIFY" | "YOUTUBE" | "VK" | "SOUNDCLOUD" | "UNKNOWN";
 
-/**
- * @description Какие данные доступны в <song>.requester
- */
+//Какие данные доступны в <song>.requester
 interface SongRequester {
     id: string;
     username: string;

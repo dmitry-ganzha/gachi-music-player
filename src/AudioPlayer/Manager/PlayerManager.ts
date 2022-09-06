@@ -3,11 +3,90 @@ import {MessagePlayer} from "./MessagePlayer";
 import {Queue} from "../Structures/Queue/Queue";
 
 const PlayerData = {
-    players: [] as AudioPlayer[],
-    timer: undefined as NodeJS.Timeout,
-    time: -1
+    players: [] as AudioPlayer[], //Плееры серверов
+    timer: undefined as NodeJS.Timeout, //Общий таймер
+    time: -1 //Время через которое надо обновить таймер
 }
 
+//Ивенты плеера для всех серверов
+export namespace PlayerEventsCallBacks {
+    /**
+     * @description Когда плеер начнет чтение потока, он возвратит эту функцию
+     * @param queue {Queue} Сама очередь
+     * @param seek {number} До скольки пропускает времени в треке
+     * @requires {MessagePlayer}
+     */
+    export function onStartPlaying(queue: Queue, seek: number): void {
+        const CurrentSong = queue.songs[0];
+        const message = queue.channels.message;
+        const {client, guild} = message;
+
+        if (!CurrentSong?.title) return;
+
+        if (seek) queue.player.playbackDuration = seek;
+        else {
+            client.console(`[GuildID: ${guild.id}]: ${CurrentSong.title}`); //Отправляем лог о текущем треке
+            MessagePlayer.toPlay(message); //Если стрим не пустышка отправляем сообщение
+        }
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Когда плеер завершит песню, он возвратит эту функцию
+     * @param queue {Queue} Сама очередь
+     * @requires {isRemoveSong}
+     */
+    export function onIdlePlayer(queue: Queue): void {
+        setTimeout(() => {
+            if (queue?.songs) isRemoveSong(queue); //Определяем тип loop
+
+            //Выбираем случайный номер трека, просто меняем их местами
+            if (queue?.options?.random) {
+                const RandomNumSong = Math.floor(Math.random() * queue.songs.length)
+                queue.swapSongs(RandomNumSong);
+            }
+
+            return queue.player.play(queue); //Включаем трек
+        }, 450);
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Когда плеер выдает ошибку, он возвратит эту функцию
+     * @param err {Error | string} Ошибка
+     * @param queue {Queue} Сама очередь
+     */
+    export function onErrorPlayer(err: Error | string, queue: Queue): void {
+        //Выводим сообщение об ошибке
+        MessagePlayer.toError(queue, queue.songs[0], err);
+
+        queue.songs.shift();
+        setTimeout(() => queue.player.play(queue), 1e3);
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Когда плеер загружает трек, он возвратит эту функцию
+     * @param queue {Queue} Сама очередь
+     */
+    export function onBufferingPlayer(queue: Queue) {
+        //Если трек не загружается через 2 сек, отправляем сообщение об этом что-бы пользователь не подумал лишнего
+        setTimeout(() => {
+            if (queue.player.state.status === "buffering") MessagePlayer.toBuffering(queue, queue.songs[0]);
+        }, 1800)
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Повтор музыки
+     * @param queue {Queue} Очередь сервера
+     */
+    function isRemoveSong({options, songs}: Queue): void {
+        switch (options?.loop) {
+            case "song": return;
+            case "songs": return void songs.push(songs.shift());
+            default: return void songs.shift();
+        }
+    }
+}
+
+//Менеджер, добавляет в общую базу плеер или удаляет. Так-же запускает работу плеера!
 export namespace PlayersManager {
     /**
      * @description Добавляем плеер в базу
@@ -80,80 +159,5 @@ export namespace PlayersManager {
         nextPlayer["CheckStatusPlayer"]();
 
         setImmediate(() => playerCycleStep(players));
-    }
-}
-
-export namespace PlayerEventsCallBacks {
-    /**
-     * @description Когда плеер начнет чтение потока, он возвратит эту функцию
-     * @param queue {Queue} Сама очередь
-     * @param seek {number} До скольки пропускает времени в треке
-     * @requires {MessagePlayer}
-     */
-    export function onStartPlaying(queue: Queue, seek: number): void {
-        const CurrentSong = queue.songs[0];
-        const message = queue.channels.message;
-        const {client, guild} = message;
-
-        if (seek) queue.player.playbackDuration = seek;
-        else {
-            client.console(`[GuildID: ${guild.id}]: ${CurrentSong.title}`); //Отправляем лог о текущем треке
-            MessagePlayer.toPlay(message); //Если стрим не пустышка отправляем сообщение
-        }
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Когда плеер завершит песню, он возвратит эту функцию
-     * @param queue {Queue} Сама очередь
-     * @requires {isRemoveSong}
-     */
-    export function onIdlePlayer(queue: Queue): void {
-        setTimeout(() => {
-            if (queue?.songs) isRemoveSong(queue); //Определяем тип loop
-
-            //Выбираем случайный номер трека, просто меняем их местами
-            if (queue?.options?.random) {
-                const RandomNumSong = Math.floor(Math.random() * queue.songs.length)
-                queue.swapSongs(RandomNumSong);
-            }
-
-            return queue.player.play(queue); //Включаем трек
-        }, 450);
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Когда плеер выдает ошибку, он возвратит эту функцию
-     * @param err {Error | string} Ошибка
-     * @param queue {Queue} Сама очередь
-     */
-    export function onErrorPlayer(err: Error | string, queue: Queue): void {
-        //Выводим сообщение об ошибке
-        MessagePlayer.toError(queue, queue.songs[0], err);
-
-        queue.songs.shift();
-        setTimeout(() => queue.player.play(queue), 1e3);
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Когда плеер загружает трек, он возвратит эту функцию
-     * @param queue {Queue} Сама очередь
-     */
-    export function onBufferingPlayer(queue: Queue) {
-        //Если трек не загружается через 2 сек, отправляем сообщение об этом что-бы пользователь не подумал лишнего
-        setTimeout(() => {
-            if (queue.player.state.status === "buffering") MessagePlayer.toBuffering(queue, queue.songs[0]);
-        }, 1800)
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Повтор музыки
-     * @param queue {Queue} Очередь сервера
-     */
-    function isRemoveSong({options, songs}: Queue): void {
-        switch (options?.loop) {
-            case "song": return;
-            case "songs": return void songs.push(songs.shift());
-            default: return void songs.shift();
-        }
     }
 }

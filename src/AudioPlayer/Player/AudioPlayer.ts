@@ -19,15 +19,17 @@ interface AudioPlayerEvents {
     StartPlaying: (seek: number) => void;
 }
 
-/**
- * Аудио плеер за основу взят из @discordjs/voice
- */
+//Аудио плеер за основу взят из @discordjs/voice
 export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     #state: PlayerState = {status: "idle"};
     readonly #voices: VoiceConnection[] = []; //Голосовые каналы
-    /**
-     * @description Текущее время плеера в мс
-     */
+
+    //Все голосовые каналы к которым подключен плеер
+    public get voices() {
+        return this.#voices;
+    };
+
+    //Текущее время плеера в мс
     public get playbackDuration() {
         if (this.state.stream?.duration <= 0) return 0;
         return parseInt((this.state.stream?.duration / 1000).toFixed(0));
@@ -131,8 +133,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     };
     //====================== ====================== ====================== ======================
     /**
-     * @description PlayerCallback - Что делает плеер в соответствии со статусами
-     * @constructor
+     * @description Что делает плеер в соответствии со статусами
      */
     protected readonly CheckStatusPlayer = (): void => {
         const state = this.state;
@@ -169,7 +170,6 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     /**
      * @description Читаем стрим
      * @param stream {PlayerResource} Входящий поток для чтения
-     * @private
      */
     readonly #readStream = (stream: PlayerResource): void => {
         if (!stream) return void this.emit("error", "[AudioPlayer]: Audio resource not found. Stream is null!");
@@ -194,7 +194,6 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     /**
      * @description Фильтрует голосовые и отправляет в них аудио пакеты
      * @param paket {Buffer} Аудио пакет
-     * @private
      */
     readonly #sendPackets = (paket: Buffer): void => {
         const VoiceChannels = this.#voices.filter((connection) => connection.state.status === "ready");

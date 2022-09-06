@@ -13,7 +13,6 @@ export namespace Voice {
      * @param id {string} ID канала
      * @param guild {Guild} Сервер
      * @param type {string} Тип канала
-     * @constructor
      */
     export function Join({id, guild, type}: VoiceChannels) {
         const JoinVoice = joinVoiceChannel({
@@ -34,7 +33,6 @@ export namespace Voice {
     /**
      * @description Отключаемся от канала
      * @param guild {VoiceChannels | string} ID канала или сам канал
-     * @constructor
      */
     export function Disconnect(guild: Guild | string) {
         const VoiceConnection = getVoiceConnection(typeof guild === "string" ? guild : guild.id);

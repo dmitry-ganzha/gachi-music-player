@@ -1,9 +1,9 @@
 import {StageChannel, VoiceChannel} from "discord.js";
 import {AudioPlayer} from "../../Player/AudioPlayer";
 import {Song} from "./Song";
-import {VoiceConnection} from "@discordjs/voice";
 import {ClientMessage} from "../../../Handler/Events/Activity/Message";
 import {PlayerEventsCallBacks} from "../../Manager/PlayerManager";
+import {VoiceConnection} from "@discordjs/voice";
 
 export type LoopType = "song" | "songs" | "off";
 export type AudioFilters = Array<string> | Array<string | number>;
@@ -15,7 +15,7 @@ export class Queue {
 
     readonly #_player: AudioPlayer; //Сам плеер
     //Каналы (message: TextChannel, voice: VoiceChannel, connection: VoiceConnection)
-    readonly #_channels: { message: ClientMessage, voice: VoiceChannel | StageChannel, connection: VoiceConnection };
+    readonly #_channels: { message: ClientMessage, voice: VoiceChannel | StageChannel};
     readonly #_options: { random: boolean, loop: LoopType, stop: boolean } = { //Уникальные настройки
         random: false, //Рандомные треки (каждый раз в плеере будет играть разная музыка из очереди)
         loop: "off", //Тип повтора (off, song, songs)
@@ -27,7 +27,7 @@ export class Queue {
     //Создаем очередь
     public constructor(message: ClientMessage, voice: VoiceChannel) {
         this.#_player = new AudioPlayer();
-        this.#_channels = { message, voice, connection: null};
+        this.#_channels = { message, voice};
 
         this.player.on("idle", () => PlayerEventsCallBacks.onIdlePlayer(this));
         this.player.on("buffering", () => PlayerEventsCallBacks.onBufferingPlayer(this));
@@ -64,6 +64,10 @@ export class Queue {
     public get options() {
         return this.#_options;
     };
+    //Голосовой канал этой очереди
+    public get connection(): VoiceConnection {
+        return this.player.voices.find((voice) => voice.joinConfig.channelId === this.channels.voice.id);
+    };
 
     //Удаление очереди
     public readonly cleanup = (sendDelQueue: boolean = true) => {
@@ -73,15 +77,16 @@ export class Queue {
 
         //Если нет очереди
         if (!Queue) return;
-        const {channels, player, options} = Queue;
+        const {player, options} = Queue;
 
         //Удаляем сообщение о текущем треке
         if (message?.deletable) message?.delete().catch(() => undefined);
         if (player) {
-            player.unsubscribe({connection: channels.connection});
+            if (this.connection) player.unsubscribe({connection: this.connection});
+
             player.stop();
         }
-        [Queue.songs, Queue.audioFilters].forEach(data => data = null);
+        [this.songs, this.audioFilters].forEach(data => data = null);
 
         if (sendDelQueue) {
             if (options.stop) client.sendMessage({text: "🎵 | Музыка была выключена", message, type: "css"});

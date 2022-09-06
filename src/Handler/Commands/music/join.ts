@@ -42,7 +42,6 @@ export default class Join extends Command {
             const connection = Voice.Join(voiceChannel); //Подключаемся к голосовому каналу
 
             queue.channels.message = message;
-            queue.channels.connection = connection;
             queue.channels.voice = voiceChannel;
 
             queue.player.subscribe(connection); //Подключаем голосовой канал к плееру

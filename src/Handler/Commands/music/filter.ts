@@ -4,6 +4,8 @@ import {ApplicationCommandOptionType} from "discord.js";
 import FFmpegConfiguration from "../../../../DataBase/FFmpeg.json";
 import {ClientMessage} from "../../Events/Activity/Message";
 
+const allFilters: string = Object.keys(FFmpegConfiguration.FilterConfigurator).join(", ");
+
 export default class Filter extends Command {
     public constructor() {
         super({
@@ -63,7 +65,7 @@ export default class Filter extends Command {
         if (!NameFilter) return message.client.sendMessage({text: `Включенные фильтры: ${queue.audioFilters.filter((name) => typeof name === "string").join(", ") ?? "нет включенных фильтров"}`, ...SendArg});
 
         //Показываем все доступные фильтры
-        if (NameFilter === "all") return message.client.sendMessage({text: `Все фильтры: ${FFmpegConfig()}`, ...SendArg});
+        if (NameFilter === "all") return message.client.sendMessage({text: `Все фильтры: ${allFilters}`, ...SendArg});
 
         //Отключение всех фильтров
         if (NameFilter === "off") {
@@ -117,13 +119,4 @@ export default class Filter extends Command {
 
     //Заставляем плеер перезапустить поток для применения фильтра
     readonly #executeFilter = (message: ClientMessage) => message.client.player.emit("filter", message);
-}
-
-function FFmpegConfig() {
-    const resp = [];
-    for (let key of Object.keys(FFmpegConfiguration.FilterConfigurator)) {
-        resp.push(key);
-    }
-
-    return resp.join(", ");
 }

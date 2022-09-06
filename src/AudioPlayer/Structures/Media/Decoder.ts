@@ -113,11 +113,7 @@ export namespace Decoder {
             this.#DecodeDashManifest().catch((err) => console.log(err));
             this.once("end", this.destroy);
         };
-        //====================== ====================== ====================== ======================
-        /**
-         * @description Расшифровывает DashManifest, требуется сделать только один раз
-         * @private
-         */
+        //Расшифровывает DashManifest, требуется сделать только один раз
         readonly #DecodeDashManifest = async () => {
             const req = await httpsClient.parseBody(this.#urls.dash);
             const audioFormat = req.split('<AdaptationSet id="0"')[1].split('</AdaptationSet>')[0].split('</Representation>');
@@ -145,11 +141,7 @@ export namespace Decoder {
                 await this.#PipeData();
             }
         };
-        //====================== ====================== ====================== ======================
-        /**
-         * @description Загружаем фрагменты в класс
-         * @private
-         */
+        //Загружаем фрагменты в класс
         readonly #PipeData = () => {
             return new Promise(async (resolve) => {
                 const request = await httpsClient.Request(`${this.#urls.base}sq/${this.#NumberUrl}`).catch((err: Error) => err);
@@ -197,10 +189,11 @@ namespace ArgsHelper {
      * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
      * @param url {string} Ссылка
      * @param seek {number} Пропуск музыки до 00:00:00
-     * @constructor
      */
-    export function createArgs (url: string, AudioFilters: AudioFilters, seek: number): any[] {
-        let thisArgs = [...JsonFFmpeg.Args.Reconnect, "-vn", ...JsonFFmpeg.Args.Seek, seek ?? 0];
+    export function createArgs (url: string, AudioFilters: AudioFilters, seek: number): FFmpeg.Arguments {
+        let thisArgs = [...JsonFFmpeg.Args.Reconnect, "-vn"];
+
+        if (seek) thisArgs = [...thisArgs, ...JsonFFmpeg.Args.Seek, seek ?? 0];
         if (url) thisArgs = [...thisArgs, "-i", url];
 
         //Всегда есть один фильтр <AudioFade>
@@ -210,7 +203,6 @@ namespace ArgsHelper {
     /**
      * @description Получаем множитель времени для правильного отображения. При добавлении новых аргументов в FFmpeg.json<FilterConfigurator>, их нужно тоже добавить сюда!
      * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
-     * @constructor
      */
     export function timeFrame(AudioFilters: AudioFilters) {
         let NumberDuration = 20;
@@ -242,7 +234,6 @@ namespace ArgsHelper {
     /**
      * @description Создаем фильтры для FFmpeg
      * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
-     * @constructor
      */
     function parseFilters(AudioFilters: AudioFilters): string {
         const response: Array<string> = [];

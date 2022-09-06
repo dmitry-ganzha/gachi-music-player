@@ -1,9 +1,7 @@
 import {Shard, ShardingManager} from "discord.js";
 import cfg from "../../../DataBase/Config.json";
 
-/**
- * @description Используется для большого кол-ва серверов. Если у вас более 1к, тогда рекомендуется запускать ShardManager
- */
+//Используется для большого кол-ва серверов. Если у вас более 1к, тогда рекомендуется запускать ShardManager
 class ShardManager extends ShardingManager {
     public constructor() {
         super("./src/Core/Client/Client.js", {token: cfg.Bot.token, mode: "process", respawn: true, totalShards: "auto"});

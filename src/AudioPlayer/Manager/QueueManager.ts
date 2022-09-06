@@ -5,9 +5,7 @@ import {Voice} from "../Structures/Voice";
 import {MessagePlayer} from "./MessagePlayer";
 import {ClientMessage} from "../../Handler/Events/Activity/Message";
 
-/**
- * Что можно сделать с очередью (в будущем будет дорабатываться)
- */
+//Что можно сделать с очередью (в будущем будет дорабатываться)
 export namespace QueueManager {
     /**
      * @description Добавляем плейлист или трек в очередь
@@ -15,7 +13,6 @@ export namespace QueueManager {
      * @param VoiceChannel {VoiceChannel} К какому голосовому каналу надо подключатся
      * @param info {InputTrack | InputPlaylist} Входные данные это трек или плейлист?
      * @requires {CreateQueue, PushSong}
-     * @constructor
      */
     export function toQueue(message: ClientMessage, VoiceChannel: VoiceChannel, info: InputTrack | InputPlaylist): void {
         const Queue = CreateQueue(message, VoiceChannel);
@@ -24,8 +21,9 @@ export namespace QueueManager {
         if ("items" in info) {
             MessagePlayer.toPushPlaylist(message, info);
             setImmediate(() => {
+                //Добавляем треки в очередь
                 info.items.forEach((track) => PushSong(Queue, track, message.author,false));
-                return Queue.player.play(Queue);
+                return Queue.player.play(Queue); //Запускаем проигрывание музыки!
             });
             return;
         }
@@ -33,6 +31,7 @@ export namespace QueueManager {
         //Добавляем трек в очередь
         PushSong(Queue, info, message.author,Queue.songs.length >= 1);
         setImmediate(() => {
+            //Запускаем проигрывание музыки если это первый трек
             if (Queue.songs.length <= 1) return Queue.player.play(Queue);
         });
     }
@@ -42,7 +41,6 @@ export namespace QueueManager {
  * @description Создаем очереди или если она есть выдаем
  * @param message {ClientMessage} Сообщение с сервера
  * @param VoiceChannel {VoiceChannel} К какому голосовому каналу надо подключатся
- * @constructor
  */
 function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel): Queue {
     const {client, guild} = message;
@@ -52,11 +50,9 @@ function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel): Queue 
 
     //Создаем очередь
     const GuildQueue = new Queue(message, VoiceChannel);
-    const connection = Voice.Join(VoiceChannel);
+    const connection = Voice.Join(VoiceChannel); //Подключаемся к голосовому каналу
 
-    GuildQueue.channels.connection = connection;
-    GuildQueue.player.subscribe(connection);
-
+    GuildQueue.player.subscribe(connection); //Добавляем подключение в плеер
     client.queue.set(guild.id, GuildQueue); //Записываем очередь в <client.queue>
 
     return GuildQueue;
