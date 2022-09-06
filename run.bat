@@ -1,33 +1,37 @@
 @Echo off
 
-:menu
 cls
+:menu
 Echo Choice number
 Echo 1 - run Client
 Echo 2 - run ShardManager
-Echo 3 - run Builder
-Echo 4 - run Builder + watch mode
-
-echo.
+Echo 3 - Start build project
+Echo 4 - Start build project + watch mode
 Set /p choice="Num: "
 
-if "%choice%"=="1" (
+if "%choice%"=="1" goto Client
+if "%choice%"=="2" goto ShardManager
+if "%choice%"=="3" goto Builder
+if "%choice%"=="4" goto BuilderWatch
+goto Fail
+pause
+
+:Client
     echo running Client...
     cd build
     node ./src/Core/Client/Client.js
-) else if "%choice%"=="2" (
+:ShardManager
     echo running ShardManager...
-	cd build
-	node ./src/Core/Client/ShardManager.js
-) else if "%choice%"=="3"  (
-	echo running builder...
-	tsc -p ./tsconfig.json
-) else if "%choice%"=="4"  (
-  	echo running builder + watch mode...
-  	tsc --watch -p ./tsconfig.json
-) else (
-    echo %choice% is not 1-3
-)
-
-goto menu
-pause
+  	cd build
+  	node ./src/Core/Client/ShardManager.js
+:Builder
+  	echo staring build project...
+  	tsc -p ./tsconfig.json
+:BuilderWatch
+	echo staring build project in watch mode...
+    tsc --watch -p ./tsconfig.json
+:Fail
+    echo.
+    echo Error: %choice% is not 1-4
+    echo.
+    goto menu
