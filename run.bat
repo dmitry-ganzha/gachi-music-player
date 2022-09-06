@@ -12,11 +12,11 @@ Set /p choice="Num: "
 
 if "%choice%"=="1" (
     echo running Client...
-    cd _Build
+    cd build
     node ./src/Core/Client/Client.js
 ) else if "%choice%"=="2" (
     echo running ShardManager...
-	cd _Build
+	cd build
 	node ./src/Core/Client/ShardManager.js
 ) else if "%choice%"=="3"  (
 	echo running builder...
