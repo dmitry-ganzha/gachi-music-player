@@ -191,13 +191,15 @@ namespace ArgsHelper {
      * @param seek {number} Пропуск музыки до 00:00:00
      */
     export function createArgs (url: string, AudioFilters: AudioFilters, seek: number): FFmpeg.Arguments {
-        let thisArgs = [...JsonFFmpeg.Args.Reconnect, "-vn"];
+        let thisArgs = ["-reconnect", 1, "-reconnect_streamed", 1, "-reconnect_delay_max", 5];
+        const audioDecoding = ["-c:a", "libopus", "-f", "opus"];
+        const audioBitrate = ["-b:a", "390k"];
 
-        if (seek) thisArgs = [...thisArgs, ...JsonFFmpeg.Args.Seek, seek ?? 0];
+        if (seek) thisArgs = [...thisArgs, "-ss", seek ?? 0];
         if (url) thisArgs = [...thisArgs, "-i", url];
 
         //Всегда есть один фильтр <AudioFade>
-        return [...thisArgs, "-af", parseFilters(AudioFilters), ...JsonFFmpeg.Args.OggOpus, ...JsonFFmpeg.Args.DecoderPreset];
+        return [...thisArgs, "-compression_level", 12, ...audioDecoding, ...audioBitrate, "-af", parseFilters(AudioFilters), "-preset:a", "ultrafast"];
     }
     //====================== ====================== ====================== ======================
     /**
@@ -238,6 +240,9 @@ namespace ArgsHelper {
     function parseFilters(AudioFilters: AudioFilters): string {
         const response: Array<string> = [];
 
+        //Более плавное включение музыки
+        response.push("afade=t=in:st=0:d=1.5");
+
         if (AudioFilters) AudioFilters.forEach((name: string | number) => {
             if (typeof name === "number") return;
             //@ts-ignore
@@ -253,9 +258,6 @@ namespace ArgsHelper {
                 response.push(`${Filter.arg}${AudioFilters.slice(IndexFilter + 1)[0]}`);
             }
         });
-
-        //Более плавное включение музыки
-        response.push(JsonFFmpeg.Args.Filters.AudioFade);
 
         return response.join(",");
     }

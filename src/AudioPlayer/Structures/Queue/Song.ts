@@ -167,9 +167,9 @@ namespace SongFinder {
     }
     //Ищем трек на YouTube
     function FindTrack(nameSong: string, duration: number): Promise<FFmpeg.FFmpegFormat> {
-        return YouTube.SearchVideos(nameSong, {limit: 15}).then((Tracks) => {
+        return YouTube.SearchVideos(nameSong, {limit: 7}).then((Tracks) => {
             //Фильтруем треки оп времени
-            const FindTracks = Tracks.filter((track: InputTrack) => {
+            const FindTracks: InputTrack = Tracks.find((track: InputTrack) => {
                 const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);
 
                 //Как надо фильтровать треки
@@ -177,10 +177,10 @@ namespace SongFinder {
             });
 
             //Если треков нет
-            if (FindTracks.length === 0) return null;
+            if (!FindTracks) return null;
 
             //Получаем данные о треке
-            return YouTube.getVideo(FindTracks[0].url).then((video) => video.format) as Promise<FFmpeg.FFmpegFormat>;
+            return YouTube.getVideo(FindTracks.url).then((video) => video.format) as Promise<FFmpeg.FFmpegFormat>;
         });
     }
 }
@@ -214,7 +214,6 @@ function Color(type: string): number {
         case "SPOTIFY": return Colors.GREEN;
         case "SOUNDCLOUD": return Colors.ORANGE;
         case "VK": return Colors.BLUE_DARK;
-        case "TWITCH": return Colors.PURPLE;
         default: return Colors.BLUE;
     }
 }

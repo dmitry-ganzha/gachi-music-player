@@ -1,15 +1,5 @@
 {
   "Names": ["ffmpeg", "avconv", "./FFmpeg/ffmpeg", "./FFmpeg/avconv", "./node_modules/ffmpeg-static/ffmpeg"],
-  "Args": {
-    "OggOpus": ["-acodec", "libopus", "-f", "opus", "-tune", "zerolatency"],
-    "Seek": ["-ss"],
-    "Reconnect": ["-reconnect", 1, "-reconnect_delay_max", 5, "-reconnect_streamed", 1],
-    "DecoderPreset": ["-ar", 48e3, "-ac", 2],
-    "Other": ["-analyzeduration", 0, "-loglevel", 0],
-    "Filters": {
-      "AudioFade": "afade=t=in:st=0:d=1.5"
-    }
-  },
   "FilterConfigurator": {
     "treble": {
       "value": false,

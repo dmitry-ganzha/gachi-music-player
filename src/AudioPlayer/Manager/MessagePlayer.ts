@@ -52,7 +52,7 @@ export namespace MessagePlayer {
 
                 WarningChannelSend.then(GlobalUtils.DeleteMessage);
             } catch (e) {
-                client.console(`[MessagePlayer]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
+                client.console(`[MessagePlayer]: [function: toError]: ${e.message}`);
             }
         });
     }
@@ -73,7 +73,7 @@ export namespace MessagePlayer {
 
                 BufferingChannelSend.then(GlobalUtils.DeleteMessage);
             } catch (e) {
-                client.console(`[MessagePlayer]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
+                client.console(`[MessagePlayer]: [function: toBuffering]: ${e.message}`);
             }
         });
     }
@@ -94,7 +94,7 @@ export namespace MessagePlayer {
 
                 PushChannel.then(GlobalUtils.DeleteMessage);
             } catch (e) {
-                client.console(`[MessagePlayer]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
+                client.console(`[MessagePlayer]: [function: toPushSong]: ${e.message}`);
             }
         });
     }
@@ -115,7 +115,7 @@ export namespace MessagePlayer {
 
                 PushChannel.then(GlobalUtils.DeleteMessage);
             } catch (e) {
-                client.console(`[MessagePlayer]: [Method: ${e.method ?? null}]: [on: push, ${e.code}]: ${e?.message}`);
+                client.console(`[MessagePlayer]: [function: toPushPlaylist]: ${e.message}`);
             }
         });
     }
@@ -139,7 +139,7 @@ function UpdateMessage(message: ClientMessage): void {
             //Обновляем сообщение
             return message.edit({embeds: [CurrentPlayEmbed]});
         } catch (e) {
-            message.client.console(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: update, ${e.code}]: ${e?.message}`);
+            message.client.console(`[MessageEmitter]: [function: UpdateMessage]: ${e.message}`);
         }
     });
 }
@@ -155,7 +155,7 @@ function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> 
     const sendMessage = message.channel.send({embeds: [CurrentPlayEmbed as any], components: [Buttons as any]});
 
     sendMessage.then((msg) => CreateCollector(msg, queue)); //Добавляем к сообщению кнопки
-    sendMessage.catch((e) => console.log(`[MessageEmitter]: [Method: ${e.method ?? null}]: [on: playSong, ${e.code}]: ${e?.message}`));
+    sendMessage.catch((e) => console.log(`[MessageEmitter]: [function: pushCurrentSongMessage]: ${e.message}`));
 
     return sendMessage;
 }

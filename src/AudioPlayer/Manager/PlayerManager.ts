@@ -70,7 +70,7 @@ export namespace PlayerEventsCallBacks {
         //Если трек не загружается через 2 сек, отправляем сообщение об этом что-бы пользователь не подумал лишнего
         setTimeout(() => {
             if (queue.player.state.status === "buffering") MessagePlayer.toBuffering(queue, queue.songs[0]);
-        }, 1800)
+        }, 2200);
     }
     //====================== ====================== ====================== ======================
     /**

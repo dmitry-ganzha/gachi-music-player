@@ -4,6 +4,14 @@ import {ClientMessage} from "../../Handler/Events/Activity/Message";
 import {InputPlaylist, InputTrack, SupportPlatforms} from "../Structures/Queue/Song";
 import {GlobalUtils} from "../../Core/Utils/LiteUtils";
 
+//Необходимо для поиска
+const Platforms = {
+    "yt": "YOUTUBE",
+    "sp": "SPOTIFY",
+    "sc": "SOUNDCLOUD",
+    "vk": "VK"
+}
+
 const youtubeStr = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi;
 const spotifySrt = /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi;
 const SoundCloudSrt = /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/(.*)$/;
@@ -22,7 +30,7 @@ export namespace Searcher {
         //Отправляем сообщение о поиске трека
         if (!message.attachments?.last()?.url) message.client.sendMessage({ text: `Поиск 🔍 | ${search}`, message, color: "YELLOW", type: "css" });
 
-        const findPlatform = SupportPlatforms[platform];
+        const findPlatform = SupportPlatforms[platform] ?? SupportPlatforms["YOUTUBE"];
         const findCallback = (findPlatform as any)[type];
 
         //Если нет в базе платформы
@@ -82,12 +90,11 @@ namespace toPlayerUtils {
             else if (search.match(SoundCloudSrt)) return "SOUNDCLOUD";
             else if (search.match(/cdn.discordapp.com/) || message.attachments?.last()?.url) return "Discord";
         }
-
         const SplitSearch = search.split(' ');
-        const FindType = SplitSearch[0].toLowerCase() as TypeSearch;
+        const platform = SplitSearch[0] as "yt" | "vk" | "sp" | "sc";
 
-        if (FindType.length > 2) return "YOUTUBE";
-        return FindType;
+        if (platform.length === 2 && Platforms[platform]) return Platforms[platform] as TypeSearch;
+        return platform.toUpperCase() as any;
     }
 }
 //====================== ====================== ====================== ======================
@@ -119,7 +126,7 @@ namespace SearchSongMessage {
 
                 //Делаем что-бы при нажатии на эмодзи удалялся сборщик
                 Reaction(msg, message, "❌", () => {
-                    GlobalUtils.DeleteMessage(msg); //Удаляем сообщение
+                    GlobalUtils.DeleteMessage(msg, 1e3); //Удаляем сообщение
                     collector?.stop();
                 });
 

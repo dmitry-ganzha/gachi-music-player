@@ -50,7 +50,7 @@ export namespace FFmpeg {
         readonly #process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
 
         public constructor(args: Arguments, options: DuplexOptions = {}) {
-            super({highWaterMark: 12, autoDestroy: true, objectMode: true, ...options});
+            super({autoDestroy: true, objectMode: true, ...options});
             //Используется для загрузки потока в ffmpeg. Неообходимо не указывать параметр -i
             if (!args.includes("-i")) args = ["-i", "-", ...args];
 
@@ -80,6 +80,7 @@ export namespace FFmpeg {
                 end: this.#input,
                 unpipe: this.#input,
                 finish: this.#output,
+                close: this.#output,
                 drain: this.#output,
             };
 
