@@ -3,7 +3,6 @@ import {Colors} from "../../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../../Manager/DurationUtils";
 import {Images} from "../EmbedMessages";
 import {ClientMessage} from "../../../Handler/Events/Activity/Message";
-import {Decoder} from "../Media/Decoder";
 import {AudioFilters} from "./Queue";
 import {httpsClient} from "../../../Core/httpsClient";
 import {SoundCloud, Spotify, VK, YouTube} from "../../../Structures/Platforms";
@@ -128,25 +127,14 @@ export class Song {
     };
 
     //Получаем исходник трека
-    public resource = (seek: number, filters: AudioFilters, req = 0): Promise<null | Decoder.All> => new Promise(async (resolve) => {
+    public resource = (seek: number, filters: AudioFilters, req = 0): Promise<{url: string}> => new Promise(async (resolve) => {
         if (req > 2) return resolve(null);
         if (!this.resourceLink) this.resourceLink = (await SongFinder.findResource(this))?.url;
         const checkResource = await httpsClient.checkLink(this.resourceLink);
 
-        if (checkResource === "OK") {
-            let params: { url: string | Decoder.Dash, seek?: number, filters?: AudioFilters };
-            if (this.isLive) params = {url: new Decoder.Dash(this.resourceLink, this.url)};
-            else params = {url: this.resourceLink, seek, filters};
-
-            const DecodeFFmpeg = new Decoder.All(params);
-            //Удаляем поток следую Decoder.All<events>
-            ["close", "end", "error"].forEach((event: string) => DecodeFFmpeg.once(event, () => {
-                [DecodeFFmpeg, params.url].forEach((clas) => typeof clas !== "string" && clas !== undefined ? clas.destroy() : null);
-            }));
-
-            return resolve(DecodeFFmpeg);
-        } else {
-            req++;
+        if (checkResource.status === "OK") return resolve({ url: this.resourceLink });
+        else {
+            req++
             return resolve(this.resource(seek, filters, req));
         }
     });
@@ -167,9 +155,9 @@ namespace SongFinder {
     }
     //Ищем трек на YouTube
     function FindTrack(nameSong: string, duration: number): Promise<FFmpeg.FFmpegFormat> {
-        return YouTube.SearchVideos(nameSong, {limit: 7}).then((Tracks) => {
+        return YouTube.SearchVideos(nameSong, {limit: 15}).then((Tracks) => {
             //Фильтруем треки оп времени
-            const FindTracks: InputTrack = Tracks.find((track: InputTrack) => {
+            const FindTracks: InputTrack[] = Tracks.filter((track: InputTrack) => {
                 const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);
 
                 //Как надо фильтровать треки
@@ -177,10 +165,10 @@ namespace SongFinder {
             });
 
             //Если треков нет
-            if (!FindTracks) return null;
+            if (FindTracks?.length < 1) return null;
 
             //Получаем данные о треке
-            return YouTube.getVideo(FindTracks.url).then((video) => video.format) as Promise<FFmpeg.FFmpegFormat>;
+            return YouTube.getVideo(FindTracks[0].url).then((video) => video.format) as Promise<FFmpeg.FFmpegFormat>;
         });
     }
 }

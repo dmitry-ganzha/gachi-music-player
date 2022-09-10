@@ -13,6 +13,64 @@ let FileBase = {
     modules: [] as string[]
 };
 
+
+export namespace FileSystem {
+    export function Load(client: WatKLOK): void {
+        if (!client.ShardID && client.ShardID !== 0) {
+            console.clear(); //Чистим консоль
+
+            //Отправляем логи после загрузки всех системы
+            setImmediate(() => {
+                Object.entries(FileBase).forEach(([key, value]) => {
+                    const AllLogs = value.join("\n");
+                    console.log(`| FileSystem... Loaded [dir: ${key}, total: ${value.length}]\n${AllLogs}\n`);
+                });
+
+                //После вывода в консоль удаляем
+                delete FileBase.commands;
+                delete FileBase.events;
+                delete FileBase.modules;
+                //
+
+                console.log("\nProcess logs:");
+            });
+        }
+
+        //Загружаем команды
+        new MultiFileSystem({
+            path: "Handler/Commands",
+            callback: (pull: Command, {file, reason, dir}) => {
+                if (reason) return SendLog("commands", `./Handler/Commands/${dir}/${file}`, reason);
+                else if (!pull.name) return SendLog("commands", `./Handler/Commands/${dir}/${file}`, "Parameter name has undefined");
+
+                client.commands.set(pull.name, pull);
+                SendLog("commands", `./Handler/Commands/${dir}/${file}`);
+            }
+        });
+        //Загружаем ивенты
+        new MultiFileSystem({
+            path: "Handler/Events",
+            callback: (pull: Event<any, any>, {file, reason, dir}) => {
+                if (reason) return SendLog("events", `./Handler/Events/${dir}/${file}`, reason);
+                else if (!pull.name) return SendLog("events", `./Handler/Events/${dir}/${file}`, "Parameter name has undefined");
+
+                client.on(pull.name, (ev: any, ev2: any) => pull.run(ev, ev2, client));
+                SendLog("events", `./Handler/Events/${dir}/${file}`);
+            }
+        });
+        //Загружаем модули
+        new MultiFileSystem({
+            path: "Handler/Modules",
+            callback: (pull: Module, {file, reason, dir}) => {
+                if (reason) return SendLog("modules", `./Handler/Modules/${dir}/${file}`, reason);
+
+                pull.run(client);
+                SendLog("modules", `./Handler/Modules/${dir}/${file}`);
+            }
+        });
+    }
+}
+
 //Добавляем лог в Array базу
 function SendLog(type: "commands" | "events" | "modules", file: string, reason?: string) {
     const Status = `Status: [${reason ? "🟥" : "🟩"}]`;
@@ -22,61 +80,6 @@ function SendLog(type: "commands" | "events" | "modules", file: string, reason?:
     if (reason) EndStr += ` | Reason: [${reason}]`; //Если есть ошибка добавляем ее
 
     return FileBase[type].push(EndStr);
-}
-
-export function FileSystemLoad(client: WatKLOK): void {
-    if (!client.ShardID && client.ShardID !== 0) {
-        console.clear(); //Чистим консоль
-
-        //Отправляем логи после загрузки всех системы
-        setImmediate(() => {
-            Object.entries(FileBase).forEach(([key, value]) => {
-                const AllLogs = value.join("\n");
-                console.log(`| FileSystem... Loaded [dir: ${key}, total: ${value.length}]\n${AllLogs}\n`);
-            });
-
-            //После вывода в консоль удаляем
-            delete FileBase.commands;
-            delete FileBase.events;
-            delete FileBase.modules;
-            //
-
-            console.log("\nProcess logs:");
-        });
-    }
-
-    //Загружаем команды
-    new MultiFileSystem({
-        path: "Handler/Commands",
-        callback: (pull: Command, {file, reason, dir}) => {
-            if (reason) return SendLog("commands", `./Handler/Commands/${dir}/${file}`, reason);
-            else if (!pull.name) return SendLog("commands", `./Handler/Commands/${dir}/${file}`, "Parameter name has undefined");
-
-            client.commands.set(pull.name, pull);
-            SendLog("commands", `./Handler/Commands/${dir}/${file}`);
-        }
-    });
-    //Загружаем ивенты
-    new MultiFileSystem({
-        path: "Handler/Events",
-        callback: (pull: Event<any, any>, {file, reason, dir}) => {
-            if (reason) return SendLog("events", `./Handler/Events/${dir}/${file}`, reason);
-            else if (!pull.name) return SendLog("events", `./Handler/Events/${dir}/${file}`, "Parameter name has undefined");
-
-            client.on(pull.name, (ev: any, ev2: any) => pull.run(ev, ev2, client));
-            SendLog("events", `./Handler/Events/${dir}/${file}`);
-        }
-    });
-    //Загружаем модули
-    new MultiFileSystem({
-        path: "Handler/Modules",
-        callback: (pull: Module, {file, reason, dir}) => {
-            if (reason) return SendLog("modules", `./Handler/Modules/${dir}/${file}`, reason);
-
-            pull.run(client);
-            SendLog("modules", `./Handler/Modules/${dir}/${file}`);
-        }
-    });
 }
 
 class MultiFileSystem {

@@ -1,12 +1,7 @@
-import {PassThrough} from "stream";
-import {IncomingMessage} from "http";
 import JsonFFmpeg from "../../../../DataBase/FFmpeg.json";
 import {AudioFilters} from "../Queue/Queue";
-import {httpsClient} from "../../../Core/httpsClient";
 import {FFmpeg} from "./FFmpeg";
-import {YouTube} from "../../../Structures/Platforms";
-import {Opus} from "./Opus";
-import {InputTrack} from "../Queue/Song";
+import {opus} from "prism-media";
 
 //Сюда после запуска файла будут записаны статичные фильтры. Статичные фильтры - фильтры в которых модификатор скорости записан и его не может указать пользователь
 let FiltersStatic = {};
@@ -20,10 +15,22 @@ let FiltersStatic = {};
 
 //Все доступные типы декодирования аудио
 export namespace Decoder {
+    export function createAudioResource(audio: {url: string}, seek: number = 0, filters: AudioFilters = []) {
+        let params: { url: string, seek?: number, filters?: AudioFilters };
+        params = {url: audio.url, seek, filters};
+
+        const DecodeFFmpeg = new Decoder.All(params);
+        //Удаляем поток следую Decoder.All<events>
+        ["close", "end", "error"].forEach((event: string) => DecodeFFmpeg.once(event, () => {
+            [DecodeFFmpeg].forEach((clas) => typeof clas !== "string" && clas !== undefined ? clas.destroy() : null);
+        }));
+
+        return DecodeFFmpeg;
+    }
     /**
      * С помощью FFmpeg конвертирует любой формат в opus
      */
-    export class All extends Opus.Ogg {
+    export class All extends opus.OggDemuxer {
         readonly #FFmpeg: FFmpeg.FFmpeg;
         readonly #TimeFrame: number;
         #started = false;
@@ -38,20 +45,13 @@ export namespace Decoder {
          * @param parameters {Options}
          * @requires {ArgsHelper}
          */
-        public constructor(parameters: {url: string | Decoder.Dash, seek?: number, filters?: AudioFilters}) {
+        public constructor(parameters: {url: string, seek?: number, filters?: AudioFilters}) {
             super({autoDestroy: true});
-            if (parameters.url instanceof Decoder.Dash) {
-                //Даем FFmpeg'у, ссылку с которой надо скачать поток
-                this.#FFmpeg = new FFmpeg.FFmpeg(ArgsHelper.createArgs(null, null, 0));
-                parameters.url.pipe(this.#FFmpeg);
-            } else {
-                //Даем FFmpeg'у, ссылку с которой надо скачать поток
-                this.#FFmpeg = new FFmpeg.FFmpeg(ArgsHelper.createArgs(parameters.url, parameters?.filters, parameters?.seek));
-            }
+            this.#FFmpeg = new FFmpeg.FFmpeg(ArgsHelper.createArgs(parameters.url, parameters?.filters, parameters?.seek));
             this.#FFmpeg.pipe(this); //Загружаем из FFmpeg'a в opus.OggDemuxer
 
             //Проверяем сколько времени длится пакет
-            this.#TimeFrame = parameters?.filters.length > 0 ? ArgsHelper.timeFrame(parameters?.filters) : 20;
+            this.#TimeFrame = parameters?.filters?.length > 0 ? ArgsHelper.timeFrame(parameters?.filters) : 20;
 
             //Когда можно будет читать поток записываем его в <this.#started>
             this.once("readable", () => (this.#started = true));
@@ -85,99 +85,6 @@ export namespace Decoder {
                     this?.destroy();
                 }
             }, 125);
-        };
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Загружаем стрим для дальнейшей расшифровки
-     */
-    export class Dash extends PassThrough {
-        #request: IncomingMessage; //httpsClient<Request>
-        #NumberUrl: number = 0; //Номер ссылки
-
-        readonly #precache: number = 3; //Буфер
-        readonly #urls: {
-            dash: string; //Dash ссылка
-            base: string; //Ссылка на домен
-            video: string; //Ссылка на видео
-        }
-        //====================== ====================== ====================== ======================
-        /**
-         * @description Для начала нужна dash ссылка (работает только с youtube)
-         * @param dash {string} Ссылка на dash файл
-         * @param video {string} Ссылка на видео
-         */
-        public constructor(dash: string, video: string) {
-            super({highWaterMark: 5 * 1000 * 1000, autoDestroy: true});
-            this.#urls = { dash, base: "", video };
-            this.#DecodeDashManifest().catch((err) => console.log(err));
-            this.once("end", this.destroy);
-        };
-        //Расшифровывает DashManifest, требуется сделать только один раз
-        readonly #DecodeDashManifest = async () => {
-            const req = await httpsClient.parseBody(this.#urls.dash);
-            const audioFormat = req.split('<AdaptationSet id="0"')[1].split('</AdaptationSet>')[0].split('</Representation>');
-
-            if (audioFormat[audioFormat.length - 1] === '') audioFormat.pop();
-
-            //Записываем домен с которого будет скачивать поток
-            this.#urls.base = audioFormat[audioFormat.length - 1].split('<BaseURL>')[1].split('</BaseURL>')[0];
-
-            //Просим домен сгенерировать ссылки для дальнейшей загрузки потока
-            await httpsClient.Request(`https://${new URL(this.#urls.base).host}/generate_204`);
-
-            //Если нет определенного номера для старта
-            if (this.#NumberUrl === 0) {
-                //Получаем лист ссылками
-                const list = audioFormat[audioFormat.length - 1].split('<SegmentList>')[1].split('</SegmentList>')[0]
-                    .replaceAll('<SegmentURL media="', '').split('"/>');
-
-                //Если последняя ссылка не является ссылкой, убираем
-                if (list[list.length - 1] === '') list.pop();
-                if (list.length > this.#precache) list.splice(0, list.length - this.#precache);
-
-                //Записываем номер ссылки с которой надо начать
-                this.#NumberUrl = Number(list[0].split('sq/')[1].split('/')[0]);
-                await this.#PipeData();
-            }
-        };
-        //Загружаем фрагменты в класс
-        readonly #PipeData = () => {
-            return new Promise(async (resolve) => {
-                const request = await httpsClient.Request(`${this.#urls.base}sq/${this.#NumberUrl}`).catch((err: Error) => err);
-
-                if (this.destroyed) return;
-
-                //Если Request является ошибкой
-                if (request instanceof Error) {
-                    this.#UpdateYouTubeDash().then(this.#DecodeDashManifest);
-                    return;
-                }
-                //Записываем request в this.#request
-                this.#request = request;
-
-                //Записываем данные в текущий класс
-                request.on('data', (c) => {
-                    this.push(c);
-                });
-                //Если выгружать больше нечего, запускаем по новой
-                request.on('end', () => {
-                    this.#NumberUrl++;
-                    return resolve(this.#PipeData())
-                });
-                //Если произошла ошибка
-                request.once('error', (err) => {
-                    this.emit('error', err);
-                });
-            });
-        };
-
-        readonly #UpdateYouTubeDash = () => YouTube.getVideo(this.#urls.video).then((video: InputTrack) => (this.#urls.dash = video.format.url));
-        //Удаляем request
-        readonly _destroy = () => {
-            super.destroy();
-            this.#request?.removeAllListeners();
-            this.#request?.destroy();
         };
     }
 }

@@ -1,6 +1,6 @@
 import {Command} from "../../../Structures/Command";
-import {TextChannel} from "discord.js";
 import {ClientMessage} from "../../Events/Activity/Message";
+import {TextChannel} from "discord.js";
 
 export default class Delete extends Command {
     public constructor() {

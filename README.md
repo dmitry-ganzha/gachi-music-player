@@ -8,7 +8,7 @@
 </div>
 
 
-[<img align="right" alt="Avatar bot" width="240px" src="https://cdn.discordapp.com/avatars/678588856588697610/466d3d51e6d497541622085ed18a1ad1.webp?size=4096" />](https://discordapp.com/users/623170593268957214)
+[<img align="right" alt="Avatar bot" width="223px" src="https://cdn.discordapp.com/avatars/678588856588697610/466d3d51e6d497541622085ed18a1ad1.webp?size=4096" />](https://discordapp.com/users/623170593268957214)
 
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)

@@ -1,5 +1,5 @@
 import {ActivityType, Client, IntentsBitField, VoiceState, Guild} from "discord.js";
-import {FileSystemLoad} from "../FileSystem";
+import {FileSystem} from "../FileSystem";
 import {PlayerEmitter} from "../../AudioPlayer/execute";
 import {Command} from "../../Structures/Command";
 import {Queue} from "../../AudioPlayer/Structures/Queue/Queue";
@@ -78,7 +78,7 @@ export class WatKLOK extends Client {
 const client = new WatKLOK();
 
 client.login(Bot.token).then(() => {
-    FileSystemLoad(client); //Включаем загрузчик файлов
+    FileSystem.Load(client); //Включаем загрузчик файлов
 
     if (Bot.ignoreErrors) process.on("uncaughtException", (err: Error): void | Promise<ClientMessage> => {
         if (err.message.match("undici")) return; //undici используется в discord.js, и выдает ошибки такие как (Connect Timeout Error)

@@ -27,7 +27,7 @@ export class Queue {
     //Создаем очередь
     public constructor(message: ClientMessage, voice: VoiceChannel) {
         this.#_player = new AudioPlayer();
-        this.#_channels = { message, voice};
+        this.#_channels = { message, voice };
 
         this.player.on("idle", () => PlayerEventsCallBacks.onIdlePlayer(this));
         this.player.on("buffering", () => PlayerEventsCallBacks.onBufferingPlayer(this));

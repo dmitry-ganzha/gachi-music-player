@@ -22,18 +22,16 @@ export namespace QueueManager {
             MessagePlayer.toPushPlaylist(message, info);
             setImmediate(() => {
                 //Добавляем треки в очередь
-                info.items.forEach((track) => PushSong(Queue, track, message.author,false));
+                info.items.forEach((track) => PushSong(Queue, track, message.author, false));
                 return Queue.player.play(Queue); //Запускаем проигрывание музыки!
             });
             return;
         }
 
         //Добавляем трек в очередь
-        PushSong(Queue, info, message.author,Queue.songs.length >= 1);
-        setImmediate(() => {
-            //Запускаем проигрывание музыки если это первый трек
-            if (Queue.songs.length <= 1) return Queue.player.play(Queue);
-        });
+        PushSong(Queue, info, message.author, Queue.songs.length >= 1);
+        //Запускаем проигрывание музыки если это первый трек
+        if (Queue.songs.length <= 1) return Queue.player.play(Queue);
     }
 }
 //====================== ====================== ====================== ======================

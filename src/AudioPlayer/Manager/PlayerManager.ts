@@ -21,8 +21,6 @@ export namespace PlayerEventsCallBacks {
         const message = queue.channels.message;
         const {client, guild} = message;
 
-        if (!CurrentSong?.title) return;
-
         if (seek) queue.player.playbackDuration = seek;
         else {
             client.console(`[GuildID: ${guild.id}]: ${CurrentSong.title}`); //Отправляем лог о текущем треке
@@ -46,7 +44,7 @@ export namespace PlayerEventsCallBacks {
             }
 
             return queue.player.play(queue); //Включаем трек
-        }, 450);
+        }, 200);
     }
     //====================== ====================== ====================== ======================
     /**

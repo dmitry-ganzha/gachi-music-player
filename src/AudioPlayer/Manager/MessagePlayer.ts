@@ -151,6 +151,9 @@ function UpdateMessage(message: ClientMessage): void {
  */
 function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> {
     const queue: Queue = message.client.queue.get(message.guild.id);
+
+    if (!queue?.songs[0]) return;
+
     const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue?.songs[0], queue);
     const sendMessage = message.channel.send({embeds: [CurrentPlayEmbed as any], components: [Buttons as any]});
 

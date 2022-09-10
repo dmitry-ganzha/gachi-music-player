@@ -128,8 +128,14 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         //Если нет трека, то удаляем очередь
         if (!CurrentSong) return queue.cleanup();
         const Audio = CurrentSong.resource(seek, queue.audioFilters);
-        Audio.then((stream) => (this.#readStream(stream), this.emit("StartPlaying", seek)));
+        Audio.then((audio) => {
+            if (!audio?.url) return this.emit("error", "[AudioPlayer]: Audio resource not found!");
+
+            return this.#readStream(Decoder.createAudioResource(audio, seek, CurrentSong.isLive ? [] : queue.audioFilters))
+        });
         Audio.catch((err) => this.emit("error", `[AudioPlayer]: ${err}`));
+
+        this.emit("StartPlaying", seek);
     };
     //====================== ====================== ====================== ======================
     /**
@@ -168,7 +174,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     };
     //====================== ====================== ====================== ======================
     /**
-     * @description Читаем стрим
+     * @description Читаем поток
      * @param stream {PlayerResource} Входящий поток для чтения
      */
     readonly #readStream = (stream: PlayerResource): void => {

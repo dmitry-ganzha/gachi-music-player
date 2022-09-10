@@ -3,10 +3,10 @@
   "description": "Discord music bot",
   "type": "commonjs",
   "author": "SNIPPIK",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "main": "src/Core/Client/Client.js",
   "scripts": {
-    "build": "tsc -p ./tsconfig.json",
+    "build": "tsc -p tsconfig1.json",
     "test": "jest"
   },
   "dependencies": {
