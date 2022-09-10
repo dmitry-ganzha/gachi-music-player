@@ -6,7 +6,7 @@
   "version": "2.1.2",
   "main": "src/Core/Client/Client.js",
   "scripts": {
-    "build": "tsc -p tsconfig1.json",
+    "build": "tsc -p tsconfig.json",
     "test": "jest"
   },
   "dependencies": {
