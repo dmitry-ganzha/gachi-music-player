@@ -1,4 +1,7 @@
 {
+  "AudioPlayer": {
+    "BufferingMessage": true
+  },
   "Debug": false,
   "Channels": {
     "sendErrors": ""
