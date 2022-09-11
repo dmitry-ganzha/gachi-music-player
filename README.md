@@ -51,9 +51,6 @@
 2. [`Config.json`](DataBase/Config.json) | основные настройки
     ```json5
     {
-      "AudioPlayer": {
-        "BufferingMessage": true //Отправлять сообщение о том что поток загружается
-      },
       "Debug": false, //Отправлять сообщение взаимодействий бота с discord
       "Channels": {
         "sendErrors": "" //ID канала на который будут отправляться ошибки

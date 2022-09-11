@@ -3,7 +3,7 @@
   "description": "Discord music bot",
   "type": "commonjs",
   "author": "SNIPPIK",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "main": "src/Core/Client/Client.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",

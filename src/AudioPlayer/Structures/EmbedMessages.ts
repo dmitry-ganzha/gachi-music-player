@@ -155,39 +155,6 @@ export namespace EmbedMessages {
             }
         }
     }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Message сообщение о том что трек еще не загружен
-     * @param client {WatKLOK} Клиент
-     * @param color {Song<color>} Цвет
-     * @param author {Song<author>} Автор трека
-     * @param image {Song<image>} Картинка трека
-     * @param title {Song<title>} Название трека
-     * @param url {Song<url>} Ссылка на трек
-     * @param duration {Song<duration>} Длительность трека
-     * @param requester {Song<requester>} Кто включил трек
-     * @param type {string} Платформа где была взята музыка
-     * @param songs {Queue<songs>} Все треки
-     */
-    export function toBuffering(client: WatKLOK, {color, author, image, title, url, duration, requester, type}: Song, {songs}: Queue): EmbedConstructor {
-        return {
-            color,
-            description: `**❯** [${title}](${url})\nДанный трек загружается. Это может занять некоторое время!`,
-            timestamp: new Date(),
-            author: {
-                name: client.replaceText(author.title, 45, false),
-                iconURL: author.isVerified === undefined ? Images.NotFound : author.isVerified ? Images.Verification : Images.NotVerification,
-                url: author.url,
-            },
-            thumbnail: {
-                url: image?.url ?? Images.NotImage,
-            },
-            footer: {
-                text: `${requester.username} | ${DurationUtils.getTimeQueue(songs)} | 🎶: ${songs.length}`,
-                iconURL: requester?.avatarURL() ?? client.user.displayAvatarURL(),
-            }
-        }
-    }
 }
 
 namespace CurrentPlayFunction {
@@ -253,7 +220,7 @@ namespace CurrentPlayFunction {
             return `${progressText}${Bar.button}${emptyText}`;
         } catch (err) {
             if (err === "RangeError: Invalid count value") return "ProgressBar: Error value";
-            return `Не удалось вычислить!`;
+            return `Loading...`;
         }
     }
 }

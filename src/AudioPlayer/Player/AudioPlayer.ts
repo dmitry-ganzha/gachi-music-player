@@ -16,12 +16,12 @@ interface AudioPlayerEvents {
     error: (error: Error | string, skipSong: boolean) => void;
 
     StartPlaying: (seek: number) => void;
-    BufferStream: () => void
+    BufferStream: () => void;
 }
 
 //Аудио плеер за основу взят из @discordjs/voice
 export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
-    #state: PlayerState = {status: "idle"};
+    #state: PlayerState = { status: "idle" };
     readonly #voices: VoiceConnection[] = []; //Голосовые каналы
 
     //Все голосовые каналы к которым подключен плеер
@@ -140,11 +140,11 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
 
         //Если некуда проигрывать музыку ставить плеер на паузу
         if (this.#voices.length === 0) {
-            this.state = { ...this.state, status: "autoPaused" };
+            this.state = { ...state, status: "autoPaused" };
             return;
-        } else if (this.state.status === "autoPaused" && this.#voices.length > 0) {
+        } else if (state.status === "autoPaused" && this.#voices.length > 0) {
             //Если стоит статус плеера (autoPaused) и есть канал или каналы в которые можно воспроизвести музыку, стартуем!
-            this.state = { ...this.state, status: "playing", stream: this.state.stream };
+            this.state = { ...state, status: "playing", stream: state.stream };
         }
 
         //Не читать пакеты при статусе плеера (autoPaused)
@@ -155,8 +155,8 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         }
 
         //Отправка музыкального пакета
-        if (this.state.status === "playing") {
-            const packet: Buffer | null = this.state.stream?.read();
+        if (state.status === "playing") {
+            const packet: Buffer | null = state.stream?.read();
 
             //Если есть аудио пакет отправляем во все голосовые каналы к которым подключен плеер
             if (packet) return this.#sendPackets(packet);
@@ -175,14 +175,10 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
             //Включаем поток когда можно будет начать читать
             const onReadCallback = () => this.state = { status: "playing", stream };
             //Если происходит ошибка, то продолжаем читать этот же поток
-            const onFailCallBack = () => {
-                this.state = { status: "playing" };
-                this.emit("error", "[Decoder]: Fail readable stream!", false);
-            }
+            const onFailCallBack = () => this.emit("error", "[Decoder]: Fail readable stream!", false);
 
             stream.once("readable", onReadCallback);
             stream.once("error", onFailCallBack);
-            this.emit("BufferStream");
         }
     };
     //====================== ====================== ====================== ======================

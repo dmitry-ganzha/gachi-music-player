@@ -1,7 +1,6 @@
 import {AudioPlayer} from "../Player/AudioPlayer";
 import {MessagePlayer} from "./MessagePlayer";
 import {Queue} from "../Structures/Queue/Queue";
-import cfg from "../../../DataBase/Config.json";
 
 const PlayerData = {
     players: [] as AudioPlayer[], //Плееры серверов
@@ -57,18 +56,12 @@ export namespace PlayerEventsCallBacks {
         //Выводим сообщение об ошибке
         MessagePlayer.toError(queue, queue.songs[0], err);
 
-        if (isSkipSong) {
-            queue.songs.shift();
-            setTimeout(() => queue.player.play(queue), 1e3);
-        }
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Когда плеер загружает трек, он возвратит эту функцию
-     * @param queue {Queue} Сама очередь
-     */
-    export function onBufferingPlayer(queue: Queue) {
-        if (cfg.AudioPlayer.BufferingMessage) MessagePlayer.toBuffering(queue, queue.songs[0]);
+        setTimeout(() => {
+            if (isSkipSong) {
+                queue.songs.shift();
+                setTimeout(() => queue.player.play(queue), 1e3);
+            }
+        }, 200);
     }
     //====================== ====================== ====================== ======================
     /**
@@ -133,7 +126,7 @@ export namespace PlayersManager {
                 if (player.state.status === "idle") return false;
 
                 //Если невозможно прочитать поток выдать false
-                if (!player.state.stream?.readable) {
+                if (!player.state.stream?.hasStarted) {
                     player.state = { status: "idle" };
                     return false;
                 }

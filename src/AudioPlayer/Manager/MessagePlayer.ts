@@ -58,27 +58,6 @@ export namespace MessagePlayer {
     }
     //====================== ====================== ====================== ======================
     /**
-     * @description При долгой загрузки трека плеер выведет это сообщение
-     * @param queue {Queue} Очередь
-     * @param song {Song} Трек
-     * @requires {DeleteMessage}
-     */
-    export function toBuffering(queue: Queue, song: Song) {
-        const {client, channel} = queue.channels.message;
-
-        setImmediate(() => {
-            try {
-                const Embed = EmbedMessages.toBuffering(client, song, queue);
-                const BufferingChannelSend = channel.send({embeds: [Embed]});
-
-                BufferingChannelSend.then(GlobalUtils.DeleteMessage);
-            } catch (e) {
-                client.console(`[MessagePlayer]: [function: toBuffering]: ${e.message}`);
-            }
-        });
-    }
-    //====================== ====================== ====================== ======================
-    /**
      * @description Сообщение о добавлении трека в очередь сервера
      * @param queue {Queue} Очередь
      * @param song {Song} Трек

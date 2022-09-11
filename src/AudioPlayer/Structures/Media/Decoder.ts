@@ -46,7 +46,7 @@ export namespace Decoder {
          * @requires {ArgsHelper}
          */
         public constructor(parameters: {url: string, seek?: number, filters?: AudioFilters}) {
-            super({autoDestroy: true});
+            super({autoDestroy: false});
             this.#FFmpeg = new FFmpeg.FFmpeg(ArgsHelper.createArgs(parameters.url, parameters?.filters, parameters?.seek));
             this.#FFmpeg.pipe(this); //Загружаем из FFmpeg'a в opus.OggDemuxer
 
@@ -101,13 +101,13 @@ namespace ArgsHelper {
     export function createArgs (url: string, AudioFilters: AudioFilters, seek: number): FFmpeg.Arguments {
         let thisArgs = ["-reconnect", 1, "-reconnect_streamed", 1, "-reconnect_delay_max", 5];
         const audioDecoding = ["-c:a", "libopus", "-f", "opus"];
-        const audioBitrate = ["-b:a", "390k"];
+        const audioBitrate = ["-b:a", "256k"];
 
         if (seek) thisArgs = [...thisArgs, "-ss", seek ?? 0];
         if (url) thisArgs = [...thisArgs, "-i", url];
 
         //Всегда есть один фильтр <AudioFade>
-        return [...thisArgs, "-compression_level", 12, ...audioDecoding, ...audioBitrate, "-af", parseFilters(AudioFilters), "-preset:a", "ultrafast"];
+        return [...thisArgs, "-compression_level", 10, ...audioDecoding, ...audioBitrate, "-af", parseFilters(AudioFilters), "-preset:a", "ultrafast"];
     }
     //====================== ====================== ====================== ======================
     /**
