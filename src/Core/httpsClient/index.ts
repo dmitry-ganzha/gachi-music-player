@@ -104,15 +104,13 @@ export namespace httpsClient {
      * @param url {string} Ссылка
      * @requires {Request}
      */
-    export function checkLink(url: string): Promise<{status: "OK" | "Fail", type: any}> | {status: "Fail", type: null} {
-        if (!url) return {status: "Fail", type: null};
+    export function checkLink(url: string): Promise<"OK" | "Fail"> | "Fail" {
+        if (!url) return "Fail";
 
         return Request(url, {request: {method: "HEAD"}}).then((resource: IncomingMessage) => {
-            const typeContent = resource.headers["content-type"];
-
-            if (resource instanceof Error) return {status: "Fail", type: typeContent}; //Если есть ошибка
-            if (resource.statusCode >= 200 && resource.statusCode < 400) return {status: "OK", type: typeContent}; //Если возможно скачивать ресурс
-            return {status: "Fail", type: typeContent}; //Если прошлые варианты не подходят, то эта ссылка не рабочая
+            if (resource instanceof Error) return "Fail"; //Если есть ошибка
+            if (resource.statusCode >= 200 && resource.statusCode < 400) return "OK"; //Если возможно скачивать ресурс
+            return "Fail"; //Если прошлые варианты не подходят, то эта ссылка не рабочая
         });
     }
 }

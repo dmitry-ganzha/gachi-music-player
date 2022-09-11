@@ -128,13 +128,14 @@ export class Song {
 
     //Получаем исходник трека
     public resource = (seek: number, filters: AudioFilters, req = 0): Promise<{url: string}> => new Promise(async (resolve) => {
-        if (req > 2) return resolve(null);
-        if (!this.resourceLink) this.resourceLink = (await SongFinder.findResource(this))?.url;
+        if (req > 3) return resolve(null);
         const checkResource = await httpsClient.checkLink(this.resourceLink);
 
-        if (checkResource.status === "OK") return resolve({ url: this.resourceLink });
+        if (!this.resourceLink) this.resourceLink = (await SongFinder.findResource(this))?.url;
+
+        if (checkResource === "OK") return resolve({ url: this.resourceLink });
         else {
-            req++
+            req++;
             return resolve(this.resource(seek, filters, req));
         }
     });

@@ -32,7 +32,7 @@ export namespace Decoder {
      */
     export class All extends opus.OggDemuxer {
         readonly #FFmpeg: FFmpeg.FFmpeg;
-        readonly #TimeFrame: number;
+        readonly #TimeFrame: number = 20;
         #started = false;
         #playbackDuration = 0;
 
@@ -51,7 +51,8 @@ export namespace Decoder {
             this.#FFmpeg.pipe(this); //Загружаем из FFmpeg'a в opus.OggDemuxer
 
             //Проверяем сколько времени длится пакет
-            this.#TimeFrame = parameters?.filters?.length > 0 ? ArgsHelper.timeFrame(parameters?.filters) : 20;
+            if (parameters?.filters?.length > 0) this.#TimeFrame = ArgsHelper.timeFrame(parameters?.filters);
+            if (parameters.seek > 0) this.#playbackDuration = parameters.seek * 1e3;
 
             //Когда можно будет читать поток записываем его в <this.#started>
             this.once("readable", () => (this.#started = true));

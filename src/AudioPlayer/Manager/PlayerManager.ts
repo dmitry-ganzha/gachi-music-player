@@ -1,6 +1,7 @@
 import {AudioPlayer} from "../Player/AudioPlayer";
 import {MessagePlayer} from "./MessagePlayer";
 import {Queue} from "../Structures/Queue/Queue";
+import cfg from "../../../DataBase/Config.json";
 
 const PlayerData = {
     players: [] as AudioPlayer[], //Плееры серверов
@@ -21,8 +22,7 @@ export namespace PlayerEventsCallBacks {
         const message = queue.channels.message;
         const {client, guild} = message;
 
-        if (seek) queue.player.playbackDuration = seek;
-        else {
+        if (!seek) {
             client.console(`[GuildID: ${guild.id}]: ${CurrentSong.title}`); //Отправляем лог о текущем треке
             MessagePlayer.toPlay(message); //Если стрим не пустышка отправляем сообщение
         }
@@ -51,13 +51,16 @@ export namespace PlayerEventsCallBacks {
      * @description Когда плеер выдает ошибку, он возвратит эту функцию
      * @param err {Error | string} Ошибка
      * @param queue {Queue} Сама очередь
+     * @param isSkipSong {boolean} Надо ли пропускать трек
      */
-    export function onErrorPlayer(err: Error | string, queue: Queue): void {
+    export function onErrorPlayer(err: Error | string, queue: Queue, isSkipSong: boolean): void {
         //Выводим сообщение об ошибке
         MessagePlayer.toError(queue, queue.songs[0], err);
 
-        queue.songs.shift();
-        setTimeout(() => queue.player.play(queue), 1e3);
+        if (isSkipSong) {
+            queue.songs.shift();
+            setTimeout(() => queue.player.play(queue), 1e3);
+        }
     }
     //====================== ====================== ====================== ======================
     /**
@@ -65,10 +68,7 @@ export namespace PlayerEventsCallBacks {
      * @param queue {Queue} Сама очередь
      */
     export function onBufferingPlayer(queue: Queue) {
-        //Если трек не загружается через 2 сек, отправляем сообщение об этом что-бы пользователь не подумал лишнего
-        setTimeout(() => {
-            if (queue.player.state.status === "buffering") MessagePlayer.toBuffering(queue, queue.songs[0]);
-        }, 2200);
+        if (cfg.AudioPlayer.BufferingMessage) MessagePlayer.toBuffering(queue, queue.songs[0]);
     }
     //====================== ====================== ====================== ======================
     /**
@@ -130,7 +130,7 @@ export namespace PlayersManager {
 
             //Фильтруем какой плеер готов проигрывать музыку
             const available = PlayerData.players.filter((player) => {
-                if (player.state.status === "idle" || player.state.status === "buffering") return false;
+                if (player.state.status === "idle") return false;
 
                 //Если невозможно прочитать поток выдать false
                 if (!player.state.stream?.readable) {
