@@ -38,7 +38,7 @@ export namespace YouTube {
             } else audioFormats = {url: VideoFinalData.streamingData?.dashManifestUrl ?? null}; //dashManifestUrl, hlsManifestUrl
 
             return resolve({
-                url: `https://www.youtube.com/watch?v=${VideoID}`,
+                url: `https://youtu.be/${VideoID}`,
                 title: videoDetails.title,
                 duration: {seconds: videoDetails.lengthSeconds},
                 image: videoDetails.thumbnail.thumbnails.pop(),

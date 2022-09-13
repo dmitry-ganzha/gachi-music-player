@@ -29,21 +29,21 @@ export default class Loop extends Command {
         if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.sendMessage({
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если пользователь не подключен к голосовым каналам
         if (!message.member.voice.channel || !message.member.voice) return message.client.sendMessage({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если нет очереди
         if (!queue) return message.client.sendMessage({
             text: `${message.author}, ⚠ | Музыка щас не играет.`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         switch (args[0]) {

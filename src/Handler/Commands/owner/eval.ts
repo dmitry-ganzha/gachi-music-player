@@ -1,7 +1,8 @@
 import {Command} from "../../../Structures/Command";
 import {EmbedConstructor} from "../../Events/Activity/Message";
-import {Colors, GlobalUtils} from "../../../Core/Utils/LiteUtils";
+import {GlobalUtils} from "../../../Core/Utils/LiteUtils";
 import {ClientMessage} from "../../Events/Activity/Message";
+import {Colors} from "discord.js";
 
 export default class Eval extends Command {
     public constructor() {
@@ -21,11 +22,11 @@ export default class Eval extends Command {
         try {
             const EvalExecute = eval(UserCode);
             const EndMs = new Date().getMilliseconds();
-            const EmbedData = this.#getEmbed(EvalExecute, Colors.GREEN, "[Status: Work]", UserCode, StartMs, EndMs);
+            const EmbedData = this.#getEmbed(EvalExecute, Colors.Green, "[Status: Work]", UserCode, StartMs, EndMs);
             return this.#SendMessage(message, EmbedData);
         } catch (err) {
             const EndMs = new Date().getMilliseconds();
-            const EmbedData = this.#getEmbed(err, Colors.RED, "[Status: Fail]", UserCode, StartMs, EndMs);
+            const EmbedData = this.#getEmbed(err, Colors.Red, "[Status: Fail]", UserCode, StartMs, EndMs);
 
             message.client.console(`[EVAL ERROR]: ${err}`);
             return this.#SendMessage(message, EmbedData);

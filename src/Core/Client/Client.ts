@@ -1,9 +1,9 @@
-import {ActivityType, Client, IntentsBitField, VoiceState, Guild} from "discord.js";
+import {ActivityType, Client, IntentsBitField, VoiceState, Guild, Colors} from "discord.js";
 import {FileSystem} from "../FileSystem";
 import {PlayerEmitter} from "../../AudioPlayer/execute";
 import {Command} from "../../Structures/Command";
 import {Queue} from "../../AudioPlayer/Structures/Queue/Queue";
-import {CollectionMap, Colors, GlobalUtils} from "../Utils/LiteUtils";
+import {GlobalUtils} from "../Utils/LiteUtils";
 import {Bot, Channels, Debug} from "../../../DataBase/Config.json";
 import {ClientMessage, ColorResolvable, EmbedConstructor, MessageChannel} from "../../Handler/Events/Activity/Message";
 import {getVoiceConnection} from "@discordjs/voice";
@@ -13,6 +13,15 @@ type SendOptions = {
     color?: ColorResolvable | number;
     message: ClientMessage;
     type?: "css" | "js" | "ts" | "cpp" | "html" | "cs";
+}
+
+class CollectionMap<K, V> extends Map<K, V> {
+    public get Array(): V[] | null {
+        const db: V[] = [];
+        for (let [, value] of this.entries()) db.push(value);
+
+        return db;
+    };
 }
 
 export class WatKLOK extends Client {
@@ -41,7 +50,7 @@ export class WatKLOK extends Client {
     public readonly sendMessage = ({color, text, type, message}: SendOptions) => {
         const Embed: EmbedConstructor = {
             // @ts-ignore
-            color: typeof color === "number" ? color : Colors[color] ?? Colors.BLUE,
+            color: typeof color === "number" ? color : Colors[color] ?? Colors.Blue,
             description: typeof type === "string" ? `\`\`\`${type}\n${text}\n\`\`\`` : text
         };
 

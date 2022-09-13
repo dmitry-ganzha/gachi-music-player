@@ -2,10 +2,11 @@ import {Command} from "../../../Structures/Command";
 import os from 'node:os';
 import pak from "../../../../package.json";
 import {EmbedConstructor} from "../../Events/Activity/Message";
-import {Colors, GlobalUtils} from "../../../Core/Utils/LiteUtils";
+import {GlobalUtils} from "../../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
 import ParsingTimeToString = DurationUtils.ParsingTimeToString;
 import {ClientMessage} from "../../Events/Activity/Message";
+import {Colors} from "discord.js";
 
 const core = os.cpus()[0];
 interface OptionsEmbed {
@@ -53,7 +54,7 @@ export default class Info extends Command {
      */
     readonly #EmbedConstructor = (message: ClientMessage, options?: OptionsEmbed): EmbedConstructor => {
         return {
-            color: Colors.GREEN,
+            color: Colors.Green,
             thumbnail: {
                 url: message.client.user.displayAvatarURL()
             },

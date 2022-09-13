@@ -1,5 +1,4 @@
-import {User} from "discord.js";
-import {Colors} from "../../../Core/Utils/LiteUtils";
+import {Colors} from "discord.js";
 import {DurationUtils} from "../../Manager/DurationUtils";
 import {Images} from "../EmbedMessages";
 import {ClientMessage} from "../../../Handler/Events/Activity/Message";
@@ -7,6 +6,13 @@ import {AudioFilters} from "./Queue";
 import {httpsClient} from "../../../Core/httpsClient";
 import {SoundCloud, Spotify, VK, YouTube} from "../../../Structures/Platforms";
 import {FFmpeg} from "../Media/FFmpeg";
+
+/*
+Для добавления своей платформы нужно добавить в {SupportPlatforms} и {PlatformReg}. Для получения названия платформы и данных с нее
+Для добавления ее в поиск нужно добавить в {SearchPlatforms} сокращение: название платформы
+Так-же можно добавить свой цвет в {ColorTrack}
+Все для добавления своей поддержки разных платформ находится в этом файле
+ */
 
 //Все возможные запросы данных в JSON формате
 export const SupportPlatforms = {
@@ -37,7 +43,7 @@ export const SupportPlatforms = {
         "search": (search: string): Promise<InputTrack[]> => VK.SearchTracks(search),
     },
     //Discord
-    "Discord": {
+    "DISCORD": {
         "track": (search: string): Promise<InputTrack> => new FFmpeg.FFprobe(["-i", search]).getInfo().then((trackInfo: any) => {
             //Если не найдена звуковая дорожка
             if (!trackInfo) return null;
@@ -53,6 +59,44 @@ export const SupportPlatforms = {
         })
     }
 }
+//Доступные платформы для поиска
+export const SearchPlatforms = {
+    "yt": "YOUTUBE",
+    "sp": "SPOTIFY",
+    "sc": "SOUNDCLOUD",
+    "vk": "VK"
+};
+//Цвета названий платформ
+const ColorTrack = {
+    "YOUTUBE": 0xed4245,
+    "SPOTIFY": 1420288,
+    "SOUNDCLOUD": 0xe67e22,
+    "VK": 30719,
+    "DISCORD": Colors.Grey
+}
+//Reg для поиска платформы
+const PlatformReg = {
+    youtube: /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi,
+    spotify: /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi,
+    SoundCloud: /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/(.*)$/gi,
+    vk: /(https?:\/\/)?(vk\.)?(com)\/.+$/gi,
+    discord: /(https?:\/\/)?(cdn\.)?(discordapp\.)?(com)\/.+$/gi
+}
+
+//Поддерживаемые платформы
+export type SupportPlatforms = "YOUTUBE" | "SPOTIFY" | "VK" | "SOUNDCLOUD" | "DISCORD";
+//Поддерживаемые тип для этих платформ
+export type SupportType = "track" | "playlist" | "search" | "album";
+
+//Выдает платформу из ссылки
+export function TypePlatform(url: string): SupportPlatforms {
+    let keyPlatform: string = null;
+
+    Object.entries(PlatformReg).forEach(([key, value]) => {
+        if (url.match(value)) keyPlatform = key;
+    });
+    return keyPlatform ? keyPlatform.toUpperCase() as SupportPlatforms : null;
+}
 
 //Создаем трек для внутреннего использования
 export class Song {
@@ -63,29 +107,31 @@ export class Song {
         seconds: number,
         StringTime: string
     };
-    readonly #_image: InputTrackImage;
+    readonly #_image: InputTrack["image"];
     readonly #_requester: SongRequester;
     readonly #_isLive: boolean;
     readonly #_color: number;
-    readonly #_type: SongType;
+    readonly #_type: SupportPlatforms;
     resourceLink: string;
 
     public constructor(track: InputTrack, author: ClientMessage["author"]) {
-        const type = Type(track.url);
+        const type = TypePlatform(track.url);
+        const {username, id, avatar} = author;
+        const seconds = parseInt(track.duration.seconds);
 
         this.#_title = track.title;
         this.#_url = track.url;
         this.#_author = {
-            url: track.author?.url ?? `https://discordapp.com/users/${author.id}`,
-            title: track.author?.title ?? author.username,
+            url: track.author?.url ?? `https://discordapp.com/users/${id}`,
+            title: track.author?.title ?? username,
             image: track.author?.image ?? {url: Images.NotImage},
             isVerified: track.author?.isVerified ?? undefined
         };
-        this.#_duration = ConstDuration(track.duration);
+        this.#_duration = { seconds, StringTime: seconds > 0 ? DurationUtils.ParsingTimeToString(seconds) : "Live" };
         this.#_image = track.image;
-        this.#_requester = ConstRequester(author);
+        this.#_requester = { username, id, avatarURL: () => `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp` };
         this.#_isLive = track.isLive;
-        this.#_color = Color(type);
+        this.#_color = ColorTrack[type];
         this.#_type = type;
         this.resourceLink = track?.format?.url
     }
@@ -173,55 +219,6 @@ namespace SongFinder {
         });
     }
 }
-//====================== ====================== ====================== ======================
-/**
- * @description Уменьшаем <message.author>, для экономии ОЗУ
- * @param id {string} ID пользователя
- * @param username {string} Ник пользователя
- * @param avatarURL {string} Иконка пользователя
- */
-function ConstRequester({id, username, avatar}: User) {
-    return { username, id, avatarURL: () => `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp` };
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Подготавливаем время трека для системы
- * @param duration {InputTrackDuration} Время
- */
-function ConstDuration(duration: InputTrackDuration): { StringTime: string | "Live"; seconds: number } {
-    const seconds = parseInt(duration.seconds);
-    return { seconds, StringTime: seconds > 0 ? DurationUtils.ParsingTimeToString(seconds) : "Live" };
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Цвет трека из названия платформы
- * @param type {string}
- */
-function Color(type: string): number {
-    switch (type) {
-        case "YOUTUBE": return Colors.RED;
-        case "SPOTIFY": return Colors.GREEN;
-        case "SOUNDCLOUD": return Colors.ORANGE;
-        case "VK": return Colors.BLUE_DARK;
-        default: return Colors.BLUE;
-    }
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Ищем в ссылке тип трека
- * @param url {string} Ссылка
- */
-function Type(url: string): SongType {
-    try {
-        let start = url.split("://")[1].split("/")[0];
-        let split = start.split(".");
-        return (split[split.length - 2]).toUpperCase() as SongType;
-    } catch {
-        return "UNKNOWN";
-    }
-}
-
-type SongType = "SPOTIFY" | "YOUTUBE" | "VK" | "SOUNDCLOUD" | "UNKNOWN";
 
 //Какие данные доступны в <song>.requester
 interface SongRequester {
@@ -254,8 +251,6 @@ export interface InputTrack {
     isValid?: boolean;
     PrevFile?: string;
 }
-export type InputTrackDuration = InputTrack["duration"];
-export type InputTrackImage = InputTrack["image"];
 //Пример получаемого автора трека
 export interface InputAuthor {
     title: string;

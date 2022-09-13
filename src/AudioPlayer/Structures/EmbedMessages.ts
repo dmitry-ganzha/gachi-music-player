@@ -2,9 +2,9 @@ import {WatKLOK} from "../../Core/Client/Client";
 import {InputPlaylist, Song} from "./Queue/Song";
 import {AudioFilters, Queue} from "./Queue/Queue";
 import {AudioPlayer} from "../Player/AudioPlayer";
-import {Colors} from "../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../Manager/DurationUtils";
 import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
+import {Colors} from "discord.js";
 
 // Настройки прогресс бара текущей музыки
 const Bar = {
@@ -104,7 +104,7 @@ export namespace EmbedMessages {
      */
     export function toPushPlaylist({client, author: DisAuthor}: ClientMessage, {author, image, url, title, items}: InputPlaylist): EmbedConstructor {
         return {
-            color: Colors.BLUE,
+            color: Colors.Blue,
             author: {
                 name: author?.title,
                 iconURL: author?.image?.url ?? Images.NotImage,

@@ -1,11 +1,10 @@
 import {
     ActionRowBuilder,
-    ButtonBuilder, ButtonStyle,
+    ButtonBuilder, ButtonStyle, Colors,
     Guild, Message,
 } from "discord.js";
 import {WatKLOK} from "../../../Core/Client/Client";
 import {EmbedConstructor} from "../Activity/Message";
-import {Colors} from "../../../Core/Utils/LiteUtils";
 import cfg from "../../../../DataBase/Config.json";
 import {Event} from "../../../Structures/Event";
 
@@ -39,7 +38,7 @@ export class guildCreate extends Event<Guild, null>{
 
 function ConstructEmbed(guild: Guild): EmbedConstructor {
     return {
-        color: Colors.GREEN,
+        color: Colors.Green,
         author: {
             name: guild.name,
             iconURL: guild.iconURL({size: 512})

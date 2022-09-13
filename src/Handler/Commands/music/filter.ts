@@ -33,28 +33,28 @@ export default class Filter extends Command {
         if (!queue) return message.client.sendMessage({
             text: `${message.author}, ⚠ | Музыка щас не играет.`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
         if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.sendMessage({
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если пользователь не подключен к голосовым каналам
         if (!message.member.voice.channel || !message.member.voice) return message.client.sendMessage({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если текущий трек является потоковым
         if (queue.songs[0].isLive) return message.client.sendMessage({
             text: `${message.author}, Фильтры не работают со стримами`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         const song = queue.songs[0];
@@ -63,7 +63,7 @@ export default class Filter extends Command {
         const NameFilter = args[0]?.toLowerCase();
 
         if (!NameFilter) {
-            if (queue.audioFilters.length === 0) return message.client.sendMessage({text: `${message.author}, включенных фильтров нет!`, message, color: "GREEN"});
+            if (queue.audioFilters.length === 0) return message.client.sendMessage({text: `${message.author}, включенных фильтров нет!`, message, color: "Green"});
             return message.client.sendMessage({text: `Включенные фильтры: ${queue.audioFilters.filter((name) => typeof name === "string").join(", ") ?? "нет включенных фильтров"}`, ...SendArg});
         }
 

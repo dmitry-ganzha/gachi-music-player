@@ -1,8 +1,9 @@
 import {Command} from "../../../Structures/Command";
 import {httpsClient} from "../../../Core/httpsClient";
 import {EmbedConstructor} from "../../Events/Activity/Message";
-import {Colors, GlobalUtils} from "../../../Core/Utils/LiteUtils";
+import {GlobalUtils} from "../../../Core/Utils/LiteUtils";
 import {ClientMessage} from "../../Events/Activity/Message";
+import {Colors} from "discord.js";
 
 const CetusCycle = "https://api.warframestat.us/pc/cetusCycle";
 const CetusDay = "https://media.discordapp.net/attachments/850775689107865641/996406014192668712/CetusSplashScreen.webp";
@@ -32,12 +33,12 @@ export default class Cetus extends Command {
      */
     readonly #EmbedChange = (res: CetusCycle): EmbedConstructor => {
         if (res.isDay) return {
-            color: Colors.YELLOW,
+            color: Colors.Yellow,
             description: `Сейчас на Цетусе день. До ночи осталось: ${res.timeLeft}`,
             image: { url: CetusDay }
         };
         return {
-            color: Colors.BLACK,
+            color: Colors.Default,
             description: `Сейчас на Цетусе ночь. До дня осталось: ${res.timeLeft}`,
             image: { url: CetusNight }
         };

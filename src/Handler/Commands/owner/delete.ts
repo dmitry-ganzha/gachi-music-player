@@ -14,18 +14,18 @@ export default class Delete extends Command {
     };
     public readonly run = (message: ClientMessage, args: string[]): void => {
         //Если нет ID канала
-        if (!args[0]) return message.client.sendMessage({text: `${message.author}, Укажи ID канала!`, message, color: "RED"});
+        if (!args[0]) return message.client.sendMessage({text: `${message.author}, Укажи ID канала!`, message, color: "DarkRed"});
 
         //Если нет ID сообщения
-        if (!args[1]) return message.client.sendMessage({text: `${message.author}, Укажи ID сообщения!`, message, color: "RED"});
+        if (!args[1]) return message.client.sendMessage({text: `${message.author}, Укажи ID сообщения!`, message, color: "DarkRed"});
 
         //Ищем сообщение
         try {
             (message.client.channels.cache.get(args[0] || message.channel.id) as TextChannel).messages.fetch(args[1]).then(msg => msg.delete());
         } catch {
-            return message.client.sendMessage({text: `${message.author}, Я не смог удалить это сообщение!`, message, color: "RED"});
+            return message.client.sendMessage({text: `${message.author}, Я не смог удалить это сообщение!`, message, color: "DarkRed"});
         }
 
-        return message.client.sendMessage({text: `${message.author}, Сообщение ${args[0]} было удалено!`, message, color: "GREEN"});
+        return message.client.sendMessage({text: `${message.author}, Сообщение ${args[0]} было удалено!`, message, color: "Green"});
     };
 }

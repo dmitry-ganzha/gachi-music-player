@@ -1,7 +1,6 @@
 import {Command} from "../../../Structures/Command";
 import {CollectorSortReaction} from "../../../Core/Utils/ReactionMenu";
-import {Colors} from "../../../Core/Utils/LiteUtils";
-import {MessageReaction, User} from "discord.js";
+import {Colors, MessageReaction, User} from "discord.js";
 import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
 
 export default class Help extends Command {
@@ -38,7 +37,7 @@ export default class Help extends Command {
         const pages: string[] = [];
         const embed: EmbedConstructor = {
             title: "Help Menu",
-            color: Colors.YELLOW,
+            color: Colors.Yellow,
             thumbnail: {
                 url: message.client.user.avatarURL()
             },

@@ -25,7 +25,7 @@ export default class CommandQueue extends Command {
         if (!queue) return message.client.sendMessage({
             text: `${message.author}, ⚠ | Музыка щас не играет.`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
         //Получаем то что надо было преобразовать в string[]
         const pages = this.#parsedSongs(queue.songs, message.client.replaceText);

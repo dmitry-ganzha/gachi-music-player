@@ -28,14 +28,14 @@ export default class Join extends Command {
         if (!message.member.voice.channel || !message.member.voice) return message.client.sendMessage({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если пользователь пытается подключить бота к тому же каналу
         if (voiceChannel.id === message.guild.members.me.voice.id) return message.client.sendMessage({
             text: `${message.author}, Я уже в этом канале <#${queue.channels.voice.id}>.`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         if (queue) { //Если есть очередь, то

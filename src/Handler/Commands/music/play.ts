@@ -41,21 +41,21 @@ export default class Play extends Command {
         if (queue && queue.channels.voice && voiceMember.channel.id !== queue.channels.voice.id) return message.client.sendMessage({
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если пользователь не подключен к голосовым каналам
         if (!voiceMember.channel) return message.client.sendMessage({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если пользователь не указал аргумент
         if (!search) return message.client.sendMessage({
             text: `${message.author}, Укажи ссылку, название или прикрепи файл!`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         try {
@@ -65,7 +65,7 @@ export default class Play extends Command {
             return message.client.sendMessage({
                 text: `${message.author}, Произошла ошибка попробуй еще раз!`,
                 message,
-                color: "RED"
+                color: "DarkRed"
             });
         }
     };

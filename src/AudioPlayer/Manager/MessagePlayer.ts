@@ -1,9 +1,9 @@
 import {Queue} from "../Structures/Queue/Queue";
 import {InputPlaylist, Song} from "../Structures/Queue/Song";
 import {EmbedMessages} from "../Structures/EmbedMessages";
-import {ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType} from "discord.js";
+import {ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType} from "discord.js";
 import {ClientMessage} from "../../Handler/Events/Activity/Message";
-import {CollectionMap, GlobalUtils} from "../../Core/Utils/LiteUtils";
+import {GlobalUtils} from "../../Core/Utils/LiteUtils";
 
 //Кнопки над сообщением о проигрывании трека
 const Buttons = new ActionRowBuilder().addComponents([
@@ -17,7 +17,7 @@ const ButtonID = new Set(["skip", "resume_pause", "replay", "last"]);
 
 //База с сообщениями
 const MessagesData = {
-    messages: new CollectionMap<string, ClientMessage>(), //new Map сообщений, поиск осуществляется по id канала
+    messages: new Collection<string, ClientMessage>(), //new Map сообщений, поиск осуществляется по id канала
     timer: null as NodeJS.Timeout //Общий таймер сообщений
 }
 

@@ -22,7 +22,7 @@ export namespace PlayerController {
             player.resume();
             return client.sendMessage({text: `▶️ | Resume song | ${title}`, message, type: "css", color});
         }
-        return client.sendMessage({text: `${author}, Текущий статус плеера [${player.state.status}]`, message, color: "RED"});
+        return client.sendMessage({text: `${author}, Текущий статус плеера [${player.state.status}]`, message, color: "DarkRed"});
     }
     //====================== ====================== ====================== ======================
     /**
@@ -38,7 +38,7 @@ export namespace PlayerController {
             player.pause();
             return client.sendMessage({text: `⏸ | Pause song | ${title}`, message, type: "css", color});
         }
-        return client.sendMessage({text: `${author}, Текущий статус плеера [${player.state.status}]`, message, color: "RED"});
+        return client.sendMessage({text: `${author}, Текущий статус плеера [${player.state.status}]`, message, color: "DarkRed"});
     }
     //====================== ====================== ====================== ======================
     /**
@@ -60,7 +60,7 @@ export namespace PlayerController {
             if (!StatusPlayerHasSkipped.has(player.state.status)) return client.sendMessage({
                 text: `${author}, ⚠ Музыка еще не играет!`,
                 message,
-                color: "RED"
+                color: "DarkRed"
             });
 
             //Если всего один трек
@@ -74,7 +74,7 @@ export namespace PlayerController {
             }
 
             //Если пользователю нельзя это сделать
-            return client.sendMessage({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: "RED"});
+            return client.sendMessage({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: "DarkRed"});
         });
     }
     //====================== ====================== ====================== ======================
@@ -94,7 +94,7 @@ export namespace PlayerController {
             client.sendMessage({text: `⏭️ | Seeking to [${ParsingTimeToString(seek)}] song | ${title}`, message, type: "css", color});
             return player.play(queue, seek);
         } catch {
-            return client.sendMessage({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: "RED"});
+            return client.sendMessage({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: "DarkRed"});
         }
     }
     //====================== ====================== ====================== ======================
@@ -119,7 +119,7 @@ export namespace PlayerController {
             if (!StatusPlayerHasSkipped.has(player.state.status)) return client.sendMessage({
                 text: `${author}, ⚠ Музыка еще не играет!`,
                 message,
-                color: "RED"
+                color: "DarkRed"
             });
 
             //Если пользователю позволено пропустить музыку
@@ -131,7 +131,7 @@ export namespace PlayerController {
             }
 
             //Если пользователю нельзя это сделать
-            return client.sendMessage({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: "RED"});
+            return client.sendMessage({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: "DarkRed"});
         });
     }
     //====================== ====================== ====================== ======================
@@ -149,7 +149,7 @@ export namespace PlayerController {
             client.sendMessage({text: `🔂 | Replay | ${title}`, message, color, type: "css"});
             return player.play(queue);
         } catch {
-            return client.sendMessage({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: "RED"});
+            return client.sendMessage({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: "DarkRed"});
         }
     }
     //====================== ====================== ====================== ======================
@@ -166,7 +166,7 @@ export namespace PlayerController {
         try {
             return player.play(queue, seek);
         } catch {
-            return client.sendMessage({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: "RED"});
+            return client.sendMessage({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: "DarkRed"});
         }
     }
 }
@@ -190,14 +190,14 @@ function toSkipNumber(message: ClientMessage, args: number): void {
         if (!StatusPlayerHasSkipped.has(queue.player.state.status)) return client.sendMessage({
             text: `${author}, ⚠ Музыка еще не играет!`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если пользователь укажет больше чем есть в очереди
         if (args > queue.songs.length) return client.sendMessage({
             text: `${author}, В очереди ${queue.songs.length}!`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если пользователю позволено пропустить музыку
@@ -210,7 +210,7 @@ function toSkipNumber(message: ClientMessage, args: number): void {
         }
 
         //Если пользователю нельзя это сделать
-        return client.sendMessage({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: "RED"});
+        return client.sendMessage({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: "DarkRed"});
     });
 }
 //====================== ====================== ====================== ======================

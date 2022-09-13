@@ -29,35 +29,35 @@ export default class Shuffle extends Command {
         if (!queue) return message.client.sendMessage({
             text: `${message.author}, ⚠ | Музыка щас не играет.`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
         if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.sendMessage({
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если пользователь не подключен к голосовым каналам
         if (!message.member.voice.channel || !message.member.voice) return message.client.sendMessage({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если нет треков в очереди
         if (!queue.songs) return message.client.sendMessage({
             text: `${message.author}, Нет музыки в очереди!`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если треков меньше 3
         if (queue.songs.length < 3) return message.client.sendMessage({
             text: `${message.author}, Очень мало музыки, нужно более 3`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         this.#shuffleSongs(queue.songs);

@@ -16,7 +16,6 @@ interface AudioPlayerEvents {
     error: (error: Error | string, skipSong: boolean) => void;
 
     StartPlaying: (seek: number) => void;
-    BufferStream: () => void;
 }
 
 //Аудио плеер за основу взят из @discordjs/voice

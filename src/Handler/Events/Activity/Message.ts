@@ -12,10 +12,11 @@ import {Bot} from '../../../../DataBase/Config.json';
 import {WatKLOK} from "../../../Core/Client/Client";
 import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
 import ParsingTimeToString = DurationUtils.ParsingTimeToString;
-import {CoolDownBase, UtilsPermissions} from "../../../Core/Utils/LiteUtils";
+import {UtilsPermissions} from "../../../Core/Utils/LiteUtils";
 import {Event} from "../../../Structures/Event";
 
 const DefaultPrefix = Bot.prefix; //Префикс
+const CoolDownBase = new Map<string, {time: number}>();
 
 export class messageCreate extends Event<ClientMessage, null>{
     public readonly name = "messageCreate";
@@ -45,13 +46,13 @@ export class messageCreate extends Event<ClientMessage, null>{
         }
 
         //Если нет команды
-        if (!Command) return client.sendMessage({ text: `${author}, Я не нахожу такой команды, используй ${DefaultPrefix}help  :confused:`, message, color: "RED"});
+        if (!Command) return client.sendMessage({ text: `${author}, Я не нахожу такой команды, используй ${DefaultPrefix}help  :confused:`, message, color: "DarkRed"});
 
         //Удаляем сообщение через 12 сек
         setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, 12e3);
 
         //Если команда предназначена для разработчика
-        if (UtilsPermissions.isOwner(Command?.isOwner, author.id)) return client.sendMessage({ text: `${author}, Эта команда не для тебя!`, message, color: "RED"});
+        if (UtilsPermissions.isOwner(Command?.isOwner, author.id)) return client.sendMessage({ text: `${author}, Эта команда не для тебя!`, message, color: "DarkRed"});
         //Если нет прав у пользователя или бота
         if (UtilsPermissions.isPermissions(Command?.permissions, message)) return;
 
@@ -83,4 +84,4 @@ export type SendMessageOptions = string | MessagePayload | MessageOptions | {emb
 //Embed JSON
 export interface EmbedConstructor extends EmbedData {}
 //Цвета, которые есть в базе
-export type ColorResolvable = "RED" | "BLUE" | "GREEN" | "DARK" | "YELLOW" | "GREY" | "NAVY" | "GOLD" | "ORANGE" | "PURPLE";
+export type ColorResolvable = "DarkRed" | "Blue" | "Green" | "Default" | "Yellow" | "Grey" | "Navy" | "Gold" | "Orange" | "Purple";

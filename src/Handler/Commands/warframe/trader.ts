@@ -1,8 +1,8 @@
 import {Command} from "../../../Structures/Command";
 import {httpsClient} from "../../../Core/httpsClient";
 import {EmbedConstructor} from "../../Events/Activity/Message";
-import {Colors, GlobalUtils} from "../../../Core/Utils/LiteUtils";
-import {MessageReaction, User} from "discord.js";
+import {GlobalUtils} from "../../../Core/Utils/LiteUtils";
+import {Colors, MessageReaction, User} from "discord.js";
 import {CollectorSortReaction} from "../../../Core/Utils/ReactionMenu";
 import {ClientMessage} from "../../Events/Activity/Message";
 
@@ -36,7 +36,7 @@ export default class Trader extends Command {
      */
     readonly #SendMessage = (message: ClientMessage, res: voidTrader, pagesInventory: string[]) => {
         const EmbedVoidTrader: EmbedConstructor = {
-            color: Colors.BLUE_DARK,
+            color: Colors.DarkBlue,
             thumbnail: {url: VoidIcon},
             author: {
                 name: res.character,

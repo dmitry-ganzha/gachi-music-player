@@ -21,28 +21,28 @@ export default class Random extends Command {
         if (!queue) return message.client.sendMessage({
             text: `${message.author}, ⚠ | Музыка щас не играет.`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
         if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.sendMessage({
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если пользователь не подключен к голосовым каналам
         if (!message.member.voice.channel || !message.member.voice) return message.client.sendMessage({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         //Если всего 2 и менее треков
         if (queue.songs.length <= 2) return message.client.sendMessage({
             text: `${message.author}, Всего в списке ${queue.songs.length}, нет смысла!`,
             message,
-            color: "RED"
+            color: "DarkRed"
         });
 
         if (queue.options.random === false) {
