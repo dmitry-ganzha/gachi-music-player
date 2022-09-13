@@ -1,4 +1,4 @@
-import {ButtonStyle} from "discord.js";
+import {ButtonStyle, MessageReaction, User} from "discord.js";
 import {Command} from "../../Structures/Command";
 import {Bot} from "../../../DataBase/Config.json";
 import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
@@ -97,5 +97,13 @@ function EmbedNotPermissions({author, client}: ClientMessage): EmbedConstructor 
 export namespace GlobalUtils {
     export function DeleteMessage(message: ClientMessage, time: number = 12e3): void {
         setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, time);
+    }
+    export function createMessageCollector(message: ClientMessage, filter: (m: ClientMessage) => boolean, max: number = 1, time: number = 20e3) {
+        // @ts-ignore
+        return message.channel.createMessageCollector({ filter, max, time });
+    }
+    export function createReaction(message: ClientMessage, emoji: string, filter: (reaction: MessageReaction, user: User) => boolean, callback: (reaction: MessageReaction) => any, time = 20e3): void {
+        message.react(emoji).then(() => message.createReactionCollector({filter, time})
+            .on("collect", (reaction: MessageReaction) => callback(reaction))).catch(() => undefined);
     }
 }

@@ -1,7 +1,7 @@
 import {Command} from "../../../Structures/Command";
 import {ApplicationCommandOptionType} from "discord.js";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {Searcher} from "../../../AudioPlayer/Player/Searcher";
+import {Handle} from "../../../AudioPlayer/Player/Searcher";
 import {ClientMessage} from "../../Events/Activity/Message";
 
 export default class Play extends Command {
@@ -35,7 +35,7 @@ export default class Play extends Command {
     public readonly run = (message: ClientMessage, args: string[]): void => {
         const voiceMember = message.member.voice;
         const queue: Queue = message.client.queue.get(message.guild.id);
-        const search: string = args.join(" ") || message.attachments?.last()?.url;
+        const search: string = args.join(" ") ?? message.attachments?.last()?.url;
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
         if (queue && queue.channels.voice && voiceMember.channel.id !== queue.channels.voice.id) return message.client.sendMessage({
@@ -59,7 +59,7 @@ export default class Play extends Command {
         });
 
         try {
-            return Searcher.toPlayer({message, voiceChannel: voiceMember.channel, search});
+            return Handle.toPlayer({message, voiceChannel: voiceMember.channel, search});
         } catch (err) {
             message.client.console(err.message);
             return message.client.sendMessage({

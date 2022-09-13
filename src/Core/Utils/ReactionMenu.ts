@@ -1,5 +1,6 @@
-import {MessageReaction, ReactionCollector, User} from "discord.js";
+import {MessageReaction, User} from "discord.js";
 import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
+import {GlobalUtils} from "./LiteUtils";
 
 const emojis = {
     back: "⬅️",
@@ -23,35 +24,11 @@ export class CollectorSortReaction {
      */
     public constructor(embed: EmbedConstructor | string, message: ClientMessage, callbacks: Callbacks) {
         setImmediate(() => {
-            message.channel.send(typeof embed === "string" ? embed : {embeds: [embed]}).then((msg) => {
+            message.channel.send(typeof embed === "string" ? embed : {embeds: [embed]}).then((msg) => Object.entries(callbacks).forEach(([key, value]) => {
                 // @ts-ignore
-                Object.entries(callbacks).forEach(([key, value]) => reaction(message.author, message, msg, value, emojis[key]));
-            });
+                const emoji = emojis[key];
+                return GlobalUtils.createReaction(msg, emoji, (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id, value);
+            }));
         });
-    };
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Создание реакции
- * @param user {User} Пользователь
- * @param message {ClientMessage} Сообщение
- * @param msg {ClientMessage} Сообщение
- * @param callback {Function} Выполняем функцию реакции
- * @param emoji {string} Смайл
- * @requires {filter}
- */
-function reaction(user: User, message: ClientMessage, msg: ClientMessage, callback: Function, emoji: string): Promise<ReactionCollector> {
-    return msg.react(emoji).then(() => msg.createReactionCollector({filter: (reaction: MessageReaction, user: User) => filter(emoji, reaction, user, message), time: 1e4 * 25})
-        .on("collect", (reaction: MessageReaction): Promise<ReactionCollector> => callback(reaction, user, message, msg))).catch(() => undefined);
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Проверяем пользователь использовал смайл и пользователь не бот
- * @param emoji {string} Смайл
- * @param reaction {MessageReaction} Реакция пользователя
- * @param user {User} Пользователь
- * @param message {ClientMessage} Сообщение
- */
-function filter(emoji: string, reaction: MessageReaction, user: User, message: ClientMessage) {
-    return (reaction.emoji.name === emoji && user.id !== message.client.user.id);
+    }
 }

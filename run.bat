@@ -20,16 +20,24 @@ pause
     echo running Client...
     cd build
     node ./src/Core/Client/Client.js
+    pause
+
 :ShardManager
     echo running ShardManager...
   	cd build
   	node ./src/Core/Client/ShardManager.js
+  	pause
+
 :Builder
   	echo staring build project...
   	tsc -p ./tsconfig.json
+  	pause
+
 :BuilderWatch
 	echo staring build project in watch mode...
     tsc --watch -p ./tsconfig.json
+    pause
+
 :Fail
     echo.
     echo Error: %choice% is not 1-4
