@@ -26,5 +26,3 @@ jobs:
         run: |
           yarn 
           yarn build
-      - name: test run
-        run: node ./build/src/Client/Client.js
