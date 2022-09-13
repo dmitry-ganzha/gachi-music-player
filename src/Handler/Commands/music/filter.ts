@@ -62,13 +62,16 @@ export default class Filter extends Command {
         const SendArg: {color: number, type: "css", message: ClientMessage} = {color: song.color, type: "css", message};
         const NameFilter = args[0]?.toLowerCase();
 
-        if (!NameFilter) return message.client.sendMessage({text: `Включенные фильтры: ${queue.audioFilters.filter((name) => typeof name === "string").join(", ") ?? "нет включенных фильтров"}`, ...SendArg});
+        if (!NameFilter) {
+            if (queue.audioFilters.length === 0) return message.client.sendMessage({text: `${message.author}, включенных фильтров нет!`, message, color: "GREEN"});
+            return message.client.sendMessage({text: `Включенные фильтры: ${queue.audioFilters.filter((name) => typeof name === "string").join(", ") ?? "нет включенных фильтров"}`, ...SendArg});
+        }
 
         //Показываем все доступные фильтры
         if (NameFilter === "all") return message.client.sendMessage({text: `Все фильтры: ${allFilters}`, ...SendArg});
 
         //Отключение всех фильтров
-        if (NameFilter === "off") {
+        else if (NameFilter === "off") {
             queue.audioFilters = [];
             void message.client.player.emit("filter", message);
             //Сообщаем что все выключено

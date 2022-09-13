@@ -55,16 +55,17 @@ export namespace FFmpeg {
             if (!args.includes("-i")) args = ["-i", "-", ...args];
 
             this.#process = this.#SpawnFFmpeg(args);
-            this._readableState = this.#input._readableState;
-            this._writableState = this.#output._writableState;
+            this._readableState = this.stdout._readableState;
+            this._writableState = this.stdin._writableState;
 
-            this.#Binding(["write", "end"], this.#output);
-            this.#Binding(["read", "setEncoding", "pipe", "unpipe"], this.#input);
+            this.#Binding(["write", "end"], this.stdin);
+            this.#Binding(["read", "setEncoding", "pipe", "unpipe"], this.stdout);
             this.#Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
         };
 
-        get #input() { return this.#process.stdout; };
-        get #output() { return this.#process.stdin; };
+        get stdout() { return this.#process.stdout; };
+        get stdin() { return this.#process.stdin; };
+        //get stderr() { return this.#process.stderr; };
         //====================== ====================== ====================== ======================
         /**
          * @description Создаем "привязанные функции" (ПФ - термин из ECMAScript 6)
@@ -75,13 +76,13 @@ export namespace FFmpeg {
         readonly #Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
         readonly #Calling = (methods: string[]) => {
             const EVENTS = {
-                readable: this.#input,
-                data: this.#input,
-                end: this.#input,
-                unpipe: this.#input,
-                finish: this.#output,
-                close: this.#output,
-                drain: this.#output,
+                readable: this.stdout,
+                data: this.stdout,
+                end: this.stdout,
+                unpipe: this.stdout,
+                finish: this.stdin,
+                close: this.stdin,
+                drain: this.stdin,
             };
 
             // @ts-ignore
