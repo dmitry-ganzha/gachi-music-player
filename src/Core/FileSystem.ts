@@ -3,6 +3,7 @@ import {readdirSync} from "node:fs";
 import {WatKLOK} from "./Client/Client";
 import {Module} from "../Structures/Module";
 import {Event} from "../Structures/Event";
+require("dotenv").config();
 
 type FileSystemSupport = Command | Event<any, any> | Module;
 type FileSystemCallback = { dir: string, file: string, reason: string };
@@ -68,6 +69,9 @@ export namespace FileSystem {
                 SendLog("modules", `./Handler/Modules/${dir}/${file}`);
             }
         });
+    }
+    export function env(name: string) {
+        return process.env[name];
     }
 }
 

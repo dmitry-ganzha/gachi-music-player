@@ -1,10 +1,10 @@
 import {Shard, ShardingManager} from "discord.js";
-import cfg from "../../../DataBase/Config.json";
+require("dotenv").config();
 
 //Используется для большого кол-ва серверов. Если у вас более 1к, тогда рекомендуется запускать ShardManager
 class ShardManager extends ShardingManager {
     public constructor() {
-        super("./src/Core/Client/Client.js", {token: cfg.Bot.token, mode: "process", respawn: true, totalShards: "auto"});
+        super("./src/Core/Client/Client.js", {token: process.env.TOKEN, mode: "process", respawn: true, totalShards: "auto"});
 
         //Ивент создания дубликата
         this.on("shardCreate", (shard: Shard) => {

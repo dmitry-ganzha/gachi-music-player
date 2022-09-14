@@ -1,9 +1,9 @@
 import {httpsClient} from "../../../Core/httpsClient";
-import {vk} from '../../../../DataBase/Config.json';
 import {InputPlaylist, InputTrack} from "../../../AudioPlayer/Structures/Queue/Song";
+import {FileSystem} from "../../../Core/FileSystem";
 
 const vkApiLink = "https://api.vk.com/method/";
-const connectString = `?access_token=${vk.token}`;
+const connectString = `?access_token=${FileSystem.env("VK_TOKEN")}`;
 
 type requestType = "get" | "getById" | "search" | "getPlaylistById" | "getPlaylist";
 type methodType = "audio" | "execute" | "catalog";

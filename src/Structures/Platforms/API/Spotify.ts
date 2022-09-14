@@ -1,10 +1,11 @@
 import {httpsClient} from "../../../Core/httpsClient";
-import {spotify} from "../../../../DataBase/Config.json";
 import {InputAuthor, InputPlaylist, InputTrack} from "../../../AudioPlayer/Structures/Queue/Song";
+import {FileSystem} from "../../../Core/FileSystem";
 
 const AccountUrl = "https://accounts.spotify.com/api"; //token
 const ApiUrl = "https://api.spotify.com/v1"; //type/id/params
 const SpotifyUrl = 'https://open.spotify.com';
+const aut = FileSystem.env("SPOTIFY_ID") + ":" + FileSystem.env("SPOTIFY_SECRET");
 
 const SpotifyRes = {
     Token: "",
@@ -19,7 +20,7 @@ export namespace Spotify {
      * @description Получаем данные о треке
      * @param url {string} Ссылка на трек
      */
-    export function getTrack(url: string): Promise<InputTrack | null> {
+    export async function getTrack(url: string): Promise<InputTrack | null> {
         return new Promise<InputTrack | null>(async (resolve) => {
             const id = getID(url);
             const result = (await Promise.all([RequestSpotify(`tracks/${id}`)]))[0] as SpotifyTrack & FailResult;
@@ -161,7 +162,7 @@ function getToken(): Promise<void> {
             method: "POST",
             headers: {
                 "Accept": "application/json",
-                "Authorization": `Basic ${Buffer.from(spotify.clientID + ":" + spotify.clientSecret).toString("base64")}`,
+                "Authorization": `Basic ${Buffer.from(aut).toString("base64")}`,
                 "Content-Type": "application/x-www-form-urlencoded",
                 "accept-encoding": "gzip, deflate, br"
             },

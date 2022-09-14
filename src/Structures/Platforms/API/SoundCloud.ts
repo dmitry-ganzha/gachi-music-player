@@ -1,11 +1,11 @@
 import {httpsClient} from "../../../Core/httpsClient";
-import {soundcloud} from "../../../../DataBase/Config.json";
 import {InputPlaylist, InputTrack} from "../../../AudioPlayer/Structures/Queue/Song";
 import {FFmpeg} from "../../../AudioPlayer/Structures/Media/FFmpeg";
 import FFmpegFormat = FFmpeg.FFmpegFormat;
+import {FileSystem} from "../../../Core/FileSystem";
 
 const APiLink = "https://api-v2.soundcloud.com";
-const clientID = soundcloud.clientID;
+const clientID = FileSystem.env("SOUNDCLOUD");
 
 /**
  * @description Делаем запрос с привязкой ClientID

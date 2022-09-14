@@ -79,8 +79,8 @@ const PlatformReg = {
     youtube: /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi,
     spotify: /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi,
     SoundCloud: /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/(.*)$/gi,
-    vk: /(https?:\/\/)?(vk\.)?(com)\/.+$/gi,
-    discord: /(https?:\/\/)?(cdn\.)?(discordapp\.)?(com)\/.+$/gi
+    vk: /vk.com/gi,
+    discord: /cdn.discordapp.com/gi
 }
 
 //Поддерживаемые платформы

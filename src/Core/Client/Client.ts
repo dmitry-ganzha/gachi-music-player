@@ -86,7 +86,7 @@ export class WatKLOK extends Client {
 
 const client = new WatKLOK();
 
-client.login(Bot.token).then(() => {
+client.login(FileSystem.env("TOKEN")).then(() => {
     FileSystem.Load(client); //Включаем загрузчик файлов
 
     if (Bot.ignoreErrors) process.on("uncaughtException", (err: Error): void | Promise<ClientMessage> => {
