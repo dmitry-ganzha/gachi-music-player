@@ -3,21 +3,14 @@
   "Channels": {
     "sendErrors": ""
   },
+  "language": {
+    "default": "rus",
+    "libs": ["rus", "eng"]
+  },
   "Bot": {
     "ignoreErrors": true,
-    "token": "",
     "prefix": "!",
     "DiscordServer": "https://discord.gg/qMf2Sv3",
-    "OwnerIDs": ["312909267327778818"]
-  },
-  "spotify": {
-    "clientID": "",
-    "clientSecret": ""
-  },
-  "soundcloud": {
-    "clientID": ""
-  },
-  "vk": {
-    "token": ""
+    "OwnerIDs": ["312909267327778818", "297456036544118785", "556860277552054272"]
   }
 }
