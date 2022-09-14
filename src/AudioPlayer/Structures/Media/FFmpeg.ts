@@ -20,7 +20,7 @@ function FFmpegCheck() {
  * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a и для <FFprobeName> задаем название для FFprobe, если они будут найдены!
  */
 function FFprobeCheck() {
-    for (let source of ["ffprobe", "./FFmpeg/ffprobe"]) {
+    for (let source of ["ffprobe", "./FFmpeg/ffprobe", "./node_modules/ffprobe-static/ffprobe"]) {
         try {
             const result = spawnSync(source, ["-h"], {windowsHide: true, shell: false});
             if (result.error) continue;

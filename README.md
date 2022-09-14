@@ -20,12 +20,12 @@
 
 ## Гайд по запуску
 1. [`Node.js`](https://nodejs.org/ru/) 18
-2. [`FFmpeg & FFprobe`](https://ffmpeg.org/)
+2. [`FFmpeg & FFprobe`](https://ffmpeg.org/) или npm install (ffmpeg-static и ffprobe-static)
 3. Библиотеки шифрования (на выбор)
     - `sodium-native`: ^3.3.0 (рекомендуется)
     - `sodium`: ^3.0.2
     - `libsodium-wrappers`: ^0.7.9
-4. Настраиваем бота [тут](DataBase)
+4. Добавляем не публичные данные в [.env](.env) и меняем прочие настройки в [LocalBase](DataBase)
 5. Запускаем [`run.bat`](run.bat)
    - Если нет папки `build` (выбираем 3)
    - Если менее 1к серверов (выбираем 1)
@@ -42,6 +42,14 @@
  | [**Discord**](https://discord.com/)       | **ссылки, файлы**                    | ✔           |
 
 ## Настройки
+1. [`.env`](.env) | для не публичных данных
+   ```dotenv
+    TOKEN="" #Discord bot token
+    SPOTIFY_ID="" #Spotify client id
+    SPOTIFY_SECRET="" #Spotify client secket
+    SOUNDCLOUD="" #Soundcloud client id
+    VK_TOKEN="" #Vk auth token (user token, not a bot token)
+   ```
 1. [`Cookie.json`](DataBase/Cookie.json) | необходим для видео 18+
     ```json5
    {   
@@ -57,16 +65,8 @@
       },
       "Bot": {
         "ignoreErrors": true, //Игнорировать ошибки
-        "token": "", //Токен (получить можно тут https://discord.com/developers/applications)
         "prefix": "!", //Префикс
         "DiscordServer": "https://discord.gg/qMf2Sv3" //Твой дискорд сервер, можешь оставить мой)
-      },
-      "spotify": { //Тут и без комментариев все понятно
-        "clientID": "",
-        "clientSecret": ""
-      },
-      "vk": { //Необходим токен пользователя VK ADMIN (эта система еще сыровата)
-        "token": ""
       }
     }
     ```
@@ -74,7 +74,6 @@
     ```json5
     {
       "Names": [], //Путь(и) к ffmpeg
-      "Args": {}, //Аргументы для работы (не менять)
       "FilterConfigurator": { //Для создания кастомных фильтров
         "nameFilter": {
           "speedModification": 0, //Модификатор скорости, есть использовать value, то надо указать вместо 0, value
