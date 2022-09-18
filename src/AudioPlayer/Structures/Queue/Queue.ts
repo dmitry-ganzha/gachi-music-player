@@ -85,13 +85,16 @@ export class Queue {
             this.player.stop();
         }
 
-        if (sendDelQueue) {
-            if (this.options.stop) client.sendMessage({text: "🎵 | Музыка была выключена", message, type: "css"});
-            else client.sendMessage({text: "🎵 | Музыка закончилась", message, type: "css"});
-        }
-
         clearTimeout(this.#Timer);
-        client.queue.delete(guild.id);
+
+        if (client.queue.get(guild.id)) {
+            if (sendDelQueue) {
+                if (this.options.stop) client.sendMessage({text: "🎵 | Музыка была выключена", message, type: "css"});
+                else client.sendMessage({text: "🎵 | Музыка закончилась", message, type: "css"});
+            }
+
+            client.queue.delete(guild.id);
+        }
     };
     //Удаление очереди через время
     public readonly TimeDestroying = (state: "start" | "cancel"): void => {
