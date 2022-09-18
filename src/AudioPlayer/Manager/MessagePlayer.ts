@@ -43,7 +43,7 @@ export namespace MessagePlayer {
      * @requires {DeleteMessage}
      */
     export function toError(queue: Queue, song: Song, err: Error | string = null) {
-        const {client, channel} = queue.channels.message;
+        const {client, channel} = queue.message;
 
         setImmediate(() => {
             try {
@@ -64,7 +64,7 @@ export namespace MessagePlayer {
      * @requires {DeleteMessage}
      */
     export function toPushSong(queue: Queue, song: Song) {
-        const {client, channel} = queue.channels.message;
+        const {client, channel} = queue.message;
 
         setImmediate(() => {
             try {

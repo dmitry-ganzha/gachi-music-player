@@ -26,8 +26,8 @@ export default class Loop extends Command {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
-        if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.sendMessage({
-            text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
+        if (queue && queue.voice && message.member.voice.channel.id !== queue.voice.id) return message.client.sendMessage({
+            text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
             message,
             color: "DarkRed"
         });

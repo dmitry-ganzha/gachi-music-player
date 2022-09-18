@@ -38,8 +38,8 @@ export default class Play extends Command {
         const search: string = args.join(" ") ?? message.attachments?.last()?.url;
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
-        if (queue && queue.channels.voice && voiceMember.channel.id !== queue.channels.voice.id) return message.client.sendMessage({
-            text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
+        if (queue && queue.voice && voiceMember.channel.id !== queue.voice.id) return message.client.sendMessage({
+            text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
             message,
             color: "DarkRed"
         });

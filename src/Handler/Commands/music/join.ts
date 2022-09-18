@@ -33,7 +33,7 @@ export default class Join extends Command {
 
         //Если пользователь пытается подключить бота к тому же каналу
         if (voiceChannel.id === message.guild.members.me.voice.id) return message.client.sendMessage({
-            text: `${message.author}, Я уже в этом канале <#${queue.channels.voice.id}>.`,
+            text: `${message.author}, Я уже в этом канале <#${queue.voice.id}>.`,
             message,
             color: "DarkRed"
         });
@@ -41,8 +41,8 @@ export default class Join extends Command {
         if (queue) { //Если есть очередь, то
             const connection = Voice.Join(voiceChannel); //Подключаемся к голосовому каналу
 
-            queue.channels.message = message;
-            queue.channels.voice = voiceChannel;
+            queue.message = message;
+            queue.voice = voiceChannel;
 
             queue.player.subscribe(connection); //Подключаем голосовой канал к плееру
 

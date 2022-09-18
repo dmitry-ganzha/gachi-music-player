@@ -37,8 +37,8 @@ export default class Filter extends Command {
         });
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
-        if (queue && queue.channels.voice && message.member.voice.channel.id !== queue.channels.voice.id) return message.client.sendMessage({
-            text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.channels.voice.id}>`,
+        if (queue && queue.voice && message.member.voice.channel.id !== queue.voice.id) return message.client.sendMessage({
+            text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
             message,
             color: "DarkRed"
         });
@@ -63,8 +63,8 @@ export default class Filter extends Command {
         const NameFilter = args[0]?.toLowerCase();
 
         if (!NameFilter) {
-            if (queue.audioFilters.length === 0) return message.client.sendMessage({text: `${message.author}, включенных фильтров нет!`, message, color: "Green"});
-            return message.client.sendMessage({text: `Включенные фильтры: ${queue.audioFilters.filter((name) => typeof name === "string").join(", ") ?? "нет включенных фильтров"}`, ...SendArg});
+            if (queue.filters.length === 0) return message.client.sendMessage({text: `${message.author}, включенных фильтров нет!`, message, color: "Green"});
+            return message.client.sendMessage({text: `Включенные фильтры: ${queue.filters.filter((name) => typeof name === "string").join(", ") ?? "нет включенных фильтров"}`, ...SendArg});
         }
 
         //Показываем все доступные фильтры
@@ -72,7 +72,7 @@ export default class Filter extends Command {
 
         //Отключение всех фильтров
         else if (NameFilter === "off") {
-            queue.audioFilters = [];
+            queue.filters = [];
             void message.client.player.emit("filter", message);
             //Сообщаем что все выключено
             return message.client.sendMessage({text: "Все фильтры: отключены", ...SendArg});
@@ -84,15 +84,15 @@ export default class Filter extends Command {
         if (Filter) {
 
             //Выключаем фильтр
-            if (queue.audioFilters.includes(NameFilter)) {
+            if (queue.filters.includes(NameFilter)) {
                 //Если фильтр не требует аргумента
-                if (Filter.value === false) queue.audioFilters = queue.audioFilters.filter((name: string) => name !== NameFilter);
+                if (Filter.value === false) queue.filters = queue.filters.filter((name: string) => name !== NameFilter);
                 else { //Если у фильтра есть аргументы
 
                     //Ищем аргумент
-                    const index = queue.audioFilters.indexOf(NameFilter);
+                    const index = queue.filters.indexOf(NameFilter);
                     if (index === -1) return;
-                    queue.audioFilters.splice(index, 2); //Удаляем аргумент
+                    queue.filters.splice(index, 2); //Удаляем аргумент
                 }
                 this.#executeFilter(message);
 
@@ -101,14 +101,14 @@ export default class Filter extends Command {
             }
 
             //Включаем фильтр
-            if (Filter.value === false) queue.audioFilters.push(NameFilter); //Если фильтр не требует аргумента
+            if (Filter.value === false) queue.filters.push(NameFilter); //Если фильтр не требует аргумента
             else {
                 //Если у фильтра есть аргументы
                 if (!argsNum || argsNum > Filter.value.max || argsNum < Filter.value.min)return message.client.sendMessage({text: `${message.author.username}, для этого фильтра нужно указать значение между ${Filter.value.max} - ${Filter.value.min}!`, ...SendArg})
 
                 //Добавляем сам фильтр и нужный аргумент
-                queue.audioFilters.push(NameFilter);
-                queue.audioFilters.push(argsNum as any);
+                queue.filters.push(NameFilter);
+                queue.filters.push(argsNum as any);
             }
             this.#executeFilter(message);
 

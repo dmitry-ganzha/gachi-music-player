@@ -8,26 +8,46 @@ import {VoiceConnection} from "@discordjs/voice";
 export type LoopType = "song" | "songs" | "off";
 export type AudioFilters = Array<string> | Array<string | number>;
 
-// Очередь серверов
+//Музыкальная очередь
 export class Queue {
+    //Голосовой канал
+    public get voice() { return this.#channels.voice; };
+    public set voice(voiceChannel) { this.#channels.voice = voiceChannel; };
+    //Сообщение
+    public get message() { return this.#channels.message; };
+    public set message(message) { this.#channels.message = message; };
+
+    //Фильтры
+    public get filters() { return this.#filters; };
+    public set filters(filters) { this.#filters = filters; };
+
+    //Все треки
+    public get songs() { return this.#songs; };
+
+    //Данные плеера
+    public get player() { return this.#player; };
+    //Настройки
+    public get options() { return this.#options; };
+    //Голосовой канал этой очереди
+    public get connection(): VoiceConnection { return this.player.voices.find((voice) => voice.joinConfig.channelId === this.voice.id); };
+
     #Timer: NodeJS.Timeout = null; //Таймер для авто удаления очереди
     #hasDestroying: boolean = false; //Статус удаления (запущено ли удаление)
 
-    readonly #_player: AudioPlayer; //Сам плеер
+    readonly #songs: Array<Song> = []; //Все треки находятся здесь
+    readonly #player: AudioPlayer = new AudioPlayer(); //Сам плеер
     //Каналы (message: TextChannel, voice: VoiceChannel, connection: VoiceConnection)
-    readonly #_channels: { message: ClientMessage, voice: VoiceChannel | StageChannel};
-    readonly #_options: { random: boolean, loop: LoopType, stop: boolean } = { //Уникальные настройки
+    readonly #channels: { message: ClientMessage, voice: VoiceChannel | StageChannel};
+    readonly #options: { random: boolean, loop: LoopType, stop: boolean } = { //Уникальные настройки
         random: false, //Рандомные треки (каждый раз в плеере будет играть разная музыка из очереди)
         loop: "off", //Тип повтора (off, song, songs)
         stop: false, //Пользователь выключил музыки или музыка сама закончилась
     };
-    public audioFilters: Array<string> | Array<string | number> = [];  //Фильтры для FFmpeg
-    public songs: Array<Song> = []; //Все треки находятся здесь
+    #filters: Array<string> | Array<string | number> = [];  //Фильтры для FFmpeg
 
     //Создаем очередь
     public constructor(message: ClientMessage, voice: VoiceChannel) {
-        this.#_player = new AudioPlayer();
-        this.#_channels = { message, voice };
+        this.#channels = { message, voice };
 
         this.player.on("idle", () => PlayerEventsCallBacks.onIdlePlayer(this));
         this.player.on("StartPlaying", (seek) => PlayerEventsCallBacks.onStartPlaying(this, seek));
@@ -51,44 +71,22 @@ export class Queue {
         return;
     };
 
-    //Данные плеера
-    public get player() {
-        return this.#_player;
-    };
-    //Все каналы
-    public get channels() {
-        return this.#_channels;
-    };
-    //Настройки
-    public get options() {
-        return this.#_options;
-    };
-    //Голосовой канал этой очереди
-    public get connection(): VoiceConnection {
-        return this.player.voices.find((voice) => voice.joinConfig.channelId === this.channels.voice.id);
-    };
-
     //Удаление очереди
     public readonly cleanup = (sendDelQueue: boolean = true) => {
-        const message = this.channels.message
-        const {client, guild} = this.channels.message;
-        const Queue = client.queue.get(guild.id);
-
-        //Если нет очереди
-        if (!Queue) return;
-        const {player, options} = Queue;
+        const message = this.message
+        const {client, guild} = this.message;
 
         //Удаляем сообщение о текущем треке
         if (message?.deletable) message?.delete().catch(() => undefined);
-        if (player) {
-            if (this.connection) player.unsubscribe({connection: this.connection});
 
-            player.stop();
+        if (this.player) {
+            if (this.connection) this.player.unsubscribe({connection: this.connection});
+
+            this.player.stop();
         }
-        [this.songs, this.audioFilters].forEach(data => data = null);
 
         if (sendDelQueue) {
-            if (options.stop) client.sendMessage({text: "🎵 | Музыка была выключена", message, type: "css"});
+            if (this.options.stop) client.sendMessage({text: "🎵 | Музыка была выключена", message, type: "css"});
             else client.sendMessage({text: "🎵 | Музыка закончилась", message, type: "css"});
         }
 

@@ -50,7 +50,7 @@ export default class CommandQueue extends Command {
         // @ts-ignore
         ArraySongs.ArraySort(10).forEach((songs: Song[]) => {
             const song = songs.map((song: Song) => {
-                const Duration = song.duration.StringTime;
+                const Duration = song.duration.full;
                 const TitleSong = ConvertedText(song.title, 80, true).replace(/[\s",']/g, ' ');
 
                 return `[${TrackNumber++}] - [${Duration}] | ${TitleSong}`;

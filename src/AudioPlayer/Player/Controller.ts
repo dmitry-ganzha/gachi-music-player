@@ -45,7 +45,7 @@ export namespace PlayerController {
      * @description Убираем музыку из очереди
      * @param message {ClientMessage} Сообщение с сервера
      * @param args {string} Аргументы Пример: команда аргумент1 аргумент2
-     * @requires {toStop}
+     * @requires {toEnd}
      */
     export function toRemove(message: ClientMessage, args: number): void {
         const {client, guild, member, author} = message;
@@ -63,13 +63,11 @@ export namespace PlayerController {
                 color: "DarkRed"
             });
 
-            //Если всего один трек
-            if (songs.length <= 1) return toStop(message);
-
             //Если пользователю позволено убрать из очереди этот трек
             if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {
-                songs.splice(args - 1, 1);
-                if (args === 1) toStop(message);
+                if (args === 1) toEnd(message);
+                else songs.splice(args - 1, 1);
+
                 return client.sendMessage({text: `⏭️ | Remove song | ${title}`, message, type: "css", color});
             }
 
@@ -102,7 +100,7 @@ export namespace PlayerController {
      * @description Пропускает текущую музыку
      * @param message {ClientMessage} Сообщение с сервера
      * @param args {number} Сколько треков пропускаем
-     * @requires {toSkipNumber, toStop}
+     * @requires {toSkipNumber, toEnd}
      */
     export function toSkip(message: ClientMessage, args: number): void {
         if (args) return toSkipNumber(message, args);
@@ -126,7 +124,7 @@ export namespace PlayerController {
             if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {
                 if (StatusPlayerHasSkipped.has(player.state.status)) {
                     client.sendMessage({text: `⏭️ | Skip song | ${title}`, message, type: "css", color});
-                    return toStop(message);
+                    return toEnd(message);
                 }
             }
 
@@ -175,7 +173,7 @@ export namespace PlayerController {
  * @description Пропускает музыку под номером
  * @param message {ClientMessage} Сообщение с сервера
  * @param args {string} Аргументы Пример: команда аргумент1 аргумент2
- * @requires {toStop}
+ * @requires {toEnd}
  */
 function toSkipNumber(message: ClientMessage, args: number): void {
     const {client, guild, member, author} = message;
@@ -203,10 +201,10 @@ function toSkipNumber(message: ClientMessage, args: number): void {
         //Если пользователю позволено пропустить музыку
         if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {
             if (queue.options.loop === "songs") for (let i = 0; i < args - 2; i++) queue.songs.push(queue.songs.shift());
-            else queue.songs = queue.songs.slice(args - 2);
+            else queue.songs.slice(args - 2);
 
             client.sendMessage({text: `⏭️ | Skip to song [${args}] | ${title}`, message, type: "css", color});
-            return toStop(message);
+            return toEnd(message);
         }
 
         //Если пользователю нельзя это сделать
@@ -218,7 +216,7 @@ function toSkipNumber(message: ClientMessage, args: number): void {
  * @description Завершает текущую музыку
  * @param message {ClientMessage} Сообщение с сервера
  */
-function toStop(message: ClientMessage): void {
+function toEnd(message: ClientMessage): void {
     const {client, guild} = message;
     const {player}: Queue = client.queue.get(guild.id);
 

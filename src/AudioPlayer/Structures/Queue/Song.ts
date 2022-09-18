@@ -100,76 +100,76 @@ export function TypePlatform(url: string): SupportPlatforms {
 
 //Создаем трек для внутреннего использования
 export class Song {
-    readonly #_title: string;
-    readonly #_url: string;
-    readonly #_author: InputAuthor;
-    readonly #_duration: {
+    readonly #title: string;
+    readonly #url: string;
+    readonly #author: InputAuthor;
+    readonly #duration: {
         seconds: number,
-        StringTime: string
+        full: string
     };
-    readonly #_image: InputTrack["image"];
-    readonly #_requester: SongRequester;
-    readonly #_isLive: boolean;
-    readonly #_color: number;
-    readonly #_type: SupportPlatforms;
-    resourceLink: string;
+    readonly #image: InputTrack["image"];
+    readonly #requester: SongRequester;
+    readonly #isLive: boolean;
+    readonly #color: number;
+    readonly #type: SupportPlatforms;
+    protected resourceLink: string;
 
     public constructor(track: InputTrack, author: ClientMessage["author"]) {
         const type = TypePlatform(track.url);
         const {username, id, avatar} = author;
         const seconds = parseInt(track.duration.seconds);
 
-        this.#_title = track.title;
-        this.#_url = track.url;
-        this.#_author = {
+        this.#title = track.title;
+        this.#url = track.url;
+        this.#author = {
             url: track.author?.url ?? `https://discordapp.com/users/${id}`,
             title: track.author?.title ?? username,
             image: track.author?.image ?? {url: Images.NotImage},
             isVerified: track.author?.isVerified ?? undefined
         };
-        this.#_duration = { seconds, StringTime: seconds > 0 ? DurationUtils.ParsingTimeToString(seconds) : "Live" };
-        this.#_image = track.image;
-        this.#_requester = { username, id, avatarURL: () => `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp` };
-        this.#_isLive = track.isLive;
-        this.#_color = ColorTrack[type];
-        this.#_type = type;
+        this.#duration = { seconds, full: seconds > 0 ? DurationUtils.ParsingTimeToString(seconds) : "Live" };
+        this.#image = track.image;
+        this.#requester = { username, id, avatarURL: () => `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp` };
+        this.#isLive = track.isLive;
+        this.#color = ColorTrack[type];
+        this.#type = type;
         this.resourceLink = track?.format?.url
     }
     //Название трека
     public get title() {
-        return this.#_title;
+        return this.#title;
     };
     //Ссылка на трек
     public get url() {
-        return this.#_url;
+        return this.#url;
     };
     //Автор трека
     public get author() {
-        return this.#_author;
+        return this.#author;
     };
     //Время трека
     public get duration() {
-        return this.#_duration;
+        return this.#duration;
     };
     //Картинки трека
     public get image() {
-        return this.#_image;
+        return this.#image;
     };
     //Пользователь включивший трек
     public get requester() {
-        return this.#_requester;
+        return this.#requester;
     };
     //Этот трек потоковый
     public get isLive() {
-        return this.#_isLive;
+        return this.#isLive;
     };
     //Цвет трека
     public get color() {
-        return this.#_color;
+        return this.#color;
     };
     //Тип трека
     public get type() {
-        return this.#_type;
+        return this.#type;
     };
 
     //Получаем исходник трека

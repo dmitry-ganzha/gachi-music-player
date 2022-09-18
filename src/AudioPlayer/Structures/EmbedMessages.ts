@@ -83,7 +83,7 @@ export namespace EmbedMessages {
             },
             fields: [{
                 name: "Добавлено в очередь",
-                value: `**❯** [${client.replaceText(title, 40, true)}](${url}})\n**❯** [${duration.StringTime}]`
+                value: `**❯** [${client.replaceText(title, 40, true)}](${url}})\n**❯** [${duration.full}]`
             }],
             footer: {
                 text: `${requester.username} | ${DurationUtils.getTimeQueue(songs)} | 🎶: ${songs.length}`,
@@ -167,8 +167,8 @@ namespace CurrentPlayFunction {
      * @param client {WatKLOK} Клиент
      * @requires {ConvertTime, MusicDuration}
      */
-    export function getFields(song: Song, {player, songs, audioFilters}: Queue, client: WatKLOK): { name: string, value: string }[] {
-        const playbackDuration = ConvertTime(player, audioFilters);
+    export function getFields(song: Song, {player, songs, filters}: Queue, client: WatKLOK): { name: string, value: string }[] {
+        const playbackDuration = ConvertTime(player, filters);
         const VisualDuration = MusicDuration(song, playbackDuration);
 
         let fields = [{ name: "Щас играет", value: `**❯** [${client.replaceText(song.title, 29, true)}](${song.url})\n${VisualDuration}` }];
@@ -184,10 +184,10 @@ namespace CurrentPlayFunction {
      * @requires {ProgressBar}
      */
     function MusicDuration({isLive, duration}: Song, curTime: number | string): string {
-        if (isLive) return `[${duration.StringTime}]`;
+        if (isLive) return `[${duration.full}]`;
 
-        const str = `${duration.StringTime}]`;
-        const parsedTimeSong = curTime >= duration.seconds ? duration.StringTime : DurationUtils.ParsingTimeToString(curTime as number);
+        const str = `${duration.full}]`;
+        const parsedTimeSong = curTime >= duration.seconds ? duration.full : DurationUtils.ParsingTimeToString(curTime as number);
         const progress = ProgressBar(curTime as number, duration.seconds, 15);
 
         if (Bar.Enable) return `**❯** [${parsedTimeSong} - ${str}\n${progress}`;

@@ -18,7 +18,7 @@ export namespace PlayerEventsCallBacks {
      */
     export function onStartPlaying(queue: Queue, seek: number): void {
         const CurrentSong = queue.songs[0];
-        const message = queue.channels.message;
+        const message = queue.message;
         const {client, guild} = message;
 
         if (!seek) {

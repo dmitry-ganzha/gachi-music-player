@@ -21,7 +21,6 @@ export default class Stop extends Command {
         //Если есть очередь то
         if (queue) {
             Voice.Disconnect(message.guild.id);
-            queue.songs = [];
             queue.cleanup(true);
             return;
         }

@@ -118,11 +118,11 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
 
         //Если нет трека, то удаляем очередь
         if (!CurrentSong) return queue.cleanup();
-        const Audio = CurrentSong.resource(seek, queue.audioFilters);
+        const Audio = CurrentSong.resource(seek, queue.filters);
         Audio.then((audio) => {
             if (!audio) return this.emit("error", "[AudioPlayer]: Audio resource not found!", true);
 
-            return this.#readStream(Decoder.createAudioResource(audio, seek, CurrentSong.isLive ? [] : queue.audioFilters))
+            return this.#readStream(Decoder.createAudioResource(audio, seek, CurrentSong.isLive ? [] : queue.filters))
         });
         Audio.catch((err) => this.emit("error", `[AudioPlayer]: ${err}`, true));
 

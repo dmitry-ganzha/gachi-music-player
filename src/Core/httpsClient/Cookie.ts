@@ -21,24 +21,27 @@ export function getCookies(): null | string {
 export function uploadCookie(Cookie: string | string[]): void {
     if (!existsSync(`./DataBase/Cookie.json`)) return null;
 
-    let youtubeData = JSON.parse(readFileSync(`./DataBase/Cookie.json`, "utf8"));
-    let EndCookieString: {};
+    try {
+        let youtubeData = JSON.parse(readFileSync(`./DataBase/Cookie.json`, "utf8"));
+        let EndCookieString: {};
 
-    if (typeof Cookie === "string") {
-        let CookieJson = ParsingCookieToJson(youtubeData.cookie);
-        let newCookieJson = ParsingCookieToJson([Cookie]);
+        if (typeof Cookie === "string") {
+            let CookieJson = ParsingCookieToJson(youtubeData.cookie);
+            let newCookieJson = ParsingCookieToJson([Cookie]);
 
-        let EndCookieJson = {...CookieJson, ...newCookieJson};
-        EndCookieString = {cookie: ParsingCookieToString(EndCookieJson)};
-    } else {
-        let CookieJson = ParsingCookieToJson(youtubeData.cookie);
+            let EndCookieJson = {...CookieJson, ...newCookieJson};
+            EndCookieString = {cookie: ParsingCookieToString(EndCookieJson)};
+        } else {
+            let CookieJson = ParsingCookieToJson(youtubeData.cookie);
 
-        let newCookieJson = ParsingCookieToJson(Cookie);
-        let EndCookieJson = {...CookieJson, ...newCookieJson};
-        EndCookieString = {cookie: ParsingCookieToString(EndCookieJson)};
+            let newCookieJson = ParsingCookieToJson(Cookie);
+            let EndCookieJson = {...CookieJson, ...newCookieJson};
+            EndCookieString = {cookie: ParsingCookieToString(EndCookieJson)};
+        }
+        return writeFile('./DataBase/Cookie.json', JSON.stringify(EndCookieString, null, `\t`), () => null);
+    } catch (err) {
+        throw new Error("Cookie file has damaged!");
     }
-
-    return writeFile('./DataBase/Cookie.json', JSON.stringify(EndCookieString, null, `\t`), () => null);
 }
 //====================== ====================== ====================== ======================
 /**
