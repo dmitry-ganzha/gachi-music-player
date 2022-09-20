@@ -32,7 +32,13 @@ export namespace MessagePlayer {
         //Если уже есть сообщение то удаляем
         if (MessagesData.messages.get(message.channelId)) MessageUpdater.toRemove(message);
 
-        setImmediate(() => pushCurrentSongMessage(message).then(MessageUpdater.toPush).catch(() => undefined));
+        try {
+            setImmediate(() => {
+                pushCurrentSongMessage(message).then(MessageUpdater.toPush).catch(() => undefined);
+            });
+        } catch (err) {
+            message.client.console(`[MessagePlayer]: [function: toPlay]: ${err.message}`);
+        }
     }
     //====================== ====================== ====================== ======================
     /**

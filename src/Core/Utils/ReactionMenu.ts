@@ -25,9 +25,10 @@ export class CollectorSortReaction {
     public constructor(embed: EmbedConstructor | string, message: ClientMessage, callbacks: Callbacks) {
         setImmediate(() => {
             message.channel.send(typeof embed === "string" ? embed : {embeds: [embed]}).then((msg) => Object.entries(callbacks).forEach(([key, value]) => {
+                const callback = (reaction: MessageReaction) => value(reaction, message.author, message, msg);
                 // @ts-ignore
                 const emoji = emojis[key];
-                return GlobalUtils.createReaction(msg, emoji, (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id, value);
+                return GlobalUtils.createReaction(msg, emoji, (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id, callback);
             }));
         });
     }
