@@ -10,8 +10,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@discordjs/voice": "^0.12.1-dev.1661818293-fd97da9.0",
-    "discord.js": "^14.3.0",
+    "@discordjs/voice": "^0.13.0-dev.1663761877-b106956.0",
+    "discord.js": "^14.4.0",
     "dotenv": "^16.0.2",
     "tiny-typed-emitter": "^2.1.0"
   },

@@ -3,7 +3,7 @@ import {
     ChannelType,
     DMChannel, EmbedData,
     Message,
-    MessageEditOptions, MessageOptions, MessagePayload,
+    MessageEditOptions, BaseMessageOptions, MessagePayload,
     NewsChannel,
     PartialDMChannel,
     TextChannel, ThreadChannel
@@ -80,7 +80,7 @@ export type Channel = DMChannel | PartialDMChannel | NewsChannel | TextChannel |
 //ClientMessage<channel>
 export type MessageChannel = ClientMessage["channel"];
 //Типы для ClientMessage<channel<send>>, ClientMessage<edit>
-export type SendMessageOptions = string | MessagePayload | MessageOptions | {embeds?: EmbedConstructor[], components?: ActionRow<any> | ActionRowBuilder<any>};
+export type SendMessageOptions = string | MessagePayload | BaseMessageOptions | {embeds?: EmbedConstructor[], components?: ActionRow<any> | ActionRowBuilder<any>};
 //Embed JSON
 export interface EmbedConstructor extends EmbedData {}
 //Цвета, которые есть в базе
