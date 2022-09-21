@@ -37,8 +37,7 @@ export namespace Decoder {
         #playbackDuration = 0;
 
         //Общее время проигрывание текущего ресурса
-        public get duration() { return this.#playbackDuration; };
-        public set duration(duration: number) { this.#playbackDuration = duration; };
+        public get duration() { return parseInt((this.#playbackDuration / 1000).toFixed(0)) };
         public get hasStarted() { return this.#started; }; //Проверяем можно ли читать поток
         /**
          * @description Декодируем в opus
@@ -66,7 +65,7 @@ export namespace Decoder {
         public readonly read = (): Buffer | null => {
             const packet: Buffer = super.read();
 
-            if (packet) this.duration += this.#TimeFrame;
+            if (packet) this.#playbackDuration += this.#TimeFrame;
 
             return packet;
         };

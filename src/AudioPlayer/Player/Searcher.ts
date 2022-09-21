@@ -32,18 +32,18 @@ export namespace Handle {
         const {search, message, voiceChannel} = options;
         const type = toPlayerUtils.typeSong(search); //Тип запроса
         const platform = toPlayerUtils.PlatformSong(search, message); //Платформа с которой будем взаимодействовать
+        const parsedSearch = toPlayerUtils.findArg(search, platform, type);
 
         //Отправляем сообщение о поиске трека
-        if (platform !== "DISCORD") message.client.sendMessage({ text: `Поиск 🔍 | ${search}`, message, color: "Yellow", type: "css" });
+        if (platform !== "DISCORD") message.client.sendMessage({ text: `Поиск 🔍 | ${parsedSearch}`, message, color: "Yellow", type: "css" });
 
-        const findPlatform = SupportPlatforms[platform] ?? SupportPlatforms["YOUTUBE"]; //Ищем в списке платформу
+        const findPlatform = SupportPlatforms[platform]; //Ищем в списке платформу
         const findType = (findPlatform as any)[type]; //Ищем тип запроса
 
-        if (!findPlatform) return message.client.sendMessage({text: `${message.author}, у меня нет поддержки такой платформы!`, color: "DarkRed", message});
-        else if (!findType) return message.client.sendMessage({text: `${message.author}, у меня нет поддержки этого типа запроса!`, color: "DarkRed", message});
+        if (!findPlatform) return message.client.sendMessage({text: `${message.author}, у меня нет поддержки такой платформы!\nПлатформа **${platform}**!`, color: "DarkRed", message});
+        else if (!findType) return message.client.sendMessage({text: `${message.author}, у меня нет поддержки этого типа запроса!\nТип запроса **${type}**!`, color: "DarkRed", message});
 
-        const newSearch = type === "search" && search?.includes(platform) ? search.split(platform)[1] : search;
-        const runCallback = findType(newSearch) as Promise<InputTrack | InputPlaylist | InputTrack[]>;
+        const runCallback = findType(parsedSearch) as Promise<InputTrack | InputPlaylist | InputTrack[]>;
 
         runCallback.then((data: InputTrack | InputPlaylist | InputTrack[]) => {
             if (!data) return message.client.sendMessage({text: `${message.author}, данные не были найдены!`, color: "Yellow", message});
@@ -58,7 +58,7 @@ export namespace Handle {
             return message.client.player.emit("play", message, voiceChannel, data);
         });
         //Если выходит ошибка
-        runCallback.catch((err) => message.client.sendMessage({text: `${message.author}, данные не были найдены!\nError: ${err}`, color: "DarkRed", message}));
+        runCallback.catch((err) => message.client.sendMessage({text: `${message.author}, данные не были найдены!\nПричина: ${err}`, color: "DarkRed", message}));
     }
 }
 //====================== ====================== ====================== ======================
@@ -91,8 +91,20 @@ namespace toPlayerUtils {
         const SplitSearch = search.split(' ');
         const platform = SplitSearch[0] as "yt" | "vk" | "sp" | "sc";
 
-        if (platform.length === 2 && SearchPlatforms[platform]) return SearchPlatforms[platform] as SupportPlatforms;
-        return platform.toUpperCase() as any;
+        if (SearchPlatforms[platform]) return SearchPlatforms[platform] as SupportPlatforms;
+        else return "YOUTUBE";
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Фильтруем ссылку от аргументов поиска
+     * @param arg {string} аргументы переданные пользователем
+     * @param platform {SupportPlatforms} Платформа
+     * @param type {SupportType} Тип запроса
+     */
+    export function findArg(arg: string, platform: SupportPlatforms, type: SupportType): string  {
+        if (arg.match(UrlSrt)) return `http${arg.split("http")[1]}`; //Если строка ссылка
+        else if (type === "search" && arg.includes(platform)) return arg.split(platform)[1]; //Если строка это поиск на определенной платформе
+        return arg;
     }
 }
 //====================== ====================== ====================== ======================
@@ -115,10 +127,10 @@ namespace SearchSongMessage {
 
             const ConstFind = `Выбери от 1 до ${results.length}`; //Показываем сколько есть треков в списке
             const Requester = `[Платформа: ${platform} | Запросил: ${message.author.username}]`; //Показываем платформу и того кто запросил
-            const resp = ArrayToString(results, message, platform)
+            const SongsString = ArrayToString(results, message, platform);
 
             //Отправляем сообщение
-            message.channel.send(`\`\`\`css\n${ConstFind}\n${Requester}\n\n${resp}\`\`\``).then((msg: ClientMessage) => {
+            message.channel.send(`\`\`\`css\n${ConstFind}\n${Requester}\n\n${SongsString}\`\`\``).then((msg: ClientMessage) => {
                 //Создаем сборщик
                 const collector = GlobalUtils.createMessageCollector(message,(m) => {
                     const messageNum = parseInt(m.content);
@@ -139,7 +151,7 @@ namespace SearchSongMessage {
 
                         //Получаем ссылку на трек, затем включаем его
                         const url = results[parseInt(m.content) - 1].url;
-                        return Handle.toPlayer({...options, type: "track", search: url})
+                        return Handle.toPlayer({...options, type: "track", search: url});
                     });
                 });
 

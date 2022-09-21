@@ -159,7 +159,7 @@ export namespace PlayerController {
         const {client, guild, author} = message;
         const queue: Queue = client.queue.get(guild.id);
         const player = queue.player;
-        const seek: number = player.playbackDuration;
+        const seek: number = player.streamDuration;
 
         try {
             return player.play(queue, seek);

@@ -182,7 +182,7 @@ export class Song {
         if (checkResource === "OK") return resolve({ url: this.resourceLink });
         else {
             req++;
-            return resolve(this.resource(seek, filters, req));
+            setTimeout(() => resolve(this.resource(seek, filters, req)), 75);
         }
     });
 }

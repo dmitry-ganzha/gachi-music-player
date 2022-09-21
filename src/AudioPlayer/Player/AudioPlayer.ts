@@ -29,9 +29,8 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     };
 
     //Текущее время плеера в мс
-    public get playbackDuration() {
-        if (this.state.stream?.duration <= 0) return 0;
-        return parseInt((this.state.stream?.duration / 1000).toFixed(0));
+    public get streamDuration() {
+        return this.state.stream?.duration ?? 0;
     };
 
     //Заменяет или выдает статистику плеера

@@ -1,7 +1,6 @@
 import {WatKLOK} from "../../Core/Client/Client";
 import {InputPlaylist, Song} from "./Queue/Song";
 import {AudioFilters, Queue} from "./Queue/Queue";
-import {AudioPlayer} from "../Player/AudioPlayer";
 import {DurationUtils} from "../Manager/DurationUtils";
 import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
 import {Colors} from "discord.js";
@@ -46,7 +45,7 @@ export namespace EmbedMessages {
             thumbnail: {
                 url: song.author?.image?.url ?? Images.NotImage,
             },
-            fields: CurrentPlayFunction.getFields(song, queue, client),
+            fields: toPlayFunctions.getFields(song, queue, client),
             image: {
                 url: song.image?.url ?? null
             },
@@ -75,7 +74,7 @@ export namespace EmbedMessages {
             color,
             author: {
                 name: client.replaceText(author.title, 45, false),
-                iconURL: author.isVerified === undefined ? Images.NotFound : author.isVerified ? Images.Verification : Images.NotVerification,
+                iconURL: author?.image?.url ?? Images.NotImage,
                 url: author.url,
             },
             thumbnail: {
@@ -157,7 +156,7 @@ export namespace EmbedMessages {
     }
 }
 
-namespace CurrentPlayFunction {
+namespace toPlayFunctions {
     /**
      * @description Создаем Message<Fields>
      * @param song {Song} Трек
@@ -168,7 +167,7 @@ namespace CurrentPlayFunction {
      * @requires {ConvertTime, MusicDuration}
      */
     export function getFields(song: Song, {player, songs, filters}: Queue, client: WatKLOK): { name: string, value: string }[] {
-        const playbackDuration = ConvertTime(player, filters);
+        const playbackDuration = ConvertTime(player.streamDuration, filters);
         const VisualDuration = MusicDuration(song, playbackDuration);
 
         let fields = [{ name: "Щас играет", value: `**❯** [${client.replaceText(song.title, 29, true)}](${song.url})\n${VisualDuration}` }];
@@ -196,12 +195,12 @@ namespace CurrentPlayFunction {
     //====================== ====================== ====================== ======================
     /**
      * @description Конвертируем секунды проигранные плеером
-     * @param CurrentTime {number} Время проигрывания
+     * @param streamDuration {number} Сколько прошло времени с момента включения
      * @param filters {AudioFilters} Фильтры
      */
-    function ConvertTime({playbackDuration}: AudioPlayer, filters: AudioFilters): number | string {
-        if (Bar.Enable) return playbackDuration;
-        return DurationUtils.ParsingTimeToString(playbackDuration);
+    function ConvertTime(streamDuration: number, filters: AudioFilters): number | string {
+        if (Bar.Enable) return streamDuration;
+        return DurationUtils.ParsingTimeToString(streamDuration);
     }
     //====================== ====================== ====================== ======================
     /**
