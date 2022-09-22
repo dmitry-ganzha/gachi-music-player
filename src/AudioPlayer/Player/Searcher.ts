@@ -8,7 +8,7 @@ import {
     SupportType,
     TypePlatform
 } from "../Structures/Queue/Song";
-import {GlobalUtils} from "../../Core/Utils/LiteUtils";
+import {messageUtils} from "../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../Manager/DurationUtils";
 
 //Данные которые необходимо передать для поиска
@@ -92,7 +92,7 @@ namespace toPlayerUtils {
         const platform = SplitSearch[0] as "yt" | "vk" | "sp" | "sc";
 
         if (SearchPlatforms[platform]) return SearchPlatforms[platform] as SupportPlatforms;
-        else return "YOUTUBE";
+        return "YOUTUBE";
     }
     //====================== ====================== ====================== ======================
     /**
@@ -132,21 +132,24 @@ namespace SearchSongMessage {
             //Отправляем сообщение
             message.channel.send(`\`\`\`css\n${ConstFind}\n${Requester}\n\n${SongsString}\`\`\``).then((msg: ClientMessage) => {
                 //Создаем сборщик
-                const collector = GlobalUtils.createMessageCollector(message,(m) => {
+                const collector = messageUtils.createCollector(message,(m) => {
                     const messageNum = parseInt(m.content);
                     return !isNaN(messageNum) && messageNum <= num && messageNum > 0 && m.author.id === message.author.id;
                 });
 
                 //Делаем что-бы при нажатии на эмодзи удалялся сборщик
-                GlobalUtils.createReaction(msg, emoji, (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id, () => {
-                    GlobalUtils.DeleteMessage(msg, 1e3); //Удаляем сообщение
-                    collector?.stop();
-                });
+                messageUtils.createReaction(msg, emoji,
+                    (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id,
+                    () => {
+                        messageUtils.deleteMessage(msg, 1e3); //Удаляем сообщение
+                        collector?.stop();
+                    }
+                );
 
                 //Что будет делать сборщик после нахождения числа
                 collector.once("collect", (m: any): void => {
                     setImmediate(() => {
-                        [msg, m].forEach(GlobalUtils.DeleteMessage); //Удаляем сообщения, бота и пользователя
+                        [msg, m].forEach(messageUtils.deleteMessage); //Удаляем сообщения, бота и пользователя
                         collector?.stop(); //Уничтожаем сборщик
 
                         //Получаем ссылку на трек, затем включаем его

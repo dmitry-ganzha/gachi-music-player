@@ -51,7 +51,7 @@ export class Queue {
 
         this.player.on("idle", () => PlayerEventsCallBacks.onIdlePlayer(this));
         this.player.on("StartPlaying", (seek) => PlayerEventsCallBacks.onStartPlaying(this, seek));
-        this.player.on("error", (err: any, isSkip) => PlayerEventsCallBacks.onErrorPlayer(err, this, isSkip));
+        this.player.on("error", (err, isSkip) => PlayerEventsCallBacks.onErrorPlayer(err, this, isSkip));
     };
 
     /**
@@ -74,7 +74,7 @@ export class Queue {
     //Удаление очереди
     public readonly cleanup = (sendDelQueue: boolean = true) => {
         const message = this.message
-        const {client, guild} = this.message;
+        const {client, guild} = message;
 
         //Удаляем сообщение о текущем треке
         if (message?.deletable) message?.delete().catch(() => undefined);
@@ -86,15 +86,12 @@ export class Queue {
         }
 
         clearTimeout(this.#Timer);
-
-        if (client.queue.get(guild.id)) {
-            if (sendDelQueue) {
-                if (this.options.stop) client.sendMessage({text: "🎵 | Музыка была выключена", message, type: "css"});
-                else client.sendMessage({text: "🎵 | Музыка закончилась", message, type: "css"});
-            }
-
-            client.queue.delete(guild.id);
+        if (sendDelQueue && client.queue.get(guild.id)) {
+            if (this.options.stop) client.sendMessage({text: "🎵 | Музыка была выключена", message, type: "css"});
+            else client.sendMessage({text: "🎵 | Музыка закончилась", message, type: "css"});
         }
+
+        client.queue.delete(guild.id);
     };
     //Удаление очереди через время
     public readonly TimeDestroying = (state: "start" | "cancel"): void => {
@@ -104,7 +101,7 @@ export class Queue {
         if (state === "start") {
             if (this.#hasDestroying) return;
 
-            this.#Timer = setTimeout(() => this.cleanup(false), 30e3);
+            this.#Timer = setTimeout(() => this.cleanup(false), 20e3);
             this.#hasDestroying = true;
             player.pause();
         } else { //Отменяем запущенный таймер

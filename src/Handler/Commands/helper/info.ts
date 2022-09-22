@@ -2,7 +2,7 @@ import {Command} from "../../../Structures/Command";
 import os from 'node:os';
 import pak from "../../../../package.json";
 import {EmbedConstructor} from "../../Events/Activity/Message";
-import {GlobalUtils} from "../../../Core/Utils/LiteUtils";
+import {messageUtils} from "../../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
 import ParsingTimeToString = DurationUtils.ParsingTimeToString;
 import {ClientMessage} from "../../Events/Activity/Message";
@@ -38,12 +38,12 @@ export default class Info extends Command {
                 message.client.shard.fetchClientValues("queue.size").then((numbers) => this.#AutoConverter(numbers, queue));
             } finally {
                 message.channel.send({embeds: [this.#EmbedConstructor(message, {channels, guilds, queue})]})
-                    .then((msg) => GlobalUtils.DeleteMessage(msg, 25e3));
+                    .then((msg) => messageUtils.deleteMessage(msg, 25e3));
             }
             return;
         }
 
-        message.channel.send({embeds: [this.#EmbedConstructor(message)]}).then((msg) => GlobalUtils.DeleteMessage(msg, 25e3));
+        message.channel.send({embeds: [this.#EmbedConstructor(message)]}).then((msg) => messageUtils.deleteMessage(msg, 25e3));
     };
     //====================== ====================== ====================== ======================
     /**

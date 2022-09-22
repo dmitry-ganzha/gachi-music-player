@@ -1,7 +1,7 @@
 import {Command} from "../../../Structures/Command";
 import {MessageReaction, ReactionCollector, User} from "discord.js";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {CollectorSortReaction} from "../../../Core/Utils/ReactionMenu";
+import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
 import {Song} from "../../../AudioPlayer/Structures/Queue/Song";
 import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
 import {ClientMessage} from "../../Events/Activity/Message";
@@ -33,7 +33,7 @@ export default class CommandQueue extends Command {
         const Footer = `${message.author.username} | ${this.#getTime(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}`; //Что будет снизу сообщения
 
         //Запускаем CollectorSortReaction
-        new CollectorSortReaction(`\`\`\`css\n➡️ | ${CurrentPlaying}\n\n${pages[0]}\n\n${Footer}\`\`\``, message, this.#Callbacks(1, pages, queue));
+        new ReactionMenu(`\`\`\`css\n➡️ | ${CurrentPlaying}\n\n${pages[0]}\n\n${Footer}\`\`\``, message, this.#Callbacks(1, pages, queue));
     };
     //====================== ====================== ====================== ======================
     /**

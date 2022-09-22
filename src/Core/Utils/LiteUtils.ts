@@ -3,13 +3,13 @@ import {Command} from "../../Structures/Command";
 import {Bot} from "../../../DataBase/Config.json";
 import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
 
-export namespace GlobalUtils {
+export namespace messageUtils {
     //Удаляем сообщение
-    export function DeleteMessage(message: ClientMessage, time: number = 12e3): void {
+    export function deleteMessage(message: ClientMessage, time: number = 12e3): void {
         setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, time);
     }
     //Создаем сборщик сообщений
-    export function createMessageCollector(message: ClientMessage, filter: (m: ClientMessage) => boolean, max: number = 1, time: number = 20e3) {
+    export function createCollector(message: ClientMessage, filter: (m: ClientMessage) => boolean, max: number = 1, time: number = 20e3) {
         // @ts-ignore
         return message.channel.createMessageCollector({ filter, max, time });
     }
@@ -41,7 +41,7 @@ export namespace UtilsPermissions {
 
             //Отправляем сообщение
             if (user || client) {
-                message.channel.send({embeds: [Embed as any]}).then(GlobalUtils.DeleteMessage).catch(() => null);
+                message.channel.send({embeds: [Embed as any]}).then(messageUtils.deleteMessage).catch(() => null);
 
                 return true;
             }

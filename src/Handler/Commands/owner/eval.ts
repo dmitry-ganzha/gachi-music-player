@@ -1,6 +1,6 @@
 import {Command} from "../../../Structures/Command";
 import {EmbedConstructor} from "../../Events/Activity/Message";
-import {GlobalUtils} from "../../../Core/Utils/LiteUtils";
+import {messageUtils} from "../../../Core/Utils/LiteUtils";
 import {ClientMessage} from "../../Events/Activity/Message";
 import {Colors} from "discord.js";
 
@@ -40,7 +40,7 @@ export default class Eval extends Command {
      * @private
      */
     readonly #SendMessage = (message: ClientMessage, Embed: EmbedConstructor) => {
-        message.channel.send({embeds: [Embed]}).then((msg: ClientMessage) => GlobalUtils.DeleteMessage(msg, 30e3));
+        message.channel.send({embeds: [Embed]}).then((msg: ClientMessage) => messageUtils.deleteMessage(msg, 30e3));
     };
     //====================== ====================== ====================== ======================
     /**

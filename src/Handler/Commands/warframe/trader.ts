@@ -1,9 +1,9 @@
 import {Command} from "../../../Structures/Command";
 import {httpsClient} from "../../../Core/httpsClient";
 import {EmbedConstructor} from "../../Events/Activity/Message";
-import {GlobalUtils} from "../../../Core/Utils/LiteUtils";
+import {messageUtils} from "../../../Core/Utils/LiteUtils";
 import {Colors, MessageReaction, User} from "discord.js";
-import {CollectorSortReaction} from "../../../Core/Utils/ReactionMenu";
+import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
 import {ClientMessage} from "../../Events/Activity/Message";
 
 const TraderApi = "https://api.warframestat.us/pc/ru/voidTrader/";
@@ -49,11 +49,11 @@ export default class Trader extends Command {
         //Если есть инвентарь, то запускаем CollectorSortReaction
         if (pagesInventory.length >= 1) {
             EmbedVoidTrader.description = pagesInventory[0];
-            new CollectorSortReaction(EmbedVoidTrader, message, this.#Callbacks(1, pagesInventory, EmbedVoidTrader));
+            new ReactionMenu(EmbedVoidTrader, message, this.#Callbacks(1, pagesInventory, EmbedVoidTrader));
             return;
         }
         //Если инвентаря нет просто отправляем сообщение
-        message.channel.send({embeds: [EmbedVoidTrader]}).then((msg) => GlobalUtils.DeleteMessage(msg, 25e3));
+        message.channel.send({embeds: [EmbedVoidTrader]}).then((msg) => messageUtils.deleteMessage(msg, 25e3));
     };
     //====================== ====================== ====================== ======================
     /**

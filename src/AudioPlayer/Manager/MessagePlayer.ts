@@ -3,7 +3,7 @@ import {InputPlaylist, Song} from "../Structures/Queue/Song";
 import {EmbedMessages} from "../Structures/EmbedMessages";
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType} from "discord.js";
 import {ClientMessage} from "../../Handler/Events/Activity/Message";
-import {GlobalUtils} from "../../Core/Utils/LiteUtils";
+import {messageUtils} from "../../Core/Utils/LiteUtils";
 
 //Кнопки над сообщением о проигрывании трека
 const Buttons = new ActionRowBuilder().addComponents([
@@ -34,7 +34,9 @@ export namespace MessagePlayer {
 
         try {
             setImmediate(() => {
-                pushCurrentSongMessage(message).then(MessageUpdater.toPush).catch(() => undefined);
+                const pushMessage = pushCurrentSongMessage(message);
+
+                if (pushMessage) pushMessage.then(MessageUpdater.toPush).catch(() => undefined);
             });
         } catch (err) {
             message.client.console(`[MessagePlayer]: [function: toPlay]: ${err.message}`);
@@ -56,7 +58,7 @@ export namespace MessagePlayer {
                 const Embed = EmbedMessages.toError(client, song, queue, err);
                 const WarningChannelSend = channel.send({embeds: [Embed]});
 
-                WarningChannelSend.then(GlobalUtils.DeleteMessage);
+                WarningChannelSend.then(messageUtils.deleteMessage);
             } catch (e) {
                 client.console(`[MessagePlayer]: [function: toError]: ${e.message}`);
             }
@@ -77,7 +79,7 @@ export namespace MessagePlayer {
                 const EmbedPushedSong = EmbedMessages.toPushSong(client, song, queue);
                 const PushChannel = channel.send({embeds: [EmbedPushedSong]});
 
-                PushChannel.then(GlobalUtils.DeleteMessage);
+                PushChannel.then(messageUtils.deleteMessage);
             } catch (e) {
                 client.console(`[MessagePlayer]: [function: toPushSong]: ${e.message}`);
             }
@@ -98,7 +100,7 @@ export namespace MessagePlayer {
                 const EmbedPushPlaylist = EmbedMessages.toPushPlaylist(message, playlist);
                 const PushChannel = channel.send({embeds: [EmbedPushPlaylist]});
 
-                PushChannel.then(GlobalUtils.DeleteMessage);
+                PushChannel.then(messageUtils.deleteMessage);
             } catch (e) {
                 client.console(`[MessagePlayer]: [function: toPushPlaylist]: ${e.message}`);
             }

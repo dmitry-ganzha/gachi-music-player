@@ -3,7 +3,7 @@ import {FileSystem} from "../FileSystem";
 import {PlayerEmitter} from "../../AudioPlayer/execute";
 import {Command} from "../../Structures/Command";
 import {Queue} from "../../AudioPlayer/Structures/Queue/Queue";
-import {GlobalUtils} from "../Utils/LiteUtils";
+import {messageUtils} from "../Utils/LiteUtils";
 import {Bot, Channels, Debug} from "../../../DataBase/Config.json";
 import {ClientMessage, ColorResolvable, EmbedConstructor, MessageChannel} from "../../Handler/Events/Activity/Message";
 import {getVoiceConnection} from "@discordjs/voice";
@@ -55,7 +55,7 @@ export class WatKLOK extends Client {
         };
 
         const sendMessage = message.channel.send({ embeds: [Embed] });
-        sendMessage.then(GlobalUtils.DeleteMessage);
+        sendMessage.then(messageUtils.deleteMessage);
         sendMessage.catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
     };
     //Обрезает текс до необходимых значений

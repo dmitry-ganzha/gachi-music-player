@@ -1,12 +1,12 @@
 import {MessageReaction, User} from "discord.js";
 import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
-import {GlobalUtils} from "./LiteUtils";
+import {messageUtils} from "./LiteUtils";
 
 const emojis = {
     back: "⬅️",
     next: "➡️",
     cancel: "❌"
-}
+};
 
 interface Callbacks {
     back: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage) => any;
@@ -14,7 +14,7 @@ interface Callbacks {
     cancel: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage)  => any;
 }
 
-export class CollectorSortReaction {
+export class ReactionMenu {
     /**
      * @description Создаем menu emoji
      * @param embed { EmbedConstructor | string } MessageEmbed или текст
@@ -28,8 +28,8 @@ export class CollectorSortReaction {
                 const callback = (reaction: MessageReaction) => value(reaction, message.author, message, msg);
                 // @ts-ignore
                 const emoji = emojis[key];
-                return GlobalUtils.createReaction(msg, emoji, (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id, callback);
+                return messageUtils.createReaction(msg, emoji, (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id, callback);
             }));
         });
-    }
+    };
 }

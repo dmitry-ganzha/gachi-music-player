@@ -1,5 +1,5 @@
 import {Command} from "../../../Structures/Command";
-import {CollectorSortReaction} from "../../../Core/Utils/ReactionMenu";
+import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
 import {Colors, MessageReaction, User} from "discord.js";
 import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
 
@@ -24,7 +24,7 @@ export default class Help extends Command {
         let {embed, pages} = this.#CreateEmbedMessage(message, List);
 
         //Запускаем CollectorSortReaction
-        new CollectorSortReaction(embed, message, this.#Callbacks(1, pages, embed));
+        new ReactionMenu(embed, message, this.#Callbacks(1, pages, embed));
     };
     //====================== ====================== ====================== ======================
     /**

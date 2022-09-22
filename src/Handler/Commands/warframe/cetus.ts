@@ -1,7 +1,7 @@
 import {Command} from "../../../Structures/Command";
 import {httpsClient} from "../../../Core/httpsClient";
 import {EmbedConstructor} from "../../Events/Activity/Message";
-import {GlobalUtils} from "../../../Core/Utils/LiteUtils";
+import {messageUtils} from "../../../Core/Utils/LiteUtils";
 import {ClientMessage} from "../../Events/Activity/Message";
 import {Colors} from "discord.js";
 
@@ -22,7 +22,7 @@ export default class Cetus extends Command {
 
     public readonly run = (message: ClientMessage) => {
         httpsClient.parseJson(CetusCycle).then((res: CetusCycle) => {
-            message.channel.send({embeds: [this.#EmbedChange(res)]}).then((msg) => GlobalUtils.DeleteMessage(msg, 25e3)).catch(err => console.log(err));
+            message.channel.send({embeds: [this.#EmbedChange(res)]}).then((msg) => messageUtils.deleteMessage(msg, 25e3)).catch(err => console.log(err));
         });
     };
     //====================== ====================== ====================== ======================
