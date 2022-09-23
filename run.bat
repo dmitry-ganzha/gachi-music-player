@@ -17,18 +17,18 @@ pause
 :Client
     echo running Client...
     cd build
-    start node ./src/Core/Client/Client.js
+    node ./src/Core/Client/Client.js
     goto menu
 
 :ShardManager
     echo running ShardManager...
   	cd build
-  	start node ./src/Core/Client/ShardManager.js
+  	node ./src/Core/Client/ShardManager.js
   	goto menu
 
 :Builder
 	echo staring build project in watch mode...
-    start tsc --watch -p ./tsconfig.json
+    tsc --watch -p ./tsconfig.json
     goto menu
 
 :Fail
