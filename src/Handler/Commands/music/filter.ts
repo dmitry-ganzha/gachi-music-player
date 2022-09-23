@@ -1,10 +1,10 @@
 import {Command} from "../../../Structures/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {ApplicationCommandOptionType} from "discord.js";
-import FFmpegConfiguration from "../../../../DataBase/FFmpeg.json";
-import {ClientMessage} from "../../Events/Activity/Message";
-
-const allFilters: string = Object.keys(FFmpegConfiguration.FilterConfigurator).join(", ");
+import {ApplicationCommandOptionType, Colors} from "discord.js";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
+import {FFmpeg} from "../../../AudioPlayer/Structures/Media/FFmpeg";
+import Filters from "../../../../DataBase/Filters.json";
+import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
 
 export default class Filter extends Command {
     public constructor() {
@@ -57,69 +57,111 @@ export default class Filter extends Command {
             color: "DarkRed"
         });
 
-        const song = queue.songs[0];
-        const argsNum = Number(args[1]);
-        const SendArg: {color: number, type: "css", message: ClientMessage} = {color: song.color, type: "css", message};
-        const NameFilter = args[0]?.toLowerCase();
+        const FilterArg = args.length > 1 ? Number(args[args?.length - 1]) : null;
+        const FilterName = args[args?.length - 2 ?? args?.length - 1] ?? args[0];
+        const SendArg: {color: any, type: "css", message: ClientMessage} = {color: "Blue", type: "css", message};
 
-        if (!NameFilter) {
-            if (queue.filters.length === 0) return message.client.sendMessage({text: `${message.author}, включенных фильтров нет!`, message, color: "Green"});
-            return message.client.sendMessage({text: `Включенные фильтры: ${queue.filters.filter((name) => typeof name === "string").join(", ") ?? "нет включенных фильтров"}`, ...SendArg});
+
+        if (FilterName === "all") return this.ReactionMenuFilters(Filters, message); //Показываем все доступные фильтры
+        else if (FilterName === "off") { //Выключаем все фильтры
+            queue.filters.splice(0, queue.filters.length);
+            this.#executeFilter(message);
+            return;
         }
 
-        //Показываем все доступные фильтры
-        if (NameFilter === "all") return message.client.sendMessage({text: `Все фильтры: ${allFilters}`, ...SendArg});
+        if (!FilterName) { //Если пользователь не указал название фильтра
+            if (queue.filters.length === 0) return message.client.sendMessage({text: `${message.author.username}, включенных аудио фильтров нет!`, ...SendArg});
+            const ArrayFilters: typeof Filters = [];
 
-        //Отключение всех фильтров
-        else if (NameFilter === "off") {
-            queue.filters = [];
-            void message.client.player.emit("filter", message);
-            //Сообщаем что все выключено
-            return message.client.sendMessage({text: "Все фильтры: отключены", ...SendArg});
+            queue.filters.forEach((filter) => {
+                const Filter = Filters.find((fn) => typeof filter === "number" ? null : fn.names.includes(filter));
+                ArrayFilters.push(Filter);
+            });
+
+            return this.ReactionMenuFilters(ArrayFilters, message);
         }
 
-        // @ts-ignore
-        const Filter = FFmpegConfiguration.FilterConfigurator[NameFilter];
+        const Filter = FFmpeg.getFilter(FilterName);
 
         if (Filter) {
+            const enableFilter = !!queue.filters.find((filter) => typeof filter === "number" ? null : Filter.names.includes(filter));
 
-            //Выключаем фильтр
-            if (queue.filters.includes(NameFilter)) {
-                //Если фильтр не требует аргумента
-                if (Filter.value === false) queue.filters = queue.filters.filter((name: string) => name !== NameFilter);
-                else { //Если у фильтра есть аргументы
+            //Если фильтр есть в очереди
+            if (enableFilter) {
+                const index = queue.filters.indexOf(FilterName);
 
-                    //Ищем аргумент
-                    const index = queue.filters.indexOf(NameFilter);
-                    if (index === -1) return;
-                    queue.filters.splice(index, 2); //Удаляем аргумент
+                //Если пользователь указал аргумент, значит его надо заменить
+                if (FilterArg && Filter.args) {
+
+                    //Изменяем аргумент фильтра
+                    if (FilterArg >= Filter.args[0] && FilterArg <= Filter.args[1]) {
+                        queue.filters[index + 1] = FilterArg;
+
+                        message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} аргумент изменен!`, ...SendArg});
+                    //Если аргументы не подходят
+                    } else return message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} не изменен из-за несоответствия аргументов!`, ...SendArg});
+
+                } else { //Если пользователь не указал аргумент, значит его надо удалить
+                    if (Filter.args) queue.filters.splice(index, 2); //Удаляем фильтр и аргумент
+                    else queue.filters.splice(index, 1); //Удаляем только фильтр
+
+                    message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} отключен!`, ...SendArg});
                 }
-                this.#executeFilter(message);
+            } else { //Если фильтра нет в очереди, значит его надо добавить
+                if (FilterArg && Filter.args) { //Если есть аргумент
 
-                //Сообщаем что он выключен
-                return message.client.sendMessage({text: `${message.author.username} | Filter: ${NameFilter} выключен`, ...SendArg});
+                    //Добавляем с аргументом
+                    if (FilterArg > Filter.args[0] && FilterArg < Filter.args[1]) {
+                        queue.filters.push(Filter.names[0]);
+                        queue.filters.push(FilterArg as any);
+                        message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} включен!`, ...SendArg});
+                    //Если аргументы не подходят
+                    } else return message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} не включен из-за несоответствия аргументов!`, ...SendArg});
+                } else { //Если нет аргумента
+                    queue.filters.push(Filter.names[0]);
+
+                    message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} включен!`, ...SendArg});
+                }
             }
+        } else return message.client.sendMessage({text: `${message.author.username}, у меня нет такого фильтра. Все фильтры - all`, message});
 
-            //Включаем фильтр
-            if (Filter.value === false) queue.filters.push(NameFilter); //Если фильтр не требует аргумента
-            else {
-                //Если у фильтра есть аргументы
-                if (!argsNum || argsNum > Filter.value.max || argsNum < Filter.value.min)return message.client.sendMessage({text: `${message.author.username}, для этого фильтра нужно указать значение между ${Filter.value.max} - ${Filter.value.min}!`, ...SendArg})
-
-                //Добавляем сам фильтр и нужный аргумент
-                queue.filters.push(NameFilter);
-                queue.filters.push(argsNum as any);
-            }
-            this.#executeFilter(message);
-
-            //Сообщаем что он включен
-            return message.client.sendMessage({text: `${message.author.username} | Filter: ${NameFilter} включен`, ...SendArg});
-        }
-
-        //Если фильтр не найден в FFmpegConfigurator
-        return message.client.sendMessage({text: `${message.author.username}, я не нахожу ${NameFilter} в своей базе. Может он появится позже!`, ...SendArg})
+        this.#executeFilter(message);
     };
 
     //Заставляем плеер перезапустить поток для применения фильтра
     readonly #executeFilter = (message: ClientMessage) => message.client.player.emit("filter", message);
+
+    readonly ReactionMenuFilters = (filters: typeof Filters, message: ClientMessage) => {
+        let numFilter = 1;
+        const pages: string[] = [];
+        const embed: EmbedConstructor = {
+            title: "Все доступные фильтры",
+            color: Colors.Yellow,
+            thumbnail: {
+                url: message.client.user.avatarURL()
+            },
+            timestamp: new Date()
+        };
+
+        //Преобразуем все команды в string
+        // @ts-ignore
+        Filters.ArraySort(5).forEach((s) => {
+            const parsedFilters = s.map((filter: typeof Filters[0]) => {
+                return `[${numFilter++}] Фильтр
+                    **❯ Названия:** ${filter.names ? `(${filter.names})` : `Нет`} 
+                    **❯ Описание:** ${filter.description ? `(${filter.description})` : `Нет`}
+                    **❯ Аргументы:** ${filter.args ? `(${filter.args})` : `Нет`}
+                    **❯ Модификатор скорости:** ${filter.speed ? `${filter.speed}` : `Нет`}
+                    -------- -------- -------- -------- -------- -------- --------
+                    `
+            }).join('\n\n');
+
+            //Если parsedCommand не undefined, то добавляем его в pages
+            if (parsedFilters !== undefined) pages.push(parsedFilters);
+        });
+        embed.description = pages[0];
+        embed.footer = {text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL()}
+
+        new ReactionMenu(embed, message, ReactionMenu.Callbacks(1, pages, embed));
+    };
 }

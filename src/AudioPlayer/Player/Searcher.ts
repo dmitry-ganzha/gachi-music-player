@@ -1,6 +1,7 @@
 import {ClientMessage} from "../../Handler/Events/Activity/Message";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {
+    FailRegisterPlatform,
     InputPlaylist,
     InputTrack,
     SearchPlatforms,
@@ -32,7 +33,10 @@ export namespace Handle {
         const {search, message, voiceChannel} = options;
         const type = toPlayerUtils.typeSong(search); //Тип запроса
         const platform = toPlayerUtils.PlatformSong(search, message); //Платформа с которой будем взаимодействовать
-        const parsedSearch = toPlayerUtils.findArg(search, platform, type);
+        const parsedSearch = toPlayerUtils.findArg(search, platform, type); //Правит ошибку с некоторыми ссылками
+
+        //Если нельзя получить данные с определенной платформы
+        if (FailRegisterPlatform.has(platform)) return message.client.sendMessage({ text: `${message.author}, я не могу взять данные с этой платформы **${platform}**. Причина: [**Authorization data not found**].`, message, color: "DarkRed", type: "css" });
 
         //Отправляем сообщение о поиске трека
         if (platform !== "DISCORD") message.client.sendMessage({ text: `Поиск 🔍 | ${parsedSearch}`, message, color: "Yellow", type: "css" });
@@ -143,7 +147,8 @@ namespace SearchSongMessage {
                     () => {
                         messageUtils.deleteMessage(msg, 1e3); //Удаляем сообщение
                         collector?.stop();
-                    }
+                    },
+                    30e3
                 );
 
                 //Что будет делать сборщик после нахождения числа

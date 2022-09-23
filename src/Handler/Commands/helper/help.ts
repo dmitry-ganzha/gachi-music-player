@@ -1,6 +1,6 @@
 import {Command} from "../../../Structures/Command";
 import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
-import {Colors, MessageReaction, User} from "discord.js";
+import {Colors} from "discord.js";
 import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
 
 export default class Help extends Command {
@@ -24,7 +24,7 @@ export default class Help extends Command {
         let {embed, pages} = this.#CreateEmbedMessage(message, List);
 
         //Запускаем CollectorSortReaction
-        new ReactionMenu(embed, message, this.#Callbacks(1, pages, embed));
+        new ReactionMenu(embed, message, ReactionMenu.Callbacks(1, pages, embed));
     };
     //====================== ====================== ====================== ======================
     /**
@@ -60,58 +60,5 @@ export default class Help extends Command {
         embed.footer = {text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL()}
 
         return { embed, pages };
-    };
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Функции для управления <CollectorSortReaction>
-     * @param page {number} С какой страницы начнем
-     * @param pages {Array<string>} страницы
-     * @param embed {EmbedConstructor} Json<Embed>
-     * @private
-     */
-    readonly #Callbacks = (page: number, pages: string[], embed: EmbedConstructor) => {
-        return {
-            //При нажатии на 1 эмодзи, будет выполнена эта функция
-            back: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
-                setImmediate(() => {
-                    users.remove(user).catch((err) => console.log(err));
-
-                    if (page === 1) return null;
-                    page--;
-                    embed = {...embed, description: pages[page - 1],
-                        footer: {
-                            ...embed.footer,
-                            text: `${message.author.username} | Лист ${page} из ${pages.length}`
-                        }
-                    };
-
-                    return msg.edit({embeds: [embed]});
-                });
-            },
-            //При нажатии на 2 эмодзи, будет выполнена эта функция
-            cancel: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
-                setImmediate(() => {
-                    [msg, message].forEach((mes) => mes.deletable ? mes.delete().catch(() => null) : null);
-                });
-            },
-            //При нажатии на 3 эмодзи, будет выполнена эта функция
-            next: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
-                setImmediate(() => {
-                    users.remove(user).catch((err) => console.log(err));
-
-                    if (page === pages.length) return null;
-                    page++;
-
-                    embed = {...embed, description: pages[page - 1],
-                        footer: {
-                            ...embed.footer,
-                            text: `${message.author.username} | Лист ${page} из ${pages.length}`
-                        }
-                    };
-
-                    return msg.edit({embeds: [embed]});
-                });
-            }
-        };
     };
 }

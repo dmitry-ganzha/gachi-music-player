@@ -1,42 +1,35 @@
 @Echo off
 
-cls
 :menu
+cls
 Echo Choice number
 Echo 1 - run Client
 Echo 2 - run ShardManager
 Echo 3 - Start build project
-Echo 4 - Start build project + watch mode
 Set /p choice="Num: "
 
 if "%choice%"=="1" goto Client
 if "%choice%"=="2" goto ShardManager
 if "%choice%"=="3" goto Builder
-if "%choice%"=="4" goto BuilderWatch
 goto Fail
 pause
 
 :Client
     echo running Client...
     cd build
-    node ./src/Core/Client/Client.js
-    pause
+    start node ./src/Core/Client/Client.js
+    goto menu
 
 :ShardManager
     echo running ShardManager...
   	cd build
-  	node ./src/Core/Client/ShardManager.js
-  	pause
+  	start node ./src/Core/Client/ShardManager.js
+  	goto menu
 
 :Builder
-  	echo staring build project...
-  	tsc -p ./tsconfig.json
-  	pause
-
-:BuilderWatch
 	echo staring build project in watch mode...
-    tsc --watch -p ./tsconfig.json
-    pause
+    start tsc --watch -p ./tsconfig.json
+    goto menu
 
 :Fail
     echo.

@@ -6,6 +6,7 @@ import {AudioFilters} from "./Queue";
 import {httpsClient} from "../../../Core/httpsClient";
 import {SoundCloud, Spotify, VK, YouTube} from "../../../Structures/Platforms";
 import {FFmpeg} from "../Media/FFmpeg";
+import {FileSystem} from "../../../Core/FileSystem";
 
 /*
 Для добавления своей платформы нужно добавить в {SupportPlatforms} и {PlatformReg}. Для получения названия платформы и данных с нее
@@ -14,13 +15,21 @@ import {FFmpeg} from "../Media/FFmpeg";
 Все для добавления своей поддержки разных платформ находится в этом файле
  */
 
+export const FailRegisterPlatform: Set<SupportPlatforms> = new Set();
+
+//Проверяем наличие данных авторизации
+(() => {
+    if (!FileSystem.env("SPOTIFY_ID") || !FileSystem.env("SPOTIFY_SECRET")) FailRegisterPlatform.add("SPOTIFY");
+    if (!FileSystem.env("VK_TOKEN")) FailRegisterPlatform.add("VK");
+})();
+
 //Все возможные запросы данных в JSON формате
 export const SupportPlatforms = {
     //YouTube
     "YOUTUBE": {
         "track": (search: string): Promise<InputTrack> => YouTube.getVideo(search) as Promise<InputTrack>,
         "playlist": (search: string): Promise<InputPlaylist> => YouTube.getPlaylist(search),
-        "search": (search: string): Promise<InputTrack[]> => YouTube.SearchVideos(search),
+        "search": (search: string): Promise<InputTrack[]> => YouTube.SearchVideos(search)
     },
     //Spotify
     "SPOTIFY": {
@@ -40,7 +49,7 @@ export const SupportPlatforms = {
     "VK": {
         "track": (search: string): Promise<InputTrack> => VK.getTrack(search),
         "playlist": (search: string): Promise<InputPlaylist> => VK.getPlaylist(search),
-        "search": (search: string): Promise<InputTrack[]> => VK.SearchTracks(search),
+        "search": (search: string): Promise<InputTrack[]> => VK.SearchTracks(search)
     },
     //Discord
     "DISCORD": {
@@ -58,7 +67,7 @@ export const SupportPlatforms = {
             };
         })
     }
-}
+};
 //Доступные платформы для поиска
 export const SearchPlatforms = {
     "yt": "YOUTUBE",
@@ -73,15 +82,15 @@ const ColorTrack = {
     "SOUNDCLOUD": 0xe67e22,
     "VK": 30719,
     "DISCORD": Colors.Grey
-}
+};
 //Reg для поиска платформы
 const PlatformReg = {
     youtube: /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi,
     spotify: /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi,
-    SoundCloud: /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/(.*)$/gi,
+    soundcloud: /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/(.*)$/gi,
     vk: /vk.com/gi,
     discord: /cdn.discordapp.com/gi
-}
+};
 
 //Поддерживаемые платформы
 export type SupportPlatforms = "YOUTUBE" | "SPOTIFY" | "VK" | "SOUNDCLOUD" | "DISCORD";
@@ -136,41 +145,23 @@ export class Song {
         this.resourceLink = track?.format?.url
     }
     //Название трека
-    public get title() {
-        return this.#title;
-    };
+    public get title() { return this.#title; };
     //Ссылка на трек
-    public get url() {
-        return this.#url;
-    };
+    public get url() { return this.#url; };
     //Автор трека
-    public get author() {
-        return this.#author;
-    };
+    public get author() { return this.#author; };
     //Время трека
-    public get duration() {
-        return this.#duration;
-    };
+    public get duration() { return this.#duration; };
     //Картинки трека
-    public get image() {
-        return this.#image;
-    };
+    public get image() { return this.#image; };
     //Пользователь включивший трек
-    public get requester() {
-        return this.#requester;
-    };
+    public get requester() { return this.#requester; };
     //Этот трек потоковый
-    public get isLive() {
-        return this.#isLive;
-    };
+    public get isLive() { return this.#isLive; };
     //Цвет трека
-    public get color() {
-        return this.#color;
-    };
+    public get color() { return this.#color; };
     //Тип трека
-    public get type() {
-        return this.#type;
-    };
+    public get type() { return this.#type; };
 
     //Получаем исходник трека
     public resource = (seek: number, filters: AudioFilters, req = 0): Promise<{url: string}> => new Promise(async (resolve) => {
@@ -187,6 +178,7 @@ export class Song {
     });
 }
 
+//Ищет исходный ресурс треков
 namespace SongFinder {
     //Получаем данные о треке заново
     export function findResource(song: Song): Promise<FFmpeg.FFmpegFormat> {
@@ -208,7 +200,7 @@ namespace SongFinder {
                 const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);
 
                 //Как надо фильтровать треки
-                return DurationSong === duration || DurationSong < duration + 10 && DurationSong > duration - 10;
+                return DurationSong === duration || DurationSong < duration + 7 && DurationSong > duration - 5;
             });
 
             //Если треков нет

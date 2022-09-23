@@ -1,17 +1,6 @@
-import JsonFFmpeg from "../../../../DataBase/FFmpeg.json";
 import {AudioFilters} from "../Queue/Queue";
 import {FFmpeg} from "./FFmpeg";
 import {opus} from "prism-media";
-
-//Сюда после запуска файла будут записаны статичные фильтры. Статичные фильтры - фильтры в которых модификатор скорости записан и его не может указать пользователь
-let FiltersStatic = {};
-
-//Загружаем статичные фильтры
-(() => {
-    Object.entries(JsonFFmpeg.FilterConfigurator).forEach(([key, object]) => {
-        if ("speedModification" in object) FiltersStatic = {...FiltersStatic, [key]: object.speedModification};
-    });
-})();
 
 //Все доступные типы декодирования аудио
 export namespace Decoder {
@@ -110,7 +99,7 @@ namespace ArgsHelper {
     }
     //====================== ====================== ====================== ======================
     /**
-     * @description Получаем множитель времени для правильного отображения. При добавлении новых аргументов в FFmpeg.json<FilterConfigurator>, их нужно тоже добавить сюда!
+     * @description Получаем множитель времени для правильного отображения. При добавлении новых аргументов в Filters.json<FilterConfigurator>, их нужно тоже добавить сюда!
      * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь
      */
     export function timeFrame(AudioFilters: AudioFilters) {
@@ -120,20 +109,13 @@ namespace ArgsHelper {
             //Если filter число, пропускаем!
             if (typeof filter === "number") return;
 
-            // @ts-ignore
-            const StaticFilter = FiltersStatic[filter];
+            const findFilter = FFmpeg.getFilter(filter);
 
-            //Проверяем есть ли такой модификатор
-            if (StaticFilter) {
-                //Если уже указан модификатор скорости
-                if (typeof StaticFilter === "number") {
-                    NumberDuration *= Number(StaticFilter);
-                } else { //Если модификатор надо указывать пользователю
-                    const Index = AudioFilters.indexOf(filter) + 1; //Позиция <filter> в AudioFilters
-                    const number = AudioFilters.slice(Index); //Получаем то что указал пользователь
+            if (findFilter && findFilter?.speed) {
+                const Index = AudioFilters.indexOf(filter) + 1; //Позиция <filter> в AudioFilters
+                const number = AudioFilters.slice(Index); //Получаем то что указал пользователь
 
-                    NumberDuration *= Number(number);
-                }
+                NumberDuration *= Number(number);
             }
         });
 
@@ -150,19 +132,16 @@ namespace ArgsHelper {
         //Более плавное включение музыки
         response.push("afade=t=in:st=0:d=1.5");
 
-        if (AudioFilters) AudioFilters.forEach((name: string | number) => {
-            if (typeof name === "number") return;
-            //@ts-ignore
-            const Filter = JsonFFmpeg.FilterConfigurator[name];
+        if (AudioFilters) AudioFilters.forEach((filter: string | number) => {
+            if (typeof filter === "number") return;
+
+            const Filter = FFmpeg.getFilter(filter);
 
             if (Filter) {
-                //Если у <Filter.value> указано false (Аргументы не нужны)
-                if (Filter.value === false) return response.push(Filter.arg);
+                if (!Filter.args) return response.push(Filter.filter);
 
-                //Получаем номер фильтра
-                const IndexFilter = AudioFilters.indexOf(name);
-                //Добавляем в response, фильтр + аргумент
-                response.push(`${Filter.arg}${AudioFilters.slice(IndexFilter + 1)[0]}`);
+                const indexFilter = AudioFilters.indexOf(filter);
+                response.push(`${Filter.filter}${AudioFilters.slice(indexFilter + 1)[0]}`)
             }
         });
 

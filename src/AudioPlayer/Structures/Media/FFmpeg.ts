@@ -1,13 +1,13 @@
-import {Duplex, Readable, Writable, DuplexOptions} from "stream";
+import {Duplex, DuplexOptions, Readable, Writable} from "stream";
 import {ChildProcessWithoutNullStreams, spawn, spawnSync} from "child_process";
-import JsonFFmpeg from "../../../../DataBase/FFmpeg.json";
+import AudioFilters from "../../../../DataBase/Filters.json";
 
 let FFmpegName: string, FFprobeName: string;
 /**
  * Проверяем есть ли FFmpeg в системе
  */
 function FFmpegCheck() {
-    for (let source of JsonFFmpeg.Names) {
+    for (let source of ["ffmpeg", "avconv", "./FFmpeg/ffmpeg", "./FFmpeg/avconv", "./node_modules/ffmpeg-static/ffmpeg"]) {
         try {
             const result = spawnSync(source, ["-h"], {windowsHide: true, shell: false});
             if (result.error) continue;
@@ -156,4 +156,15 @@ export namespace FFmpeg {
          */
         readonly #SpawnProbe = (Arguments: Array<string>) => spawn(FFprobeName, ["-print_format", "json", "-show_format", ...Arguments], { shell: false, windowsHide: true });
     }
+    export function getFilter(name: string): Filter {
+        return (AudioFilters as Filter[]).find((fn) => fn.names.includes(name));
+    }
+}
+
+interface Filter {
+    names: string[];
+    description: string;
+    filter: string;
+    args?: false | number[];
+    speed?: number;
 }
