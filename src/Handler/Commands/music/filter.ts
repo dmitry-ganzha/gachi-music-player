@@ -62,7 +62,7 @@ export default class Filter extends Command {
         const SendArg: {color: any, type: "css", message: ClientMessage} = {color: "Blue", type: "css", message};
 
 
-        if (FilterName === "all") return this.ReactionMenuFilters(Filters, message); //Показываем все доступные фильтры
+        if (FilterName === "all") return this.#ReactionMenuFilters(Filters, message); //Показываем все доступные фильтры
         else if (FilterName === "off") { //Выключаем все фильтры
             queue.filters.splice(0, queue.filters.length);
             this.#executeFilter(message);
@@ -78,7 +78,7 @@ export default class Filter extends Command {
                 ArrayFilters.push(Filter);
             });
 
-            return this.ReactionMenuFilters(ArrayFilters, message);
+            return this.#ReactionMenuFilters(ArrayFilters, message);
         }
 
         const Filter = FFmpeg.getFilter(FilterName);
@@ -130,8 +130,8 @@ export default class Filter extends Command {
 
     //Заставляем плеер перезапустить поток для применения фильтра
     readonly #executeFilter = (message: ClientMessage) => message.client.player.emit("filter", message);
-
-    readonly ReactionMenuFilters = (filters: typeof Filters, message: ClientMessage) => {
+    //Запускаем ReactionMenu
+    readonly #ReactionMenuFilters = (filters: typeof Filters, message: ClientMessage) => {
         let numFilter = 1;
         const pages: string[] = [];
         const embed: EmbedConstructor = {
@@ -143,20 +143,18 @@ export default class Filter extends Command {
             timestamp: new Date()
         };
 
-        //Преобразуем все команды в string
+        //Преобразуем все фильтры в string
         // @ts-ignore
-        Filters.ArraySort(5).forEach((s) => {
+        filters.ArraySort(5).forEach((s) => {
             const parsedFilters = s.map((filter: typeof Filters[0]) => {
                 return `[${numFilter++}] Фильтр
                     **❯ Названия:** ${filter.names ? `(${filter.names})` : `Нет`} 
                     **❯ Описание:** ${filter.description ? `(${filter.description})` : `Нет`}
                     **❯ Аргументы:** ${filter.args ? `(${filter.args})` : `Нет`}
-                    **❯ Модификатор скорости:** ${filter.speed ? `${filter.speed}` : `Нет`}
-                    -------- -------- -------- -------- -------- -------- --------
-                    `
+                    **❯ Модификатор скорости:** ${filter.speed ? `${filter.speed}` : `Нет`}`
             }).join('\n\n');
 
-            //Если parsedCommand не undefined, то добавляем его в pages
+            //Если parsedFilters не undefined, то добавляем его в pages
             if (parsedFilters !== undefined) pages.push(parsedFilters);
         });
         embed.description = pages[0];

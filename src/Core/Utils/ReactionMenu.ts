@@ -28,7 +28,7 @@ export class ReactionMenu {
                 const callback = (reaction: MessageReaction) => value(reaction, message.author, message, msg);
                 // @ts-ignore
                 const emoji = emojis[key];
-                return messageUtils.createReaction(msg, emoji, (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id, callback, 603);
+                return messageUtils.createReaction(msg, emoji, (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id, callback, 60e3);
             }));
         });
     };

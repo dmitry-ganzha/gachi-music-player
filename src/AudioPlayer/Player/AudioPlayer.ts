@@ -191,24 +191,23 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     //Выключаем голос бота на всех голосовых каналах
     readonly #signalStopSpeaking = (): void => this.#voices.forEach((connection) => connection.setSpeaking(false));
 }
-type PlayerState = PlayerStates["idle"] | PlayerStates["pause"] | PlayerStates["playing"] | PlayerStates["error"];
+type PlayerState = PlayerStateIdle | PlayerStatePause | PlayerStatePlaying | PlayerStateError;
 type PlayerResource = Decoder.All; //Все декодировщики доступные к чтению
 
-interface PlayerStates {
-    idle: { //Плеер ожидает
-        status: "idle";
-        stream?: PlayerResource;
-    };
-    pause: { //Плеер стоит на паузе
-        status: "paused" | "autoPaused";
-        stream?: PlayerResource;
-    };
-    playing: { //Плеер читает поток
-        status: "playing";
-        stream?: PlayerResource
-    };
-    error: { //Плеер выводит ошибку
-        status: "error";
-        stream?: PlayerResource
-    };
+
+interface PlayerStateIdle {
+    status: "idle";
+    stream?: PlayerResource;
+}
+interface PlayerStatePause {
+    status: "paused" | "autoPaused";
+    stream?: PlayerResource;
+}
+interface PlayerStatePlaying {
+    status: "playing";
+    stream?: PlayerResource
+}
+interface PlayerStateError {
+    status: "error";
+    stream?: PlayerResource
 }

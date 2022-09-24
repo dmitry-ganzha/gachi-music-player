@@ -18,6 +18,9 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
             const voice = getVoiceConnection(Guild.id);
             const usersSize = newState.channel?.members?.filter(member => this.#filter(member, ChannelID))?.size ?? 0;
 
+            //Нечего не делаем, если есть хоть один пользователь
+            if (usersSize > 0) return;
+
             //Если есть голосовое подключение и нет пользователей
             if (voice && usersSize === 0) Voice.Disconnect(Guild);
 

@@ -23,10 +23,13 @@ export namespace QueueManager {
             setImmediate(() => {
                 //Добавляем треки в очередь
                 info.items.forEach((track) => PushSong(queue, track, message.author, false));
+
+                queue.player.play(queue);
             });
-        } else PushSong(queue, info, message.author, queue.songs.length >= 1); //Добавляем трек в очередь
+            return
+        }
 
-
+        PushSong(queue, info, message.author, queue.songs.length >= 1); //Добавляем трек в очередь
         //Запускаем плеер, если очередь была создана, а не загружена!
         if (status === "create") queue.player.play(queue);
     }

@@ -14,7 +14,7 @@ export namespace messageUtils {
         return message.channel.createMessageCollector({ filter, max, time });
     }
     //Добавляем реакцию к сообщению + взаимодействие
-    export function createReaction(message: ClientMessage, emoji: string, filter: (reaction: MessageReaction, user: User) => boolean, callback: (reaction: MessageReaction) => any, time = 20e3): void {
+    export function createReaction(message: ClientMessage, emoji: string, filter: (reaction: MessageReaction, user: User) => boolean, callback: (reaction: MessageReaction) => any, time = 35e3): void {
         setTimeout(() => message?.deletable ? message?.delete().catch(() => undefined) : null, time);
 
         message.react(emoji).then(() => message.createReactionCollector({filter, time})

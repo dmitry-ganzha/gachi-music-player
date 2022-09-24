@@ -4,7 +4,7 @@ import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {Handle} from "../../../AudioPlayer/Player/Searcher";
 import {ClientMessage} from "../../Events/Activity/Message";
 
-export default class Play extends Command {
+export class Play extends Command {
     public constructor() {
         super({
             name: "play",
@@ -58,15 +58,7 @@ export default class Play extends Command {
             color: "DarkRed"
         });
 
-        try {
-            return Handle.toPlayer({message, voiceChannel: voiceMember.channel, search});
-        } catch (err) {
-            message.client.console(err.message);
-            return message.client.sendMessage({
-                text: `${message.author}, Произошла ошибка попробуй еще раз!`,
-                message,
-                color: "DarkRed"
-            });
-        }
+
+        return Handle.toPlayer({message, voiceChannel: voiceMember.channel, search});
     };
 }

@@ -29,7 +29,7 @@ export namespace Handle {
      * @description Ищем и передаем в плеер данные
      * @param options {Options} Параметры
      */
-    export function toPlayer(options: Options) {
+    export function toPlayer(options: Options): void {
         const {search, message, voiceChannel} = options;
         const type = toPlayerUtils.typeSong(search); //Тип запроса
         const platform = toPlayerUtils.PlatformSong(search, message); //Платформа с которой будем взаимодействовать
