@@ -3,7 +3,6 @@ import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {WatKLOK} from "../../../Core/Client/Client";
 import {Event} from "../../../Structures/Event";
 import {Voice} from "../../../AudioPlayer/Structures/Voice";
-import {getVoiceConnection} from "@discordjs/voice";
 import {Debug} from "../../../../DataBase/Config.json";
 
 export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
@@ -18,7 +17,7 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
         const filterBot = (member: GuildMember) => member.user.id === client.user.id;
 
         setImmediate(() => {
-            const voice = getVoiceConnection(Guild.id), isBotVoice = !!newState.channel?.members?.find(filterBot) ?? !!oldState.channel?.members?.find(filterBot);
+            const voice = Voice.getVoice(Guild.id), isBotVoice = !!newState.channel?.members?.find(filterBot) ?? !!oldState.channel?.members?.find(filterBot);
             const usersSize = newState.channel?.members?.filter(filter)?.size ?? oldState.channel?.members?.filter(filter)?.size;
 
             //Если есть голосовое подключение и нет пользователей

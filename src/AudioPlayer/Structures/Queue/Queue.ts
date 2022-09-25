@@ -19,7 +19,6 @@ export class Queue {
 
     //Фильтры
     public get filters() { return this.#filters; };
-    public set filters(filters) { this.#filters = filters; };
 
     //Все треки
     public get songs() { return this.#songs; };

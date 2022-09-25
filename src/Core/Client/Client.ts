@@ -6,7 +6,7 @@ import {Queue} from "../../AudioPlayer/Structures/Queue/Queue";
 import {messageUtils} from "../Utils/LiteUtils";
 import {Bot, Channels, Debug} from "../../../DataBase/Config.json";
 import {ClientMessage, ColorResolvable, EmbedConstructor, MessageChannel} from "../../Handler/Events/Activity/Message";
-import {getVoiceConnection} from "@discordjs/voice";
+import {Voice} from "../../AudioPlayer/Structures/Voice";
 
 type SendOptions = {
     text: string;
@@ -73,10 +73,10 @@ export class WatKLOK extends Client {
     };
     //Все пользователи в голосовом канале
     public readonly connections = (Guild: Guild): VoiceState[] | 404 => {
-        const Voice = getVoiceConnection(Guild.id), Users: VoiceState[] = [];
+        const connection = Voice.getVoice(Guild.id), Users: VoiceState[] = [];
 
-        if (Voice) Guild.voiceStates.cache.forEach((state: VoiceState): any => {
-            if (!(state.channelId === Voice.joinConfig.channelId && state.guild.id === Voice.joinConfig.guildId)) return;
+        if (connection) Guild.voiceStates.cache.forEach((state: VoiceState): any => {
+            if (!(state.channelId === connection.joinConfig.channelId && state.guild.id === connection.joinConfig.guildId)) return;
             Users.push(state);
         });
 

@@ -30,7 +30,7 @@ export namespace QueueManager {
         }
 
         PushSong(queue, info, message.author, queue.songs.length >= 1); //Добавляем трек в очередь
-        //Запускаем плеер, если очередь была создана, а не загружена!
+        //Запускаем callback плеера, если очередь была создана, а не загружена!
         if (status === "create") queue.player.play(queue);
     }
 }

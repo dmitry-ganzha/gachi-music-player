@@ -16,9 +16,7 @@ export namespace Decoder {
 
         return DecodeFFmpeg;
     }
-    /**
-     * С помощью FFmpeg конвертирует любой формат в opus
-     */
+    //С помощью FFmpeg конвертирует любой формат в opus
     export class All extends opus.OggDemuxer {
         readonly #FFmpeg: FFmpeg.FFmpeg;
         readonly #TimeFrame: number = 20;

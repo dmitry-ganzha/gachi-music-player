@@ -32,15 +32,13 @@ export namespace MessagePlayer {
         //Если уже есть сообщение то удаляем
         if (MessagesData.messages.get(message.channelId)) MessageUpdater.toRemove(message);
 
-        try {
-            setImmediate(() => {
-                const pushMessage = pushCurrentSongMessage(message);
-
-                if (pushMessage) pushMessage.then(MessageUpdater.toPush).catch(() => undefined);
-            });
-        } catch (err) {
-            message.client.console(`[MessagePlayer]: [function: toPlay]: ${err.message}`);
-        }
+        setImmediate(() => {
+            try {
+                pushCurrentSongMessage(message).then(MessageUpdater.toPush).catch(() => undefined);
+            } catch (err) {
+                message.client.console(`[MessagePlayer]: [function: toPlay]: ${err.message}`);
+            }
+        });
     }
     //====================== ====================== ====================== ======================
     /**
@@ -48,7 +46,6 @@ export namespace MessagePlayer {
      * @param queue {Queue} Очередь
      * @param song {Song} Трек
      * @param err {Error | string} Ошибка
-     * @requires {DeleteMessage}
      */
     export function toError(queue: Queue, song: Song, err: Error | string = null) {
         const {client, channel} = queue.message;
@@ -69,7 +66,6 @@ export namespace MessagePlayer {
      * @description Сообщение о добавлении трека в очередь сервера
      * @param queue {Queue} Очередь
      * @param song {Song} Трек
-     * @requires {DeleteMessage}
      */
     export function toPushSong(queue: Queue, song: Song) {
         const {client, channel} = queue.message;
@@ -90,7 +86,6 @@ export namespace MessagePlayer {
      * @description Отправляем сообщение о том что плейлист был добавлен в очередь
      * @param message {ClientMessage} Сообщение
      * @param playlist {InputPlaylist} Сам плейлист
-     * @requires {DeleteMessage}
      */
     export function toPushPlaylist(message: ClientMessage, playlist: InputPlaylist) {
         const {channel, client} = message;
@@ -218,7 +213,9 @@ namespace MessageUpdater {
         }
     }
     //====================== ====================== ====================== ======================
-    //Обновляем сообщения на текстовый каналах
+    /**
+     * @description Обновляем сообщения на текстовый каналах
+     */
     function StepCycleMessage() {
         try {
             setImmediate(() => MessagesData.messages.forEach(UpdateMessage));

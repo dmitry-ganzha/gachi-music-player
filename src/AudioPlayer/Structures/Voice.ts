@@ -1,5 +1,16 @@
-import {ChannelType, Guild, InternalDiscordGatewayAdapterCreator, StageChannel, VoiceChannel} from "discord.js";
-import {DiscordGatewayAdapterCreator, getVoiceConnection, joinVoiceChannel} from "@discordjs/voice";
+import {
+    ChannelType,
+    Guild,
+    InternalDiscordGatewayAdapterCreator,
+    StageChannel,
+    VoiceChannel
+} from "discord.js";
+import {
+    DiscordGatewayAdapterCreator,
+    getVoiceConnection,
+    getVoiceConnections,
+    joinVoiceChannel
+} from "@discordjs/voice";
 
 //Допустимые голосовые каналы
 type VoiceChannels = VoiceChannel | StageChannel;
@@ -35,9 +46,22 @@ export namespace Voice {
      * @param guild {VoiceChannels | string} ID канала или сам канал
      */
     export function Disconnect(guild: Guild | string) {
-        const VoiceConnection = getVoiceConnection(typeof guild === "string" ? guild : guild.id);
+        const VoiceConnection = getVoice(typeof guild === "string" ? guild : guild.id);
 
         //Если бот подключен к голосовому каналу, то отключаемся!
-        if (VoiceConnection) VoiceConnection.disconnect();
+        if (VoiceConnection) {
+            VoiceConnection.disconnect();
+
+            //Удаляем канал из базы @discordjs/voice
+            getVoiceConnections("default").delete(VoiceConnection.joinConfig.guildId);
+        }
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Получаем голосовое подключение
+     * @param guildID {string} ID сервера
+     */
+    export function getVoice(guildID: string) {
+        return getVoiceConnection(guildID);
     }
 }
