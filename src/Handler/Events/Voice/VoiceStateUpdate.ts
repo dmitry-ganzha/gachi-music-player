@@ -4,6 +4,7 @@ import {WatKLOK} from "../../../Core/Client/Client";
 import {Event} from "../../../Structures/Event";
 import {Voice} from "../../../AudioPlayer/Structures/Voice";
 import {getVoiceConnection} from "@discordjs/voice";
+import {Debug} from "../../../../DataBase/Config.json";
 
 export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
     public readonly name: string = "voiceStateUpdate";
@@ -14,23 +15,22 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
         const Guild = oldState.guild;
         const ChannelID = oldState?.channel?.id || newState?.channel?.id;
         const filter = (member: GuildMember) => this.#filter(member, ChannelID);
+        const filterBot = (member: GuildMember) => member.user.id === client.user.id;
 
         setImmediate(() => {
-            const voice = getVoiceConnection(Guild.id), isBotVoice = !!oldState.channel?.members?.find((member => member.user.id === client.user.id));
+            const voice = getVoiceConnection(Guild.id), isBotVoice = !!newState.channel?.members?.find(filterBot) ?? !!oldState.channel?.members?.find(filterBot);
             const usersSize = newState.channel?.members?.filter(filter)?.size ?? oldState.channel?.members?.filter(filter)?.size;
 
             //Если есть голосовое подключение и нет пользователей
-            if (isBotVoice && voice && usersSize < 1) Voice.Disconnect(Guild);
+            if (voice && usersSize < 1) Voice.Disconnect(Guild);
 
-            //Если нет очереди, то ничего не делаем
-            if (!queue) return;
+            //Если есть очередь
+            if (queue) {
+                if (usersSize < 1 || !isBotVoice) queue.TimeDestroying("start"); //Если есть очередь сервера, удаляем!
+                else if (usersSize > 0) queue.TimeDestroying("cancel"); //Если есть очередь сервера, отмена удаления!
+            }
 
-            //Бот не подключен к голосовому каналу
-            if (!isBotVoice) return queue.TimeDestroying("start");
-
-            //Если пользователей нет в голосовом канале
-            if (usersSize > 0) queue.TimeDestroying("cancel"); //Если есть очередь сервера, отмена удаления!
-            else if (usersSize < 1) queue.TimeDestroying("start"); //Если есть очередь сервера, удаляем!
+            if (Debug) client.console(`[Debug] -> [voiceStateUpdate]: [Voice: ${!!voice} | inVoice: ${isBotVoice} | Users: ${usersSize} | Queue: ${!!queue}]`);
         });
     };
     //Фильтруем пользователей в голосовом канале

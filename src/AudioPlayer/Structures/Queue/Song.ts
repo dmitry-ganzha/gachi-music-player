@@ -164,16 +164,16 @@ export class Song {
     public get type() { return this.#type; };
 
     //Получаем исходник трека
-    public resource = (seek: number, filters: AudioFilters, req = 0): Promise<{url: string}> => new Promise(async (resolve) => {
+    public resource = (seek: number, filters: AudioFilters, req = 0): Promise<string> => new Promise(async (resolve) => {
         if (req > 3) return resolve(null);
         const checkResource = await httpsClient.checkLink(this.resourceLink);
 
         if (!this.resourceLink) this.resourceLink = (await SongFinder.findResource(this))?.url;
 
-        if (checkResource === "OK") return resolve({ url: this.resourceLink });
+        if (checkResource === "OK") return resolve(this.resourceLink);
         else {
             req++;
-            setTimeout(() => resolve(this.resource(seek, filters, req)), 75);
+            return this.resource(seek, filters, req).then(resolve);
         }
     });
 }
@@ -200,7 +200,7 @@ namespace SongFinder {
                 const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);
 
                 //Как надо фильтровать треки
-                return DurationSong === duration || DurationSong < duration + 7 && DurationSong > duration - 5;
+                return DurationSong === duration || DurationSong < duration + 27 && DurationSong > duration - 5;
             });
 
             //Если треков нет

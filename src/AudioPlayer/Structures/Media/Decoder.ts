@@ -4,9 +4,9 @@ import {opus} from "prism-media";
 
 //Все доступные типы декодирования аудио
 export namespace Decoder {
-    export function createAudioResource(audio: {url: string}, seek: number = 0, filters: AudioFilters = []) {
+    export function createAudioResource(audio: string, seek: number = 0, filters: AudioFilters = []) {
         let params: { url: string, seek?: number, filters?: AudioFilters };
-        params = {url: audio.url, seek, filters};
+        params = {url: audio, seek, filters};
 
         const DecodeFFmpeg = new Decoder.All(params);
         //Удаляем поток следую Decoder.All<events>
