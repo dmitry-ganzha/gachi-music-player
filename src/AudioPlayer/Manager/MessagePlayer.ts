@@ -32,13 +32,7 @@ export namespace MessagePlayer {
         //Если уже есть сообщение то удаляем
         if (MessagesData.messages.get(message.channelId)) MessageUpdater.toRemove(message);
 
-        setImmediate(() => {
-            try {
-                pushCurrentSongMessage(message).then(MessageUpdater.toPush).catch(() => undefined);
-            } catch (err) {
-                message.client.console(`[MessagePlayer]: [function: toPlay]: ${err.message}`);
-            }
-        });
+        setImmediate(() => pushCurrentSongMessage(message).then(MessageUpdater.toPush).catch(() => undefined));
     }
     //====================== ====================== ====================== ======================
     /**
@@ -154,7 +148,7 @@ function CreateCollector(message: ClientMessage, queue: Queue) {
     //Создаем сборщик кнопок
     const collector = message.createMessageComponentCollector({
         filter: (i) => ButtonID.has(i.customId), //Фильтруем
-        componentType: ComponentType.Button, //Какие компоненты принимать
+        componentType: ComponentType.Button //Какие компоненты принимать
     });
 
     //Добавляем ему ивент сборки кнопок
@@ -220,7 +214,7 @@ namespace MessageUpdater {
         try {
             setImmediate(() => MessagesData.messages.forEach(UpdateMessage));
         } finally {
-            MessagesData.timer = setTimeout(StepCycleMessage, 12e3);
+            MessagesData.timer = setTimeout(StepCycleMessage, 15e3);
         }
     }
 }
