@@ -31,21 +31,6 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
             //Если пользователей нет в голосовом канале
             if (usersSize > 0) queue.TimeDestroying("cancel"); //Если есть очередь сервера, отмена удаления!
             else if (usersSize < 1) queue.TimeDestroying("start"); //Если есть очередь сервера, удаляем!
-
-            /*
-            //Если есть голосовое подключение и нет пользователей
-            if (voice && usersSize === 0) Voice.Disconnect(Guild);
-
-            //Если нет очереди, то ничего не делаем
-            if (!queue) return;
-
-            //Бот не подключен к голосовому каналу
-            if (!voice && usersSize > 0) return queue.TimeDestroying("start");
-
-            //Если пользователей нет в голосовом канале
-            if (usersSize > 0) queue.TimeDestroying("cancel"); //Если есть очередь сервера, отмена удаления!
-            else if (usersSize < 1) queue.TimeDestroying("start"); //Если есть очередь сервера, удаляем!
-             */
         });
     };
     //Фильтруем пользователей в голосовом канале
