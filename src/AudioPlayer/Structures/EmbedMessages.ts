@@ -218,8 +218,8 @@ namespace toPlayFunctions {
 
             return `${progressText}${Bar.button}${emptyText}`;
         } catch (err) {
-            if (err === "RangeError: Invalid count value") return "ProgressBar: Error value";
-            return `Loading...`;
+            if (err === "RangeError: Invalid count value") return "**❯** [Error value]";
+            return "**❯** [Loading]";
         }
     }
 }

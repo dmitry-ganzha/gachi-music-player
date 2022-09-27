@@ -17,21 +17,17 @@ export namespace QueueManager {
     export function toQueue(message: ClientMessage, VoiceChannel: VoiceChannel, info: InputTrack | InputPlaylist): void {
         const {queue, status} = CreateQueue(message, VoiceChannel);
 
-        //Если поступает плейлист
-        if ("items" in info) {
-            MessagePlayer.toPushPlaylist(message, info);
-            setImmediate(() => {
+        setImmediate(() => {
+            //Если поступает плейлист
+            if ("items" in info) {
+                MessagePlayer.toPushPlaylist(message, info);
                 //Добавляем треки в очередь
                 info.items.forEach((track) => PushSong(queue, track, message.author, false));
+            } else PushSong(queue, info, message.author, queue.songs.length >= 1); //Добавляем трек в очередь
 
-                queue.player.play(queue);
-            });
-            return
-        }
-
-        PushSong(queue, info, message.author, queue.songs.length >= 1); //Добавляем трек в очередь
-        //Запускаем callback плеера, если очередь была создана, а не загружена!
-        if (status === "create") queue.player.play(queue);
+            //Запускаем callback плеера, если очередь была создана, а не загружена!
+            if (status === "create") queue.player.play(queue);
+        });
     }
 }
 //====================== ====================== ====================== ======================

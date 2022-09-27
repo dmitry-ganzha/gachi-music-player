@@ -56,6 +56,8 @@ export namespace PlayerEventsCallBacks {
         //Выводим сообщение об ошибке
         MessagePlayer.toError(queue, queue.songs[0], err);
 
+        console.log(`\nFail load: ${queue.songs[0].resourceLink}\n`)
+
         setTimeout(() => {
             if (isSkipSong) {
                 queue.songs.shift();

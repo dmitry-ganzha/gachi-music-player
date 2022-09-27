@@ -121,7 +121,7 @@ export class Song {
     readonly #isLive: boolean;
     readonly #color: number;
     readonly #type: SupportPlatforms;
-    protected resourceLink: string;
+    public resourceLink: string;
 
     public constructor(track: InputTrack, author: ClientMessage["author"]) {
         const type = TypePlatform(track.url);

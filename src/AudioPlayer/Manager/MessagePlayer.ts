@@ -32,7 +32,11 @@ export namespace MessagePlayer {
         //Если уже есть сообщение то удаляем
         if (MessagesData.messages.get(message.channelId)) MessageUpdater.toRemove(message);
 
-        setImmediate(() => pushCurrentSongMessage(message).then(MessageUpdater.toPush).catch(() => undefined));
+        setImmediate(() => {
+            const msg = pushCurrentSongMessage(message);
+
+            if (msg) msg.then(MessageUpdater.toPush).catch((err) => console.log(err));
+        });
     }
     //====================== ====================== ====================== ======================
     /**

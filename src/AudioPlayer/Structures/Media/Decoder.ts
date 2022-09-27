@@ -5,10 +5,7 @@ import {opus} from "prism-media";
 //Все доступные типы декодирования аудио
 export namespace Decoder {
     export function createAudioResource(audio: string, seek: number = 0, filters: AudioFilters = []) {
-        let params: { url: string, seek?: number, filters?: AudioFilters };
-        params = {url: audio, seek, filters};
-
-        const DecodeFFmpeg = new Decoder.All(params);
+        const DecodeFFmpeg = new Decoder.All({url: audio, seek, filters});
         //Удаляем поток следую Decoder.All<events>
         ["close", "end", "error"].forEach((event: string) => DecodeFFmpeg.once(event, () => {
             [DecodeFFmpeg].forEach((clas) => typeof clas !== "string" && clas !== undefined ? clas.destroy() : null);
@@ -109,7 +106,8 @@ namespace ArgsHelper {
 
             const findFilter = FFmpeg.getFilter(filter);
 
-            if (findFilter && findFilter?.speed) {
+            if (findFilter && typeof findFilter?.speed === "number") NumberDuration *= Number(findFilter?.speed);
+            else {
                 const Index = AudioFilters.indexOf(filter) + 1; //Позиция <filter> в AudioFilters
                 const number = AudioFilters.slice(Index); //Получаем то что указал пользователь
 
