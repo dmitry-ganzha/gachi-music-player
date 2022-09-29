@@ -106,12 +106,14 @@ namespace ArgsHelper {
 
             const findFilter = FFmpeg.getFilter(filter);
 
-            if (findFilter && typeof findFilter?.speed === "number") NumberDuration *= Number(findFilter?.speed);
-            else {
-                const Index = AudioFilters.indexOf(filter) + 1; //Позиция <filter> в AudioFilters
-                const number = AudioFilters.slice(Index); //Получаем то что указал пользователь
+            if (findFilter?.speed) {
+                if (typeof findFilter.speed === "number") NumberDuration *= Number(findFilter.speed);
+                else {
+                    const Index = AudioFilters.indexOf(filter) + 1; //Позиция <filter> в AudioFilters
+                    const number = AudioFilters.slice(Index); //Получаем то что указал пользователь
 
-                NumberDuration *= Number(number);
+                    NumberDuration *= Number(number);
+                }
             }
         });
 

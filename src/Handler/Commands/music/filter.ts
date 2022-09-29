@@ -97,7 +97,7 @@ export default class Filter extends Command {
                     if (FilterArg >= Filter.args[0] && FilterArg <= Filter.args[1]) {
                         queue.filters[index + 1] = FilterArg;
 
-                        message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} аргумент изменен!`, ...SendArg});
+                        message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} был изменен аргумент на ${FilterArg}!`, ...SendArg});
                     //Если аргументы не подходят
                     } else return message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} не изменен из-за несоответствия аргументов!`, ...SendArg});
 
@@ -111,10 +111,10 @@ export default class Filter extends Command {
                 if (FilterArg && Filter.args) { //Если есть аргумент
 
                     //Добавляем с аргументом
-                    if (FilterArg > Filter.args[0] && FilterArg < Filter.args[1]) {
+                    if (FilterArg >= Filter.args[0] && FilterArg <= Filter.args[1]) {
                         queue.filters.push(Filter.names[0]);
                         queue.filters.push(FilterArg as any);
-                        message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} включен!`, ...SendArg});
+                        message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} был изменен аргумент на ${FilterArg}!`, ...SendArg});
                     //Если аргументы не подходят
                     } else return message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} не включен из-за несоответствия аргументов!`, ...SendArg});
                 } else { //Если нет аргумента
@@ -147,7 +147,7 @@ export default class Filter extends Command {
         // @ts-ignore
         filters.ArraySort(5).forEach((s) => {
             const parsedFilters = s.map((filter: typeof Filters[0]) => {
-                return `[${numFilter++}] Фильтр
+                return `Фильтр - [${numFilter++}]
                     **❯ Названия:** ${filter.names ? `(${filter.names})` : `Нет`} 
                     **❯ Описание:** ${filter.description ? `(${filter.description})` : `Нет`}
                     **❯ Аргументы:** ${filter.args ? `(${filter.args})` : `Нет`}

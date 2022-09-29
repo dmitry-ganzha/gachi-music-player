@@ -28,7 +28,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         return this.#voices;
     };
 
-    //Текущее время плеера в мс
+    //Текущее время плеера в секундах
     public get streamDuration() {
         return this.state.stream?.duration ?? 0;
     };
@@ -121,7 +121,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         Audio.then((url) => {
             if (!url) return this.emit("error", "[AudioPlayer]: Audio resource not found!", true);
 
-            return this.#readStream(Decoder.createAudioResource(url, seek, CurrentSong.isLive ? [] : queue.filters))
+            return this.readStream(Decoder.createAudioResource(url, seek, CurrentSong.isLive ? [] : queue.filters))
         });
         Audio.catch((err) => this.emit("error", `[AudioPlayer]: ${err}`, true));
 
@@ -167,7 +167,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
      * @description Читаем поток
      * @param stream {PlayerResource} Входящий поток для чтения
      */
-    readonly #readStream = (stream: PlayerResource): void => {
+    readonly readStream = (stream: PlayerResource): void => {
         if (stream.hasStarted) this.state = { status: "playing", stream };
         else {
             //Включаем поток когда можно будет начать читать

@@ -99,12 +99,15 @@ export type SupportType = "track" | "playlist" | "search" | "album";
 
 //Выдает платформу из ссылки
 export function TypePlatform(url: string): SupportPlatforms {
-    let keyPlatform: string = null;
+    try {
+        const filterPlatforms = Object.entries(PlatformReg).filter(([, value]) => url.match(value));
+        const [key] = filterPlatforms[0];
 
-    Object.entries(PlatformReg).forEach(([key, value]) => {
-        if (url.match(value)) keyPlatform = key;
-    });
-    return keyPlatform ? keyPlatform.toUpperCase() as SupportPlatforms : null;
+        if (key) return key.toUpperCase() as SupportPlatforms;
+        return "DISCORD"; //К этому типу привязан ffprobe
+    } catch (e) {
+        return "DISCORD"; //К этому типу привязан ffprobe
+    }
 }
 
 //Создаем трек для внутреннего использования

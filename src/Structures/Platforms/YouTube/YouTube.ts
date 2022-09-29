@@ -78,7 +78,7 @@ export namespace YouTube {
      */
     export async function getPlaylist(url: string): Promise<any> {
         return new Promise(async (resolve) => {
-            const playlistID = Utils.getID(url);
+            const playlistID = Utils.getID(url, true);
             const body = (await Promise.all([httpsClient.parseBody(`https://www.youtube.com/playlist?list=${playlistID}`, {
                 options: {userAgent: true, cookie: true}, request: {
                     headers: {
@@ -115,12 +115,12 @@ namespace Utils {
      * @description Получаем ID
      * @param url {string} Ссылка
      */
-    export function getID(url: string) {
+    export function getID(url: string, isPlaylist: boolean = false) {
         if (typeof url !== "string") return "Url is not string";
         const parsedLink = new URL(url);
 
-        if (parsedLink.searchParams.get("list")) return parsedLink.searchParams.get("list");
-        else if (parsedLink.searchParams.get("v")) return parsedLink.searchParams.get("v");
+        if (parsedLink.searchParams.get("list") && isPlaylist) return parsedLink.searchParams.get("list");
+        else if (parsedLink.searchParams.get("v") && !isPlaylist) return parsedLink.searchParams.get("v");
         return parsedLink.pathname.split("/")[1];
     }
     /**

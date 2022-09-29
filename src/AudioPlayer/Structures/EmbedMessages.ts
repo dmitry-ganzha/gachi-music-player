@@ -183,7 +183,7 @@ namespace toPlayFunctions {
      * @requires {ProgressBar}
      */
     function MusicDuration({isLive, duration}: Song, curTime: number | string): string {
-        if (isLive) return `[${duration.full}]`;
+        if (isLive || duration.full === "Live") return `[${duration.full}]`;
 
         const str = `${duration.full}]`;
         const parsedTimeSong = curTime >= duration.seconds ? duration.full : DurationUtils.ParsingTimeToString(curTime as number);

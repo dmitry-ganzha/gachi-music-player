@@ -41,10 +41,9 @@ function getClientID(): Promise<string> {
         const BodySplit = body.split("<script crossorigin src=\"");
         const urls: string[] = [];
         BodySplit.forEach((r) => {
-            if (r.startsWith("https")) {
-                urls.push(r.split("\"")[0]);
-            }
+            if (r.startsWith("https")) urls.push(r.split("\"")[0]);
         });
+
         const body2 = await httpsClient.parseBody(urls.pop());
         return resolve(body2.split(",client_id:\"")[1].split("\"")[0]);
     });
