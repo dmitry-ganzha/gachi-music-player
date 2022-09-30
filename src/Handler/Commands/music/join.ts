@@ -25,7 +25,7 @@ export default class Join extends Command {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         //Если пользователь не подключен к голосовым каналам
-        if (!message.member.voice.channel || !message.member.voice) return message.client.sendMessage({
+        if (!message.member?.voice?.channel || !message.member?.voice) return message.client.sendMessage({
             text: `${message.author}, Подключись к голосовому каналу!`,
             message,
             color: "DarkRed"

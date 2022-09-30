@@ -90,7 +90,10 @@ client.login(FileSystem.env("TOKEN")).then(() => {
     FileSystem.Load(client); //Включаем загрузчик файлов
 
     if (Bot.ignoreErrors) process.on("uncaughtException", (err: Error): void | Promise<ClientMessage> => {
-        if (err.message.match("undici")) return; //undici используется в discord.js, и выдает ошибки такие как (Connect Timeout Error)
+        //undici используется в discord.js, и выдает ошибки такие как (Connect Timeout Error)
+        if (err.message.match("undici")) return;
+        //Если выходит ошибка ETIMEDOUT
+        else if (err.message.match("connect ETIMEDOUT")) return console.log(`[Timeout connection]: ${err.message.split("ETIMEDOUT")[1]}`);
         //Если нет библиотеки sodium
         else if (err.message.match(/sodium/)) return console.log("[Discord Voice]: необходимо установить sodium.\nSodium libs: sodium-native, sodium, tweetnacl, libsodium-wrappers.")
 

@@ -25,16 +25,16 @@ export default class Loop extends Command {
     public readonly run = (message: ClientMessage, args: string[]): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
-        //Если есть очередь и пользователь не подключен к тому же голосовому каналу
-        if (queue && queue.voice && message.member.voice.channel.id !== queue.voice.id) return message.client.sendMessage({
-            text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
+        //Если пользователь не подключен к голосовым каналам
+        if (!message.member?.voice?.channel || !message.member?.voice) return message.client.sendMessage({
+            text: `${message.author}, Подключись к голосовому каналу!`,
             message,
             color: "DarkRed"
         });
 
-        //Если пользователь не подключен к голосовым каналам
-        if (!message.member.voice.channel || !message.member.voice) return message.client.sendMessage({
-            text: `${message.author}, Подключись к голосовому каналу!`,
+        //Если есть очередь и пользователь не подключен к тому же голосовому каналу
+        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return message.client.sendMessage({
+            text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
             message,
             color: "DarkRed"
         });
