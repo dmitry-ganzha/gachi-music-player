@@ -124,7 +124,7 @@ export class Song {
     readonly #isLive: boolean;
     readonly #color: number;
     readonly #type: SupportPlatforms;
-    public resourceLink: string;
+    #resLink: string;
 
     public constructor(track: InputTrack, author: ClientMessage["author"]) {
         const type = TypePlatform(track.url);
@@ -145,7 +145,7 @@ export class Song {
         this.#isLive = track.isLive;
         this.#color = ColorTrack[type];
         this.#type = type;
-        this.resourceLink = track?.format?.url
+        this.#resLink = track?.format?.url
     }
     //Название трека
     public get title() { return this.#title; };
@@ -165,15 +165,17 @@ export class Song {
     public get color() { return this.#color; };
     //Тип трека
     public get type() { return this.#type; };
+    private get link() { return this.#resLink; };
+    private set link(url: string) { this.#resLink = url; };
 
     //Получаем исходник трека
     public resource = (seek: number, filters: AudioFilters, req = 0): Promise<string> => new Promise(async (resolve) => {
         if (req > 10) return resolve(null);
-        const checkResource = await httpsClient.checkLink(this.resourceLink);
+        const checkResource = await httpsClient.checkLink(this.link);
 
-        if (!this.resourceLink) this.resourceLink = (await SongFinder.findResource(this))?.url;
+        if (!this.link) this.link = (await SongFinder.findResource(this))?.url;
 
-        if (checkResource === "OK") return resolve(this.resourceLink);
+        if (checkResource === "OK") return resolve(this.link);
         else {
             req++;
             return this.resource(seek, filters, req).then(resolve);

@@ -15,7 +15,7 @@ export class Play extends Command {
             options: [
                 {
                     name: "url-name-type",
-                    description: "Укажи что нужно, ссылку, название или тип поиска и название",
+                    description: "Укажи что нужно, ссылку, название или тип поиска!",
                     required: true,
                     type: ApplicationCommandOptionType.String
                 },
@@ -59,6 +59,15 @@ export class Play extends Command {
         });
 
 
-        return Handle.toPlayer({message, voiceChannel: voiceMember.channel, search});
+        try {
+            return Handle.toPlayer({message, voiceChannel: voiceMember.channel, search});
+        } catch (e) {
+            message.client.sendMessage({
+                text: `Произошла ошибка -> ${search}\n${e}`,
+                message,
+                color: "DarkRed",
+                type: "css"
+            });
+        }
     };
 }

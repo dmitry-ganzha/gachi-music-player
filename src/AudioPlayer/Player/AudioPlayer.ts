@@ -24,14 +24,10 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     readonly #voices: VoiceConnection[] = []; //Голосовые каналы
 
     //Все голосовые каналы к которым подключен плеер
-    public get voices() {
-        return this.#voices;
-    };
-
+    public get voices() { return this.#voices; };
     //Текущее время плеера в секундах
-    public get streamDuration() {
-        return this.state.stream?.duration ?? 0;
-    };
+    public get streamDuration() { return this.state.stream?.duration ?? 0; };
+    public get state(): PlayerState { return this.#state; };
 
     //Заменяет или выдает статистику плеера
     public set state(newState: PlayerState) {
@@ -61,9 +57,6 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
             this.#sendPackets(SilentFrame);
             this.emit(newState.status, oldState, newState);
         }
-    };
-    public get state(): PlayerState {
-        return this.#state;
     };
 
     //Ставим на паузу плеер

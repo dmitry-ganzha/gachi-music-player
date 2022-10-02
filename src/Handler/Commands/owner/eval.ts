@@ -16,6 +16,9 @@ export default class Eval extends Command {
     };
 
     public readonly run = (message: ClientMessage, args: string[]): void => {
+        const queue = message.client.queue.get(message.guild.id);
+        const client = message.client;
+
         const UserCode = args.join(" ");
         const StartMs = new Date().getMilliseconds();
 
