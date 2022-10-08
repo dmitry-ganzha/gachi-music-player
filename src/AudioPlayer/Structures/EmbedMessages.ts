@@ -20,10 +20,10 @@ const Bar = {
 
 //Вспомогательный элемент
 export namespace Images {
-    export const Verification = "https://cdn.discordapp.com/attachments/860113484493881365/986005795038715904/Ok.png";
-    export const NotVerification = "https://cdn.discordapp.com/attachments/860113484493881365/986005794849980486/Not.png";
-    export const NotFound = "https://cdn.discordapp.com/attachments/860113484493881365/986005794627670086/WTF.png";
-    export const NotImage = "https://cdn.discordapp.com/attachments/860113484493881365/940926476746883082/MusciNote.png";
+    export const Verification = "https://media.discordapp.net/attachments/815897363188154408/1028014390299082852/Ok.png";
+    export const NotVerification = "https://media.discordapp.net/attachments/815897363188154408/1028014389934174308/Not.png";
+    export const NotFound = "https://media.discordapp.net/attachments/815897363188154408/1028014390752055306/WTF.png";
+    export const NotImage = "https://media.discordapp.net/attachments/815897363188154408/1028014391146328124/MusciNote.png";
 }
 
 //Здесь хранятся все EMBED данные о сообщениях (Используется в MessagePlayer)

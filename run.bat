@@ -22,12 +22,12 @@ pause
 
 :ShardManager
     echo running ShardManager...
-  	cd build
-  	node ./src/Core/Client/ShardManager.js
-  	goto menu
+    cd build
+    node ./src/Core/Client/ShardManager.js
+    goto menu
 
 :Builder
-	echo staring build project in watch mode...
+    echo staring build project in watch mode...
     tsc --watch -p ./tsconfig.json
     goto menu
 

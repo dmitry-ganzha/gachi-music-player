@@ -66,7 +66,7 @@ export namespace PlayerController {
             //Если пользователю позволено убрать из очереди этот трек
             if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {
                 if (args === 1) toEnd(message);
-                else songs.splice(args - 1, 1);
+                songs.splice(args - 1, 1);
 
                 return client.sendMessage({text: `⏭️ | Remove song | ${title}`, message, type: "css", color});
             }

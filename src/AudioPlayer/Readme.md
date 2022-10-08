@@ -12,6 +12,6 @@
  - [Media](Structures/Media)
    - [FFmpeg, FFprobe](Structures/Media/FFmpeg.ts)
    - [Decoder](Structures/Media/Decoder.ts)
-   - ~~[OpusEncoder](Structures/Media/Opus.ts)~~
 
 - [Searcher](Player/Searcher.ts)
+- [Здесь можно добавить других платформ](Structures/SongSupport.ts)
