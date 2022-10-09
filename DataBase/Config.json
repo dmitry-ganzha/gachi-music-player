@@ -9,5 +9,5 @@
     "DiscordServer": "https://discord.gg/qMf2Sv3",
     "OwnerIDs": ["312909267327778818", "297456036544118785", "556860277552054272"]
   },
-  "CacheMusic": true
+  "CacheMusic": false
 }
