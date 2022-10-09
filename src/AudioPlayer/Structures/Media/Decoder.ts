@@ -1,14 +1,20 @@
 import {AudioFilters} from "../Queue/Queue";
 import {FFmpeg} from "./FFmpeg";
 import {opus} from "prism-media";
+import {Readable} from "stream";
+import fs from "fs";
 
 //Все доступные типы декодирования аудио
 export namespace Decoder {
     export function createAudioResource(audio: string, seek: number = 0, filters: AudioFilters = []) {
-        const DecodeFFmpeg = new Decoder.All({url: audio, seek, filters});
+        let url: any
+        if (audio.startsWith("http")) url = audio;
+        else if (audio.endsWith(".opus")) url = fs.createReadStream(audio);
+
+        const DecodeFFmpeg = new Decoder.All({url, seek, filters});
         //Удаляем поток следую Decoder.All<events>
         ["close", "end", "error"].forEach((event: string) => DecodeFFmpeg.once(event, () => {
-            [DecodeFFmpeg].forEach((clas) => typeof clas !== "string" && clas !== undefined ? clas.destroy() : null);
+            [DecodeFFmpeg, url].forEach((clas) => typeof clas !== "string" && clas !== undefined ? clas.destroy() : null);
         }));
 
         return DecodeFFmpeg;
@@ -28,9 +34,13 @@ export namespace Decoder {
          * @param parameters {Options}
          * @requires {ArgsHelper}
          */
-        public constructor(parameters: {url: string, seek?: number, filters?: AudioFilters}) {
+        public constructor(parameters: {url: string | Readable, seek?: number, filters?: AudioFilters}) {
             super({autoDestroy: false});
-            this.#FFmpeg = new FFmpeg.FFmpeg(ArgsHelper.createArgs(parameters.url, parameters?.filters, parameters?.seek));
+            if (typeof parameters.url === "string") this.#FFmpeg = new FFmpeg.FFmpeg(ArgsHelper.createArgs(parameters.url, parameters?.filters, parameters?.seek));
+            else {
+                this.#FFmpeg = new FFmpeg.FFmpeg(ArgsHelper.createArgs(null, parameters?.filters, parameters?.seek));
+                parameters.url.pipe(this.#FFmpeg);
+            }
             this.#FFmpeg.pipe(this); //Загружаем из FFmpeg'a в opus.OggDemuxer
 
             //Проверяем сколько времени длится пакет

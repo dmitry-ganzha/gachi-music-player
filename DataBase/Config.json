@@ -3,10 +3,15 @@
   "Channels": {
     "sendErrors": ""
   },
+  "language": {
+    "default": "rus",
+    "libs": ["rus", "eng"]
+  },
   "Bot": {
     "ignoreErrors": true,
     "prefix": "!",
     "DiscordServer": "https://discord.gg/qMf2Sv3",
     "OwnerIDs": ["312909267327778818", "297456036544118785", "556860277552054272"]
-  }
+  },
+  "CacheMusic": true
 }

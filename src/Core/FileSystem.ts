@@ -1,5 +1,5 @@
 import {Command} from "../Structures/Command";
-import {readdirSync} from "node:fs";
+import {readdirSync, existsSync, mkdirSync} from "node:fs";
 import {WatKLOK} from "./Client/Client";
 import {Module} from "../Structures/Module";
 import {Event} from "../Structures/Event";
@@ -69,6 +69,15 @@ export namespace FileSystem {
                 SendLog("Modules", dir, file);
             }
         });
+    }
+    export function createDirs(dir: string) {
+        const dirs = dir.split("/");
+        let currentDir = "";
+
+        for (let i in dirs) {
+            currentDir += `${dirs[i]}/`;
+            if (!existsSync(currentDir)) mkdirSync(currentDir);
+        }
     }
     export function env(name: string) {
         return process.env[name];

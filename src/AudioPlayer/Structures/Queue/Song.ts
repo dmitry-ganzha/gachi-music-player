@@ -5,6 +5,10 @@ import {AudioFilters} from "./Queue";
 import {httpsClient} from "../../../Core/httpsClient";
 import {FFmpeg} from "../Media/FFmpeg";
 import {ColorTrack, SongFinder, SupportPlatforms, TypePlatform} from "../SongSupport";
+import cfg from "../../../../DataBase/Config.json";
+import {DownloadManager} from "../../Manager/DownloadManager";
+
+const Download = DownloadManager.Download;
 
 //Создаем трек для внутреннего использования
 export class Song {
@@ -61,21 +65,28 @@ export class Song {
     public get color() { return this.#color; };
     //Тип трека
     public get type() { return this.#type; };
-    private get link() { return this.#resLink; };
-    private set link(url: string) { this.#resLink = url; };
+    public get link() { return this.#resLink; };
+    public set link(url: string) { this.#resLink = url; };
 
     //Получаем исходник трека
     public resource = (seek: number, filters: AudioFilters, req = 0): Promise<string> => new Promise(async (resolve) => {
         if (req > 10) return resolve(null);
+        if (cfg.CacheMusic) {
+            const isCache = Download(this);
+
+            if (isCache) return resolve(isCache as string);
+        }
         const checkResource = await httpsClient.checkLink(this.link);
 
         if (!this.link) this.link = (await SongFinder.findResource(this))?.url;
 
-        if (checkResource === "OK") return resolve(this.link);
-        else {
-            req++;
-            return this.resource(seek, filters, req).then(resolve);
+        if (checkResource === "OK") {
+            if (cfg.CacheMusic) Download(this, this.link);
+            return resolve(this.link);
         }
+
+        req++;
+        return this.resource(seek, filters, req).then(resolve);
     });
 }
 //Какие данные доступны в <song>.requester

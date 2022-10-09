@@ -67,7 +67,8 @@
         "ignoreErrors": true, //Игнорировать ошибки
         "prefix": "!", //Префикс
         "DiscordServer": "https://discord.gg/qMf2Sv3" //Твой дискорд сервер, можешь оставить мой)
-      }
+      },
+      "CacheMusic": false //Кешировать музыку? (Значительно ускоряет работу фильтров и seek, как уменьшает кол-во запросов на сервера)
     }
     ```
 3. [`Filters.json`](DataBase/Filters.json) | Можно добавлять свои фильтры в конфиг | [`FFmpeg Docs`](https://ffmpeg.org/ffmpeg.html)

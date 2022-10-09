@@ -25,7 +25,7 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
 
             //Если есть очередь
             if (queue) {
-                if (usersSize < 1 || !isBotVoice) queue.TimeDestroying("start"); //Если есть очередь сервера, удаляем!
+                if (usersSize < 1 && !isBotVoice) queue.TimeDestroying("start"); //Если есть очередь сервера, удаляем!
                 else if (usersSize > 0) queue.TimeDestroying("cancel"); //Если есть очередь сервера, отмена удаления!
             }
 

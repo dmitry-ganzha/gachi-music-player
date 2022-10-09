@@ -22,6 +22,14 @@ export namespace messageUtils {
     }
 }
 
+export namespace helpReplace {
+    export function replaceArray(text: string, srt: string[]) {
+        srt.forEach((str) => text.replaceAll(str, ""));
+
+        return text;
+    }
+}
+
 //Проверка прав (проверят права указанные в команде)
 export namespace UtilsPermissions {
     // Пользователь owner?

@@ -175,7 +175,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     //====================== ====================== ====================== ======================
     /**
      * @description Фильтрует голосовые и отправляет в них аудио пакеты
-     * @param paket {Buffer} Аудио пакет
+     * @param paket {} Аудио пакет
      */
     readonly #sendPackets = (paket: Buffer): void => {
         const VoiceChannels = this.#voices.filter((connection) => connection.state.status === "ready");

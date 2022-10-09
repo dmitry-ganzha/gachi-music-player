@@ -80,13 +80,13 @@
     "speed": "arg"
   },
   {
-    "names": ["bass"],
+    "names": ["bass", "bas"],
     "description": "Тоны низкой частоты, высоты тона и диапазона от 16 до 256 Гц",
     "filter": "bass=g=",
     "args": [1, 10]
   },
   {
-    "names": ["sub_bass"],
+    "names": ["sub_bass", "sbas"],
     "description": "Глубокие, низкочастотные тона",
     "filter": "asubboost",
     "args": false
