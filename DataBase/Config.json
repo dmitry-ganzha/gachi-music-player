@@ -3,10 +3,6 @@
   "Channels": {
     "sendErrors": ""
   },
-  "language": {
-    "default": "rus",
-    "libs": ["rus", "eng"]
-  },
   "Bot": {
     "ignoreErrors": true,
     "prefix": "!",

@@ -65,8 +65,8 @@ export class Song {
     public get color() { return this.#color; };
     //Тип трека
     public get type() { return this.#type; };
-    public get link() { return this.#resLink; };
-    public set link(url: string) { this.#resLink = url; };
+    private get link() { return this.#resLink; };
+    private set link(url: string) { this.#resLink = url; };
 
     //Получаем исходник трека
     public resource = (seek: number, filters: AudioFilters, req = 0): Promise<string> => new Promise(async (resolve) => {
