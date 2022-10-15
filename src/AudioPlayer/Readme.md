@@ -15,4 +15,4 @@
    - [Decoder](Structures/Media/Decoder.ts)
 
 - [Searcher](Player/Searcher.ts)
-- [Здесь можно добавить других платформ](Structures/SongSupport.ts)
+- [Здесь можно добавить другие платформы](Structures/SongSupport.ts)
