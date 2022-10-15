@@ -34,7 +34,7 @@ export namespace Spotify {
                 duration: {
                     seconds: (result.duration_ms / 1000).toFixed(0)
                 },
-                image: result.album.images[0],
+                image: result.album.images.pop(),
                 //PrevFile: result.preview_url
             });
         });

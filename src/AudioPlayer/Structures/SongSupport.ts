@@ -113,7 +113,7 @@ export namespace SongFinder {
     export function findResource(song: Song): Promise<FFmpeg.FFmpegFormat> {
         const {type, url, author, title, duration} = song;
 
-        if (type === "SPOTIFY") return FindTrack(`${author.title} - ${title}`, duration.seconds);
+        if (type === "SPOTIFY") return FindTrack(`${author.title} - ${title} (Lyrics)`, duration.seconds);
 
         // @ts-ignore
         const FindPlatform = SupportPlatforms[type];

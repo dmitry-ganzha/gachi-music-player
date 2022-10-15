@@ -1,5 +1,5 @@
 import {AudioPlayer} from "../Player/AudioPlayer";
-import {MessagePlayer} from "./MessagePlayer";
+import {MessagePlayer} from "./PlayerMessages";
 import {Queue} from "../Structures/Queue/Queue";
 
 const PlayerData = {

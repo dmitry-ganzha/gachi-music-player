@@ -1,13 +1,4 @@
-import {
-    ActionRow, ActionRowBuilder,
-    ChannelType,
-    DMChannel, EmbedData,
-    Message,
-    MessageEditOptions, BaseMessageOptions, MessagePayload,
-    NewsChannel,
-    PartialDMChannel,
-    TextChannel, ThreadChannel
-} from "discord.js";
+import { ActionRow, ActionRowBuilder, ChannelType, DMChannel, EmbedData, Message, MessageEditOptions, BaseMessageOptions, MessagePayload, NewsChannel, PartialDMChannel, TextChannel, ThreadChannel } from "discord.js";
 import {Bot} from '../../../../DataBase/Config.json';
 import {WatKLOK} from "../../../Core/Client/Client";
 import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
@@ -60,8 +51,7 @@ export class messageCreate extends Event<ClientMessage, null>{
     };
     //Получаем command<name>
     readonly #parsingMessageContent = (content: string) => {
-        const ArrayContent = content.split(" ");
-        return ArrayContent[0].slice(DefaultPrefix.length).toLowerCase();
+        return content.split(" ")[0]?.slice(DefaultPrefix.length)?.toLowerCase();
     };
 }
 

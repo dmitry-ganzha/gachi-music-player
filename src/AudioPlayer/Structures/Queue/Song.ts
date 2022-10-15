@@ -8,7 +8,7 @@ import {ColorTrack, SongFinder, SupportPlatforms, TypePlatform} from "../SongSup
 import cfg from "../../../../DataBase/Config.json";
 import {DownloadManager} from "../../Manager/DownloadManager";
 
-const Download = DownloadManager.Download;
+const Download = DownloadManager.downloadUrl;
 
 //Создаем трек для внутреннего использования
 export class Song {

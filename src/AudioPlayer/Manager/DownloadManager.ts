@@ -1,5 +1,5 @@
 import {Song} from "../Structures/Queue/Song";
-import {helpReplace} from "../../Core/Utils/LiteUtils";
+import {replacer} from "../../Core/Utils/LiteUtils";
 import {FileSystem} from "../../Core/FileSystem";
 import fs from "fs";
 import {httpsClient} from "../../Core/httpsClient";
@@ -11,11 +11,11 @@ export namespace DownloadManager {
      * @param url {string} Ссылка на ресурс
      * @constructor
      */
-    export function Download(song: Song, url?: string): boolean | string {
+    export function downloadUrl(song: Song, url?: string): boolean | string {
         if (song.duration.seconds >= 1000) return;
 
-        const SongTitle = helpReplace.replaceArray(song.title, ["|", ",", "<", ">", ":", "\\", "/", "*", "?"]);
-        const SongAuthor = helpReplace.replaceArray(song.author.title, ["|", ",", "<", ">", ":", "\\", "/", "*", "?"]);
+        const SongTitle = replacer.replaceArray(song.title, ["|", ",", "<", ">", ":", "\\", "/", "*", "?"]);
+        const SongAuthor = replacer.replaceArray(song.author.title, ["|", ",", "<", ">", ":", "\\", "/", "*", "?"]);
 
         const AudioDir = `AudioCache/[${SongAuthor}]`;
         FileSystem.createDirs(AudioDir);

@@ -7,28 +7,30 @@ import fs from "fs";
 //Все доступные типы декодирования аудио
 export namespace Decoder {
     export function createAudioResource(audio: string, seek: number = 0, filters: AudioFilters = []) {
-        let url: any
+        let url: string | Readable;
+
+        //Если входное значение ссылка
         if (audio.startsWith("http")) url = audio;
-        else if (audio.endsWith(".opus")) url = fs.createReadStream(audio);
+        //Если входное значение путь к файлу
+        else if (audio.endsWith("opus")) url = fs.createReadStream(audio);
 
-        const DecodeFFmpeg = new Decoder.All({url, seek, filters});
-        //Удаляем поток следую Decoder.All<events>
-        ["close", "end", "error"].forEach((event: string) => DecodeFFmpeg.once(event, () => {
-            [DecodeFFmpeg, url].forEach((clas) => typeof clas !== "string" && clas !== undefined ? clas.destroy() : null);
-        }));
+        //Запускаем FFmpeg
+        const decodingAudio = new OggOpus({url, seek, filters});
+        ["close", "end", "error"].forEach((event) => decodingAudio.once(event, () => [decodingAudio, url].forEach((clas) => typeof clas !== "string" && clas !== undefined ? clas.destroy() : null)));
 
-        return DecodeFFmpeg;
+        return decodingAudio;
     }
     //С помощью FFmpeg конвертирует любой формат в opus
-    export class All extends opus.OggDemuxer {
+    export class OggOpus extends opus.OggDemuxer {
         readonly #FFmpeg: FFmpeg.FFmpeg;
         readonly #TimeFrame: number = 20;
-        #started = false;
         #playbackDuration = 0;
+        #started = false;
 
         //Общее время проигрывание текущего ресурса
         public get duration() { return parseInt((this.#playbackDuration / 1000).toFixed(0)) };
-        public get hasStarted() { return this.#started; }; //Проверяем можно ли читать поток
+        //Проверяем можно ли читать поток
+        public get hasStarted() { return this.#started; };
         /**
          * @description Декодируем в opus
          * @param parameters {Options}

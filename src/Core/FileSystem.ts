@@ -1,12 +1,12 @@
 import {Command} from "../Structures/Command";
 import {readdirSync, existsSync, mkdirSync} from "node:fs";
-import {WatKLOK} from "./Client/Client";
 import {Module} from "../Structures/Module";
 import {Event} from "../Structures/Event";
+import {WatKLOK} from "./Client/Client";
 require("dotenv").config();
 
-type FileSystemSupport = Command | Event<any, any> | Module;
-type FileSystemCallback = { dir: string, file: string, reason: string };
+type TypeFileLoad = Command | Event<any, any> | Module;
+type FileCallback = (pull: TypeFileLoad, {}: {dir: string, file: string, reason: string}) => void;
 
 let FileBase = {
     Commands: [] as string[],
@@ -14,62 +14,7 @@ let FileBase = {
     Modules: [] as string[]
 };
 
-
 export namespace FileSystem {
-    export function Load(client: WatKLOK): void {
-        if (!client.ShardID && client.ShardID !== 0) {
-            console.clear(); //Чистим консоль
-
-            //Отправляем логи после загрузки всех системы
-            setImmediate(() => {
-                Object.entries(FileBase).forEach(([key, value]) => {
-                    const AllLogs = value.join("\n");
-                    console.log(`| FileSystem... Loaded [amount: ${value.length}, type: ${key}]\n${AllLogs}\n`);
-                });
-
-                //После вывода в консоль удаляем
-                delete FileBase.Commands;
-                delete FileBase.Events;
-                delete FileBase.Modules;
-                //
-
-                console.log("\nProcess logs:");
-            });
-        }
-
-        //Загружаем команды
-        new MultiFileSystem({
-            path: "Handler/Commands",
-            callback: (pull: Command, {file, reason, dir}) => {
-                if (reason) return SendLog("Commands", dir, file, reason);
-                else if (!pull.name) return SendLog("Commands", dir, file, "Parameter name has undefined");
-
-                client.commands.set(pull.name, pull);
-                SendLog("Commands", dir, file);
-            }
-        });
-        //Загружаем ивенты
-        new MultiFileSystem({
-            path: "Handler/Events",
-            callback: (pull: Event<any, any>, {file, reason, dir}) => {
-                if (reason) return SendLog("Events", dir, file, reason);
-                else if (!pull.name) return SendLog("Events", dir, file, "Parameter name has undefined");
-
-                client.on(pull.name, (ev: any, ev2: any) => pull.run(ev, ev2, client));
-                SendLog("Events", dir, file);
-            }
-        });
-        //Загружаем модули
-        new MultiFileSystem({
-            path: "Handler/Modules",
-            callback: (pull: Module, {file, reason, dir}) => {
-                if (reason) return SendLog("Modules", dir, file, reason);
-
-                pull.run(client);
-                SendLog("Modules", dir, file);
-            }
-        });
-    }
     export function createDirs(dir: string) {
         const dirs = dir.split("/");
         let currentDir = "";
@@ -85,7 +30,7 @@ export namespace FileSystem {
 }
 
 //Добавляем лог в Array базу
-function SendLog(type: "Commands" | "Events" | "Modules", dir: string, file: string, reason?: string) {
+function log(type: "Commands" | "Events" | "Modules", dir: string, file: string, reason?: string) {
     const Status = `Status: [${reason ? "🟥" : "🟩"}]`;
     const File = `File: [src/Handler/${type}/${dir}/${file}]`;
     let EndStr = `${Status} | ${File}`;
@@ -95,11 +40,50 @@ function SendLog(type: "Commands" | "Events" | "Modules", dir: string, file: str
     return FileBase[type].push(EndStr);
 }
 
-class MultiFileSystem {
-    private readonly path: string;
-    private readonly callback: (pull: FileSystemSupport, option: FileSystemCallback) => void;
+//Загружаем файлы
+export function LoadFiles(client: WatKLOK) {
+    //Откуда берем для загрузки файлы
+    const loadPath = ["Handler/Commands", "Handler/Events", "Handler/Modules"];
+    const loadCallbacks: FileCallback[] = [ //Каким способом их обработать
+        (pull: Command, {file, reason, dir}) => {
+            if (reason) return log("Commands", dir, file, reason);
+            else if (!pull.name) return log("Commands", dir, file, "Parameter name has undefined");
 
-    public constructor(options: {path: string, callback: (pull: FileSystemSupport, option: FileSystemCallback) => void}) {
+            client.commands.set(pull.name, pull);
+            log("Commands", dir, file);
+        },
+        (pull: Event<any, any>, {file, reason, dir}) => {
+            if (reason) return log("Events", dir, file, reason);
+            else if (!pull.name) return log("Events", dir, file, "Parameter name has undefined");
+
+            client.on(pull.name, (ev: any, ev2: any) => pull.run(ev, ev2, client));
+            log("Events", dir, file);
+        },
+        (pull: Module, {file, reason, dir}) => {
+            if (reason) return log("Modules", dir, file, reason);
+
+            pull.run(client);
+            log("Modules", dir, file);
+        }
+    ];
+
+    //Загружаем путь, а затем действие
+    loadPath.forEach((path, index) => {
+        new FileLoader({path, callback: loadCallbacks[index]});
+
+        setImmediate(() => {
+            if (!client.ShardID || client.ShardID !== 0) Object.entries(FileBase).forEach(([key, value]) =>
+                console.log(`| FileSystem... Loaded [amount: ${value.length}, type: ${key}]\n${value.join("\n")}\n`));
+            //После вывода в консоль удаляем
+            Object.entries(FileBase).forEach(([key, ]) => delete FileBase[key as "Commands" | "Events" | "Modules"]);
+        });
+    });
+}
+class FileLoader {
+    private readonly path: string;
+    private readonly callback: FileCallback;
+
+    public constructor(options: {path: string, callback: FileCallback}) {
         this.path = options.path;
         this.callback = options.callback;
 
@@ -124,10 +108,7 @@ class MultiFileSystem {
                 else if (!pull.run) reason = "Function run has not found";
 
                 //Если при загрузке произошла ошибка
-                if (pull instanceof Error) {
-                    reason = pull.message;
-                }
-
+                if (pull instanceof Error) reason = pull.message;
                 if ("type" in pull) pull.type = dir; //Если есть type в pull
 
                 this.callback(pull, {dir, file, reason}); //Отправляем данные в callback
@@ -136,7 +117,7 @@ class MultiFileSystem {
     };
 
     //Загружаем export
-    private readonly findExport = async (path: string): Promise<null | FileSystemSupport> => {
+    private readonly findExport = async (path: string): Promise<null | any> => {
         const importFile = (await import(path));
         const keysFile = Object.keys(importFile);
 

@@ -1,5 +1,5 @@
 import {ActivityType, Client, IntentsBitField, VoiceState, Guild, Colors} from "discord.js";
-import {FileSystem} from "../FileSystem";
+import {FileSystem, LoadFiles} from "../FileSystem";
 import {PlayerEmitter} from "../../AudioPlayer/execute";
 import {Command} from "../../Structures/Command";
 import {Queue} from "../../AudioPlayer/Structures/Queue/Queue";
@@ -7,6 +7,8 @@ import {messageUtils} from "../Utils/LiteUtils";
 import {Bot, Channels, Debug} from "../../../DataBase/Config.json";
 import {ClientMessage, ColorResolvable, EmbedConstructor, MessageChannel} from "../../Handler/Events/Activity/Message";
 import {Voice} from "../../AudioPlayer/Structures/Voice";
+import {Module} from "../../Structures/Module";
+import {Event} from "../../Structures/Event";
 
 type SendOptions = {
     text: string;
@@ -45,6 +47,8 @@ export class WatKLOK extends Client {
                 }]
             }
         });
+        //Включаем режим отладки
+        if (Debug) this.on("debug", null);
     };
     //Отправить не полное embed сообщение
     public readonly sendMessage = ({color, text, type, message}: SendOptions) => {
@@ -82,28 +86,28 @@ export class WatKLOK extends Client {
 
         return Users.length > 0 ? Users : 404;
     };
+    //Включаем бота
+    public login(token: string = FileSystem.env("TOKEN")): Promise<string> {
+        LoadFiles(this);
+
+        if (Bot.ignoreErrors) process.on("uncaughtException", (err: Error): void => {
+            //undici используется в discord.js, и выдает ошибки такие как (Connect Timeout Error)
+            if (err.message.match("undici")) return;
+            //Если выходит ошибка ETIMEDOUT
+            else if (err.message.match("connect ETIMEDOUT")) return console.log(`[Timeout connection]: ${err.message.split("ETIMEDOUT")[1]}`);
+            //Если нет библиотеки sodium
+            else if (err.message.match(/sodium/)) return console.log("[Discord Voice]: необходимо установить sodium.\nSodium libs: sodium-native, sodium, tweetnacl, libsodium-wrappers.")
+
+            console.log(`[IgnoreError]:`, err);
+            try {
+                const channel = this.channels.cache.get(Channels.sendErrors) as MessageChannel;
+                if (channel) channel.send(`${err.toString()}`).catch(console.log);
+                return null;
+            } catch {/* Continue */}
+        });
+
+        return super.login(token);
+    };
 }
 
-const client = new WatKLOK();
-
-client.login(FileSystem.env("TOKEN")).then(() => {
-    FileSystem.Load(client); //Включаем загрузчик файлов
-
-    if (Bot.ignoreErrors) process.on("uncaughtException", (err: Error): void | Promise<ClientMessage> => {
-        //undici используется в discord.js, и выдает ошибки такие как (Connect Timeout Error)
-        if (err.message.match("undici")) return;
-        //Если выходит ошибка ETIMEDOUT
-        else if (err.message.match("connect ETIMEDOUT")) return console.log(`[Timeout connection]: ${err.message.split("ETIMEDOUT")[1]}`);
-        //Если нет библиотеки sodium
-        else if (err.message.match(/sodium/)) return console.log("[Discord Voice]: необходимо установить sodium.\nSodium libs: sodium-native, sodium, tweetnacl, libsodium-wrappers.")
-
-        console.log(`[IgnoreError]:`, err);
-        try {
-            const channel = client.channels.cache.get(Channels.sendErrors) as MessageChannel;
-            if (channel) return channel.send(`${err.toString()}`);
-            return null;
-        } catch {/* Continue */}
-    });
-
-    if (Debug) client.on("debug", null);
-});
+new WatKLOK().login();

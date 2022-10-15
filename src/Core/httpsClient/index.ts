@@ -31,9 +31,7 @@ export namespace httpsClient {
             };
             const httpsRequest = request(Options, (res) => {
                 //Автоматическое перенаправление
-                if (res.statusCode >= 300 && res.statusCode < 400) {
-                    if (res.headers?.location) return resolve(Request(res.headers.location, options));
-                }
+                if ((res.statusCode >= 300 && res.statusCode < 400) && res.headers?.location) return resolve(Request(res.headers.location, options));
                 //Обновляем куки
                 if (options?.options?.cookie && res.headers && res.headers["set-cookie"]) setImmediate(() => {
                     uploadCookie(res.headers["set-cookie"]);

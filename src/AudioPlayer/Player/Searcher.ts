@@ -4,6 +4,8 @@ import {InputPlaylist, InputTrack} from "../Structures/Queue/Song";
 import {messageUtils} from "../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../Manager/DurationUtils";
 import {FailRegisterPlatform, SearchPlatforms, SupportPlatforms, SupportType, TypePlatform} from "../Structures/SongSupport";
+import {CacheMusic} from "../../../DataBase/Config.json";
+import {DownloadManager} from "../Manager/DownloadManager";
 
 //Данные которые необходимо передать для поиска
 interface Options {
@@ -18,6 +20,8 @@ const UrlSrt = /^(https?:\/\/)/gi;
 const emoji = "❌";
 
 export namespace Handle {
+    import Download = DownloadManager.downloadUrl;
+
     /**
      * @description Ищем и передаем в плеер данные
      * @param options {Options} Параметры
@@ -49,7 +53,13 @@ export namespace Handle {
             if (data instanceof Array) return SearchSongMessage.toSend(data, data.length, {...options, platform, type});
 
             //Сообщаем что трек был найден
-            if (type !== "playlist") message.client.sendMessage({ text: `Найден 🔍 | ${type} | ${data.title}`, message, color: "Yellow", type: "css" });
+            if (type !== "playlist") {
+                let text = `Найден 🔍 | ${type} | ${data.title}`;
+                //Если включено кеширование треков сообщаем есть ли трек
+                if (CacheMusic) text += ` | Кеш: ${Download(data as any) ? "Есть" : "Нет"}`;
+
+                message.client.sendMessage({ text, message, color: "Yellow", type: "css" });
+            }
 
             //Загружаем трек или плейлист в GuildQueue
             return message.client.player.emit("play", message, voiceChannel, data);

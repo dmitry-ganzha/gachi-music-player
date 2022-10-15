@@ -22,7 +22,7 @@ export namespace messageUtils {
     }
 }
 
-export namespace helpReplace {
+export namespace replacer {
     export function replaceArray(text: string, srt: string[]) {
         srt.forEach((str) => text.replaceAll(str, ""));
 
@@ -32,12 +32,11 @@ export namespace helpReplace {
 
 //Проверка прав (проверят права указанные в команде)
 export namespace UtilsPermissions {
-    // Пользователь owner?
-    export function isOwner(isOwner: Command['isOwner'], AuthorID: string) {
-        if (isOwner) return !Bot.OwnerIDs.includes(AuthorID);
-        return false;
+    //Пользователь owner?
+    export function isOwner(isOwner: boolean, AuthorID: string) {
+        return isOwner && !Bot.OwnerIDs.includes(AuthorID);
     }
-    // У пользователя есть ограничения?
+    //У пользователя есть ограничения?
     export function isPermissions(permissions: Command['permissions'], message: ClientMessage): boolean {
         if (permissions.client?.length > 0 || permissions.user?.length > 0) {
             const {client, user} = _parsePermissions(permissions, message);

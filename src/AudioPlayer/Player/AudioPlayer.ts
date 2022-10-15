@@ -185,7 +185,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     readonly #signalStopSpeaking = (): void => this.#voices.forEach((connection) => connection.setSpeaking(false));
 }
 type PlayerState = PlayerStateIdle | PlayerStatePause | PlayerStatePlaying | PlayerStateError;
-type PlayerResource = Decoder.All; //Все декодировщики доступные к чтению
+type PlayerResource = Decoder.OggOpus; //Все декодировщики доступные к чтению
 
 
 interface PlayerStateIdle {
