@@ -19,14 +19,9 @@ export default class Stop extends Command {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         //Если есть очередь то
-        if (queue) {
-            Voice.Disconnect(message.guild.id);
-            queue.cleanup(true);
-            return;
-        }
+        if (queue) return queue.cleanup(true);
 
         try {
-            Voice.Disconnect(message.guild.id);
             return message.client.sendMessage({text: `${message.author}, 👌`, message: message});
         } catch { //Если что-то пошло не так
             return message.client.sendMessage({text: `${message.author}, 🤔`, message: message});

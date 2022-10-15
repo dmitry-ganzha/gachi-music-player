@@ -18,6 +18,7 @@ export namespace PlayerController {
         const {player, songs}: Queue = client.queue.get(guild.id);
         const {title, color}: Song = songs[0];
 
+        //Продолжаем воспроизведение музыки если она на паузе
         if (player.state.status === "paused") {
             player.resume();
             return client.sendMessage({text: `▶️ | Resume song | ${title}`, message, type: "css", color});
@@ -34,6 +35,7 @@ export namespace PlayerController {
         const {player, songs}: Queue = client.queue.get(guild.id);
         const {title, color}: Song = songs[0];
 
+        //Приостанавливаем музыку если она играет
         if (player.state.status === "playing") {
             player.pause();
             return client.sendMessage({text: `⏸ | Pause song | ${title}`, message, type: "css", color});
@@ -56,7 +58,7 @@ export namespace PlayerController {
             const voiceConnection: VoiceState[] = client.connections(guild) as VoiceState[];
             const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === songs[0].requester.id);
 
-            //Если музыка не играет
+            //Если музыку нельзя пропустить из-за плеера
             if (!StatusPlayerHasSkipped.has(player.state.status)) return client.sendMessage({
                 text: `${author}, ⚠ Музыка еще не играет!`,
                 message,
@@ -88,6 +90,7 @@ export namespace PlayerController {
         const player = queue.player;
         const {title, color}: Song = queue.songs[0];
 
+        //Отправляем сообщение о пропуске времени
         try {
             client.sendMessage({text: `⏭️ | Seeking to [${ParsingTimeToString(seek)}] song | ${title}`, message, type: "css", color});
             return player.play(queue, seek);
@@ -113,7 +116,7 @@ export namespace PlayerController {
             const voiceConnection: VoiceState[] = client.connections(guild) as VoiceState[];
             const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === requester.id);
 
-            //Если музыка не играет
+            //Если музыку нельзя пропустить из-за плеера
             if (!StatusPlayerHasSkipped.has(player.state.status)) return client.sendMessage({
                 text: `${author}, ⚠ Музыка еще не играет!`,
                 message,
@@ -143,6 +146,7 @@ export namespace PlayerController {
         const player = queue.player;
         const {title, color}: Song = queue.songs[0];
 
+        //Сообщаем о том что музыка начата с начала
         try {
             client.sendMessage({text: `🔂 | Replay | ${title}`, message, color, type: "css"});
             return player.play(queue);
@@ -184,7 +188,7 @@ function toSkipNumber(message: ClientMessage, args: number): void {
         const voiceConnection: VoiceState[] = client.connections(guild) as VoiceState[];
         const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === queue.songs[0].requester.id);
 
-        //Если музыка не играет
+        //Если музыку нельзя пропустить из-за плеера
         if (!StatusPlayerHasSkipped.has(queue.player.state.status)) return client.sendMessage({
             text: `${author}, ⚠ Музыка еще не играет!`,
             message,

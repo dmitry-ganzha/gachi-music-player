@@ -7,8 +7,6 @@ import {messageUtils} from "../Utils/LiteUtils";
 import {Bot, Channels, Debug} from "../../../DataBase/Config.json";
 import {ClientMessage, ColorResolvable, EmbedConstructor, MessageChannel} from "../../Handler/Events/Activity/Message";
 import {Voice} from "../../AudioPlayer/Structures/Voice";
-import {Module} from "../../Structures/Module";
-import {Event} from "../../Structures/Event";
 
 type SendOptions = {
     text: string;
@@ -42,7 +40,7 @@ export class WatKLOK extends Client {
             },
             presence: {
                 activities: [{
-                    name: "music on youtube, spotify, soundcloud, vk",
+                    name: "музыку в youtube, spotify, soundcloud, vk",
                     type: ActivityType.Listening
                 }]
             }
