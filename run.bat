@@ -1,17 +1,16 @@
 @Echo off
 
 :menu
-cls
 Echo Choice number
 Echo 1 - run Client
 Echo 2 - run ShardManager
 Echo 3 - Start build project
-Set /p choice="Num: "
+Set /p choice="Enter number: "
 
-if "%choice%"=="1" goto Client
-if "%choice%"=="2" goto ShardManager
-if "%choice%"=="3" goto Builder
-goto Fail
+if choice == 1 goto Client
+if choice == 2 goto ShardManager
+if choice == 3 goto Builder
+if choice gtr 3 goto Fail
 pause
 
 :Client
@@ -32,7 +31,6 @@ pause
     goto menu
 
 :Fail
-    echo.
-    echo Error: %choice% is not 1-4
-    echo.
+    cls
+    echo Error: %choice% is not 1-3
     goto menu
