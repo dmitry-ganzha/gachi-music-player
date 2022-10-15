@@ -5,11 +5,11 @@ Echo Choice number
 Echo 1 - run Client
 Echo 2 - run ShardManager
 Echo 3 - Start build project
-Set /p choice="Enter number: "
+Set /p choice="Number: "
 
-if choice == 1 goto Client
-if choice == 2 goto ShardManager
-if choice == 3 goto Builder
+if "%choice%"=="1" goto Client
+if "%choice%"=="2" goto ShardManager
+if "%choice%"=="3" goto Builder
 if choice gtr 3 goto Fail
 pause
 
