@@ -56,7 +56,7 @@ export namespace Handle {
             if (type !== "playlist") {
                 let text = `Найден 🔍 | ${type} | ${data.title}`;
                 //Если включено кеширование треков сообщаем есть ли трек
-                if (CacheMusic) text += ` | Кеш: ${Download(data as any) ? "Есть" : "Нет"}`;
+                if (CacheMusic) text += ` | Кеш: ${Download(data as any) ? "Есть" : "Нету"}`;
 
                 message.client.sendMessage({ text, message, color: "Yellow", type: "css" });
             }
