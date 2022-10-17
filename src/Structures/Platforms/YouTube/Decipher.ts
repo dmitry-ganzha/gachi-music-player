@@ -1,4 +1,4 @@
-import { URL, URLSearchParams } from 'node:url';
+import {URL, URLSearchParams} from 'node:url';
 import {httpsClient} from "../../../Core/httpsClient";
 
 export interface YouTubeFormat {
@@ -85,6 +85,7 @@ export namespace Decipher {
         return formats;
     }
 }
+
 /**
  * @description Проводим некоторые манипуляции с signature
  * @param tokens {string[]}
@@ -116,6 +117,7 @@ function DecodeSignature(tokens: string[], signature: string) {
     });
     return sig.join("");
 }
+
 function swapPositions(array: string[], position: number) {
     const first = array[0];
     array[0] = array[position];
@@ -147,15 +149,20 @@ function parseTokens(page: string): string[] {
         (() => {
             const key = result[1] || result[2] || result[3];
             switch (key) {
-                case keys[3]: return tokens.push(`sw${result[4]}`);
-                case keys[0]: return tokens.push('rv');
-                case keys[1]: return tokens.push(`sl${result[4]}`);
-                case keys[2]: return tokens.push(`sp${result[4]}`);
+                case keys[3]:
+                    return tokens.push(`sw${result[4]}`);
+                case keys[0]:
+                    return tokens.push('rv');
+                case keys[1]:
+                    return tokens.push(`sl${result[4]}`);
+                case keys[2]:
+                    return tokens.push(`sp${result[4]}`);
             }
         })();
     }
     return tokens;
 }
+
 /**
  * @description Уменьшаем кол-во кода
  * @param res {RegExpExecArray}

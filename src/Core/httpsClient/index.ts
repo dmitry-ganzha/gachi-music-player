@@ -51,6 +51,7 @@ export namespace httpsClient {
             httpsRequest.end();
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем страницу в формате string
@@ -77,6 +78,7 @@ export namespace httpsClient {
             return runDecode(res.pipe(decoder));
         }));
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем со страницы JSON (Работает только тогда когда все страница JSON)
@@ -96,6 +98,7 @@ export namespace httpsClient {
             }
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Проверяем ссылку на работоспособность
@@ -112,11 +115,12 @@ export namespace httpsClient {
         });
     }
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Получаем рандомный user-agent и его версию
  */
-function GetUserAgent(): {Agent: string, Version: string} {
+function GetUserAgent(): { Agent: string, Version: string } {
     const MinAgents = Math.ceil(0);
     const MaxAgents = Math.floor(UserAgents.length - 1);
 
@@ -125,8 +129,9 @@ function GetUserAgent(): {Agent: string, Version: string} {
     //Версия агента
     const Version = Agent?.split("Chrome/")[1]?.split(" ")[0];
 
-    return { Agent, Version };
+    return {Agent, Version};
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Добавляем свои аргументы запроса
@@ -147,13 +152,16 @@ function ChangeReqOptions(options: httpsClientOptions): void {
     //Добавляем куки
     if (options.options?.cookie && Cookie) options.request.headers = {...options.request.headers, "cookie": Cookie};
 }
+
 //====================== ====================== ====================== ======================
 type Decoder = BrotliDecompress | Gunzip | Deflate;
+
 // @ts-ignore
 interface ReqOptions extends RequestOptions {
     path?: string,
     body?: string
 }
+
 export interface httpsClientOptions {
     request?: ReqOptions;
     options?: {

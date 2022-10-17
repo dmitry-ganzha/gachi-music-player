@@ -1,14 +1,14 @@
 import {Command} from "../../../Structures/Command";
 import os from 'node:os';
 import pak from "../../../../package.json";
-import {EmbedConstructor} from "../../Events/Activity/Message";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
 import {messageUtils} from "../../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
-import ParsingTimeToString = DurationUtils.ParsingTimeToString;
-import {ClientMessage} from "../../Events/Activity/Message";
 import {Colors} from "discord.js";
+import ParsingTimeToString = DurationUtils.ParsingTimeToString;
 
 const core = os.cpus()[0];
+
 interface OptionsEmbed {
     queue: number;
     channels: number;
@@ -31,7 +31,8 @@ export default class Info extends Command {
     public readonly run = async (message: ClientMessage): Promise<void> => {
         //Если запущен ShardManager
         if (message.client.shard) {
-            let queue = message.client.queue.size, guilds = message.client.guilds.cache.size, channels = message.client.channels.cache.size;
+            let queue = message.client.queue.size, guilds = message.client.guilds.cache.size,
+                channels = message.client.channels.cache.size;
             try {
                 message.client.shard.fetchClientValues("channels.cache.size").then((numbers) => this.#AutoConverter(numbers, channels));
                 message.client.shard.fetchClientValues("guilds.cache.size").then((numbers) => this.#AutoConverter(numbers, guilds));
@@ -68,7 +69,7 @@ export default class Info extends Command {
                 },
                 {
                     name: "Статистика",
-                    value: `\`\`\`css\n• Platform   => ${process.platform}\n• Node       => ${process.version}\n\n• Servers    => ${options?.guilds ?? message.client.guilds.cache.size}\n• Channels   => ${options?.channels ??message.client.channels.cache.size}\n\`\`\`\n`
+                    value: `\`\`\`css\n• Platform   => ${process.platform}\n• Node       => ${process.version}\n\n• Servers    => ${options?.guilds ?? message.client.guilds.cache.size}\n• Channels   => ${options?.channels ?? message.client.channels.cache.size}\n\`\`\`\n`
                 },
                 {
                     name: "Музыка",

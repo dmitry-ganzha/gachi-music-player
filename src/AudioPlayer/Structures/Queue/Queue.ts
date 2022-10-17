@@ -4,39 +4,20 @@ import {Song} from "./Song";
 import {ClientMessage} from "../../../Handler/Events/Activity/Message";
 import {PlayerEventsCallBacks} from "../../Manager/PlayerManager";
 import {VoiceConnection} from "@discordjs/voice";
+import {MessagePlayer} from "../../Manager/PlayerMessages";
+import {Decoder} from "../Media/Decoder";
 
 export type LoopType = "song" | "songs" | "off";
 export type AudioFilters = Array<string> | Array<string | number>;
 
 //Музыкальная очередь
 export class Queue {
-    //Голосовой канал
-    public get voice() { return this.#channels.voice; };
-    public set voice(voiceChannel) { this.#channels.voice = voiceChannel; };
-    //Сообщение
-    public get message() { return this.#channels.message; };
-    public set message(message) { this.#channels.message = message; };
-
-    //Фильтры
-    public get filters() { return this.#filters; };
-
-    //Все треки
-    public get songs() { return this.#songs; };
-
-    //Данные плеера
-    public get player() { return this.#player; };
-    //Настройки
-    public get options() { return this.#options; };
-    //Голосовой канал этой очереди
-    public get connection(): VoiceConnection { return this.player.voices.find((voice) => voice.joinConfig.channelId === this.voice.id); };
-
     #Timer: NodeJS.Timeout = null; //Таймер для авто удаления очереди
     #hasDestroying: boolean = false; //Статус удаления (запущено ли удаление)
-
     readonly #songs: Array<Song> = []; //Все треки находятся здесь
     readonly #player: AudioPlayer = new AudioPlayer(); //Сам плеер
-    //Каналы (message: TextChannel, voice: VoiceChannel, connection: VoiceConnection)
-    readonly #channels: { message: ClientMessage, voice: VoiceChannel | StageChannel};
+    //Каналы (message: TextChannel, voice: VoiceChannel)
+    readonly #channels: { message: ClientMessage, voice: VoiceChannel | StageChannel };
     readonly #options: { random: boolean, loop: LoopType, stop: boolean } = { //Уникальные настройки
         random: false, //Рандомные треки (каждый раз в плеере будет играть разная музыка из очереди)
         loop: "off", //Тип повтора (off, song, songs)
@@ -46,21 +27,48 @@ export class Queue {
 
     //Создаем очередь
     public constructor(message: ClientMessage, voice: VoiceChannel) {
-        this.#channels = { message, voice };
+        this.#channels = {message, voice};
 
         this.player.on("idle", () => PlayerEventsCallBacks.onIdlePlayer(this));
-        this.player.on("StartPlaying", (seek) => PlayerEventsCallBacks.onStartPlaying(this, seek));
         this.player.on("error", (err, isSkip) => PlayerEventsCallBacks.onErrorPlayer(err, this, isSkip));
     };
 
+    //Голосовой канал
+    public get voice() { return this.#channels.voice; };
+    public set voice(voiceChannel) { this.#channels.voice = voiceChannel; };
+
+    //Сообщение
+    public get message() { return this.#channels.message; };
+    public set message(message) { this.#channels.message = message; };
+
+    //Фильтры
+    public get filters() { return this.#filters; };
+
+    //Все треки
+    public get songs() { return this.#songs; };
+    //Текущий трек
+    public get song(): Song { return this.songs[0]; };
+
+    //Данные плеера
+    public get player() { return this.#player; };
+
+    //Настройки
+    public get options() { return this.#options; };
+
+    //Голосовой канал этой очереди
+    public get connection(): VoiceConnection { return this.player.voices.find((voice) => voice.joinConfig.channelId === this.voice.id); };
+
+    //Сервер для которого создана очередь
+    public get guild() { return this.message.guild; };
+
     /**
      * @description Меняет местами треки
-     * @param customNum {number} Если есть номер для замены
+     * @param num {number} Если есть номер для замены
      */
-    public readonly swapSongs = (customNum?: number) => {
+    public readonly swapSongs = (num?: number) => {
         if (this.songs.length === 1) return this.player.stop();
 
-        const SetNum = customNum ? customNum : this.songs.length - 1;
+        const SetNum = num ? num : this.songs.length - 1;
         const ArraySongs: Array<Song> = this.songs;
         const hasChange = ArraySongs[SetNum];
 
@@ -69,7 +77,6 @@ export class Queue {
         this.player.stop();
         return;
     };
-
     //Удаление очереди
     public readonly cleanup = (sendDelQueue: boolean = true) => {
         const message = this.message
@@ -78,13 +85,17 @@ export class Queue {
         //Удаляем сообщение о текущем треке
         if (message?.deletable) message?.delete().catch(() => undefined);
 
+        //Если плеер еще не удален
         if (this.player) {
+            //Удаляем голосовое подключение из плеера
             if (this.connection) this.player.unsubscribe({connection: this.connection});
 
             this.player.stop();
         }
 
         clearTimeout(this.#Timer);
+
+        //Если надо отправить сообщение об удалении очереди
         if (sendDelQueue && client.queue.get(guild.id)) {
             if (this.options.stop) client.sendMessage({text: "🎵 | Музыка была выключена", message, type: "css"});
             else client.sendMessage({text: "🎵 | Музыка закончилась", message, type: "css"});
@@ -109,6 +120,31 @@ export class Queue {
             clearTimeout(this.#Timer);
             player.resume();
             this.#hasDestroying = false;
+        }
+    };
+    //Добавляем трек в очередь
+    public readonly push = (song: Song, sendMessage: boolean = false): void => {
+        if (sendMessage) MessagePlayer.toPushSong(this, song);
+
+        this.songs.push(song);
+    };
+    //Включаем первый трек из очереди
+    public readonly play = (seek: number = 0) => {
+        if (!this.song) return this.cleanup();
+
+        const link = this.song.resource(seek);
+
+        link.then((url: string) => {
+            if (!url) return this.player.emit("error", "[AudioPlayer]: Audio resource not found!", true);
+            const streamingData = Decoder.createAudioResource(url, seek, this.song.isLive ? [] : this.filters);
+
+            return this.player.readStream(streamingData);
+        });
+        link.catch((err) => this.player.emit("error", `[AudioPlayer]: ${err}`, true));
+
+        if (!seek) {
+            this.message.client.console(`[GuildID: ${this.guild.id}]: ${this.song.title}`); //Отправляем лог о текущем треке
+            MessagePlayer.toPlay(this.message); //Если стрим не пустышка отправляем сообщение
         }
     };
 }

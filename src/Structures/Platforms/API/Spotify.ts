@@ -39,13 +39,14 @@ export namespace Spotify {
             });
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description получаем данные о плейлисте + треки
      * @param url {string} Ссылка на плейлист
      * @param options {limit: number} Настройки
      */
-    export function getPlaylist(url: string, options: {limit: number} = {limit: 101}): Promise<InputPlaylist | null> {
+    export function getPlaylist(url: string, options: { limit: number } = {limit: 101}): Promise<InputPlaylist | null> {
         return new Promise<InputPlaylist | null>(async (resolve) => {
             try {
                 const id = getID(url);
@@ -76,13 +77,14 @@ export namespace Spotify {
             }
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем данные на альбом + треки
      * @param url {string} Ссылка на альбом
      * @param options {limit: number} Настройки
      */
-    export function getAlbum(url: string, options: {limit: number} = {limit: 101}): Promise<InputPlaylist | null> {
+    export function getAlbum(url: string, options: { limit: number } = {limit: 101}): Promise<InputPlaylist | null> {
         return new Promise<InputPlaylist | null>(async (resolve) => {
             try {
                 const id = getID(url);
@@ -114,13 +116,14 @@ export namespace Spotify {
             }
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Ищем треки в базах spotify
      * @param search {string} Что ищем
      * @param options {limit: number} Настройки поиска
      */
-    export function SearchTracks(search: string, options: {limit: number} = {limit: 15}): Promise<InputTrack[] | null> {
+    export function SearchTracks(search: string, options: { limit: number } = {limit: 15}): Promise<InputTrack[] | null> {
         return new Promise<InputTrack[] | null>(async (resolve) => {
             try {
                 const result = (await Promise.all([RequestSpotify(`search?q=${search}&type=track&limit=${options.limit}`)]))[0] as SearchTracks & FailResult;
@@ -152,6 +155,7 @@ export namespace Spotify {
         });
     }
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Получаем токен
@@ -173,6 +177,7 @@ function getToken(): Promise<void> {
         SpotifyRes.Token = result.access_token;
     });
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Создаем запрос к SPOTIFY API и обновляем токен
@@ -193,6 +198,7 @@ function RequestSpotify(method: string): Promise<SpotifyRes> {
         }).then(resolve);
     });
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Получаем данные об авторе или пользователе
@@ -238,11 +244,18 @@ function getID(url: string): string {
 
 type SpotifyType = "track" | "playlist" | "album" | "artist" | "user";
 type AlbumType = "single";
-type SpotifyRes = SpotifyPlaylist & FailResult | SpotifyTrack & FailResult | SpotifyArtist & FailResult | SpotifyUser & FailResult | SpotifyAlbumFull & FailResult | SearchTracks & FailResult;
+type SpotifyRes =
+    SpotifyPlaylist & FailResult
+    | SpotifyTrack & FailResult
+    | SpotifyArtist & FailResult
+    | SpotifyUser & FailResult
+    | SpotifyAlbumFull & FailResult
+    | SearchTracks & FailResult;
 
 interface FailResult {
     error: boolean
 }
+
 /*   interface global   */
 interface SpotifyTrack {
     album: SpotifyAlbum,
@@ -265,6 +278,7 @@ interface SpotifyTrack {
     type: SpotifyType,
     uri: string
 }
+
 interface AlbumImage {
     height: number,
     url: string,
@@ -351,6 +365,7 @@ interface SpotifyAlbumFull {
     uri: string
 
 }
+
 interface SpotifyAlbum {
     album_type: AlbumType,
     artists: SpotifyArtist[],

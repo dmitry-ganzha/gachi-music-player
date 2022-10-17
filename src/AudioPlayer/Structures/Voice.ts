@@ -1,5 +1,10 @@
-import { ChannelType, Guild, InternalDiscordGatewayAdapterCreator, StageChannel, VoiceChannel } from "discord.js";
-import { DiscordGatewayAdapterCreator, getVoiceConnection, getVoiceConnections, joinVoiceChannel } from "@discordjs/voice";
+import {ChannelType, Guild, InternalDiscordGatewayAdapterCreator, StageChannel, VoiceChannel} from "discord.js";
+import {
+    DiscordGatewayAdapterCreator,
+    getVoiceConnection,
+    getVoiceConnections,
+    joinVoiceChannel
+} from "@discordjs/voice";
 
 //Допустимые голосовые каналы
 type VoiceChannels = VoiceChannel | StageChannel;
@@ -29,6 +34,7 @@ export namespace Voice {
 
         return JoinVoice;
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Отключаемся от канала
@@ -45,6 +51,7 @@ export namespace Voice {
             getVoiceConnections("default").delete(VoiceConnection.joinConfig.guildId);
         }
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем голосовое подключение

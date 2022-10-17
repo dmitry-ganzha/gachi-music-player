@@ -3,6 +3,7 @@ import {ChildProcessWithoutNullStreams, spawn, spawnSync} from "child_process";
 import AudioFilters from "../../../../DataBase/Filters.json";
 
 let FFmpegName: string, FFprobeName: string;
+
 /**
  * Проверяем есть ли FFmpeg в системе
  */
@@ -12,10 +13,12 @@ function FFmpegCheck() {
             const result = spawnSync(source, ["-h"], {windowsHide: true, shell: false});
             if (result.error) continue;
             return FFmpegName = source;
-        } catch {/* Nothing */}
+        } catch {/* Nothing */
+        }
     }
     return Error("FFmpeg not found!");
 }
+
 /**
  * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a и для <FFprobeName> задаем название для FFprobe, если они будут найдены!
  */
@@ -25,10 +28,12 @@ function FFprobeCheck() {
             const result = spawnSync(source, ["-h"], {windowsHide: true, shell: false});
             if (result.error) continue;
             return FFprobeName = source;
-        } catch {/* Nothing */}
+        } catch {/* Nothing */
+        }
     }
     return new Error("FFprobe not found!");
 }
+
 if (FFprobeName === undefined) Promise.all([FFprobeCheck()]).catch();
 if (FFmpegName === undefined) Promise.all([FFmpegCheck()]).catch();
 
@@ -36,7 +41,8 @@ if (FFmpegName === undefined) Promise.all([FFmpegCheck()]).catch();
 export namespace FFmpeg {
     export type Arguments = Array<string | number> | Array<string>;
     //FFmpeg формат для воспроизведения
-    export type FFmpegFormat = {url: string}
+    export type FFmpegFormat = { url: string }
+
     /**
      * ffmpeg is a very fast video and audio converter that can also grab from a live audio/video source. It can also convert between arbitrary sample rates and resize video on the fly with a high quality polyphase filter.
      * ffmpeg reads from an arbitrary number of input "files" (which can be regular files, pipes, network streams, grabbing devices, etc.), specified by the -i option, and writes to an arbitrary number of output "files", which are specified by a plain output url. Anything found on the command line which cannot be interpreted as an option is considered to be an output url.
@@ -64,36 +70,11 @@ export namespace FFmpeg {
         };
 
         get stdout() { return this.#process.stdout; };
-        get stdin() { return this.#process.stdin; };
-        //get stderr() { return this.#process.stderr; };
-        //====================== ====================== ====================== ======================
-        /**
-         * @description Создаем "привязанные функции" (ПФ - термин из ECMAScript 6)
-         * @param methods {string[]}
-         * @param target {Readable | Writable}
-         */
-        // @ts-ignore
-        readonly #Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
-        readonly #Calling = (methods: string[]) => {
-            const EVENTS = {
-                readable: this.stdout,
-                data: this.stdout,
-                end: this.stdout,
-                unpipe: this.stdout,
-                finish: this.stdin,
-                close: this.stdin,
-                drain: this.stdin,
-            };
 
-            // @ts-ignore
-            methods.forEach((method) => this[method] = (ev, fn) => EVENTS[ev] ? EVENTS[ev][method](ev, fn) : Duplex.prototype[method].call(this, ev, fn));
-        };
-        //====================== ====================== ====================== ======================
-        /**
-         * @description Запускаем FFmpeg
-         * @param Arguments {Arguments} Указываем аргументы для запуска
-         */
-        readonly #SpawnFFmpeg = (Arguments: Arguments): any => spawn(FFmpegName, [...Arguments, "pipe:1"] as any, { shell: false, windowsHide: true });
+        get stdin() { return this.#process.stdin; };
+
+        //get stderr() { return this.#process.stderr; };
+
         //====================== ====================== ====================== ======================
         /**
          * @description Удаляем все что не нужно
@@ -108,7 +89,42 @@ export namespace FFmpeg {
 
             if (error) return console.error(error);
         };
+
+        //====================== ====================== ====================== ======================
+        /**
+         * @description Создаем "привязанные функции" (ПФ - термин из ECMAScript 6)
+         * @param methods {string[]}
+         * @param target {Readable | Writable}
+         */
+            // @ts-ignore
+        readonly #Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
+
+        readonly #Calling = (methods: string[]) => {
+            const EVENTS = {
+                readable: this.stdout,
+                data: this.stdout,
+                end: this.stdout,
+                unpipe: this.stdout,
+                finish: this.stdin,
+                close: this.stdin,
+                drain: this.stdin,
+            };
+
+            // @ts-ignore
+            methods.forEach((method) => this[method] = (ev, fn) => EVENTS[ev] ? EVENTS[ev][method](ev, fn) : Duplex.prototype[method].call(this, ev, fn));
+        };
+
+        //====================== ====================== ====================== ======================
+        /**
+         * @description Запускаем FFmpeg
+         * @param Arguments {Arguments} Указываем аргументы для запуска
+         */
+        readonly #SpawnFFmpeg = (Arguments: Arguments): any => spawn(FFmpegName, [...Arguments, "pipe:1"] as any, {
+            shell: false,
+            windowsHide: true
+        });
     }
+
     /**
      * ffprobe gathers information from multimedia streams and prints it in human- and machine-readable fashion.
      * For example, it can be used to check the format of the container used by a multimedia stream and the format and type of each media stream contained in it.
@@ -121,6 +137,7 @@ export namespace FFmpeg {
      */
     export class FFprobe {
         readonly #process: ChildProcessWithoutNullStreams;
+
         //====================== ====================== ====================== ======================
         /**
          * @description Запуск FFprobe
@@ -129,6 +146,7 @@ export namespace FFmpeg {
         public constructor(Arguments: Array<string>) {
             this.#process = this.#SpawnProbe(Arguments);
         };
+
         //====================== ====================== ====================== ======================
         /**
          * @description Получаем данные
@@ -141,7 +159,8 @@ export namespace FFmpeg {
 
                 try {
                     JsonParsed = JSON.parse(information + "}");
-                } catch {/* Nothing */}
+                } catch {/* Nothing */
+                }
 
                 return resolve(JsonParsed);
             });
@@ -154,8 +173,12 @@ export namespace FFmpeg {
          * @param Arguments {Arguments} Указываем аргументы для запуска
          * @private
          */
-        readonly #SpawnProbe = (Arguments: Array<string>) => spawn(FFprobeName, ["-print_format", "json", "-show_format", ...Arguments], { shell: false, windowsHide: true });
+        readonly #SpawnProbe = (Arguments: Array<string>) => spawn(FFprobeName, ["-print_format", "json", "-show_format", ...Arguments], {
+            shell: false,
+            windowsHide: true
+        });
     }
+
     export function getFilter(name: string): Filter {
         return (AudioFilters as Filter[]).find((fn) => fn.names.includes(name));
     }

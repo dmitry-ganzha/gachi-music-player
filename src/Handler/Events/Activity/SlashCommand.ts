@@ -2,7 +2,7 @@ import {BaseInteraction, CommandInteractionOption, GuildMember, User} from "disc
 import {WatKLOK} from "../../../Core/Client/Client";
 import {Event} from "../../../Structures/Event";
 
-export class SlashCommand extends Event<ClientInteraction, null>{
+export class SlashCommand extends Event<ClientInteraction, null> {
     public readonly name: string = "interactionCreate";
     public readonly enable: boolean = true;
 
@@ -22,6 +22,7 @@ export class SlashCommand extends Event<ClientInteraction, null>{
         }
     };
 }
+
 // Удаляем через 200 мс взаимодействие
 function DeleteInteraction(interaction: ClientInteraction) {
     return setTimeout(() => {

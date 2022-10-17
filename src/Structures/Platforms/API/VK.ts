@@ -45,16 +45,17 @@ export namespace VK {
             });
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Делаем запрос к VK API (через account), получаем данные о поиске
      * @param str {string} Что ищем
      * @param options {{limit: number}}
      */
-    export function SearchTracks(str: string, options: {limit: number} = {limit: 15}): Promise<null | InputTrack[]> {
+    export function SearchTracks(str: string, options: { limit: number } = {limit: 15}): Promise<null | InputTrack[]> {
         return new Promise(async (resolve, reject) => {
             const items: InputTrack[] = [];
-            const Request = await RequestVK("audio","search", `&q=${str}`) as VK_Search & rateLimit;
+            const Request = await RequestVK("audio", "search", `&q=${str}`) as VK_Search & rateLimit;
             let NumberTrack = 0;
 
             if (Request?.error) return reject(Request.error.error_msg);
@@ -83,6 +84,7 @@ export namespace VK {
             return resolve(items);
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Делаем запрос к VK API (через account), получаем данные о плейлисте
@@ -127,8 +129,10 @@ export namespace VK {
             });
         });
     }
+
     //====================== ====================== ====================== ======================
 }
+
 /**
  * @description Делаем запрос к VK API
  * @param method {string} Метод, к примеру audio.getById (где audio метод, getById тип)
@@ -144,6 +148,7 @@ function RequestVK(method: methodType, type: requestType, options: string): Prom
         }
     });
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Подготавливаем ссылку

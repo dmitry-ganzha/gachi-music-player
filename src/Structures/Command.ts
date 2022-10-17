@@ -12,7 +12,7 @@ export class Command {
     //Описание команды
     public readonly description: string;
     //Права пользователя и бота (необходимые права для использования команды)
-    public readonly permissions: {client: PermissionResolvable[], user: PermissionResolvable[]};
+    public readonly permissions: { client: PermissionResolvable[], user: PermissionResolvable[] };
 
     //Неообходимо для Discord (SlashCommand), если аргументы не нужны то оставить пустой
     public readonly options: InteractiveOptions[]
@@ -35,7 +35,7 @@ export class Command {
     //Функция, которая будет запущена при вызове команды
     public readonly run: (message: ClientMessage | ClientInteraction, args?: string[]) => any;
 
-    public constructor (
+    public constructor(
         {
             name = "" as string,
             aliases = [] as string[],

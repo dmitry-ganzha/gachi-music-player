@@ -10,22 +10,6 @@ const PlayerData = {
 
 //Ивенты плеера для всех серверов
 export namespace PlayerEventsCallBacks {
-    /**
-     * @description Когда плеер начнет чтение потока, он возвратит эту функцию
-     * @param queue {Queue} Сама очередь
-     * @param seek {number} До скольки пропускает времени в треке
-     * @requires {MessagePlayer}
-     */
-    export function onStartPlaying(queue: Queue, seek: number): void {
-        const CurrentSong = queue.songs[0];
-        const message = queue.message;
-        const {client, guild} = message;
-
-        if (!seek) {
-            client.console(`[GuildID: ${guild.id}]: ${CurrentSong.title}`); //Отправляем лог о текущем треке
-            MessagePlayer.toPlay(message); //Если стрим не пустышка отправляем сообщение
-        }
-    }
     //====================== ====================== ====================== ======================
     /**
      * @description Когда плеер завершит песню, он возвратит эту функцию
@@ -42,9 +26,10 @@ export namespace PlayerEventsCallBacks {
                 queue.swapSongs(RandomNumSong);
             }
 
-            return queue.player.play(queue); //Включаем трек
+            return queue.play(); //Включаем трек
         }, 200);
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Когда плеер выдает ошибку, он возвратит эту функцию
@@ -54,15 +39,16 @@ export namespace PlayerEventsCallBacks {
      */
     export function onErrorPlayer(err: Error | string, queue: Queue, isSkipSong: boolean): void {
         //Выводим сообщение об ошибке
-        MessagePlayer.toError(queue, queue.songs[0], err);
+        MessagePlayer.toError(queue, err);
 
         setTimeout(() => {
             if (isSkipSong) {
                 queue.songs.shift();
-                setTimeout(() => queue.player.play(queue), 1e3);
+                setTimeout(() => queue.play(), 1e3);
             }
         }, 200);
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Повтор музыки
@@ -70,9 +56,12 @@ export namespace PlayerEventsCallBacks {
      */
     function isRemoveSong({options, songs}: Queue): void {
         switch (options?.loop) {
-            case "song": return;
-            case "songs": return void songs.push(songs.shift());
-            default: return void songs.shift();
+            case "song":
+                return;
+            case "songs":
+                return void songs.push(songs.shift());
+            default:
+                return void songs.shift();
         }
     }
 }
@@ -94,6 +83,7 @@ export namespace PlayersManager {
             setImmediate(playerCycleStep);
         }
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Удаляем плеер из базы
@@ -109,6 +99,7 @@ export namespace PlayersManager {
             if (typeof PlayerData.timer !== "undefined") clearTimeout(PlayerData.timer);
         }
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Цикл жизни плеера
@@ -127,7 +118,7 @@ export namespace PlayersManager {
 
                 //Если невозможно прочитать поток выдать false
                 if (!player.state.stream?.hasStarted) {
-                    player.state = { status: "idle" };
+                    player.state = {status: "idle"};
                     return false;
                 }
                 return true;

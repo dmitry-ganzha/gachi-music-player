@@ -48,7 +48,11 @@ export default class Skip extends Command {
         try {
             return void message.client.player.emit("skip", message, args && args[0] && !isNaN(argsNum) ? argsNum : null);
         } catch {
-            return message.client.sendMessage({ text: `${message.author}, Ошибка... попробуй еще раз!!!`, message, color: "DarkRed" });
+            return message.client.sendMessage({
+                text: `${message.author}, Ошибка... попробуй еще раз!!!`,
+                message,
+                color: "DarkRed"
+            });
         }
     };
 }

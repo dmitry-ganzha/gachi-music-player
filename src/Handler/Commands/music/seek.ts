@@ -48,7 +48,7 @@ export default class Seek extends Command {
         });
 
         //Если текущий трек является потоковым
-        if (queue.songs[0].isLive) return message.client.sendMessage({
+        if (queue.song.isLive) return message.client.sendMessage({
             text: `${message.author}, А как? Это же стрим!`,
             message,
             color: "DarkRed"
@@ -73,7 +73,7 @@ export default class Seek extends Command {
         });
 
         //Если пользователь указал времени больше чем в треке
-        if (EndDuration > queue.songs[0].duration.seconds) return message.client.sendMessage({
+        if (EndDuration > queue.song.duration.seconds) return message.client.sendMessage({
             text: `${message.author}, Ты указал слишком много времени!`,
             message,
             color: "DarkRed"

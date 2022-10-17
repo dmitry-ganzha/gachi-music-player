@@ -1,12 +1,13 @@
 import {Command} from "../Structures/Command";
-import {readdirSync, existsSync, mkdirSync} from "node:fs";
+import {existsSync, mkdirSync, readdirSync} from "node:fs";
 import {Module} from "../Structures/Module";
 import {Event} from "../Structures/Event";
 import {WatKLOK} from "./Client/Client";
+
 require("dotenv").config();
 
 type TypeFileLoad = Command | Event<any, any> | Module;
-type FileCallback = (pull: TypeFileLoad, {}: {dir: string, file: string, reason: string}) => void;
+type FileCallback = (pull: TypeFileLoad, {}: { dir: string, file: string, reason: string }) => void;
 
 let FileBase = {
     Commands: [] as string[],
@@ -24,6 +25,7 @@ export namespace FileSystem {
             if (!existsSync(currentDir)) mkdirSync(currentDir);
         }
     }
+
     export function env(name: string) {
         return process.env[name];
     }
@@ -75,15 +77,16 @@ export function LoadFiles(client: WatKLOK) {
             if (!client.ShardID || client.ShardID !== 0) Object.entries(FileBase).forEach(([key, value]) =>
                 console.log(`| FileSystem... Loaded [amount: ${value.length}, type: ${key}]\n${value.join("\n")}\n`));
             //После вывода в консоль удаляем
-            Object.entries(FileBase).forEach(([key, ]) => delete FileBase[key as "Commands" | "Events" | "Modules"]);
+            Object.entries(FileBase).forEach(([key,]) => delete FileBase[key as "Commands" | "Events" | "Modules"]);
         });
     });
 }
+
 class FileLoader {
     private readonly path: string;
     private readonly callback: FileCallback;
 
-    public constructor(options: {path: string, callback: FileCallback}) {
+    public constructor(options: { path: string, callback: FileCallback }) {
         this.path = options.path;
         this.callback = options.callback;
 

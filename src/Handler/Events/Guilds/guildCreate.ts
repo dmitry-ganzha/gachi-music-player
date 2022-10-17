@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, Guild, Message } from "discord.js";
+import {ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, Guild, Message} from "discord.js";
 import {WatKLOK} from "../../../Core/Client/Client";
 import {EmbedConstructor} from "../Activity/Message";
 import {Event} from "../../../Structures/Event";
@@ -11,7 +11,7 @@ const Buttons = () => {
     return new ActionRowBuilder().addComponents([Buttons.OwnerServer, Buttons.Git]);
 }
 
-export class guildCreate extends Event<Guild, null>{
+export class guildCreate extends Event<Guild, null> {
     public readonly name: string = "guildCreate";
     public readonly enable: boolean = true;
 
@@ -21,14 +21,14 @@ export class guildCreate extends Event<Guild, null>{
         const Embed: EmbedConstructor = {
             color: Colors.Blue,
             author: {name: client.user.username, iconURL: client.user.displayAvatarURL()},
-            thumbnail: { url: guild.bannerURL({size: 4096})},
+            thumbnail: {url: guild.bannerURL({size: 4096})},
             timestamp: new Date(),
             description: `Превествую всех пользователей ${guild} сервера. Я просто музыкальный бот, спасибо что добавили меня к себе 🥰`,
         };
 
         setImmediate(() => {
             // @ts-ignore
-            return guild.systemChannel.send({ embeds: [Embed], components: [Buttons()] }).catch(console.log);
+            return guild.systemChannel.send({embeds: [Embed], components: [Buttons()]}).catch(console.log);
         });
     };
 }

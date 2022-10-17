@@ -7,7 +7,7 @@ export class ArraySort extends Module {
         Object.defineProperty(Array.prototype, "ArraySort", {
             configurable: true,
             writable: true,
-            value: function<V>(n: number): (V[])[] {
+            value: function <V>(n: number): (V[])[] {
                 // @ts-ignore
                 return Array(Math.ceil(this.length / n)).fill().map((_, i) => this.slice(i * n, i * n + n))
             }

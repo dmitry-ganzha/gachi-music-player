@@ -13,18 +13,23 @@ export namespace PlayerController {
      * @description Продолжает воспроизведение музыки
      * @param message {ClientMessage} Сообщение с сервера
      */
-    export function toResume (message: ClientMessage): void {
+    export function toResume(message: ClientMessage): void {
         const {client, guild, author} = message;
-        const {player, songs}: Queue = client.queue.get(guild.id);
-        const {title, color}: Song = songs[0];
+        const {player, song}: Queue = client.queue.get(guild.id);
+        const {title, color}: Song = song;
 
         //Продолжаем воспроизведение музыки если она на паузе
         if (player.state.status === "paused") {
             player.resume();
             return client.sendMessage({text: `▶️ | Resume song | ${title}`, message, type: "css", color});
         }
-        return client.sendMessage({text: `${author}, Текущий статус плеера [${player.state.status}]`, message, color: "DarkRed"});
+        return client.sendMessage({
+            text: `${author}, Текущий статус плеера [${player.state.status}]`,
+            message,
+            color: "DarkRed"
+        });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Приостанавливает воспроизведение музыки
@@ -32,16 +37,21 @@ export namespace PlayerController {
      */
     export function toPause(message: ClientMessage): void {
         const {client, guild, author} = message;
-        const {player, songs}: Queue = client.queue.get(guild.id);
-        const {title, color}: Song = songs[0];
+        const {player, song}: Queue = client.queue.get(guild.id);
+        const {title, color}: Song = song;
 
         //Приостанавливаем музыку если она играет
         if (player.state.status === "playing") {
             player.pause();
             return client.sendMessage({text: `⏸ | Pause song | ${title}`, message, type: "css", color});
         }
-        return client.sendMessage({text: `${author}, Текущий статус плеера [${player.state.status}]`, message, color: "DarkRed"});
+        return client.sendMessage({
+            text: `${author}, Текущий статус плеера [${player.state.status}]`,
+            message,
+            color: "DarkRed"
+        });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Убираем музыку из очереди
@@ -74,9 +84,14 @@ export namespace PlayerController {
             }
 
             //Если пользователю нельзя это сделать
-            return client.sendMessage({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: "DarkRed"});
+            return client.sendMessage({
+                text: `${author}, Ты не включал эту музыку [${title}](${url})`,
+                message,
+                color: "DarkRed"
+            });
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Завершает текущую музыку
@@ -87,17 +102,26 @@ export namespace PlayerController {
     export function toSeek(message: ClientMessage, seek: number): void {
         const {client, guild, author} = message;
         const queue: Queue = client.queue.get(guild.id);
-        const player = queue.player;
-        const {title, color}: Song = queue.songs[0];
+        const {title, color}: Song = queue.song;
 
         //Отправляем сообщение о пропуске времени
         try {
-            client.sendMessage({text: `⏭️ | Seeking to [${ParsingTimeToString(seek)}] song | ${title}`, message, type: "css", color});
-            return player.play(queue, seek);
+            client.sendMessage({
+                text: `⏭️ | Seeking to [${ParsingTimeToString(seek)}] song | ${title}`,
+                message,
+                type: "css",
+                color
+            });
+            return queue.play(seek);
         } catch {
-            return client.sendMessage({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: "DarkRed"});
+            return client.sendMessage({
+                text: `${author}, Произошла ошибка... Попробуй еще раз!`,
+                message,
+                color: "DarkRed"
+            });
         }
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Пропускает текущую музыку
@@ -109,8 +133,8 @@ export namespace PlayerController {
         if (args) return toSkipNumber(message, args);
 
         const {client, guild, member, author} = message;
-        const {songs, player}: Queue = client.queue.get(guild.id);
-        const {title, color, requester, url}: Song = songs[0];
+        const {player, song}: Queue = client.queue.get(guild.id);
+        const {title, color, requester, url}: Song = song;
 
         setImmediate(() => {
             const voiceConnection: VoiceState[] = client.connections(guild) as VoiceState[];
@@ -132,9 +156,14 @@ export namespace PlayerController {
             }
 
             //Если пользователю нельзя это сделать
-            return client.sendMessage({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: "DarkRed"});
+            return client.sendMessage({
+                text: `${author}, Ты не включал эту музыку [${title}](${url})`,
+                message,
+                color: "DarkRed"
+            });
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Повтор текущей музыки
@@ -143,17 +172,21 @@ export namespace PlayerController {
     export function toReplay(message: ClientMessage): void {
         const {client, guild, author} = message;
         const queue: Queue = client.queue.get(guild.id);
-        const player = queue.player;
-        const {title, color}: Song = queue.songs[0];
+        const {title, color}: Song = queue.song;
 
         //Сообщаем о том что музыка начата с начала
         try {
             client.sendMessage({text: `🔂 | Replay | ${title}`, message, color, type: "css"});
-            return player.play(queue);
+            return queue.play();
         } catch {
-            return client.sendMessage({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: "DarkRed"});
+            return client.sendMessage({
+                text: `${author}, Произошла ошибка... Попробуй еще раз!`,
+                message,
+                color: "DarkRed"
+            });
         }
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Применяем фильтры для плеера
@@ -166,12 +199,17 @@ export namespace PlayerController {
         const seek: number = player.streamDuration;
 
         try {
-            return player.play(queue, seek);
+            return queue.play(seek);
         } catch {
-            return client.sendMessage({text: `${author}, Произошла ошибка... Попробуй еще раз!`, message, color: "DarkRed"});
+            return client.sendMessage({
+                text: `${author}, Произошла ошибка... Попробуй еще раз!`,
+                message,
+                color: "DarkRed"
+            });
         }
     }
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Пропускает музыку под номером
@@ -212,9 +250,14 @@ function toSkipNumber(message: ClientMessage, args: number): void {
         }
 
         //Если пользователю нельзя это сделать
-        return client.sendMessage({text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: "DarkRed"});
+        return client.sendMessage({
+            text: `${author}, Ты не включал эту музыку [${title}](${url})`,
+            message,
+            color: "DarkRed"
+        });
     });
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Завершает текущую музыку

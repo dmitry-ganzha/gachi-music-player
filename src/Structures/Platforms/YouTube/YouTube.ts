@@ -13,7 +13,7 @@ export namespace YouTube {
         return new Promise(async (resolve, reject) => {
             const VideoID = Utils.getID(url);
             const body = (await Promise.all([httpsClient.parseBody(`https://www.youtube.com/watch?v=${VideoID}&has_verified=1`, {
-                options: { userAgent: true, cookie: true }, request: {
+                options: {userAgent: true, cookie: true}, request: {
                     headers: {
                         "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
                         "accept-encoding": "gzip, deflate, br"
@@ -42,12 +42,16 @@ export namespace YouTube {
                 title: videoDetails.title,
                 duration: {seconds: videoDetails.lengthSeconds},
                 image: videoDetails.thumbnail.thumbnails.pop(),
-                author: (await Promise.all([Utils.getChannel({ id: videoDetails.channelId, name: videoDetails.author })]))[0],
+                author: (await Promise.all([Utils.getChannel({
+                    id: videoDetails.channelId,
+                    name: videoDetails.author
+                })]))[0],
                 isLive: videoDetails.isLiveContent,
                 format: audioFormats
             });
         });
     }
+
     /**
      * @description Поиск видео на youtube
      * @param search {string} что ищем
@@ -72,6 +76,7 @@ export namespace YouTube {
             return resolve(parse.SearchVideos(details, options));
         });
     }
+
     /**
      * @description Получаем данные о плейлисте
      * @param url {string} Ссылка на плейлист
@@ -123,6 +128,7 @@ namespace Utils {
         else if (parsedLink.searchParams.get("v") && !isPlaylist) return parsedLink.searchParams.get("v");
         return parsedLink.pathname.split("/")[1];
     }
+
     /**
      * @description Получаем данные о пользователе
      * @param id {string} ID канала
@@ -142,7 +148,8 @@ namespace Utils {
             })]))[0];
 
             const data = channel[1]?.response ?? channel?.response ?? null as any;
-            const info = data?.header?.c4TabbedHeaderRenderer, Channel = data?.metadata?.channelMetadataRenderer, avatar = info?.avatar, badges = info?.badges;
+            const info = data?.header?.c4TabbedHeaderRenderer, Channel = data?.metadata?.channelMetadataRenderer,
+                avatar = info?.avatar, badges = info?.badges;
 
             return resolve({
                 title: Channel?.title ?? name ?? "Not found",
@@ -160,7 +167,7 @@ namespace parse {
      * @param videos {Array<any>} Array видео которое надо изменить на InputTrack
      * @param limit {number} Макс кол-во видео
      */
-    export function SearchVideos(videos: any[], {limit}: {limit: number}): InputTrack[] {
+    export function SearchVideos(videos: any[], {limit}: { limit: number }): InputTrack[] {
         let num = 0, VideosEnd: InputTrack[] = [];
 
         for (let i = 0; i < videos.length; i++) {
@@ -191,6 +198,7 @@ namespace parse {
         }
         return VideosEnd;
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Парсим видео из плейлиста
@@ -208,7 +216,7 @@ namespace parse {
             VideosEnd.push({
                 title: video.title.runs[0].text,
                 url: `https://www.youtube.com/watch?v=${video.videoId}`,
-                duration: { seconds: video.lengthSeconds ?? 0 },
+                duration: {seconds: video.lengthSeconds ?? 0},
                 image: {
                     url: video.thumbnail.thumbnails.pop().url,
                     height: video.thumbnail.thumbnails.pop().height,

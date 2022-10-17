@@ -11,7 +11,7 @@ const emojis = {
 interface Callbacks {
     back: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage) => any;
     next: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage) => any;
-    cancel: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage)  => any;
+    cancel: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage) => any;
 }
 
 export class ReactionMenu {
@@ -32,6 +32,7 @@ export class ReactionMenu {
             }));
         });
     };
+
     //====================== ====================== ====================== ======================
     /**
      * @description Функции для управления <CollectorSortReaction>

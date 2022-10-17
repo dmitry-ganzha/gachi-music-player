@@ -1,10 +1,9 @@
 import {Command} from "../../../Structures/Command";
 import {httpsClient} from "../../../Core/httpsClient";
-import {EmbedConstructor} from "../../Events/Activity/Message";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
 import {messageUtils} from "../../../Core/Utils/LiteUtils";
 import {Colors, MessageReaction, User} from "discord.js";
 import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
-import {ClientMessage} from "../../Events/Activity/Message";
 
 const TraderApi = "https://api.warframestat.us/pc/ru/voidTrader/";
 const VoidIcon = "https://cdn.discordapp.com/attachments/850775689107865641/996413936595378256/BaroBanner.webp";
@@ -19,6 +18,7 @@ export default class Trader extends Command {
             enable: true
         });
     }
+
     public readonly run = (message: ClientMessage) => {
         httpsClient.parseJson(TraderApi).then((res: voidTrader) => {
             const pagesInventory = this.#parsedInventory(res.inventory);
@@ -136,6 +136,7 @@ interface voidTraderItem {
     ducats: number;
     credits: number;
 }
+
 interface voidTrader {
     id: string,
     activation: Date,

@@ -7,6 +7,8 @@ import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
 import {ClientMessage} from "../../Events/Activity/Message";
 
 export default class CommandQueue extends Command {
+    readonly #getTime = DurationUtils.getTimeQueue;
+
     public constructor() {
         super({
             name: "queue",
@@ -29,12 +31,13 @@ export default class CommandQueue extends Command {
         });
         //Получаем то что надо было преобразовать в string[]
         const pages = this.#parsedSongs(queue.songs, message.client.replaceText);
-        const CurrentPlaying = `Current playing -> [${queue.songs[0].title}]`; //Музыка, которая играет сейчас
+        const CurrentPlaying = `Current playing -> [${queue.song.title}]`; //Музыка, которая играет сейчас
         const Footer = `${message.author.username} | ${this.#getTime(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}`; //Что будет снизу сообщения
 
         //Запускаем CollectorSortReaction
         new ReactionMenu(`\`\`\`css\n➡️ | ${CurrentPlaying}\n\n${pages[0]}\n\n${Footer}\`\`\``, message, this.#Callbacks(1, pages, queue));
     };
+
     //====================== ====================== ====================== ======================
     /**
      * @description Из <Song[]> делаем <string[]>
@@ -42,7 +45,7 @@ export default class CommandQueue extends Command {
      * @param ConvertedText {Function} Сокращение названия трека
      * @private
      */
-    readonly #parsedSongs = (ArraySongs: Song[], ConvertedText: ( text: string, value: any, clearText: boolean) => string) => {
+    readonly #parsedSongs = (ArraySongs: Song[], ConvertedText: (text: string, value: any, clearText: boolean) => string) => {
         const pages: string[] = [];
         let TrackNumber = 1;
 
@@ -62,6 +65,7 @@ export default class CommandQueue extends Command {
 
         return pages;
     };
+
     //====================== ====================== ====================== ======================
     /**
      * @description Функции для управления <CollectorSortReaction>
@@ -100,6 +104,7 @@ export default class CommandQueue extends Command {
             }
         };
     };
+
     //====================== ====================== ====================== ======================
     /**
      * @description Изменяем данные сообщения
@@ -111,10 +116,9 @@ export default class CommandQueue extends Command {
      * @private
      */
     readonly #EditMessage = (queue: Queue, message: ClientMessage, msg: ClientMessage, pages: string[], page: number) => {
-        const CurrentPlaying = `Current playing -> [${queue.songs[0].title}]`;
+        const CurrentPlaying = `Current playing -> [${queue.song.title}]`;
         const Footer = `${message.author.username} | ${this.#getTime(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}`;
 
         return msg.edit(`\`\`\`css\n➡️ | ${CurrentPlaying}\n\n${pages[page - 1]}\n\n${Footer}\`\`\``);
     };
-    readonly #getTime = DurationUtils.getTimeQueue;
 }

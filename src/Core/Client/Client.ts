@@ -1,4 +1,4 @@
-import {ActivityType, Client, IntentsBitField, VoiceState, Guild, Colors} from "discord.js";
+import {ActivityType, Client, Colors, Guild, IntentsBitField, VoiceState} from "discord.js";
 import {FileSystem, LoadFiles} from "../FileSystem";
 import {PlayerEmitter} from "../../AudioPlayer/execute";
 import {Command} from "../../Structures/Command";
@@ -48,6 +48,7 @@ export class WatKLOK extends Client {
         //Включаем режим отладки
         if (Debug) this.on("debug", null);
     };
+
     //Отправить не полное embed сообщение
     public readonly sendMessage = ({color, text, type, message}: SendOptions) => {
         const Embed: EmbedConstructor = {
@@ -56,7 +57,7 @@ export class WatKLOK extends Client {
             description: typeof type === "string" ? `\`\`\`${type}\n${text}\n\`\`\`` : text
         };
 
-        const sendMessage = message.channel.send({ embeds: [Embed] });
+        const sendMessage = message.channel.send({embeds: [Embed]});
         sendMessage.then(messageUtils.deleteMessage);
         sendMessage.catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
     };
@@ -66,7 +67,9 @@ export class WatKLOK extends Client {
             if (clearText) text = text.replace(/[\[,\]}{"`']/gi, "");
             if (text.length > value && value !== false) return `${text.substring(0, value)}...`;
             return text;
-        } catch { return text; }
+        } catch {
+            return text;
+        }
     };
     //Отправляет лог со временем
     public readonly console = (text: string) => {
@@ -84,6 +87,7 @@ export class WatKLOK extends Client {
 
         return Users.length > 0 ? Users : 404;
     };
+
     //Включаем бота
     public login(token: string = FileSystem.env("TOKEN")): Promise<string> {
         LoadFiles(this);
@@ -101,7 +105,8 @@ export class WatKLOK extends Client {
                 const channel = this.channels.cache.get(Channels.sendErrors) as MessageChannel;
                 if (channel) channel.send(`${err.toString()}`).catch(console.log);
                 return null;
-            } catch {/* Continue */}
+            } catch {/* Continue */
+            }
         });
 
         return super.login(token);

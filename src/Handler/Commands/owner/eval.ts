@@ -1,7 +1,6 @@
 import {Command} from "../../../Structures/Command";
-import {EmbedConstructor} from "../../Events/Activity/Message";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
 import {messageUtils} from "../../../Core/Utils/LiteUtils";
-import {ClientMessage} from "../../Events/Activity/Message";
 import {Colors} from "discord.js";
 
 export default class Eval extends Command {

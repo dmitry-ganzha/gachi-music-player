@@ -121,6 +121,7 @@ export namespace SongFinder {
 
         return FindCallback.then((track: InputTrack) => track?.format);
     }
+
     //Ищем трек на YouTube
     function FindTrack(nameSong: string, duration: number): Promise<FFmpeg.FFmpegFormat> {
         return YouTube.SearchVideos(nameSong, {limit: 15}).then((Tracks) => {

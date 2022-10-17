@@ -1,6 +1,5 @@
 import {Command} from "../../../Structures/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {Voice} from "../../../AudioPlayer/Structures/Voice";
 import {ClientMessage} from "../../Events/Activity/Message";
 
 export default class Stop extends Command {

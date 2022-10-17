@@ -3,7 +3,13 @@ import {StageChannel, VoiceChannel} from "discord.js";
 import {InputPlaylist, InputTrack} from "../Structures/Queue/Song";
 import {messageUtils} from "../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../Manager/DurationUtils";
-import {FailRegisterPlatform, SearchPlatforms, SupportPlatforms, SupportType, TypePlatform} from "../Structures/SongSupport";
+import {
+    FailRegisterPlatform,
+    SearchPlatforms,
+    SupportPlatforms,
+    SupportType,
+    TypePlatform
+} from "../Structures/SongSupport";
 import {CacheMusic} from "../../../DataBase/Config.json";
 import {DownloadManager} from "../Manager/DownloadManager";
 
@@ -33,21 +39,43 @@ export namespace Handle {
         const parsedSearch = toPlayerUtils.findArg(search, platform, type); //Правит ошибку с некоторыми ссылками
 
         //Если нельзя получить данные с определенной платформы
-        if (FailRegisterPlatform.has(platform)) return message.client.sendMessage({ text: `${message.author}, я не могу взять данные с этой платформы **${platform}**. Причина: [**Authorization data not found**].`, message, color: "DarkRed", type: "css" });
+        if (FailRegisterPlatform.has(platform)) return message.client.sendMessage({
+            text: `${message.author}, я не могу взять данные с этой платформы **${platform}**. Причина: [**Authorization data not found**].`,
+            message,
+            color: "DarkRed",
+            type: "css"
+        });
 
         //Отправляем сообщение о поиске трека
-        if (platform !== "DISCORD") message.client.sendMessage({ text: `Поиск 🔍 | ${parsedSearch}`, message, color: "Yellow", type: "css" });
+        if (platform !== "DISCORD") message.client.sendMessage({
+            text: `Поиск 🔍 | ${parsedSearch}`,
+            message,
+            color: "Yellow",
+            type: "css"
+        });
 
         const findPlatform = SupportPlatforms[platform]; //Ищем в списке платформу
         const findType = (findPlatform as any)[type]; //Ищем тип запроса
 
-        if (!findPlatform) return message.client.sendMessage({text: `${message.author}, у меня нет поддержки такой платформы!\nПлатформа **${platform}**!`, color: "DarkRed", message});
-        else if (!findType) return message.client.sendMessage({text: `${message.author}, у меня нет поддержки этого типа запроса!\nТип запроса **${type}**!`, color: "DarkRed", message});
+        if (!findPlatform) return message.client.sendMessage({
+            text: `${message.author}, у меня нет поддержки такой платформы!\nПлатформа **${platform}**!`,
+            color: "DarkRed",
+            message
+        });
+        else if (!findType) return message.client.sendMessage({
+            text: `${message.author}, у меня нет поддержки этого типа запроса!\nТип запроса **${type}**!`,
+            color: "DarkRed",
+            message
+        });
 
         const runCallback = findType(parsedSearch) as Promise<InputTrack | InputPlaylist | InputTrack[]>;
 
         runCallback.then((data: InputTrack | InputPlaylist | InputTrack[]) => {
-            if (!data) return message.client.sendMessage({text: `${message.author}, данные не были найдены!`, color: "Yellow", message});
+            if (!data) return message.client.sendMessage({
+                text: `${message.author}, данные не были найдены!`,
+                color: "Yellow",
+                message
+            });
 
             //Если пользователь ищет трек
             if (data instanceof Array) return SearchSongMessage.toSend(data, data.length, {...options, platform, type});
@@ -58,14 +86,18 @@ export namespace Handle {
                 //Если включено кеширование треков сообщаем есть ли трек
                 if (CacheMusic) text += ` | Кеш: ${Download(data as any) ? "Есть" : "Нету"}`;
 
-                message.client.sendMessage({ text, message, color: "Yellow", type: "css" });
+                message.client.sendMessage({text, message, color: "Yellow", type: "css"});
             }
 
             //Загружаем трек или плейлист в GuildQueue
             return message.client.player.emit("play", message, voiceChannel, data);
         });
         //Если выходит ошибка
-        runCallback.catch((err) => message.client.sendMessage({text: `${message.author}, данные не были найдены!\nПричина: ${err}`, color: "DarkRed", message}));
+        runCallback.catch((err) => message.client.sendMessage({
+            text: `${message.author}, данные не были найдены!\nПричина: ${err}`,
+            color: "DarkRed",
+            message
+        }));
     }
 }
 //====================== ====================== ====================== ======================
@@ -85,6 +117,7 @@ namespace toPlayerUtils {
         else if (search.match(UrlSrt)) return "track";
         return "search";
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем инициалы платформы
@@ -101,6 +134,7 @@ namespace toPlayerUtils {
         if (SearchPlatforms[platform]) return SearchPlatforms[platform] as SupportPlatforms;
         return "YOUTUBE";
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Фильтруем ссылку от аргументов поиска
@@ -108,7 +142,7 @@ namespace toPlayerUtils {
      * @param platform {SupportPlatforms} Платформа
      * @param type {SupportType} Тип запроса
      */
-    export function findArg(arg: string, platform: SupportPlatforms, type: SupportType): string  {
+    export function findArg(arg: string, platform: SupportPlatforms, type: SupportType): string {
         if (arg.match(UrlSrt)) return `http${arg.split("http")[1]}`; //Если строка ссылка
         else if (type === "search" && arg.includes(platform)) return arg.split(platform)[1]; //Если строка это поиск на определенной платформе
         return arg;
@@ -130,7 +164,11 @@ namespace SearchSongMessage {
         const {message, platform} = options;
 
         setImmediate(() => {
-            if (results.length < 1) return message.client.sendMessage({text: `${message.author} | Я не смог найти музыку с таким названием. Попробуй другое название!`, message, color: "DarkRed"});
+            if (results.length < 1) return message.client.sendMessage({
+                text: `${message.author} | Я не смог найти музыку с таким названием. Попробуй другое название!`,
+                message,
+                color: "DarkRed"
+            });
 
             const ConstFind = `Выбери от 1 до ${results.length}`; //Показываем сколько есть треков в списке
             const Requester = `[Платформа: ${platform} | Запросил: ${message.author.username}]`; //Показываем платформу и того кто запросил
@@ -139,7 +177,7 @@ namespace SearchSongMessage {
             //Отправляем сообщение
             message.channel.send(`\`\`\`css\n${ConstFind}\n${Requester}\n\n${SongsString}\`\`\``).then((msg: ClientMessage) => {
                 //Создаем сборщик
-                const collector = messageUtils.createCollector(message,(m) => {
+                const collector = messageUtils.createCollector(message, (m) => {
                     const messageNum = parseInt(m.content);
                     return !isNaN(messageNum) && messageNum <= num && messageNum > 0 && m.author.id === message.author.id;
                 });
@@ -170,6 +208,7 @@ namespace SearchSongMessage {
             });
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Собираем найденные треки в <string>

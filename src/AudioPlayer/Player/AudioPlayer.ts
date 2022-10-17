@@ -1,7 +1,6 @@
 import {TypedEmitter} from "tiny-typed-emitter";
 import {PlayerSubscription, VoiceConnection} from "@discordjs/voice";
 import {Decoder} from "../Structures/Media/Decoder";
-import {Queue} from "../Structures/Queue/Queue";
 import {PlayersManager} from "../Manager/PlayerManager";
 
 export const StatusPlayerHasSkipped: Set<string> = new Set(["playing", "paused", "idle"]);
@@ -14,20 +13,26 @@ interface AudioPlayerEvents {
     resume: (oldState: PlayerState, newState: PlayerState) => void;
     playing: (oldState: PlayerState, newState: PlayerState) => void;
     error: (error: Error | string, skipSong: boolean) => void;
-
-    StartPlaying: (seek: number) => void;
 }
 
 //Аудио плеер за основу взят из @discordjs/voice
 export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
-    #state: PlayerState = { status: "idle" };
+    #state: PlayerState = {status: "idle"};
     readonly #voices: VoiceConnection[] = []; //Голосовые каналы
 
     //Все голосовые каналы к которым подключен плеер
-    public get voices() { return this.#voices; };
+    public get voices() {
+        return this.#voices;
+    };
+
     //Текущее время плеера в секундах
-    public get streamDuration() { return this.state.stream?.duration ?? 0; };
-    public get state(): PlayerState { return this.#state; };
+    public get streamDuration() {
+        return this.state.stream?.duration ?? 0;
+    };
+
+    public get state(): PlayerState {
+        return this.#state;
+    };
 
     //Заменяет или выдает статистику плеера
     public set state(newState: PlayerState) {
@@ -35,14 +40,6 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         const isNewResources = oldState.status !== "idle" && newState.status === "playing" && oldState.stream !== newState.stream;
 
         this.#state = newState; //Обновляем статистику плеера
-
-        //Если пользователь пропустил трек или введен новый поток удаляем старый
-        if (oldState.status === "playing" && newState.status === "idle" || oldState.status !== "idle" && oldState.stream !== newState.stream) {
-            if (newState.status !== "paused") { //Если это не пауза, то удаляем поток
-                oldState.stream?.destroy();
-                delete oldState.stream;
-            }
-        }
 
         //Если статус "idle"
         if (newState.status === "idle") {
@@ -62,17 +59,17 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     //Ставим на паузу плеер
     public pause = () => {
         if (this.state.status !== "playing") return;
-        this.state = { ...this.state, status: "paused" };
+        this.state = {...this.state, status: "paused"};
     };
     //Убираем с паузы плеер
     public resume = () => {
         if (this.state.status !== "paused") return;
-        this.state = { ...this.state, status: "playing" };
+        this.state = {...this.state, status: "playing"};
     };
     //Останавливаем воспроизведение текущего трека
     public stop = () => {
         if (this.state.status === "idle") return;
-        this.state = { status: "idle" };
+        this.state = {status: "idle"};
     };
     //====================== ====================== ====================== ======================
     /**
@@ -90,7 +87,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
      * @description Убираем из <this.#voices> голосовой канал
      * @param subscription {PlayerSubscription} Голосовой канал на котором больше не будет играть музыка
      */
-    public readonly unsubscribe = (subscription: PlayerSubscription | {connection: VoiceConnection}): void => {
+    public readonly unsubscribe = (subscription: PlayerSubscription | { connection: VoiceConnection }): void => {
         const index = this.#voices.indexOf(subscription.connection);
 
         //Если был найден отключаемый голосовой канал, то удаляем из <this.#voices>
@@ -99,27 +96,29 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
             subscription.connection.setSpeaking(false);
         }
     };
+
     //====================== ====================== ====================== ======================
     /**
-     * @description PlayCallback - Включаем трек, ищет исходник трека
-     * @param queue {Queue} Очередь
-     * @param seek {number} Со скольки включить трек
+     * @description Читаем поток
+     * @param stream {PlayerResource} Входящий поток для чтения
      */
-    public readonly play = (queue: Queue, seek: number = 0) => {
-        const CurrentSong = queue.songs[0];
+    readonly readStream = (stream: PlayerResource): void => {
+        if (stream.hasStarted) this.state = {status: "playing", stream};
+        else {
+            //Включаем поток когда можно будет начать читать
+            const onReadCallback = () => {
+                if (!this.state.stream.destroyed) this.state.stream.destroy();
 
-        //Если нет трека, то удаляем очередь
-        if (!CurrentSong) return queue.cleanup();
-        const Audio = CurrentSong.resource(seek, queue.filters);
-        Audio.then((url) => {
-            if (!url) return this.emit("error", "[AudioPlayer]: Audio resource not found!", true);
+                this.state = {status: "playing", stream};
+            }
+            //Если происходит ошибка, то продолжаем читать этот же поток
+            const onFailCallBack = () => this.emit("error", "[Decoder]: Fail readable stream!", false);
 
-            return this.readStream(Decoder.createAudioResource(url, seek, CurrentSong.isLive ? [] : queue.filters))
-        });
-        Audio.catch((err) => this.emit("error", `[AudioPlayer]: ${err}`, true));
-
-        this.emit("StartPlaying", seek);
+            stream.once("readable", onReadCallback);
+            stream.once("error", onFailCallBack);
+        }
     };
+
     //====================== ====================== ====================== ======================
     /**
      * @description Что делает плеер в соответствии со статусами
@@ -131,11 +130,11 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
 
         //Если некуда проигрывать музыку ставить плеер на паузу
         if (this.#voices.length === 0) {
-            this.state = { ...state, status: "autoPaused" };
+            this.state = {...state, status: "autoPaused"};
             return;
         } else if (state.status === "autoPaused" && this.#voices.length > 0) {
             //Если стоит статус плеера (autoPaused) и есть канал или каналы в которые можно воспроизвести музыку, стартуем!
-            this.state = { ...state, status: "playing", stream: state.stream };
+            this.state = {...state, status: "playing", stream: state.stream};
         }
 
         //Не читать пакеты при статусе плеера (autoPaused)
@@ -155,23 +154,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
             this.stop();
         }
     };
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Читаем поток
-     * @param stream {PlayerResource} Входящий поток для чтения
-     */
-    readonly readStream = (stream: PlayerResource): void => {
-        if (stream.hasStarted) this.state = { status: "playing", stream };
-        else {
-            //Включаем поток когда можно будет начать читать
-            const onReadCallback = () => this.state = { status: "playing", stream };
-            //Если происходит ошибка, то продолжаем читать этот же поток
-            const onFailCallBack = () => this.emit("error", "[Decoder]: Fail readable stream!", false);
 
-            stream.once("readable", onReadCallback);
-            stream.once("error", onFailCallBack);
-        }
-    };
     //====================== ====================== ====================== ======================
     /**
      * @description Фильтрует голосовые и отправляет в них аудио пакеты
@@ -184,6 +167,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     //Выключаем голос бота на всех голосовых каналах
     readonly #signalStopSpeaking = (): void => this.#voices.forEach((connection) => connection.setSpeaking(false));
 }
+
 type PlayerState = PlayerStateIdle | PlayerStatePause | PlayerStatePlaying | PlayerStateError;
 type PlayerResource = Decoder.OggOpus; //Все декодировщики доступные к чтению
 
@@ -192,14 +176,17 @@ interface PlayerStateIdle {
     status: "idle";
     stream?: PlayerResource;
 }
+
 interface PlayerStatePause {
     status: "paused" | "autoPaused";
     stream?: PlayerResource;
 }
+
 interface PlayerStatePlaying {
     status: "playing";
     stream?: PlayerResource
 }
+
 interface PlayerStateError {
     status: "error";
     stream?: PlayerResource

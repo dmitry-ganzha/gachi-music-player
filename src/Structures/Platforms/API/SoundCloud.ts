@@ -1,8 +1,8 @@
 import {httpsClient} from "../../../Core/httpsClient";
 import {InputPlaylist, InputTrack} from "../../../AudioPlayer/Structures/Queue/Song";
 import {FFmpeg} from "../../../AudioPlayer/Structures/Media/FFmpeg";
-import FFmpegFormat = FFmpeg.FFmpegFormat;
 import {FileSystem} from "../../../Core/FileSystem";
+import FFmpegFormat = FFmpeg.FFmpegFormat;
 
 const APiLink = "https://api-v2.soundcloud.com";
 const clientID = FileSystem.env("SOUNDCLOUD");
@@ -11,7 +11,7 @@ const clientID = FileSystem.env("SOUNDCLOUD");
  * @description Делаем запрос с привязкой ClientID
  * @param url {string} Ссылка
  */
-function parseJson(url: string): Promise<{result: any, ClientID: string}> {
+function parseJson(url: string): Promise<{ result: any, ClientID: string }> {
     return new Promise(async (resolve) => {
         const ClientID = await getClientID();
         const result = await httpsClient.parseJson(`${url}&client_id=${ClientID}`);
@@ -80,6 +80,7 @@ export namespace SoundCloud {
             });
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем плейлист
@@ -117,6 +118,7 @@ export namespace SoundCloud {
             });
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Ищем треки в soundcloud
@@ -143,6 +145,7 @@ export namespace SoundCloud {
         });
     }
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Пример данных на выходе
@@ -165,6 +168,7 @@ function CreateInfoTrack(result: any): InputTrack {
         }
     }
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Проходим все этапы для получения ссылки на поток трека
@@ -181,13 +185,14 @@ function getFormat(formats: SoundCloudFormat[], ClientID: string): Promise<FFmpe
         });
     });
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Получаем картинку в исходном качестве
  * @param image {string} Ссылка на картинку
  * @constructor
  */
-function ParseImageToFull(image: string): {url: string} {
+function ParseImageToFull(image: string): { url: string } {
     if (!image) return {url: image};
 
     const imageSplit = image.split("-");

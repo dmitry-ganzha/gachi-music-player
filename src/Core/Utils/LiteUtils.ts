@@ -8,11 +8,13 @@ export namespace messageUtils {
     export function deleteMessage(message: ClientMessage, time: number = 12e3): void {
         setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, time);
     }
+
     //Создаем сборщик сообщений
     export function createCollector(message: ClientMessage, filter: (m: ClientMessage) => boolean, max: number = 1, time: number = 20e3) {
         // @ts-ignore
-        return message.channel.createMessageCollector({ filter, max, time });
+        return message.channel.createMessageCollector({filter, max, time});
     }
+
     //Добавляем реакцию к сообщению + взаимодействие
     export function createReaction(message: ClientMessage, emoji: string, filter: (reaction: MessageReaction, user: User) => boolean, callback: (reaction: MessageReaction) => any, time = 35e3): void {
         setTimeout(() => message?.deletable ? message?.delete().catch(() => undefined) : null, time);
@@ -36,6 +38,7 @@ export namespace UtilsPermissions {
     export function isOwner(isOwner: boolean, AuthorID: string) {
         return isOwner && !Bot.OwnerIDs.includes(AuthorID);
     }
+
     //У пользователя есть ограничения?
     export function isPermissions(permissions: Command['permissions'], message: ClientMessage): boolean {
         if (permissions.client?.length > 0 || permissions.user?.length > 0) {
@@ -58,8 +61,9 @@ export namespace UtilsPermissions {
 
         return false;
     }
+
     //Создает строку с правами которые не доступны
-    function _parsePermissions(permissions: Command['permissions'], message: ClientMessage): {user: string, client: string } {
+    function _parsePermissions(permissions: Command['permissions'], message: ClientMessage): { user: string, client: string } {
         let ClientString = "", UserString = "";
 
         //Если permissions.client больше 0, то делаем проверку
@@ -75,7 +79,7 @@ export namespace UtilsPermissions {
             }
         }
 
-        return { user: UserString, client: ClientString };
+        return {user: UserString, client: ClientString};
     }
 }
 
@@ -83,8 +87,8 @@ export namespace UtilsPermissions {
 function EmbedNotPermissions({author, client}: ClientMessage): EmbedConstructor {
     return {
         color: Colors.Blue,
-        author: { name: author.username, iconURL: author.displayAvatarURL({}) },
-        thumbnail: { url: client.user.displayAvatarURL({}) },
+        author: {name: author.username, iconURL: author.displayAvatarURL({})},
+        thumbnail: {url: client.user.displayAvatarURL({})},
         timestamp: new Date() as any
     }
 }

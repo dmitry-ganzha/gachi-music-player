@@ -12,7 +12,7 @@ export namespace QueueManager {
      * @param message {ClientMessage} Сообщение с сервера
      * @param VoiceChannel {VoiceChannel} К какому голосовому каналу надо подключатся
      * @param info {InputTrack | InputPlaylist} Входные данные это трек или плейлист?
-     * @requires {CreateQueue, PushSong}
+     * @requires {CreateQueue}
      */
     export function toQueue(message: ClientMessage, VoiceChannel: VoiceChannel, info: InputTrack | InputPlaylist): void {
         const {queue, status} = CreateQueue(message, VoiceChannel);
@@ -22,21 +22,22 @@ export namespace QueueManager {
             if ("items" in info) {
                 MessagePlayer.toPushPlaylist(message, info);
                 //Добавляем треки в очередь
-                info.items.forEach((track) => PushSong(queue, track, message.author, false));
-            } else PushSong(queue, info, message.author, queue.songs.length >= 1); //Добавляем трек в очередь
+                info.items.forEach((track) => queue.push(new Song(track, message.author)));
+            } else queue.push(new Song(info, message.author)); //Добавляем трек в очередь
 
             //Запускаем callback плеера, если очередь была создана, а не загружена!
-            if (status === "create") queue.player.play(queue);
+            if (status === "create") queue.play();
         });
     }
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Создаем очереди или если она есть выдаем
  * @param message {ClientMessage} Сообщение с сервера
  * @param VoiceChannel {VoiceChannel} К какому голосовому каналу надо подключатся
  */
-function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel): {status: "create" | "load", queue: Queue} {
+function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel): { status: "create" | "load", queue: Queue } {
     const {client, guild} = message;
     const queue = client.queue.get(guild.id);
 
@@ -50,18 +51,4 @@ function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel): {statu
     client.queue.set(guild.id, GuildQueue); //Записываем очередь в <client.queue>
 
     return {queue: GuildQueue, status: "create"};
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Добавляем музыку в базу сервера и отправляем что было добавлено
- * @param queue {Queue} Очередь с сервера
- * @param InputTrack {InputTrack} Сам трек
- * @param author {ClientMessage["author"]} Автор трека
- * @param sendMessage {boolean} Отправить сообщение?
- */
-function PushSong(queue: Queue, InputTrack: InputTrack, author: ClientMessage["author"], sendMessage: boolean = true): void {
-    const song: Song = new Song(InputTrack, author);
-
-    queue.songs.push(song);
-    if (sendMessage) setImmediate(() => MessagePlayer.toPushSong(queue, song));
 }

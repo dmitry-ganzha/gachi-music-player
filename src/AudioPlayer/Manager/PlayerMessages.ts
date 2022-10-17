@@ -7,10 +7,10 @@ import {messageUtils} from "../../Core/Utils/LiteUtils";
 
 //Кнопки над сообщением о проигрывании трека
 const Buttons = new ActionRowBuilder().addComponents([
-    new ButtonBuilder().setCustomId("last")        .setEmoji({id: "986009800867479572"}).setStyle(ButtonStyle.Secondary), //id: "986009800867479572" или name: "⏪"
+    new ButtonBuilder().setCustomId("last").setEmoji({id: "986009800867479572"}).setStyle(ButtonStyle.Secondary), //id: "986009800867479572" или name: "⏪"
     new ButtonBuilder().setCustomId("resume_pause").setEmoji({id: "986009725432893590"}).setStyle(ButtonStyle.Secondary), //id: "986009725432893590" или name: "⏯"
-    new ButtonBuilder().setCustomId("skip")        .setEmoji({id: "986009774015520808"}).setStyle(ButtonStyle.Secondary), //id: "986009774015520808" или name: "⏩"
-    new ButtonBuilder().setCustomId("replay")      .setEmoji({id: "986009690716667964"}).setStyle(ButtonStyle.Secondary)] //id: "986009690716667964" или name: "🔃"
+    new ButtonBuilder().setCustomId("skip").setEmoji({id: "986009774015520808"}).setStyle(ButtonStyle.Secondary), //id: "986009774015520808" или name: "⏩"
+    new ButtonBuilder().setCustomId("replay").setEmoji({id: "986009690716667964"}).setStyle(ButtonStyle.Secondary)] //id: "986009690716667964" или name: "🔃"
 );
 //Кнопки с которыми можно взаимодействовать
 const ButtonID = new Set(["skip", "resume_pause", "replay", "last"]);
@@ -38,19 +38,19 @@ export namespace MessagePlayer {
             if (msg) msg.then(MessageUpdater.toPush).catch((err) => console.log(err));
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description При ошибке плеер выводит эту функцию
      * @param queue {Queue} Очередь
-     * @param song {Song} Трек
      * @param err {Error | string} Ошибка
      */
-    export function toError(queue: Queue, song: Song, err: Error | string = null) {
+    export function toError(queue: Queue, err: Error | string = null) {
         const {client, channel} = queue.message;
 
         setImmediate(() => {
             try {
-                const Embed = EmbedMessages.toError(client, song, queue, err);
+                const Embed = EmbedMessages.toError(client, queue, err);
                 const WarningChannelSend = channel.send({embeds: [Embed]});
 
                 WarningChannelSend.then(messageUtils.deleteMessage);
@@ -59,6 +59,7 @@ export namespace MessagePlayer {
             }
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Сообщение о добавлении трека в очередь сервера
@@ -79,6 +80,7 @@ export namespace MessagePlayer {
             }
         });
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Отправляем сообщение о том что плейлист был добавлен в очередь
@@ -100,6 +102,7 @@ export namespace MessagePlayer {
         });
     }
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Обновляем сообщение
@@ -113,7 +116,7 @@ function UpdateMessage(message: ClientMessage): void {
     if (!queue || queue?.songs?.length === 0) return MessageUpdater.toRemove(message);
 
     setImmediate(() => {
-        const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue?.songs[0], queue);
+        const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue);
 
         try {
             //Обновляем сообщение
@@ -123,6 +126,7 @@ function UpdateMessage(message: ClientMessage): void {
         }
     });
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Отправляем сообщение
@@ -131,10 +135,11 @@ function UpdateMessage(message: ClientMessage): void {
  */
 function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> {
     const queue: Queue = message.client.queue.get(message.guild.id);
+    const song = queue.song;
 
-    if (!queue?.songs[0]) return;
+    if (!song) return;
 
-    const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue?.songs[0], queue);
+    const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue);
     const sendMessage = message.channel.send({embeds: [CurrentPlayEmbed as any], components: [Buttons as any]});
 
     sendMessage.then((msg) => CreateCollector(msg, queue)); //Добавляем к сообщению кнопки
@@ -142,6 +147,7 @@ function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> 
 
     return sendMessage;
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Создаем сборщик кнопок
@@ -160,17 +166,22 @@ function CreateCollector(message: ClientMessage, queue: Queue) {
         switch (i.customId) {
             case "resume_pause": { //Если надо приостановить музыку или продолжить воспроизведение
                 switch (queue?.player.state.status) {
-                    case "playing": return queue?.player.pause();
-                    case "paused": return queue?.player.resume();
+                    case "playing":
+                        return queue?.player.pause();
+                    case "paused":
+                        return queue?.player.resume();
                 }
                 return;
             }
             //Пропуск текущей музыки
-            case "skip": return queue?.player.stop();
+            case "skip":
+                return queue?.player.stop();
             //Повторно включить текущую музыку
-            case "replay": return queue?.player.play(queue);
+            case "replay":
+                return queue?.play();
             //Включить последнею из списка музыку
-            case "last": return queue?.swapSongs();
+            case "last":
+                return queue?.swapSongs();
         }
     });
 
@@ -191,6 +202,7 @@ namespace MessageUpdater {
         //Если в базе есть хоть одно сообщение, то запускаем таймер
         if (MessagesData.messages.size === 1) setImmediate(StepCycleMessage);
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Удаляем сообщение из <Message[]>, так-же проверяем отключить ли таймер
@@ -210,6 +222,7 @@ namespace MessageUpdater {
             if (typeof MessagesData.timer !== "undefined") clearTimeout(MessagesData.timer);
         }
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Обновляем сообщения на текстовый каналах

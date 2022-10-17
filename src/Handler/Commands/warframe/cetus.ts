@@ -1,8 +1,7 @@
 import {Command} from "../../../Structures/Command";
 import {httpsClient} from "../../../Core/httpsClient";
-import {EmbedConstructor} from "../../Events/Activity/Message";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
 import {messageUtils} from "../../../Core/Utils/LiteUtils";
-import {ClientMessage} from "../../Events/Activity/Message";
 import {Colors} from "discord.js";
 
 const CetusCycle = "https://api.warframestat.us/pc/cetusCycle";
@@ -35,12 +34,12 @@ export default class Cetus extends Command {
         if (res.isDay) return {
             color: Colors.Yellow,
             description: `Сейчас на Цетусе день. До ночи осталось: ${res.timeLeft}`,
-            image: { url: CetusDay }
+            image: {url: CetusDay}
         };
         return {
             color: Colors.Default,
             description: `Сейчас на Цетусе ночь. До дня осталось: ${res.timeLeft}`,
-            image: { url: CetusNight }
+            image: {url: CetusNight}
         };
     };
 }

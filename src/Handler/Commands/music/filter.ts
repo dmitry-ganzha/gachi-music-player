@@ -51,7 +51,7 @@ export default class Filter extends Command {
         });
 
         //Если текущий трек является потоковым
-        if (queue.songs[0].isLive) return message.client.sendMessage({
+        if (queue.song.isLive) return message.client.sendMessage({
             text: `${message.author}, Фильтры не работают со стримами`,
             message,
             color: "DarkRed"
@@ -59,7 +59,7 @@ export default class Filter extends Command {
 
         const FilterArg = args.length > 1 ? Number(args[args?.length - 1]) : null;
         const FilterName = args[args?.length - 2 ?? args?.length - 1] ?? args[0];
-        const SendArg: {color: any, type: "css", message: ClientMessage} = {color: "Blue", type: "css", message};
+        const SendArg: { color: any, type: "css", message: ClientMessage } = {color: "Blue", type: "css", message};
 
 
         if (FilterName === "all") return this.#ReactionMenuFilters(Filters, message); //Показываем все доступные фильтры
@@ -98,7 +98,7 @@ export default class Filter extends Command {
                         queue.filters[index + 1] = FilterArg;
 
                         message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} был изменен аргумент на ${FilterArg}!`, ...SendArg});
-                    //Если аргументы не подходят
+                        //Если аргументы не подходят
                     } else return message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} не изменен из-за несоответствия аргументов!`, ...SendArg});
 
                 } else { //Если пользователь не указал аргумент, значит его надо удалить
@@ -115,7 +115,7 @@ export default class Filter extends Command {
                         queue.filters.push(Filter.names[0]);
                         queue.filters.push(FilterArg as any);
                         message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} был изменен аргумент на ${FilterArg}!`, ...SendArg});
-                    //Если аргументы не подходят
+                        //Если аргументы не подходят
                     } else return message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} не включен из-за несоответствия аргументов!`, ...SendArg});
                 } else { //Если нет аргумента
                     queue.filters.push(Filter.names[0]);
@@ -123,7 +123,10 @@ export default class Filter extends Command {
                     message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} включен!`, ...SendArg});
                 }
             }
-        } else return message.client.sendMessage({text: `${message.author.username}, у меня нет такого фильтра. Все фильтры - all`, message});
+        } else return message.client.sendMessage({
+            text: `${message.author.username}, у меня нет такого фильтра. Все фильтры - all`,
+            message
+        });
 
         this.#executeFilter(message);
     };
@@ -158,7 +161,10 @@ export default class Filter extends Command {
             if (parsedFilters !== undefined) pages.push(parsedFilters);
         });
         embed.description = pages[0];
-        embed.footer = {text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL()}
+        embed.footer = {
+            text: `${message.author.username} | Лист 1 из ${pages.length}`,
+            iconURL: message.author.displayAvatarURL()
+        }
 
         new ReactionMenu(embed, message, ReactionMenu.Callbacks(1, pages, embed));
     };

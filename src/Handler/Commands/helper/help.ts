@@ -57,8 +57,11 @@ export default class Help extends Command {
         });
 
         embed.description = pages[0];
-        embed.footer = {text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL()}
+        embed.footer = {
+            text: `${message.author.username} | Лист 1 из ${pages.length}`,
+            iconURL: message.author.displayAvatarURL()
+        }
 
-        return { embed, pages };
+        return {embed, pages};
     };
 }

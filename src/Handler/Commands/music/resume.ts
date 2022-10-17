@@ -46,7 +46,7 @@ export default class Resume extends Command {
         });
 
         //Если текущий трек является потоковым
-        if (queue.songs[0].isLive) return message.client.sendMessage({
+        if (queue.song.isLive) return message.client.sendMessage({
             text: `${message.author}, ⚠ | Это бесполезно!`,
             message,
             color: "DarkRed"

@@ -1,15 +1,29 @@
-import { ActionRow, ActionRowBuilder, ChannelType, DMChannel, EmbedData, Message, MessageEditOptions, BaseMessageOptions, MessagePayload, NewsChannel, PartialDMChannel, TextChannel, ThreadChannel } from "discord.js";
+import {
+    ActionRow,
+    ActionRowBuilder,
+    BaseMessageOptions,
+    ChannelType,
+    DMChannel,
+    EmbedData,
+    Message,
+    MessageEditOptions,
+    MessagePayload,
+    NewsChannel,
+    PartialDMChannel,
+    TextChannel,
+    ThreadChannel
+} from "discord.js";
 import {Bot} from '../../../../DataBase/Config.json';
 import {WatKLOK} from "../../../Core/Client/Client";
 import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
-import ParsingTimeToString = DurationUtils.ParsingTimeToString;
 import {UtilsPermissions} from "../../../Core/Utils/LiteUtils";
 import {Event} from "../../../Structures/Event";
+import ParsingTimeToString = DurationUtils.ParsingTimeToString;
 
 const DefaultPrefix = Bot.prefix; //Префикс
-const CoolDownBase = new Map<string, {time: number}>();
+const CoolDownBase = new Map<string, { time: number }>();
 
-export class messageCreate extends Event<ClientMessage, null>{
+export class messageCreate extends Event<ClientMessage, null> {
     public readonly name = "messageCreate";
     public readonly enable = true;
 
@@ -37,13 +51,21 @@ export class messageCreate extends Event<ClientMessage, null>{
         }
 
         //Если нет команды
-        if (!Command) return client.sendMessage({ text: `${author}, Я не нахожу такой команды, используй ${DefaultPrefix}help  :confused:`, message, color: "DarkRed"});
+        if (!Command) return client.sendMessage({
+            text: `${author}, Я не нахожу такой команды, используй ${DefaultPrefix}help  :confused:`,
+            message,
+            color: "DarkRed"
+        });
 
         //Удаляем сообщение через 12 сек
         setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, 12e3);
 
         //Если команда предназначена для разработчика
-        if (UtilsPermissions.isOwner(Command?.isOwner, author.id)) return client.sendMessage({ text: `${author}, Эта команда не для тебя!`, message, color: "DarkRed"});
+        if (UtilsPermissions.isOwner(Command?.isOwner, author.id)) return client.sendMessage({
+            text: `${author}, Эта команда не для тебя!`,
+            message,
+            color: "DarkRed"
+        });
         //Если нет прав у пользователя или бота
         if (UtilsPermissions.isPermissions(Command?.permissions, message)) return;
 
@@ -59,19 +81,38 @@ export class messageCreate extends Event<ClientMessage, null>{
 export interface ClientMessage extends Message {
     client: WatKLOK;
     // @ts-ignore
-    edit(content: SendMessageOptions | MessageEditOptions): Promise<ClientMessage>
-    // @ts-ignore
     channel: {
         send(options: SendMessageOptions): Promise<ClientMessage>
     } & Channel
+
+    // @ts-ignore
+    edit(content: SendMessageOptions | MessageEditOptions): Promise<ClientMessage>
 }
+
 //Все текстовые каналы
 export type Channel = DMChannel | PartialDMChannel | NewsChannel | TextChannel | ThreadChannel;
 //ClientMessage<channel>
 export type MessageChannel = ClientMessage["channel"];
 //Типы для ClientMessage<channel<send>>, ClientMessage<edit>
-export type SendMessageOptions = string | MessagePayload | BaseMessageOptions | {embeds?: EmbedConstructor[], components?: ActionRow<any> | ActionRowBuilder<any>};
+export type SendMessageOptions =
+    string
+    | MessagePayload
+    | BaseMessageOptions
+    | { embeds?: EmbedConstructor[], components?: ActionRow<any> | ActionRowBuilder<any> };
+
 //Embed JSON
-export interface EmbedConstructor extends EmbedData {}
+export interface EmbedConstructor extends EmbedData {
+}
+
 //Цвета, которые есть в базе
-export type ColorResolvable = "DarkRed" | "Blue" | "Green" | "Default" | "Yellow" | "Grey" | "Navy" | "Gold" | "Orange" | "Purple";
+export type ColorResolvable =
+    "DarkRed"
+    | "Blue"
+    | "Green"
+    | "Default"
+    | "Yellow"
+    | "Grey"
+    | "Navy"
+    | "Gold"
+    | "Orange"
+    | "Purple";

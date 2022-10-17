@@ -20,6 +20,7 @@ export namespace Decoder {
 
         return decodingAudio;
     }
+
     //С помощью FFmpeg конвертирует любой формат в opus
     export class OggOpus extends opus.OggDemuxer {
         readonly #FFmpeg: FFmpeg.FFmpeg;
@@ -27,16 +28,12 @@ export namespace Decoder {
         #playbackDuration = 0;
         #started = false;
 
-        //Общее время проигрывание текущего ресурса
-        public get duration() { return parseInt((this.#playbackDuration / 1000).toFixed(0)) };
-        //Проверяем можно ли читать поток
-        public get hasStarted() { return this.#started; };
         /**
          * @description Декодируем в opus
          * @param parameters {Options}
          * @requires {ArgsHelper}
          */
-        public constructor(parameters: {url: string | Readable, seek?: number, filters?: AudioFilters}) {
+        public constructor(parameters: { url: string | Readable, seek?: number, filters?: AudioFilters }) {
             super({autoDestroy: false});
             if (typeof parameters.url === "string") this.#FFmpeg = new FFmpeg.FFmpeg(ArgsHelper.createArgs(parameters.url, parameters?.filters, parameters?.seek));
             else {
@@ -54,6 +51,12 @@ export namespace Decoder {
             //Если в <this.playStream> будет один из этих статусов, чистим память!
             ["end", "close", "error"].forEach((event) => this.once(event, this.destroy));
         };
+
+        //Общее время проигрывание текущего ресурса
+        public get duration() { return parseInt((this.#playbackDuration / 1000).toFixed(0)); };
+        //Проверяем можно ли читать поток
+        public get hasStarted() { return this.#started; };
+
         //====================== ====================== ====================== ======================
         /**
          * @description Получаем пакет и проверяем не пустой ли он если не пустой к таймеру добавляем 20 мс
@@ -93,7 +96,7 @@ namespace ArgsHelper {
      * @param url {string} Ссылка
      * @param seek {number} Пропуск музыки до 00:00:00
      */
-    export function createArgs (url: string, AudioFilters: AudioFilters, seek: number): FFmpeg.Arguments {
+    export function createArgs(url: string, AudioFilters: AudioFilters, seek: number): FFmpeg.Arguments {
         let thisArgs = ["-reconnect", 1, "-reconnect_streamed", 1, "-reconnect_delay_max", 5];
         const audioDecoding = ["-c:a", "libopus", "-f", "opus"];
         const audioBitrate = ["-b:a", "256k"];
@@ -104,6 +107,7 @@ namespace ArgsHelper {
         //Всегда есть один фильтр <AudioFade>
         return [...thisArgs, "-compression_level", 10, ...audioDecoding, ...audioBitrate, "-af", parseFilters(AudioFilters), "-preset:a", "ultrafast"];
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем множитель времени для правильного отображения. При добавлении новых аргументов в Filters.json<FilterConfigurator>, их нужно тоже добавить сюда!
@@ -131,6 +135,7 @@ namespace ArgsHelper {
 
         return NumberDuration;
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Создаем фильтры для FFmpeg

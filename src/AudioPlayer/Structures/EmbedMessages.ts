@@ -31,10 +31,11 @@ export namespace EmbedMessages {
     /**
      * @description Message сообщение о текущем треке
      * @param client {WatKLOK} Клиент
-     * @param song {Song} Текущий трек
      * @param queue {Queue} Очередь
      */
-    export function toPlay(client: WatKLOK, song: Song, queue: Queue): EmbedConstructor {
+    export function toPlay(client: WatKLOK, queue: Queue): EmbedConstructor {
+        const song = queue.song;
+
         return {
             color: song.color,
             author: {
@@ -45,7 +46,7 @@ export namespace EmbedMessages {
             thumbnail: {
                 url: song.author?.image?.url ?? Images.NotImage,
             },
-            fields: toPlayFunctions.getFields(song, queue, client),
+            fields: toPlayFunctions.getFields(queue, client),
             image: {
                 url: song.image?.url ?? null
             },
@@ -55,6 +56,7 @@ export namespace EmbedMessages {
             }
         };
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Message сообщение о добавленном треке
@@ -69,7 +71,16 @@ export namespace EmbedMessages {
      * @param type {string} Платформа где была взята музыка
      * @param songs {Queue<songs>} Все треки
      */
-    export function toPushSong(client: WatKLOK, {color, author, image, title, url, duration, requester, type}: Song, {songs}: Queue): EmbedConstructor {
+    export function toPushSong(client: WatKLOK, {
+        color,
+        author,
+        image,
+        title,
+        url,
+        duration,
+        requester,
+        type
+    }: Song, {songs}: Queue): EmbedConstructor {
         return {
             color,
             author: {
@@ -90,6 +101,7 @@ export namespace EmbedMessages {
             }
         }
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Создаем Message сообщение для отправки в чат
@@ -101,7 +113,13 @@ export namespace EmbedMessages {
      * @param title {InputPlaylist.title} Название плейлиста
      * @param items {InputPlaylist.items} Треки плейлиста
      */
-    export function toPushPlaylist({client, author: DisAuthor}: ClientMessage, {author, image, url, title, items}: InputPlaylist): EmbedConstructor {
+    export function toPushPlaylist({client, author: DisAuthor}: ClientMessage, {
+        author,
+        image,
+        url,
+        title,
+        items
+    }: InputPlaylist): EmbedConstructor {
         return {
             color: Colors.Blue,
             author: {
@@ -120,22 +138,18 @@ export namespace EmbedMessages {
             }
         };
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Message сообщение о добавленном треке
      * @param client {WatKLOK} Клиент
      * @param color {Song<color>} Цвет
-     * @param author {Song<author>} Автор трека
-     * @param image {Song<image>} Картинка трека
-     * @param title {Song<title>} Название трека
-     * @param url {Song<url>} Ссылка на трек
-     * @param duration {Song<duration>} Длительность трека
-     * @param requester {Song<requester>} Кто включил трек
-     * @param type {string} Платформа где была взята музыка
      * @param songs {Queue<songs>} Все треки
      * @param err {Error} Ошибка выданная плеером
      */
-    export function toError(client: WatKLOK, {color, author, image, title, url, duration, requester, type}: Song, {songs}: Queue, err: Error | string): EmbedConstructor {
+    export function toError(client: WatKLOK, {songs, song}: Queue, err: Error | string): EmbedConstructor {
+        const {color, author, image, title, url, requester} = song;
+
         return {
             color,
             description: `\n[${title}](${url})\n\`\`\`js\n${err}...\`\`\``,
@@ -166,14 +180,26 @@ namespace toPlayFunctions {
      * @param client {WatKLOK} Клиент
      * @requires {ConvertTime, MusicDuration}
      */
-    export function getFields(song: Song, {player, songs, filters}: Queue, client: WatKLOK): { name: string, value: string }[] {
+    export function getFields({
+                                  player,
+                                  songs,
+                                  filters,
+                                  song
+                              }: Queue, client: WatKLOK): { name: string, value: string }[] {
         const playbackDuration = ConvertTime(player.streamDuration, filters);
         const VisualDuration = MusicDuration(song, playbackDuration);
 
-        let fields = [{ name: "Щас играет", value: `**❯** [${client.replaceText(song.title, 29, true)}](${song.url})\n${VisualDuration}` }];
-        if (songs[1]) fields.push({ name: "Потом", value: `**❯** [${client.replaceText(songs[1].title, 29, true)}](${songs[1].url})` });
+        let fields = [{
+            name: "Щас играет",
+            value: `**❯** [${client.replaceText(song.title, 29, true)}](${song.url})\n${VisualDuration}`
+        }];
+        if (songs[1]) fields.push({
+            name: "Потом",
+            value: `**❯** [${client.replaceText(songs[1].title, 29, true)}](${songs[1].url})`
+        });
         return fields;
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Создаем визуал таймера трека
@@ -192,6 +218,7 @@ namespace toPlayFunctions {
         if (Bar.Enable) return `**❯** [${parsedTimeSong} - ${str}\n${progress}`;
         return `**❯** [${curTime} - ${str}`;
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Конвертируем секунды проигранные плеером
@@ -202,6 +229,7 @@ namespace toPlayFunctions {
         if (Bar.Enable) return streamDuration;
         return DurationUtils.ParsingTimeToString(streamDuration);
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Вычисляем прогресс бар

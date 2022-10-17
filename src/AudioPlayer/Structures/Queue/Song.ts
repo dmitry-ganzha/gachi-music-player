@@ -1,7 +1,6 @@
 import {DurationUtils} from "../../Manager/DurationUtils";
 import {Images} from "../EmbedMessages";
 import {ClientMessage} from "../../../Handler/Events/Activity/Message";
-import {AudioFilters} from "./Queue";
 import {httpsClient} from "../../../Core/httpsClient";
 import {FFmpeg} from "../Media/FFmpeg";
 import {ColorTrack, SongFinder, SupportPlatforms, TypePlatform} from "../SongSupport";
@@ -39,14 +38,15 @@ export class Song {
             image: track.author?.image ?? {url: Images.NotImage},
             isVerified: track.author?.isVerified ?? undefined
         };
-        this.#duration = { seconds, full: seconds > 0 ? DurationUtils.ParsingTimeToString(seconds) : "Live" };
+        this.#duration = {seconds, full: seconds > 0 ? DurationUtils.ParsingTimeToString(seconds) : "Live"};
         this.#image = track.image;
-        this.#requester = { username, id, avatarURL: () => `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp` };
+        this.#requester = {username, id, avatarURL: () => `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp`};
         this.#isLive = track.isLive;
         this.#color = ColorTrack[type];
         this.#type = type;
         this.#resLink = track?.format?.url
     }
+
     //Название трека
     public get title() { return this.#title; };
     //Ссылка на трек
@@ -69,7 +69,7 @@ export class Song {
     private set link(url: string) { this.#resLink = url; };
 
     //Получаем исходник трека
-    public resource = (seek: number, filters: AudioFilters, req = 0): Promise<string> => new Promise(async (resolve) => {
+    public resource = (seek: number, req = 0): Promise<string> => new Promise(async (resolve) => {
         if (req > 10) return resolve(null);
         if (cfg.CacheMusic) {
             const isCache = Download(this);
@@ -86,9 +86,10 @@ export class Song {
         }
 
         req++;
-        return this.resource(seek, filters, req).then(resolve);
+        return this.resource(seek, req).then(resolve);
     });
 }
+
 //Какие данные доступны в <song>.requester
 interface SongRequester {
     id: string;
@@ -114,12 +115,13 @@ export interface InputTrack {
         };
         isVerified?: boolean;
     },
-    format?: FFmpeg.FFmpegFormat | {url: string | undefined};
+    format?: FFmpeg.FFmpegFormat | { url: string | undefined };
     isLive?: boolean;
     isPrivate?: boolean;
     isValid?: boolean;
     PrevFile?: string;
 }
+
 //Пример получаемого автора трека
 export interface InputAuthor {
     title: string;
@@ -131,6 +133,7 @@ export interface InputAuthor {
     };
     isVerified?: boolean;
 }
+
 //Пример получаемого плейлиста
 export interface InputPlaylist {
     url: string;
