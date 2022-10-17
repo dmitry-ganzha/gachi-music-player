@@ -17,8 +17,7 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
         const filterBot = (member: GuildMember) => member.user.id === client.user.id;
 
         setImmediate(() => {
-            const voice = Voice.getVoice(Guild.id),
-                isBotVoice = !!newState.channel?.members?.find(filterBot) ?? !!oldState.channel?.members?.find(filterBot);
+            const voice = Voice.getVoice(Guild.id), isBotVoice = !!newState.channel?.members?.find(filterBot) ?? !!oldState.channel?.members?.find(filterBot);
             const usersSize = newState.channel?.members?.filter(filter)?.size ?? oldState.channel?.members?.filter(filter)?.size;
 
             //Если есть голосовое подключение и нет пользователей

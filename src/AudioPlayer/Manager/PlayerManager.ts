@@ -29,7 +29,6 @@ export namespace PlayerEventsCallBacks {
             return queue.play(); //Включаем трек
         }, 200);
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Когда плеер выдает ошибку, он возвратит эту функцию
@@ -48,7 +47,6 @@ export namespace PlayerEventsCallBacks {
             }
         }, 200);
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Повтор музыки
@@ -56,16 +54,12 @@ export namespace PlayerEventsCallBacks {
      */
     function isRemoveSong({options, songs}: Queue): void {
         switch (options?.loop) {
-            case "song":
-                return;
-            case "songs":
-                return void songs.push(songs.shift());
-            default:
-                return void songs.shift();
+            case "song": return;
+            case "songs": return void songs.push(songs.shift());
+            default: return void songs.shift();
         }
     }
 }
-
 //Менеджер, добавляет в общую базу плеер или удаляет. Так-же запускает работу плеера!
 export namespace PlayersManager {
     /**
@@ -83,7 +77,6 @@ export namespace PlayersManager {
             setImmediate(playerCycleStep);
         }
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Удаляем плеер из базы
@@ -99,7 +92,6 @@ export namespace PlayersManager {
             if (typeof PlayerData.timer !== "undefined") clearTimeout(PlayerData.timer);
         }
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Цикл жизни плеера

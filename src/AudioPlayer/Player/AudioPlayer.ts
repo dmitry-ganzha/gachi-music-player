@@ -21,19 +21,11 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
     readonly #voices: VoiceConnection[] = []; //Голосовые каналы
 
     //Все голосовые каналы к которым подключен плеер
-    public get voices() {
-        return this.#voices;
-    };
-
+    public get voices() { return this.#voices; };
     //Текущее время плеера в секундах
-    public get streamDuration() {
-        return this.state.stream?.duration ?? 0;
-    };
+    public get streamDuration() { return this.state.stream?.duration ?? 0; };
 
-    public get state(): PlayerState {
-        return this.#state;
-    };
-
+    public get state(): PlayerState { return this.#state; };
     //Заменяет или выдает статистику плеера
     public set state(newState: PlayerState) {
         const oldState = this.#state; //Старая статистика плеера
@@ -96,7 +88,6 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
             subscription.connection.setSpeaking(false);
         }
     };
-
     //====================== ====================== ====================== ======================
     /**
      * @description Читаем поток
@@ -107,7 +98,8 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         else {
             //Включаем поток когда можно будет начать читать
             const onReadCallback = () => {
-                if (!this.state.stream.destroyed) this.state.stream.destroy();
+                //Удаляем прошлй поток если введен новый
+                if (this.state?.stream && !this.state?.stream?.destroyed) this.state?.stream?.destroy();
 
                 this.state = {status: "playing", stream};
             }
@@ -118,7 +110,6 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
             stream.once("error", onFailCallBack);
         }
     };
-
     //====================== ====================== ====================== ======================
     /**
      * @description Что делает плеер в соответствии со статусами
@@ -154,7 +145,6 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
             this.stop();
         }
     };
-
     //====================== ====================== ====================== ======================
     /**
      * @description Фильтрует голосовые и отправляет в них аудио пакеты
@@ -170,7 +160,6 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
 
 type PlayerState = PlayerStateIdle | PlayerStatePause | PlayerStatePlaying | PlayerStateError;
 type PlayerResource = Decoder.OggOpus; //Все декодировщики доступные к чтению
-
 
 interface PlayerStateIdle {
     status: "idle";

@@ -13,7 +13,6 @@ export function getCookies(): null | string {
         return null;
     }
 }
-
 //====================== ====================== ====================== ======================
 /**
  * @description Сохраняем куки в json файл
@@ -44,7 +43,6 @@ export function uploadCookie(Cookie: string | string[]): void {
         throw new Error("Cookie file has damaged!");
     }
 }
-
 //====================== ====================== ====================== ======================
 /**
  * @description Создаем из строки json
@@ -75,7 +73,6 @@ function ParsingCookieToJson(headCookie: string[] | string): {} {
     }
     return Json;
 }
-
 //====================== ====================== ====================== ======================
 /**
  * @description Получаем из json формата строку

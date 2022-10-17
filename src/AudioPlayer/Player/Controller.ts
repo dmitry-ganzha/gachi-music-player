@@ -29,7 +29,6 @@ export namespace PlayerController {
             color: "DarkRed"
         });
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Приостанавливает воспроизведение музыки
@@ -51,7 +50,6 @@ export namespace PlayerController {
             color: "DarkRed"
         });
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Убираем музыку из очереди
@@ -61,12 +59,12 @@ export namespace PlayerController {
      */
     export function toRemove(message: ClientMessage, args: number): void {
         const {client, guild, member, author} = message;
-        const {player, songs}: Queue = client.queue.get(guild.id);
+        const {player, songs, song}: Queue = client.queue.get(guild.id);
         const {title, color, requester, url}: Song = songs[args - 1];
 
         setImmediate(() => {
             const voiceConnection: VoiceState[] = client.connections(guild) as VoiceState[];
-            const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === songs[0].requester.id);
+            const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === song.requester.id);
 
             //Если музыку нельзя пропустить из-за плеера
             if (!StatusPlayerHasSkipped.has(player.state.status)) return client.sendMessage({
@@ -91,7 +89,6 @@ export namespace PlayerController {
             });
         });
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Завершает текущую музыку
@@ -121,7 +118,6 @@ export namespace PlayerController {
             });
         }
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Пропускает текущую музыку
@@ -163,7 +159,6 @@ export namespace PlayerController {
             });
         });
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Повтор текущей музыки
@@ -186,7 +181,6 @@ export namespace PlayerController {
             });
         }
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Применяем фильтры для плеера
@@ -209,7 +203,6 @@ export namespace PlayerController {
         }
     }
 }
-
 //====================== ====================== ====================== ======================
 /**
  * @description Пропускает музыку под номером
@@ -224,7 +217,7 @@ function toSkipNumber(message: ClientMessage, args: number): void {
 
     setImmediate(() => {
         const voiceConnection: VoiceState[] = client.connections(guild) as VoiceState[];
-        const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === queue.songs[0].requester.id);
+        const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === queue.song.requester.id);
 
         //Если музыку нельзя пропустить из-за плеера
         if (!StatusPlayerHasSkipped.has(queue.player.state.status)) return client.sendMessage({
@@ -257,7 +250,6 @@ function toSkipNumber(message: ClientMessage, args: number): void {
         });
     });
 }
-
 //====================== ====================== ====================== ======================
 /**
  * @description Завершает текущую музыку

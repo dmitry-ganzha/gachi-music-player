@@ -61,15 +61,17 @@ export default class Filter extends Command {
         const FilterName = args[args?.length - 2 ?? args?.length - 1] ?? args[0];
         const SendArg: { color: any, type: "css", message: ClientMessage } = {color: "Blue", type: "css", message};
 
-
-        if (FilterName === "all") return this.#ReactionMenuFilters(Filters, message); //Показываем все доступные фильтры
-        else if (FilterName === "off") { //Выключаем все фильтры
+        //Показываем все доступные фильтры
+        if (FilterName === "all") return this.#ReactionMenuFilters(Filters, message);
+        //Выключаем все фильтры
+        else if (FilterName === "off") {
             queue.filters.splice(0, queue.filters.length);
             this.#executeFilter(message);
             return;
         }
 
-        if (!FilterName) { //Если пользователь не указал название фильтра
+        //Если пользователь не указал название фильтра
+        if (!FilterName) {
             if (queue.filters.length === 0) return message.client.sendMessage({text: `${message.author.username}, включенных аудио фильтров нет!`, ...SendArg});
             const ArrayFilters: typeof Filters = [];
 
@@ -81,8 +83,10 @@ export default class Filter extends Command {
             return this.#ReactionMenuFilters(ArrayFilters, message);
         }
 
+        //Получаем данные о фильтре
         const Filter = FFmpeg.getFilter(FilterName);
 
+        //Если есть такой фильтр
         if (Filter) {
             const enableFilter = !!queue.filters.find((filter) => typeof filter === "number" ? null : Filter.names.includes(filter));
 
@@ -114,7 +118,7 @@ export default class Filter extends Command {
                     if (FilterArg >= Filter.args[0] && FilterArg <= Filter.args[1]) {
                         queue.filters.push(Filter.names[0]);
                         queue.filters.push(FilterArg as any);
-                        message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} был изменен аргумент на ${FilterArg}!`, ...SendArg});
+                        message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName}:${FilterArg} включен!`, ...SendArg});
                         //Если аргументы не подходят
                     } else return message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} не включен из-за несоответствия аргументов!`, ...SendArg});
                 } else { //Если нет аргумента
@@ -123,10 +127,7 @@ export default class Filter extends Command {
                     message.client.sendMessage({text: `${message.author.username} | Filter: ${FilterName} включен!`, ...SendArg});
                 }
             }
-        } else return message.client.sendMessage({
-            text: `${message.author.username}, у меня нет такого фильтра. Все фильтры - all`,
-            message
-        });
+        } else return message.client.sendMessage({ text: `${message.author.username}, у меня нет такого фильтра. Все фильтры - all`, message });
 
         this.#executeFilter(message);
     };
@@ -151,7 +152,7 @@ export default class Filter extends Command {
         filters.ArraySort(5).forEach((s) => {
             const parsedFilters = s.map((filter: typeof Filters[0]) => {
                 return `Фильтр - [${numFilter++}]
-                    **❯ Названия:** ${filter.names ? `(${filter.names})` : `Нет`} 
+                    **❯ Названия:** ${filter.names ? `(${filter.names})` : `Нет`}
                     **❯ Описание:** ${filter.description ? `(${filter.description})` : `Нет`}
                     **❯ Аргументы:** ${filter.args ? `(${filter.args})` : `Нет`}
                     **❯ Модификатор скорости:** ${filter.speed ? `${filter.speed}` : `Нет`}`
@@ -161,10 +162,7 @@ export default class Filter extends Command {
             if (parsedFilters !== undefined) pages.push(parsedFilters);
         });
         embed.description = pages[0];
-        embed.footer = {
-            text: `${message.author.username} | Лист 1 из ${pages.length}`,
-            iconURL: message.author.displayAvatarURL()
-        }
+        embed.footer = { text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL() }
 
         new ReactionMenu(embed, message, ReactionMenu.Callbacks(1, pages, embed));
     };

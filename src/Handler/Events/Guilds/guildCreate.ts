@@ -26,9 +26,7 @@ export class guildCreate extends Event<Guild, null> {
             description: `Превествую всех пользователей ${guild} сервера. Я просто музыкальный бот, спасибо что добавили меня к себе 🥰`,
         };
 
-        setImmediate(() => {
-            // @ts-ignore
-            return guild.systemChannel.send({embeds: [Embed], components: [Buttons()]}).catch(console.log);
-        });
+        // @ts-ignore
+        setImmediate(() => guild.systemChannel.send({embeds: [Embed], components: [Buttons()]}).catch(console.log));
     };
 }

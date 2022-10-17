@@ -20,14 +20,12 @@ export namespace Decoder {
 
         return decodingAudio;
     }
-
     //С помощью FFmpeg конвертирует любой формат в opus
     export class OggOpus extends opus.OggDemuxer {
         readonly #FFmpeg: FFmpeg.FFmpeg;
         readonly #TimeFrame: number = 20;
         #playbackDuration = 0;
         #started = false;
-
         /**
          * @description Декодируем в opus
          * @param parameters {Options}
@@ -56,7 +54,6 @@ export namespace Decoder {
         public get duration() { return parseInt((this.#playbackDuration / 1000).toFixed(0)); };
         //Проверяем можно ли читать поток
         public get hasStarted() { return this.#started; };
-
         //====================== ====================== ====================== ======================
         /**
          * @description Получаем пакет и проверяем не пустой ли он если не пустой к таймеру добавляем 20 мс
@@ -107,7 +104,6 @@ namespace ArgsHelper {
         //Всегда есть один фильтр <AudioFade>
         return [...thisArgs, "-compression_level", 10, ...audioDecoding, ...audioBitrate, "-af", parseFilters(AudioFilters), "-preset:a", "ultrafast"];
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем множитель времени для правильного отображения. При добавлении новых аргументов в Filters.json<FilterConfigurator>, их нужно тоже добавить сюда!
@@ -135,7 +131,6 @@ namespace ArgsHelper {
 
         return NumberDuration;
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Создаем фильтры для FFmpeg

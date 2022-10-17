@@ -38,7 +38,6 @@ export namespace MessagePlayer {
             if (msg) msg.then(MessageUpdater.toPush).catch((err) => console.log(err));
         });
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description При ошибке плеер выводит эту функцию
@@ -59,7 +58,6 @@ export namespace MessagePlayer {
             }
         });
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Сообщение о добавлении трека в очередь сервера
@@ -80,7 +78,6 @@ export namespace MessagePlayer {
             }
         });
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Отправляем сообщение о том что плейлист был добавлен в очередь
@@ -102,7 +99,6 @@ export namespace MessagePlayer {
         });
     }
 }
-
 //====================== ====================== ====================== ======================
 /**
  * @description Обновляем сообщение
@@ -118,15 +114,10 @@ function UpdateMessage(message: ClientMessage): void {
     setImmediate(() => {
         const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue);
 
-        try {
-            //Обновляем сообщение
-            return message.edit({embeds: [CurrentPlayEmbed]});
-        } catch (e) {
-            message.client.console(`[MessageEmitter]: [function: UpdateMessage]: ${e.message}`);
-        }
+        //Обновляем сообщение
+        return message.edit({embeds: [CurrentPlayEmbed]}).catch((e) => message.client.console(`[MessageEmitter]: [function: UpdateMessage]: ${e.message}`));
     });
 }
-
 //====================== ====================== ====================== ======================
 /**
  * @description Отправляем сообщение
@@ -147,7 +138,6 @@ function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> 
 
     return sendMessage;
 }
-
 //====================== ====================== ====================== ======================
 /**
  * @description Создаем сборщик кнопок
@@ -202,7 +192,6 @@ namespace MessageUpdater {
         //Если в базе есть хоть одно сообщение, то запускаем таймер
         if (MessagesData.messages.size === 1) setImmediate(StepCycleMessage);
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Удаляем сообщение из <Message[]>, так-же проверяем отключить ли таймер
@@ -222,7 +211,6 @@ namespace MessageUpdater {
             if (typeof MessagesData.timer !== "undefined") clearTimeout(MessagesData.timer);
         }
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Обновляем сообщения на текстовый каналах

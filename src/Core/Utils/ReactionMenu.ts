@@ -32,7 +32,6 @@ export class ReactionMenu {
             }));
         });
     };
-
     //====================== ====================== ====================== ======================
     /**
      * @description Функции для управления <CollectorSortReaction>
@@ -49,13 +48,7 @@ export class ReactionMenu {
 
                     if (page === 1) return null;
                     page--;
-                    embed = {
-                        ...embed, description: pages[page - 1],
-                        footer: {
-                            ...embed.footer,
-                            text: `${message.author.username} | Лист ${page} из ${pages.length}`
-                        }
-                    };
+                    embed = { ...embed, description: pages[page - 1], footer: { ...embed.footer, text: `${message.author.username} | Лист ${page} из ${pages.length}` }};
 
                     return msg.edit({embeds: [embed]});
                 });
@@ -73,14 +66,7 @@ export class ReactionMenu {
 
                     if (page === pages.length) return null;
                     page++;
-
-                    embed = {
-                        ...embed, description: pages[page - 1],
-                        footer: {
-                            ...embed.footer,
-                            text: `${message.author.username} | Лист ${page} из ${pages.length}`
-                        }
-                    };
+                    embed = { ...embed, description: pages[page - 1], footer: { ...embed.footer, text: `${message.author.username} | Лист ${page} из ${pages.length}` }};
 
                     return msg.edit({embeds: [embed]});
                 });

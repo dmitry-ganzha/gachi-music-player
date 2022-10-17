@@ -84,7 +84,6 @@ export interface ClientMessage extends Message {
     channel: {
         send(options: SendMessageOptions): Promise<ClientMessage>
     } & Channel
-
     // @ts-ignore
     edit(content: SendMessageOptions | MessageEditOptions): Promise<ClientMessage>
 }

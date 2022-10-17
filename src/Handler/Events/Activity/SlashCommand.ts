@@ -22,7 +22,6 @@ export class SlashCommand extends Event<ClientInteraction, null> {
         }
     };
 }
-
 // Удаляем через 200 мс взаимодействие
 function DeleteInteraction(interaction: ClientInteraction) {
     return setTimeout(() => {
@@ -30,13 +29,11 @@ function DeleteInteraction(interaction: ClientInteraction) {
         interaction.deferReply().catch((): null => null);
     }, 200);
 }
-
 // Меняем взаимодействие под ClientMessage
 function editInteraction(interaction: ClientInteraction): void {
     interaction.author = interaction.member.user;
     interaction.delete = (): null => null;
 }
-
 /*
 // Если нет такой команды удаляем из взаимодействия
 function DeleteCommandInInteraction(client: WatKLOK, interaction: ClientInteraction): void | Promise<ApplicationCommand<{guild: GuildResolvable}>> {

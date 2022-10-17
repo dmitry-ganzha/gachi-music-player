@@ -25,7 +25,6 @@ export namespace FileSystem {
             if (!existsSync(currentDir)) mkdirSync(currentDir);
         }
     }
-
     export function env(name: string) {
         return process.env[name];
     }
@@ -41,7 +40,6 @@ function log(type: "Commands" | "Events" | "Modules", dir: string, file: string,
 
     return FileBase[type].push(EndStr);
 }
-
 //Загружаем файлы
 export function LoadFiles(client: WatKLOK) {
     //Откуда берем для загрузки файлы
@@ -92,7 +90,6 @@ class FileLoader {
 
         this.readDir();
     };
-
     private readonly readDir = () => {
         //Смотрим что находится в папке
         readdirSync(`./src/${this.path}`).forEach(async (dir: string) => {
@@ -118,7 +115,6 @@ class FileLoader {
             }
         });
     };
-
     //Загружаем export
     private readonly findExport = async (path: string): Promise<null | any> => {
         const importFile = (await import(path));

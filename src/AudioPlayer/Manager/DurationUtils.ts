@@ -14,7 +14,6 @@ export namespace DurationUtils {
 
         return ParsingTimeToString(Timer);
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Создаем готовый формат времени. Пример 00:00:00:00 (Days:Hours:Minutes:Seconds)
@@ -30,7 +29,6 @@ export namespace DurationUtils {
         //Получаем дни, часы, минуты, секунды в формате 00:00
         return (days > 0 ? `${days}:` : "") + (hours > 0 || days > 0 ? `${hours}:` : "") + (minutes > 0 ? `${minutes}:` : "00:") + (seconds > 0 ? `${seconds}` : "00");
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Из формата 00:00:00:00, получаем секунды
@@ -55,7 +53,6 @@ export namespace DurationUtils {
         }
     }
 }
-
 //====================== ====================== ====================== ======================
 /**
  * @description Делаем из числа строку, так-же добавляем к числу 0 если это надо
@@ -65,7 +62,6 @@ export namespace DurationUtils {
 function toString(duration: number): string | number {
     return reformatDuration(parseInt(duration as any));
 }
-
 //====================== ====================== ====================== ======================
 /**
  * @description Добавляем 0 к числу. Пример: 01:10

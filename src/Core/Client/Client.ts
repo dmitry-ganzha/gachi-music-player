@@ -48,7 +48,6 @@ export class WatKLOK extends Client {
         //Включаем режим отладки
         if (Debug) this.on("debug", null);
     };
-
     //Отправить не полное embed сообщение
     public readonly sendMessage = ({color, text, type, message}: SendOptions) => {
         const Embed: EmbedConstructor = {
@@ -87,7 +86,6 @@ export class WatKLOK extends Client {
 
         return Users.length > 0 ? Users : 404;
     };
-
     //Включаем бота
     public login(token: string = FileSystem.env("TOKEN")): Promise<string> {
         LoadFiles(this);

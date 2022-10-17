@@ -18,7 +18,6 @@ function FFmpegCheck() {
     }
     return Error("FFmpeg not found!");
 }
-
 /**
  * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a и для <FFprobeName> задаем название для FFprobe, если они будут найдены!
  */
@@ -70,11 +69,7 @@ export namespace FFmpeg {
         };
 
         get stdout() { return this.#process.stdout; };
-
         get stdin() { return this.#process.stdin; };
-
-        //get stderr() { return this.#process.stderr; };
-
         //====================== ====================== ====================== ======================
         /**
          * @description Удаляем все что не нужно
@@ -89,7 +84,6 @@ export namespace FFmpeg {
 
             if (error) return console.error(error);
         };
-
         //====================== ====================== ====================== ======================
         /**
          * @description Создаем "привязанные функции" (ПФ - термин из ECMAScript 6)
@@ -98,7 +92,6 @@ export namespace FFmpeg {
          */
             // @ts-ignore
         readonly #Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
-
         readonly #Calling = (methods: string[]) => {
             const EVENTS = {
                 readable: this.stdout,
@@ -113,7 +106,6 @@ export namespace FFmpeg {
             // @ts-ignore
             methods.forEach((method) => this[method] = (ev, fn) => EVENTS[ev] ? EVENTS[ev][method](ev, fn) : Duplex.prototype[method].call(this, ev, fn));
         };
-
         //====================== ====================== ====================== ======================
         /**
          * @description Запускаем FFmpeg
@@ -137,7 +129,6 @@ export namespace FFmpeg {
      */
     export class FFprobe {
         readonly #process: ChildProcessWithoutNullStreams;
-
         //====================== ====================== ====================== ======================
         /**
          * @description Запуск FFprobe
@@ -146,7 +137,6 @@ export namespace FFmpeg {
         public constructor(Arguments: Array<string>) {
             this.#process = this.#SpawnProbe(Arguments);
         };
-
         //====================== ====================== ====================== ======================
         /**
          * @description Получаем данные
@@ -178,7 +168,7 @@ export namespace FFmpeg {
             windowsHide: true
         });
     }
-
+    //Ищем фильтер в Array<Filter>
     export function getFilter(name: string): Filter {
         return (AudioFilters as Filter[]).find((fn) => fn.names.includes(name));
     }

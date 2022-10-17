@@ -51,7 +51,6 @@ export namespace httpsClient {
             httpsRequest.end();
         });
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем страницу в формате string
@@ -78,7 +77,6 @@ export namespace httpsClient {
             return runDecode(res.pipe(decoder));
         }));
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем со страницы JSON (Работает только тогда когда все страница JSON)
@@ -98,7 +96,6 @@ export namespace httpsClient {
             }
         });
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Проверяем ссылку на работоспособность
@@ -115,7 +112,6 @@ export namespace httpsClient {
         });
     }
 }
-
 //====================== ====================== ====================== ======================
 /**
  * @description Получаем рандомный user-agent и его версию
@@ -131,7 +127,6 @@ function GetUserAgent(): { Agent: string, Version: string } {
 
     return {Agent, Version};
 }
-
 //====================== ====================== ====================== ======================
 /**
  * @description Добавляем свои аргументы запроса
@@ -152,7 +147,6 @@ function ChangeReqOptions(options: httpsClientOptions): void {
     //Добавляем куки
     if (options.options?.cookie && Cookie) options.request.headers = {...options.request.headers, "cookie": Cookie};
 }
-
 //====================== ====================== ====================== ======================
 type Decoder = BrotliDecompress | Gunzip | Deflate;
 
