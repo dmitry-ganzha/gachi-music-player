@@ -31,10 +31,7 @@ export namespace DownloadManager {
 
                     res.pipe(file);
 
-                    ["close", "finish"].forEach((event) => {
-                        file.once(event, () => fs.rename(`${AudioDir}/[${SongTitle}].raw`, `${AudioDir}/[${SongTitle}].opus`, () => {
-                        }))
-                    })
+                    ["close", "finish"].forEach((event) => file.once(event, () => fs.rename(`${AudioDir}/[${SongTitle}].raw`, `${AudioDir}/[${SongTitle}].opus`, null)))
                 }
             });
         }
