@@ -16,14 +16,15 @@ export namespace QueueManager {
      */
     export function toQueue(message: ClientMessage, VoiceChannel: VoiceChannel, info: InputTrack | InputPlaylist): void {
         const {queue, status} = CreateQueue(message, VoiceChannel);
+        const requester = message.author;
 
         setImmediate(() => {
             //Если поступает плейлист
             if ("items" in info) {
                 MessagePlayer.toPushPlaylist(message, info);
                 //Добавляем треки в очередь
-                info.items.forEach((track) => queue.push(new Song(track, message.author)));
-            } else queue.push(new Song(info, message.author)); //Добавляем трек в очередь
+                info.items.forEach((track) => queue.push(new Song(track, requester)));
+            } else queue.push(new Song(info, requester), queue.songs.length >= 1); //Добавляем трек в очередь
 
             //Запускаем callback плеера, если очередь была создана, а не загружена!
             if (status === "create") queue.play();

@@ -4,9 +4,7 @@ import AudioFilters from "../../../../DataBase/Filters.json";
 
 let FFmpegName: string, FFprobeName: string;
 
-/**
- * Проверяем есть ли FFmpeg в системе
- */
+//Проверяем есть ли FFmpeg в системе
 function FFmpegCheck() {
     for (let source of ["ffmpeg", "avconv", "./FFmpeg/ffmpeg", "./FFmpeg/avconv", "./node_modules/ffmpeg-static/ffmpeg"]) {
         try {
@@ -18,9 +16,7 @@ function FFmpegCheck() {
     }
     return Error("FFmpeg not found!");
 }
-/**
- * @description При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a и для <FFprobeName> задаем название для FFprobe, если они будут найдены!
- */
+//При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a и для <FFprobeName> задаем название для FFprobe, если они будут найдены!
 function FFprobeCheck() {
     for (let source of ["ffprobe", "./FFmpeg/ffprobe", "./node_modules/ffprobe-static/ffprobe"]) {
         try {
@@ -90,7 +86,7 @@ export namespace FFmpeg {
          * @param methods {string[]}
          * @param target {Readable | Writable}
          */
-            // @ts-ignore
+        // @ts-ignore
         readonly #Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
         readonly #Calling = (methods: string[]) => {
             const EVENTS = {

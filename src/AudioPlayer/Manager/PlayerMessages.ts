@@ -14,6 +14,8 @@ const Buttons = new ActionRowBuilder().addComponents([
 );
 //Кнопки с которыми можно взаимодействовать
 const ButtonID = new Set(["skip", "resume_pause", "replay", "last"]);
+//Статусы плеера при которых не надо обновлять сообщение
+const PlayerStatuses = new Set(["idle", "paused", "autoPaused"]);
 
 //База с сообщениями
 const MessagesData = {
@@ -109,7 +111,10 @@ function UpdateMessage(message: ClientMessage): void {
     const queue: Queue = message.client.queue.get(message.guild.id);
 
     //Если очереди нет, то удаляем сообщение
-    if (!queue || queue?.songs?.length === 0) return MessageUpdater.toRemove(message);
+    if (!queue || !queue?.song) return MessageUpdater.toRemove(message);
+
+    //Если у плеера статус при котором нельзя обновлять сообщение
+    if (PlayerStatuses.has(queue.player.state.status)) return;
 
     setImmediate(() => {
         const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue);
@@ -126,9 +131,8 @@ function UpdateMessage(message: ClientMessage): void {
  */
 function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> {
     const queue: Queue = message.client.queue.get(message.guild.id);
-    const song = queue.song;
 
-    if (!song) return;
+    if (!queue?.song) return;
 
     const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue);
     const sendMessage = message.channel.send({embeds: [CurrentPlayEmbed as any], components: [Buttons as any]});

@@ -7,7 +7,6 @@ import {VoiceConnection} from "@discordjs/voice";
 import {MessagePlayer} from "../../Manager/PlayerMessages";
 import {Decoder} from "../Media/Decoder";
 
-export type LoopType = "song" | "songs" | "off";
 export type AudioFilters = Array<string> | Array<string | number>;
 
 //Музыкальная очередь
@@ -18,7 +17,7 @@ export class Queue {
     readonly #player: AudioPlayer = new AudioPlayer(); //Сам плеер
     //Каналы (message: TextChannel, voice: VoiceChannel)
     readonly #channels: { message: ClientMessage, voice: VoiceChannel | StageChannel };
-    readonly #options: { random: boolean, loop: LoopType, stop: boolean } = { //Уникальные настройки
+    readonly #options: { random: boolean, loop: "song" | "songs" | "off", stop: boolean } = { //Уникальные настройки
         random: false, //Рандомные треки (каждый раз в плеере будет играть разная музыка из очереди)
         loop: "off", //Тип повтора (off, song, songs)
         stop: false, //Пользователь выключил музыки или музыка сама закончилась

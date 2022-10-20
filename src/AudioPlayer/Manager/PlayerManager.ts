@@ -1,6 +1,7 @@
 import {AudioPlayer} from "../Player/AudioPlayer";
 import {MessagePlayer} from "./PlayerMessages";
 import {Queue} from "../Structures/Queue/Queue";
+import fs from "fs";
 
 const PlayerData = {
     players: [] as AudioPlayer[], //Плееры серверов
@@ -27,7 +28,7 @@ export namespace PlayerEventsCallBacks {
             }
 
             return queue.play(); //Включаем трек
-        }, 200);
+        }, 700);
     }
     //====================== ====================== ====================== ======================
     /**
@@ -45,7 +46,7 @@ export namespace PlayerEventsCallBacks {
                 queue.songs.shift();
                 setTimeout(() => queue.play(), 1e3);
             }
-        }, 200);
+        }, 800);
     }
     //====================== ====================== ====================== ======================
     /**

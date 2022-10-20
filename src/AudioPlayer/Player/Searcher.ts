@@ -4,14 +4,12 @@ import {InputPlaylist, InputTrack} from "../Structures/Queue/Song";
 import {messageUtils} from "../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../Manager/DurationUtils";
 import {
-    ColorTrack,
     FailRegisterPlatform,
     SearchPlatforms,
     SupportPlatforms,
     SupportType,
     TypePlatform
 } from "../Structures/SongSupport";
-import {CacheMusic} from "../../../DataBase/Config.json";
 import {DownloadManager} from "../Manager/DownloadManager";
 
 //Данные которые необходимо передать для поиска
@@ -25,9 +23,9 @@ interface Options {
 
 const UrlSrt = /^(https?:\/\/)/gi;
 const emoji = "❌";
+const Download = DownloadManager.downloadUrl;
 
 export namespace Handle {
-    import Download = DownloadManager.downloadUrl;
     /**
      * @description Ищем и передаем в плеер данные
      * @param options {Options} Параметры
@@ -44,9 +42,6 @@ export namespace Handle {
             message, color: "DarkRed", type: "css"
         });
 
-        //Отправляем сообщение о поиске трека
-        if (platform !== "DISCORD") message.client.sendMessage({ text: `Поиск 🔍 | ${parsedSearch}`, message, color: ColorTrack[platform] ?? "Yellow", type: "css" });
-
         const findPlatform = SupportPlatforms[platform]; //Ищем в списке платформу
         const findType = (findPlatform as any)[type]; //Ищем тип запроса
 
@@ -62,13 +57,7 @@ export namespace Handle {
             if (data instanceof Array) return SearchSongMessage.toSend(data, data.length, {...options, platform, type});
 
             //Сообщаем что трек был найден
-            if (type !== "playlist") {
-                let text = `Найден 🔍 | ${type} | ${data.title}`;
-                //Если включено кеширование треков сообщаем есть ли трек
-                if (CacheMusic) text += ` | Кеш: ${Download(data as any) ? "Есть" : "Нету"}`;
-
-                message.client.sendMessage({text, message, color: "Yellow", type: "css"});
-            }
+            if (type !== "playlist") message.client.sendMessage({text: `Найден 🔍 | ${type} | Кеш: ${Download(data as any) ? "✔️" : "✖️"}\n➜ ${data.title}`, message, color: "Yellow", type: "css"});
 
             //Загружаем трек или плейлист в GuildQueue
             return message.client.player.emit("play", message, voiceChannel, data);
@@ -94,7 +83,6 @@ namespace toPlayerUtils {
         else if (search.match(UrlSrt)) return "track";
         return "search";
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем инициалы платформы
@@ -111,7 +99,6 @@ namespace toPlayerUtils {
         if (SearchPlatforms[platform]) return SearchPlatforms[platform] as SupportPlatforms;
         return "YOUTUBE";
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Фильтруем ссылку от аргументов поиска

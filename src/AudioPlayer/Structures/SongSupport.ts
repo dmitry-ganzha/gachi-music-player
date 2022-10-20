@@ -130,7 +130,7 @@ export namespace SongFinder {
                 const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);
 
                 //Как надо фильтровать треки
-                return DurationSong === duration || DurationSong < duration + 27 && DurationSong > duration - 5;
+                return DurationSong === duration || DurationSong < duration + 7 && DurationSong > duration - 5;
             });
 
             //Если треков нет

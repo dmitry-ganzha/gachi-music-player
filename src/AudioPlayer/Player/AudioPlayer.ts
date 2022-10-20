@@ -47,7 +47,6 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
             this.emit(newState.status, oldState, newState);
         }
     };
-
     //Ставим на паузу плеер
     public pause = () => {
         if (this.state.status !== "playing") return;
