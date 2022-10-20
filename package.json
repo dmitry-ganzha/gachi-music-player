@@ -7,9 +7,6 @@
     "tiny-typed-emitter": "^2.1.0"
   },
   "description": "Discord music bot",
-  "engines": {
-    "node": "18"
-  },
   "main": "src/Core/Client/Client.js",
   "name": "WatKLOK",
   "repository": {
