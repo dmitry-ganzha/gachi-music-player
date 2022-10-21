@@ -19,7 +19,7 @@
 - Все сообщения удаляют автоматически через время
 
 ## Гайд по запуску
-1. [`Node.js`](https://nodejs.org/ru/) 18
+1. [`Node.js`](https://nodejs.org/ru/) | 16-19
 2. [`FFmpeg & FFprobe`](https://ffmpeg.org/) или npm install (ffmpeg-static и ffprobe-static)
 3. Библиотеки шифрования (на выбор)
     - `sodium-native`: ^3.3.0 (рекомендуется)
