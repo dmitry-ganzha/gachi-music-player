@@ -55,9 +55,8 @@ export namespace Decoder {
         //Проверяем можно ли читать поток
         public get hasStarted() { return this.#started; };
         //====================== ====================== ====================== ======================
-        /**
-         * @description Получаем пакет и проверяем не пустой ли он если не пустой к таймеру добавляем 20 мс
-         */
+        /***/
+        //Получаем пакет и проверяем не пустой ли он если не пустой к таймеру добавляем 20 мс
         public readonly read = (): Buffer | null => {
             const packet: Buffer = super.read();
 
@@ -66,9 +65,8 @@ export namespace Decoder {
             return packet;
         };
         //====================== ====================== ====================== ======================
-        /**
-         * @description Чистим память!
-         */
+        /***/
+        //Чистим память!
         public readonly _destroy = (): void => {
             if (!this.#FFmpeg?.destroyed) this.#FFmpeg?.destroy();
             if (!super.destroyed) super.destroy();

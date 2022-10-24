@@ -100,25 +100,7 @@ export namespace PlayersManager {
      */
     function playerCycleStep(players: AudioPlayer[] = null): void {
         //Проверяем плееры на возможность включить музыку в голосовые каналы
-        if (players === null) {
-            if (PlayerData.time === -1) return;
-
-            PlayerData.time += 20;
-
-            //Фильтруем какой плеер готов проигрывать музыку
-            const available = PlayerData.players.filter((player) => {
-                if (player.state.status === "idle") return false;
-
-                //Если невозможно прочитать поток выдать false
-                if (!player.state.stream?.hasStarted) {
-                    player.state = {status: "idle"};
-                    return false;
-                }
-                return true;
-            });
-
-            return playerCycleStep(available);
-        }
+        if (players === null) return getPlayers();
 
         const nextPlayer = players.shift();
 
@@ -134,5 +116,33 @@ export namespace PlayersManager {
         nextPlayer["CheckStatusPlayer"]();
 
         setImmediate(() => playerCycleStep(players));
+    }
+    //====================== ====================== ====================== ======================
+    /**
+    * @description Фильтруем плеер
+    * @param player {AudioPlayer} плеер
+    */
+    function filtringAvailable(player: AudioPlayer) {
+        if (player.state.status === "idle") return false;
+
+        //Если невозможно прочитать поток выдать false
+        if (!player.state.stream?.hasStarted) {
+            player.state = {status: "idle"};
+            return false;
+        }
+        return true;
+    }
+    //====================== ====================== ====================== ======================
+    /**
+    * @description Получаем актуальный список плееров и передвем его в playerCycleStep
+    */
+    function getPlayers(): void {
+        if (PlayerData.time === -1) return;
+
+        PlayerData.time += 20;
+
+        //Фильтруем какой плеер готов проигрывать музыку
+        const available = PlayerData.players.filter(filtringAvailable);
+        return playerCycleStep(available);
     }
 }

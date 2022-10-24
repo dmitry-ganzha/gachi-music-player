@@ -24,7 +24,7 @@ export namespace messageUtils {
 
 export namespace replacer {
     export function replaceArray(text: string, srt: string[]) {
-        srt.forEach((str) => text.replaceAll(str, ""));
+        srt.forEach((str) => text.replace(str, ""));
 
         return text;
     }

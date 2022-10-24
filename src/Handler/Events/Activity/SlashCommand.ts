@@ -19,6 +19,7 @@ export class SlashCommand extends Event<ClientInteraction, null> {
             const Args = options?._hoistedOptions?.map((f: CommandInteractionOption) => `${f.value}`) || [""];
 
             if (Command) Command.run(interaction, Args);
+            else DeleteCommandInInteraction(client, interaction);
         }
     };
 }
@@ -34,14 +35,13 @@ function editInteraction(interaction: ClientInteraction): void {
     interaction.author = interaction.member.user;
     interaction.delete = (): null => null;
 }
-/*
+
 // Если нет такой команды удаляем из взаимодействия
-function DeleteCommandInInteraction(client: WatKLOK, interaction: ClientInteraction): void | Promise<ApplicationCommand<{guild: GuildResolvable}>> {
+function DeleteCommandInInteraction(client: WatKLOK, interaction: ClientInteraction): void {
     if (!interaction.commandId) return;
 
-    return client.application?.commands.delete(interaction.commandId);
+    client.application?.commands.delete(interaction.commandId);
 }
- */
 
 // @ts-ignore
 export interface ClientInteraction extends BaseInteraction {

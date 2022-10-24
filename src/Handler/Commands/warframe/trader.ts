@@ -69,7 +69,7 @@ export default class Trader extends Command {
             // @ts-ignore
             inventory.ArraySort(5).forEach((items: voidTraderItem[]) => {
                 const item = items.map((item) =>
-                    `${itemNumber++} Предмет [**${item.item}**]  
+                    `${itemNumber++} Предмет [**${item.item}**]
                     **❯ Кредиты:** (${FormatBytes(item.credits)})
                     **❯ Дукаты :** ${item.ducats ? `(${item.ducats})` : `(Нет)`}`
                 ).join("\n\n");

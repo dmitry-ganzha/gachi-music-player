@@ -13,7 +13,7 @@ export default class Deploy extends Command {
     };
 
     public readonly run = (message: ClientMessage): void => message.client.sendMessage({
-        text: `${message.author}, [${this.#createSlashCommand(message)}] команд загружено`,
+        text: `${message.author}, Load: [${this.#createSlashCommand(message)}]`,
         message
     });
     //====================== ====================== ====================== ======================
@@ -27,15 +27,16 @@ export default class Deploy extends Command {
 
         message.client.commands.Array.forEach((command) => {
             if (command.isOwner || !command.slash) return null;
+            const SlashCommands = message.client.application.commands;
+            let slashCommandData: TypeSlashCommand = { name: command.name, description: command.description };
 
-            let CommandSlash: TypeSlashCommand = {
-                name: command.name,
-                description: command.description
-            }
+            if (command.options.length > 0) slashCommandData = {...slashCommandData, options: command.options};
 
-            if (command.options.length > 0) CommandSlash = {...CommandSlash, options: command.options};
+            const slashCommand = SlashCommands.cache.get(slashCommandData.name);
 
-            message.client.application.commands.create(CommandSlash as any).catch((err) => console.log(`[Command: ${command.name}]: ${err}`));
+            if (slashCommand) SlashCommands.edit(slashCommand, slashCommandData).catch((err) => console.log(`[Command: ${command.name}]: ${err}`));
+            else SlashCommands.create(slashCommandData as any).catch((err) => console.log(`[Command: ${command.name}]: ${err}`));
+
             TotalCommands++;
         });
 
