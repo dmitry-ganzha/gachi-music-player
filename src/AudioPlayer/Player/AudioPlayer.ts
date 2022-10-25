@@ -97,7 +97,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
         else {
             //Включаем поток когда можно будет начать читать
             const onReadCallback = () => {
-                //Удаляем прошлй поток если введен новый
+                //Удаляем прошлый поток если введен новый
                 if (this.state?.stream && !this.state?.stream?.destroyed) this.state?.stream?.destroy();
 
                 this.state = {status: "playing", stream};
@@ -158,7 +158,7 @@ export class AudioPlayer extends TypedEmitter<AudioPlayerEvents> {
 }
 
 type PlayerState = PlayerStateIdle | PlayerStatePause | PlayerStatePlaying | PlayerStateError;
-type PlayerResource = Decoder.OggOpus; //Все декодировщики доступные к чтению
+type PlayerResource = Decoder; //Все декодировщики доступные к чтению
 
 interface PlayerStateIdle {
     status: "idle";

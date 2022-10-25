@@ -43,7 +43,7 @@ export default class Trader extends Command {
                 url: "https://warframe.fandom.com/wiki/Baro_Ki%27Teer"
             },
             footer: {
-                text: `${res.active ? `Уйдет через` : `Прейдет через`} ${!res.active ? res.startString : res.endString}`,
+                text: `${res.active ? `Уйдет через` : `Будет через`} ${!res.active ? res.startString : res.endString}`,
             }
         };
         //Если есть инвентарь, то запускаем CollectorSortReaction
@@ -124,11 +124,11 @@ export default class Trader extends Command {
     };
 }
 
-function FormatBytes(heapUsed: number): string {
-    if (heapUsed === 0) return '0';
-    const sizes: string[] = ['k', 'kk', 'kkk'];
-    const i: number = Math.floor(Math.log(heapUsed) / Math.log(1000));
-    return `${parseFloat((heapUsed / Math.pow(1000, i)).toFixed(2))} ${sizes[i]}`;
+function FormatBytes(num: number): string {
+    if (num === 0) return "0";
+    const sizes: string[] = ["", "K", "KK", "KKK"];
+    const i: number = Math.floor(Math.log(num) / Math.log(1000));
+    return `${parseFloat((num / Math.pow(1000, i)).toFixed(2))} ${sizes[i]}`;
 }
 
 interface voidTraderItem {

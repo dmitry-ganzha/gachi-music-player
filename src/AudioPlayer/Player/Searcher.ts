@@ -3,13 +3,7 @@ import {StageChannel, VoiceChannel} from "discord.js";
 import {InputPlaylist, InputTrack} from "../Structures/Queue/Song";
 import {messageUtils} from "../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../Manager/DurationUtils";
-import {
-    FailRegisterPlatform,
-    SearchPlatforms,
-    SupportPlatforms,
-    SupportType,
-    TypePlatform
-} from "../Structures/SongSupport";
+import {FailRegisterPlatform, SearchPlatforms, SupportPlatforms, SupportType, TypePlatform} from "../Structures/SongSupport";
 import {DownloadManager} from "../Manager/DownloadManager";
 
 //Данные которые необходимо передать для поиска

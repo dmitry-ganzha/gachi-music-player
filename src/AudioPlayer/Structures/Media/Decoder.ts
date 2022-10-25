@@ -4,83 +4,78 @@ import {opus} from "prism-media";
 import {Readable} from "stream";
 import fs from "fs";
 
-//Все доступные типы декодирования аудио
-export namespace Decoder {
-    export function createAudioResource(audio: string, seek: number = 0, filters: AudioFilters = []) {
-        let url: string | Readable;
+/**
+ * @description Конвертируем аудио в ogg/opus
+ */
+export class Decoder extends opus.OggDemuxer {
+    readonly #streams: Array<Readable | FFmpeg.FFmpeg> = [];
+    readonly #timeFrame: number = 20;
+    #playbackDuration: number = 0;
+    #started = false;
 
-        //Если входное значение ссылка
-        if (audio.startsWith("http")) url = audio;
-        //Если входное значение путь к файлу
-        else if (audio.endsWith("opus")) url = fs.createReadStream(audio);
+    public constructor(options: { url: string, seek?: number, filters?: AudioFilters }) {
+        super({autoDestroy: false});
+        let args;
+        const resource = this.#choiceResource(options.url);
 
-        //Запускаем FFmpeg
-        const decodingAudio = new OggOpus({url, seek, filters});
-        ["close", "end", "error"].forEach((event) => decodingAudio.once(event, () => [decodingAudio, url].forEach((clas) => typeof clas !== "string" && clas !== undefined ? clas.destroy() : null)));
+        //Что из себя представляет resource
+        if (typeof resource === "string") args = ArgsHelper.createArgs(options.url, options?.filters, options?.seek);
+        else args = ArgsHelper.createArgs(null, options?.filters, options?.seek);
 
-        return decodingAudio;
-    }
-    //С помощью FFmpeg конвертирует любой формат в opus
-    export class OggOpus extends opus.OggDemuxer {
-        readonly #FFmpeg: FFmpeg.FFmpeg;
-        readonly #TimeFrame: number = 20;
-        #playbackDuration = 0;
-        #started = false;
-        /**
-         * @description Декодируем в opus
-         * @param parameters {Options}
-         * @requires {ArgsHelper}
-         */
-        public constructor(parameters: { url: string | Readable, seek?: number, filters?: AudioFilters }) {
-            super({autoDestroy: false});
-            if (typeof parameters.url === "string") this.#FFmpeg = new FFmpeg.FFmpeg(ArgsHelper.createArgs(parameters.url, parameters?.filters, parameters?.seek));
-            else {
-                this.#FFmpeg = new FFmpeg.FFmpeg(ArgsHelper.createArgs(null, parameters?.filters, parameters?.seek));
-                parameters.url.pipe(this.#FFmpeg);
-            }
-            this.#FFmpeg.pipe(this); //Загружаем из FFmpeg'a в opus.OggDemuxer
+        //Создаем ffmpeg
+        this.ffmpeg = new FFmpeg.FFmpeg(args);
 
-            //Проверяем сколько времени длится пакет
-            if (parameters?.filters?.length > 0) this.#TimeFrame = ArgsHelper.timeFrame(parameters?.filters);
-            if (parameters.seek > 0) this.#playbackDuration = parameters.seek * 1e3;
+        //Если resource является Readable то загружаем его в ffmpeg
+        if (resource instanceof Readable) {
+            resource.pipe(this.ffmpeg);
+            this.#streams.push(resource);
+        }
 
-            //Когда можно будет читать поток записываем его в <this.#started>
-            this.once("readable", () => (this.#started = true));
-            //Если в <this.playStream> будет один из этих статусов, чистим память!
-            ["end", "close", "error"].forEach((event) => this.once(event, this.destroy));
-        };
+        this.ffmpeg.pipe(this); //Загружаем из FFmpeg'a в opus.OggDemuxer
 
-        //Общее время проигрывание текущего ресурса
-        public get duration() { return parseInt((this.#playbackDuration / 1000).toFixed(0)); };
-        //Проверяем можно ли читать поток
-        public get hasStarted() { return this.#started; };
-        //====================== ====================== ====================== ======================
-        /***/
-        //Получаем пакет и проверяем не пустой ли он если не пустой к таймеру добавляем 20 мс
-        public readonly read = (): Buffer | null => {
-            const packet: Buffer = super.read();
+        //Проверяем сколько времени длится пакет
+        if (options?.filters?.length > 0) this.#timeFrame = ArgsHelper.timeFrame(options?.filters);
+        if (options.seek > 0) this.#playbackDuration = options.seek * 1e3;
 
-            if (packet) this.#playbackDuration += this.#TimeFrame;
+        //Когда можно будет читать поток записываем его в <this.#started>
+        this.once("readable", () => (this.#started = true));
+        //Если в <this.playStream> будет один из этих статусов, чистим память!
+        ["end", "close", "error"].forEach((event) => this.once(event, this.destroy));
+    };
 
-            return packet;
-        };
-        //====================== ====================== ====================== ======================
-        /***/
-        //Чистим память!
-        public readonly _destroy = (): void => {
-            if (!this.#FFmpeg?.destroyed) this.#FFmpeg?.destroy();
-            if (!super.destroyed) super.destroy();
+    //Общее время проигрывание текущего ресурса
+    public get duration() { return parseInt((this.#playbackDuration / 1000).toFixed(0)); };
+    //Проверяем можно ли читать поток
+    public get hasStarted() { return this.#started; };
 
-            //Удаляем с задержкой (чтоб убрать некоторые ошибки)
-            setTimeout(() => {
-                if (this && !this?.destroyed) {
-                    super.destroy();
-                    this?.removeAllListeners();
-                    this?.destroy();
-                }
-            }, 125);
-        };
-    }
+    //Выдаем или добавляем ffmpeg из this.streams
+    private get ffmpeg() { return this.#streams[0] as FFmpeg.FFmpeg; };
+    private set ffmpeg(ffmpeg) { this.#streams.push(ffmpeg); };
+
+    //Выдаем Buffer
+    public read = () => {
+        const packet: Buffer = super.read();
+
+        if (packet) this.#playbackDuration += this.#timeFrame;
+
+        return packet;
+    };
+
+    //Что из себя представляем входной аргумент path
+    readonly #choiceResource = (path: string): string | Readable => path.endsWith("opus") ? fs.createReadStream(path) : path;
+
+    //Удаляем лишние данные
+    public _destroy(error?: Error | null, callback?: (error: (Error | null)) => void) {
+        super._destroy(error, callback);
+        this.destroy(error);
+
+        this.#streams.forEach((stream) => {
+            if (!stream?.destroyed) stream?.destroy();
+
+            const index = this.#streams.indexOf(stream);
+            if (index !== -1) this.#streams.splice(index, 0);
+        });
+    };
 }
 
 //Вспомогательные функции Decoder'а
@@ -100,7 +95,10 @@ namespace ArgsHelper {
         if (url) thisArgs = [...thisArgs, "-i", url];
 
         //Всегда есть один фильтр <AudioFade>
-        return [...thisArgs, "-compression_level", 10, ...audioDecoding, ...audioBitrate, "-af", parseFilters(AudioFilters), "-preset:a", "ultrafast"];
+        return [...thisArgs, "-compression_level", 10,
+            ...audioDecoding, ...audioBitrate,
+            "-af", parseFilters(AudioFilters), "-preset:a", "ultrafast"
+        ];
     }
     //====================== ====================== ====================== ======================
     /**

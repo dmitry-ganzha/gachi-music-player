@@ -1,7 +1,6 @@
 import {AudioPlayer} from "../Player/AudioPlayer";
 import {MessagePlayer} from "./PlayerMessages";
 import {Queue} from "../Structures/Queue/Queue";
-import fs from "fs";
 
 const PlayerData = {
     players: [] as AudioPlayer[], //Плееры серверов
@@ -122,7 +121,7 @@ export namespace PlayersManager {
     * @description Фильтруем плеер
     * @param player {AudioPlayer} плеер
     */
-    function filtringAvailable(player: AudioPlayer) {
+    function filteringAvailable(player: AudioPlayer) {
         if (player.state.status === "idle") return false;
 
         //Если невозможно прочитать поток выдать false
@@ -142,7 +141,7 @@ export namespace PlayersManager {
         PlayerData.time += 20;
 
         //Фильтруем какой плеер готов проигрывать музыку
-        const available = PlayerData.players.filter(filtringAvailable);
+        const available = PlayerData.players.filter(filteringAvailable);
         return playerCycleStep(available);
     }
 }

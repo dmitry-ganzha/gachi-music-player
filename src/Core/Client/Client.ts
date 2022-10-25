@@ -76,7 +76,7 @@ export class WatKLOK extends Client {
         return setTimeout(() => console.log(`[${(new Date).toLocaleString("ru")}] ${text}`), 25);
     };
     //Все пользователи в голосовом канале
-    public readonly connections = (Guild: Guild): VoiceState[] | 404 => {
+    public readonly connections = (Guild: Guild): VoiceState[] | "Fail" => {
         const connection = Voice.getVoice(Guild.id), Users: VoiceState[] = [];
 
         if (connection) Guild.voiceStates.cache.forEach((state: VoiceState): any => {
@@ -84,7 +84,7 @@ export class WatKLOK extends Client {
             Users.push(state);
         });
 
-        return Users.length > 0 ? Users : 404;
+        return Users.length > 0 ? Users : "Fail";
     };
     //Включаем бота
     public login(token: string = FileSystem.env("TOKEN")): Promise<string> {
@@ -103,12 +103,11 @@ export class WatKLOK extends Client {
                 const channel = this.channels.cache.get(Channels.sendErrors) as MessageChannel;
                 if (channel) channel.send(`${err.toString()}`).catch(console.log);
                 return null;
-            } catch {/* Continue */
-            }
+            } catch {/* Continue */}
         });
 
         return super.login(token);
     };
 }
 
-new WatKLOK().login();
+new WatKLOK().login().catch(err => console.log("[Failed login]:", err));

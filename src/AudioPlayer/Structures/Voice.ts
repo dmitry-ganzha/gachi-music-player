@@ -1,10 +1,5 @@
 import {ChannelType, Guild, InternalDiscordGatewayAdapterCreator, StageChannel, VoiceChannel} from "discord.js";
-import {
-    DiscordGatewayAdapterCreator,
-    getVoiceConnection,
-    getVoiceConnections,
-    joinVoiceChannel
-} from "@discordjs/voice";
+import {DiscordGatewayAdapterCreator, getVoiceConnection, getVoiceConnections, joinVoiceChannel} from "@discordjs/voice";
 
 //Допустимые голосовые каналы
 type VoiceChannels = VoiceChannel | StageChannel;
@@ -29,12 +24,18 @@ export namespace Voice {
         });
         const me = guild.members?.me;
 
+        JoinVoice.on("error", (error) => {
+            //Если бот потеряет подключение к интернету он переподключиться через 15 сек
+           if (error.message.match(/getaddrinfo ENOTFOUND/)) setTimeout(() => JoinVoice.rejoin(), 15e3);
+
+           return console.log(`[VoiceConnection]: ${error}`);
+        });
+
         //Для голосовых трибун
         if (type !== ChannelType.GuildVoice && me) me?.voice?.setRequestToSpeak(true).catch(() => undefined);
 
         return JoinVoice;
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Отключаемся от канала
@@ -51,13 +52,10 @@ export namespace Voice {
             getVoiceConnections("default").delete(VoiceConnection.joinConfig.guildId);
         }
     }
-
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем голосовое подключение
      * @param guildID {string} ID сервера
      */
-    export function getVoice(guildID: string) {
-        return getVoiceConnection(guildID);
-    }
+    export function getVoice(guildID: string) { return getVoiceConnection(guildID); }
 }

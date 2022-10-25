@@ -115,7 +115,7 @@ export interface InputTrack {
         };
         isVerified?: boolean;
     },
-    format?: FFmpeg.FFmpegFormat | { url: string | undefined };
+    format?: FFmpeg.Format | { url: string | undefined };
     isLive?: boolean;
     isPrivate?: boolean;
     isValid?: boolean;

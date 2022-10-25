@@ -36,7 +36,7 @@ if (FFmpegName === undefined) Promise.all([FFmpegCheck()]).catch();
 export namespace FFmpeg {
     export type Arguments = Array<string | number> | Array<string>;
     //FFmpeg формат для воспроизведения
-    export type FFmpegFormat = { url: string }
+    export type Format = { url: string }
 
     /**
      * ffmpeg is a very fast video and audio converter that can also grab from a live audio/video source. It can also convert between arbitrary sample rates and resize video on the fly with a high quality polyphase filter.
@@ -164,7 +164,7 @@ export namespace FFmpeg {
             windowsHide: true
         });
     }
-    //Ищем фильтер в Array<Filter>
+    //Ищем Filter в Array<Filter>
     export function getFilter(name: string): Filter {
         return (AudioFilters as Filter[]).find((fn) => fn.names.includes(name));
     }

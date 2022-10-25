@@ -110,7 +110,7 @@ export function TypePlatform(url: string): SupportPlatforms {
 //Ищет исходный ресурс треков
 export namespace SongFinder {
     //Получаем данные о треке заново
-    export function findResource(song: Song): Promise<FFmpeg.FFmpegFormat> {
+    export function findResource(song: Song): Promise<FFmpeg.Format> {
         const {type, url, author, title, duration} = song;
 
         if (type === "SPOTIFY") return FindTrack(`${author.title} - ${title} (Lyrics)`, duration.seconds);
@@ -121,9 +121,8 @@ export namespace SongFinder {
 
         return FindCallback.then((track: InputTrack) => track?.format);
     }
-
     //Ищем трек на YouTube
-    function FindTrack(nameSong: string, duration: number): Promise<FFmpeg.FFmpegFormat> {
+    function FindTrack(nameSong: string, duration: number): Promise<FFmpeg.Format> {
         return YouTube.SearchVideos(nameSong, {limit: 15}).then((Tracks) => {
             //Фильтруем треки оп времени
             const FindTracks: InputTrack[] = Tracks.filter((track: InputTrack) => {
@@ -137,7 +136,7 @@ export namespace SongFinder {
             if (FindTracks?.length < 1) return null;
 
             //Получаем данные о треке
-            return YouTube.getVideo(FindTracks[0].url).then((video) => video.format) as Promise<FFmpeg.FFmpegFormat>;
+            return YouTube.getVideo(FindTracks[0].url).then((video) => video.format) as Promise<FFmpeg.Format>;
         });
     }
 }

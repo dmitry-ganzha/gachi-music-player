@@ -44,12 +44,9 @@ export namespace DurationUtils {
         if (!Splitter?.length) return Number(duration);
 
         switch (Splitter.length) {
-            case 4:
-                return days(Splitter[0]) + hours(Splitter[1]) + minutes(Splitter[2]) + seconds(Splitter[3]);
-            case 3:
-                return hours(Splitter[0]) + minutes(Splitter[1]) + seconds(Splitter[2]);
-            case 2:
-                return minutes(Splitter[0]) + seconds(Splitter[1]);
+            case 4: return days(Splitter[0]) + hours(Splitter[1]) + minutes(Splitter[2]) + seconds(Splitter[3]);
+            case 3: return hours(Splitter[0]) + minutes(Splitter[1]) + seconds(Splitter[2]);
+            case 2: return minutes(Splitter[0]) + seconds(Splitter[1]);
         }
     }
 }

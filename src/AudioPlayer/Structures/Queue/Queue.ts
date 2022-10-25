@@ -135,7 +135,7 @@ export class Queue {
 
         link.then((url: string) => {
             if (!url) return this.player.emit("error", "[AudioPlayer]: Audio resource not found!", true);
-            const streamingData = Decoder.createAudioResource(url, seek, this.song.isLive ? [] : this.filters);
+            const streamingData = new Decoder({url, seek, filters: this.song.isLive ? [] : this.filters});
 
             return this.player.readStream(streamingData);
         });
