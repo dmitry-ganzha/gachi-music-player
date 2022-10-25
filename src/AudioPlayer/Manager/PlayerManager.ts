@@ -60,6 +60,7 @@ export namespace PlayerEventsCallBacks {
         }
     }
 }
+
 //Менеджер, добавляет в общую базу плеер или удаляет. Так-же запускает работу плеера!
 export namespace PlayersManager {
     /**

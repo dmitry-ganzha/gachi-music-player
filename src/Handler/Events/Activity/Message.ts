@@ -1,18 +1,4 @@
-import {
-    ActionRow,
-    ActionRowBuilder,
-    BaseMessageOptions,
-    ChannelType,
-    DMChannel,
-    EmbedData,
-    Message,
-    MessageEditOptions,
-    MessagePayload,
-    NewsChannel,
-    PartialDMChannel,
-    TextChannel,
-    ThreadChannel
-} from "discord.js";
+import {ActionRow,ActionRowBuilder,BaseMessageOptions,ChannelType,DMChannel,EmbedData,Message,MessageEditOptions,MessagePayload,NewsChannel,PartialDMChannel,TextChannel,ThreadChannel} from "discord.js";
 import {Bot} from '../../../../DataBase/Config.json';
 import {WatKLOK} from "../../../Core/Client/Client";
 import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
@@ -72,46 +58,18 @@ export class messageCreate extends Event<ClientMessage, null> {
         return Command.run(message, args);
     };
     //Получаем command<name>
-    readonly #parsingMessageContent = (content: string) => {
-        return content.split(" ")[0]?.slice(DefaultPrefix.length)?.toLowerCase();
-    };
+    readonly #parsingMessageContent = (content: string) => content.split(" ")[0]?.slice(DefaultPrefix.length)?.toLowerCase();
 }
 
+type SendMessageOptions = string | MessagePayload | BaseMessageOptions | { embeds?: EmbedConstructor[], components?: ActionRow<any> | ActionRowBuilder<any> };
 // @ts-ignore
 export interface ClientMessage extends Message {
     client: WatKLOK;
-    // @ts-ignore
-    channel: {
-        send(options: SendMessageOptions): Promise<ClientMessage>
-    } & Channel
-    // @ts-ignore
+    channel: { send(options: SendMessageOptions): Promise<ClientMessage> } & Channel;
     edit(content: SendMessageOptions | MessageEditOptions): Promise<ClientMessage>
 }
 
 //Все текстовые каналы
 export type Channel = DMChannel | PartialDMChannel | NewsChannel | TextChannel | ThreadChannel;
-//ClientMessage<channel>
-export type MessageChannel = ClientMessage["channel"];
-//Типы для ClientMessage<channel<send>>, ClientMessage<edit>
-export type SendMessageOptions =
-    string
-    | MessagePayload
-    | BaseMessageOptions
-    | { embeds?: EmbedConstructor[], components?: ActionRow<any> | ActionRowBuilder<any> };
-
 //Embed JSON
-export interface EmbedConstructor extends EmbedData {
-}
-
-//Цвета, которые есть в базе
-export type ColorResolvable =
-    "DarkRed"
-    | "Blue"
-    | "Green"
-    | "Default"
-    | "Yellow"
-    | "Grey"
-    | "Navy"
-    | "Gold"
-    | "Orange"
-    | "Purple";
+export interface EmbedConstructor extends EmbedData {}

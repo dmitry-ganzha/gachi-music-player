@@ -15,13 +15,8 @@ export namespace Voice {
      * @param type {string} Тип канала
      */
     export function Join({id, guild, type}: VoiceChannels) {
-        const JoinVoice = joinVoiceChannel({
-            selfDeaf: true,
-            selfMute: false,
-            channelId: id,
-            guildId: guild.id,
-            adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator & DiscordGatewayAdapterCreator,
-        });
+        const JoinVoice = joinVoiceChannel({ selfDeaf: true, selfMute: false, channelId: id, guildId: guild.id,
+            adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator & DiscordGatewayAdapterCreator });
         const me = guild.members?.me;
 
         JoinVoice.on("error", (error) => {

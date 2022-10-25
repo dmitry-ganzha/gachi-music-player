@@ -51,7 +51,7 @@ export namespace Handle {
             if (data instanceof Array) return SearchSongMessage.toSend(data, data.length, {...options, platform, type});
 
             //Сообщаем что трек был найден
-            if (type !== "playlist") message.client.sendMessage({text: `Найден 🔍 | ${type} | Кеш: ${Download(data as any) ? "✔️" : "✖️"}\n➜ ${data.title}`, message, color: "Yellow", type: "css"});
+            if (type === "track") message.client.sendMessage({text: `Найден 🔍 | ${type} | Кеш: ${Download(data as any) ? "✔️" : "✖️"}\n➜ ${data.title}`, message, color: "Yellow", type: "css"});
 
             //Загружаем трек или плейлист в GuildQueue
             return message.client.player.emit("play", message, voiceChannel, data);
@@ -60,6 +60,7 @@ export namespace Handle {
         runCallback.catch((err) => message.client.sendMessage({ text: `${message.author}, данные не были найдены!\nПричина: ${err}`, color: "DarkRed", message }));
     }
 }
+
 //====================== ====================== ====================== ======================
 /**
  * @description Функции для Searcher<toPlayer>

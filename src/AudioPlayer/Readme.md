@@ -3,6 +3,7 @@
 - [AudioPlayer](Player/AudioPlayer.ts)
     - [Обратные вызовы событий плеера](Manager/PlayerManager.ts)
     - [Сообщения плеера](Manager/PlayerMessages.ts), [база с embed](Structures/EmbedMessages.ts)
+    - [Настройка шкалы проигрывания музки](Structures/EmbedMessages.ts)
     - [Функции действий плеера](Player/Controller.ts)
     - [DownloadManager](Manager/DownloadManager.ts)
 

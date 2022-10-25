@@ -6,7 +6,7 @@ export class SlashCommand extends Event<ClientInteraction, null> {
     public readonly name: string = "interactionCreate";
     public readonly enable: boolean = true;
 
-    public readonly run = (interaction: ClientInteraction, f2: null, client: WatKLOK) => {
+    public readonly run = (interaction: ClientInteraction, _: null, client: WatKLOK) => {
         if (!interaction.inGuild()) return; //Если это не сервер, игнорируем!
 
         DeleteInteraction(interaction);
@@ -35,7 +35,6 @@ function editInteraction(interaction: ClientInteraction): void {
     interaction.author = interaction.member.user;
     interaction.delete = (): null => null;
 }
-
 // Если нет такой команды удаляем из взаимодействия
 function DeleteCommandInInteraction(client: WatKLOK, interaction: ClientInteraction): void {
     if (!interaction.commandId) return;
@@ -43,18 +42,7 @@ function DeleteCommandInInteraction(client: WatKLOK, interaction: ClientInteract
     client.application?.commands.delete(interaction.commandId);
 }
 
-// @ts-ignore
 export interface ClientInteraction extends BaseInteraction {
-    member: GuildMember;
-    customId: string;
-    commandName: string;
-    commandId: string;
-    author: User;
-    options?: {
-        _hoistedOptions: any[]
-    }
-
-    delete: () => void;
-    deferReply: () => Promise<void>
-    deleteReply: () => Promise<void>
+    member: GuildMember; customId: string; commandName: string; commandId: string; author: User;
+    delete: () => void; deferReply: () => Promise<void>; deleteReply: () => Promise<void>; options?: { _hoistedOptions: any[] };
 }

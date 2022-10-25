@@ -5,15 +5,8 @@ import {Command} from "../../Structures/Command";
 import {Queue} from "../../AudioPlayer/Structures/Queue/Queue";
 import {messageUtils} from "../Utils/LiteUtils";
 import {Bot, Channels, Debug} from "../../../DataBase/Config.json";
-import {ClientMessage, ColorResolvable, EmbedConstructor, MessageChannel} from "../../Handler/Events/Activity/Message";
+import {ClientMessage, EmbedConstructor, Channel} from "../../Handler/Events/Activity/Message";
 import {Voice} from "../../AudioPlayer/Structures/Voice";
-
-type SendOptions = {
-    text: string;
-    color?: ColorResolvable | number;
-    message: ClientMessage;
-    type?: "css" | "js" | "ts" | "cpp" | "html" | "cs";
-}
 
 class CollectionMap<K, V> extends Map<K, V> {
     public get Array(): V[] | null {
@@ -95,12 +88,12 @@ export class WatKLOK extends Client {
             if (err.message.match("undici")) return;
             //Если выходит ошибка ETIMEDOUT
             else if (err.message.match("connect ETIMEDOUT")) return console.log(`[Timeout connection]: ${err.message.split("ETIMEDOUT")[1]}`);
-            //Если нет библиотеки sodium
+            //Если нет libsodium
             else if (err.message.match(/sodium/)) return console.log("[Discord Voice]: необходимо установить sodium.\nSodium libs: sodium-native, sodium, tweetnacl, libsodium-wrappers.")
 
             console.log(`[IgnoreError]:`, err);
             try {
-                const channel = this.channels.cache.get(Channels.sendErrors) as MessageChannel;
+                const channel = this.channels.cache.get(Channels.sendErrors) as Channel;
                 if (channel) channel.send(`${err.toString()}`).catch(console.log);
                 return null;
             } catch {/* Continue */}
@@ -109,5 +102,11 @@ export class WatKLOK extends Client {
         return super.login(token);
     };
 }
-
 new WatKLOK().login().catch(err => console.log("[Failed login]:", err));
+
+type SendOptions = {
+    text: string;
+    color?: "DarkRed" | "Blue" | "Green" | "Default" | "Yellow" | "Grey" | "Navy" | "Gold" | "Orange" | "Purple" | number;
+    message: ClientMessage;
+    type?: "css" | "js" | "ts" | "cpp" | "html" | "cs";
+}
