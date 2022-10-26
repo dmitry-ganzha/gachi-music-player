@@ -1,17 +1,21 @@
 @Echo off
 
 :menu
-Echo Choice number
+Echo Main
 Echo 1 - run Client
 Echo 2 - run ShardManager
 Echo 3 - Start build project
+Echo Other
+Echo 4 - Install requirements
+Echo 5 - Delete audio cache
 Set /p choice="Number: "
 
 if "%choice%"=="1" goto Client
 if "%choice%"=="2" goto ShardManager
 if "%choice%"=="3" goto Builder
-if choice gtr 3 goto Fail
-pause
+if "%choice%"=="4" goto Npm
+if "%choice%"=="5" goto Clear
+if choice gtr 5 goto Fail
 
 :Client
     echo running Client...
@@ -30,7 +34,19 @@ pause
     tsc --watch -p ./tsconfig.json
     goto menu
 
+:Npm
+    echo Install other modules
+    start npm i
+    cls
+    goto menu
+
+:Clear
+    echo Deleting audio cache
+    rmdir /s /q "./build/AudioCache"
+    cls
+    goto Menu
+
 :Fail
     cls
-    echo Error: %choice% is not 1-3
+    echo Error: %choice% is not 1-5
     goto menu

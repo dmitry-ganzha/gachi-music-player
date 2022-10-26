@@ -2,6 +2,7 @@ import {ButtonStyle, Colors, MessageReaction, User} from "discord.js";
 import {Command} from "../../Structures/Command";
 import {Bot} from "../../../DataBase/Config.json";
 import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
+import {WatKLOK} from "../Client/Client";
 
 export namespace messageUtils {
     //Удаляем сообщение
@@ -78,7 +79,6 @@ export namespace UtilsPermissions {
         return {user: UserString, client: ClientString};
     }
 }
-
 //Message сообщение
 function EmbedNotPermissions({author, client}: ClientMessage): EmbedConstructor {
     return {

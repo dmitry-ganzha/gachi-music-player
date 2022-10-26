@@ -8,7 +8,7 @@
 </div>
 
 
-[<img align="right" alt="Avatar bot" width="223px" src="https://cdn.discordapp.com/avatars/678588856588697610/466d3d51e6d497541622085ed18a1ad1.webp?size=4096" />](https://discordapp.com/users/623170593268957214)
+[<img align="right" alt="Avatar bot" width="230px" src="https://cdn.discordapp.com/avatars/678588856588697610/466d3d51e6d497541622085ed18a1ad1.webp?size=4096" />](https://discordapp.com/users/623170593268957214)
 
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
@@ -19,7 +19,7 @@
 - Все сообщения удаляют автоматически через время
 
 ## Гайд по запуску
-1. [`Node.js`](https://nodejs.org/ru/) | 16-19
+1. [`Node.js`](https://nodejs.org/ru/) 16-19
 2. [`FFmpeg & FFprobe`](https://ffmpeg.org/) или npm install (ffmpeg-static и ffprobe-static)
 3. Библиотеки шифрования (на выбор)
     - `sodium-native`: ^3.3.0 (рекомендуется)
@@ -57,19 +57,19 @@
    }
    ```
 2. [`Config.json`](DataBase/Config.json) | основные настройки
-    ```json5
-    {
-      "Channels": {
-        "sendErrors": "" //ID канала на который будут отправляться ошибки
-      },
-      "Bot": {
-        "ignoreErrors": true, //Игнорировать ошибки
-        "prefix": "!", //Префикс
-      },
-      "CacheMusic": false, //Кешировать музыку? (Значительно ускоряет работу фильтров и seek, как уменьшает кол-во запросов на сервера)
-      "Debug": false //Отправлять сообщение взаимодействий бота с discord
-    }
-    ```
+   ```json5
+      {
+        "Channels": {
+          "sendErrors": "" //ID канала на который будут отправляться ошибки
+        },
+        "Bot": {
+          "ignoreErrors": true, //Игнорировать ошибки
+          "prefix": "!", //Префикс
+        },
+        "CacheMusic": false, //Кешировать музыку? (Значительно ускоряет работу фильтров и seek, как уменьшает кол-во запросов на сервера)
+        "Debug": false //Отправлять сообщение взаимодействий бота с discord
+      }
+      ```
 3. [`Filters.json`](DataBase/Filters.json) | Можно добавлять свои фильтры в конфиг | [`FFmpeg Docs`](https://ffmpeg.org/ffmpeg.html)
     ```json5
    [

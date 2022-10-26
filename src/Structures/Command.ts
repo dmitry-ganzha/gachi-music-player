@@ -15,7 +15,7 @@ export class Command {
     public readonly permissions: { client: PermissionResolvable[], user: PermissionResolvable[] };
 
     //Неообходимо для Discord (SlashCommand), если аргументы не нужны то оставить пустой
-    public readonly options: InteractiveOptions[]
+    public readonly options: InteractiveOptions[];
 
     //Данная команда доступна только разработчикам
     public readonly isOwner: boolean;

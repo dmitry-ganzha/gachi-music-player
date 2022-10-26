@@ -131,15 +131,13 @@ export class Queue {
     public readonly play = (seek: number = 0) => {
         if (!this.song) return this.cleanup();
 
-        const link = this.song.resource(seek);
-
-        link.then((url: string) => {
+        //Получаем ссылку на resource
+        this.song.resource(seek).then((url: string) => {
             if (!url) return this.player.emit("error", "[AudioPlayer]: Audio resource not found!", true);
             const streamingData = new Decoder({url, seek, filters: this.song.isLive ? [] : this.filters});
 
             return this.player.readStream(streamingData);
-        });
-        link.catch((err) => this.player.emit("error", `[AudioPlayer]: ${err}`, true));
+        }).catch((err) => this.player.emit("error", `[AudioPlayer]: ${err}`, true));
 
         if (!seek) {
             this.message.client.console(`[GuildID: ${this.guild.id}]: ${this.song.title}`); //Отправляем лог о текущем треке

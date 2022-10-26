@@ -108,5 +108,5 @@ type SendOptions = {
     text: string;
     color?: "DarkRed" | "Blue" | "Green" | "Default" | "Yellow" | "Grey" | "Navy" | "Gold" | "Orange" | "Purple" | number;
     message: ClientMessage;
-    type?: "css" | "js" | "ts" | "cpp" | "html" | "cs";
+    type?: "css" | "js" | "ts" | "cpp" | "html" | "cs" | "json";
 }
