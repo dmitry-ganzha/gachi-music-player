@@ -93,7 +93,7 @@ export namespace PlayersManager {
         //Чистим систему
         if (PlayerData.players.length === 0) {
             delete PlayerData.time;
-            delete PlayerData.players;
+            PlayerData.players = [];
 
             if (typeof PlayerData.timer !== "undefined") {
                 clearTimeout(PlayerData.timer);

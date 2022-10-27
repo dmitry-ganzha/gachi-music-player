@@ -86,7 +86,7 @@ export class Song {
         }
 
         req++;
-        return this.resource(seek, req).then(resolve);
+        return resolve(this.resource(seek, req));
     });
 }
 

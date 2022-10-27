@@ -14,7 +14,7 @@ export class Decoder extends opus.OggDemuxer {
     #started = false;
 
     public constructor(options: { url: string, seek?: number, filters?: AudioFilters }) {
-        super({autoDestroy: false});
+        super({autoDestroy: false, highWaterMark: 12});
         let args;
         const resource = this.#choiceResource(options.url);
 
