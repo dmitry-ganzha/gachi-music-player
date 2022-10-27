@@ -2,7 +2,7 @@ import {StageChannel, VoiceChannel} from "discord.js";
 import {AudioPlayer} from "../../Player/AudioPlayer";
 import {Song} from "./Song";
 import {ClientMessage} from "../../../Handler/Events/Activity/Message";
-import {PlayerEventsCallBacks} from "../../Manager/PlayerManager";
+import {PlayerEventsCallBacks, PlayersManager} from "../../Manager/PlayerManager";
 import {VoiceConnection} from "@discordjs/voice";
 import {MessagePlayer} from "../../Manager/PlayerMessages";
 import {Decoder} from "../Media/Decoder";
@@ -13,7 +13,7 @@ export type AudioFilters = Array<string> | Array<string | number>;
 export class Queue {
     #Timer: NodeJS.Timeout = null; //Таймер для авто удаления очереди
     #hasDestroying: boolean = false; //Статус удаления (запущено ли удаление)
-    readonly #songs: Array<Song> = []; //Все треки находятся здесь
+    #songs: Array<Song> = []; //Все треки находятся здесь
     readonly #player: AudioPlayer = new AudioPlayer(); //Сам плеер
     //Каналы (message: TextChannel, voice: VoiceChannel)
     readonly #channels: { message: ClientMessage, voice: VoiceChannel | StageChannel };
@@ -45,6 +45,7 @@ export class Queue {
 
     //Все треки
     public get songs() { return this.#songs; };
+    public set songs(songs) { this.#songs = songs; };
     //Текущий трек
     public get song(): Song { return this.songs[0]; };
 
@@ -89,7 +90,12 @@ export class Queue {
             //Удаляем голосовое подключение из плеера
             if (this.connection) this.player.unsubscribe({connection: this.connection});
 
+            //Отвязываем плеер от PlayerEvents
+            this.player.removeAllListeners();
             this.player.stop();
+
+            //Удаляем плеер принудительно
+            PlayersManager.toRemove(this.player);
         }
 
         clearTimeout(this.#Timer);

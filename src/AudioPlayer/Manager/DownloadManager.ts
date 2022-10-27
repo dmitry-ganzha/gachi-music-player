@@ -13,7 +13,7 @@ export namespace DownloadManager {
      * @constructor
      */
     export function downloadUrl(song: Song, url?: string): boolean | string {
-        if (song.duration.seconds >= 1000) return;
+        if (song.duration.seconds >= 1000 || song.duration.full === "Live") return;
 
         const SongTitle = replacer.replaceArray(song.title, ["|", ",", "<", ">", ":", "\\", "/", "*", "?"]);
         const SongAuthor = replacer.replaceArray(song.author.title, ["|", ",", "<", ">", ":", "\\", "/", "*", "?"]);
@@ -31,9 +31,12 @@ export namespace DownloadManager {
                     if (res.pipe) {
                         const file = fs.createWriteStream(`${AudioDir}/[${SongTitle}].raw`);
 
-                        res.pipe(file);
-
-                        ["close", "finish"].forEach((event) => file.once(event, () => fs.rename(`${AudioDir}/[${SongTitle}].raw`, `${AudioDir}/[${SongTitle}].opus`, () => null)))
+                        //Если файл невозможно создать
+                        file.once("error", () => null);
+                        file.once("ready", () => {
+                            res.pipe(file);
+                            ["close", "finish"].forEach((event) => file.once(event, () => fs.rename(`${AudioDir}/[${SongTitle}].raw`, `${AudioDir}/[${SongTitle}].opus`, () => null)))
+                        });
                     }
                 });
             }

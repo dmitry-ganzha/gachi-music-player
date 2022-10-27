@@ -160,22 +160,17 @@ function CreateCollector(message: ClientMessage, queue: Queue) {
         switch (i.customId) {
             case "resume_pause": { //Если надо приостановить музыку или продолжить воспроизведение
                 switch (queue?.player.state.status) {
-                    case "playing":
-                        return queue?.player.pause();
-                    case "paused":
-                        return queue?.player.resume();
+                    case "playing": return message.client.commands.get("pause").run(i as any);
+                    case "paused": return message.client.commands.get("resume").run(i as any);
                 }
                 return;
             }
             //Пропуск текущей музыки
-            case "skip":
-                return queue?.player.stop();
+            case "skip": return message.client.commands.get("skip").run(i as any);
             //Повторно включить текущую музыку
-            case "replay":
-                return queue?.play();
+            case "replay": return message.client.commands.get("replay").run(i as any);
             //Включить последнею из списка музыку
-            case "last":
-                return queue?.swapSongs();
+            case "last": return queue?.swapSongs();
         }
     });
 

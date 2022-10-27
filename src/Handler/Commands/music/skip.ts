@@ -20,7 +20,7 @@ export default class Skip extends Command {
         });
     };
 
-    public readonly run = (message: ClientMessage, args: string[]): void => {
+    public readonly run = (message: ClientMessage, args: string[] = ["0"]): void => {
         const queue: Queue = message.client.queue.get(message.guild.id);
         const argsNum = parseInt(args[0]);
 

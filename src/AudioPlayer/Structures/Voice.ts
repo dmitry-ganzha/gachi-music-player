@@ -19,13 +19,6 @@ export namespace Voice {
             adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator & DiscordGatewayAdapterCreator });
         const me = guild.members?.me;
 
-        JoinVoice.on("error", (error) => {
-            //Если бот потеряет подключение к интернету он переподключиться через 15 сек
-           if (error.message.match(/getaddrinfo ENOTFOUND/)) setTimeout(() => JoinVoice.rejoin(), 15e3);
-
-           return console.log(`[VoiceConnection]: ${error}`);
-        });
-
         //Для голосовых трибун
         if (type !== ChannelType.GuildVoice && me) me?.voice?.setRequestToSpeak(true).catch(() => undefined);
 

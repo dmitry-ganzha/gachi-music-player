@@ -85,12 +85,20 @@ export namespace PlayersManager {
      */
     export function toRemove(player: AudioPlayer): void {
         const index = PlayerData.players.indexOf(player);
-        if (index != -1) PlayerData.players.splice(index, 1);
+        if (index != -1) {
+            PlayerData.players.splice(index, 1);
+            if (!player.state.stream?.destroyed) player.state.stream?.destroy();
+        }
 
         //Чистим систему
         if (PlayerData.players.length === 0) {
-            PlayerData.time = -1;
-            if (typeof PlayerData.timer !== "undefined") clearTimeout(PlayerData.timer);
+            delete PlayerData.time;
+            delete PlayerData.players;
+
+            if (typeof PlayerData.timer !== "undefined") {
+                clearTimeout(PlayerData.timer);
+                delete PlayerData.timer;
+            }
         }
     }
     //====================== ====================== ====================== ======================

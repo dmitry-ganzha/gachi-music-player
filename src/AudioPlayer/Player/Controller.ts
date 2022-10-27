@@ -236,7 +236,7 @@ function toSkipNumber(message: ClientMessage, args: number): void {
         //Если пользователю позволено пропустить музыку
         if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {
             if (queue.options.loop === "songs") for (let i = 0; i < args - 2; i++) queue.songs.push(queue.songs.shift());
-            else queue.songs.slice(args - 2);
+            else queue.songs = queue.songs.slice(args - 2);
 
             client.sendMessage({text: `⏭️ | Skip to song [${args}] | ${title}`, message, type: "css", color});
             return toEnd(message);
