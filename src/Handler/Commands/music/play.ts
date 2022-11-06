@@ -10,6 +10,7 @@ export class Play extends Command {
             name: "play",
             aliases: ["p", "playing", "з"],
             description: "Включение музыки по ссылке или названию, можно прикрепить свой файл!",
+            usage: "name song | url song | platform name song",
 
             permissions: {client: ["Speak", "Connect"], user: []},
             options: [

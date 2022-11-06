@@ -12,6 +12,7 @@ export default class Filter extends Command {
             name: "filter",
             aliases: ["fl"],
             description: "Включение фильтров для музыки!",
+            usage: "name | Все фильтры - all",
 
             options: [
                 {

@@ -9,6 +9,7 @@ export default class Remove extends Command {
             name: "remove",
             aliases: [],
             description: "Эта команда удаляет из очереди музыку!",
+            usage: "1 | Можно убрать любой трек из очереди | Если аргумент не указан он будет равен 1",
 
             options: [
                 {

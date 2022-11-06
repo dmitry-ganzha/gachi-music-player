@@ -9,6 +9,7 @@ export default class Loop extends Command {
             name: "loop",
             aliases: ["repeat", "rept"],
             description: "Включение повтора и выключение повтора музыки!",
+            usage: "song | Доступны: song, songs, off",
 
             options: [
                 {

@@ -9,6 +9,7 @@ export default class Skip extends Command {
             name: "skip",
             aliases: ['s'],
             description: "Пропуск текущей музыки!",
+            usage: "1 | Все треки будут пропущены до указанного | Если аргумент не указан, то будет пропущен текущий трек",
 
             options: [{
                 name: "value",

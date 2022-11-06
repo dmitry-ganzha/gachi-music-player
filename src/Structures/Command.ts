@@ -12,6 +12,9 @@ export class Command {
     //Описание команды
     public readonly description: string;
 
+    //Как используется команда
+    public readonly usage: string;
+
     //Права пользователя и бота (необходимые права для использования команды)
     public readonly permissions: { client: PermissionResolvable[], user: PermissionResolvable[] };
 
@@ -41,6 +44,7 @@ export class Command {
             name = "" as string,
             aliases = [] as string[],
             description = "Нету описания" as string,
+            usage = "Аргумент не требуется!",
             permissions = {
                 client: [] as PermissionResolvable[],
                 user: [] as PermissionResolvable[]
@@ -56,6 +60,7 @@ export class Command {
         this.name = name;
         this.aliases = aliases;
         this.description = description;
+        this.usage = usage;
         this.permissions = permissions;
         this.options = options;
         this.isOwner = isOwner;

@@ -2,13 +2,15 @@ import {Command} from "../../../Structures/Command";
 import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
 import {Colors} from "discord.js";
 import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
+import {Bot} from "../../../../DataBase/Config.json";
 
-export default class Help extends Command {
+export class Help extends Command {
     public constructor() {
         super({
             name: "help",
             aliases: ["h"],
             description: "Можешь глянуть все мои команды!",
+            usage: "all | command name",
 
             slash: true,
             enable: true,
@@ -16,40 +18,55 @@ export default class Help extends Command {
         });
     };
 
-    public readonly run = (message: ClientMessage): void => {
-        const Commands: Command[] = message.client.commands.Array.filter((command) => !command.isOwner);
+    public readonly run = (message: ClientMessage, args: string[]): any => {
+        const memberArg = args[args.length - 1];
 
-        // @ts-ignore
-        let List: Command[] = Commands.ArraySort(5);
-        let {embed, pages} = this.#CreateEmbedMessage(message, List);
+        //Показать все команды
+        if (memberArg === "all") {
+            const Commands: Command[] = message.client.commands.Array.filter((command) => !command.isOwner);
+            // @ts-ignore
+            const List: Command[][] = Commands.ArraySort(5);
+            const {embed, pages} = this.#CreateEmbedMessage(message, List);
 
-        //Запускаем CollectorSortReaction
-        new ReactionMenu(embed, message, ReactionMenu.Callbacks(1, pages, embed));
+            //Запускаем ReactionMenu
+            return new ReactionMenu(embed, message, ReactionMenu.Callbacks(1, pages, embed));
+        }
+
+        const command = message.client.commands.Array.find((command) => command.name === memberArg || command.aliases.includes(memberArg));
+
+        //Отображаем одну команду
+        if (command) {
+            const {embed} = this.#CreateEmbedMessage(message, [[command]]);
+
+            //Запускаем ReactionMenu
+            return message.channel.send({embeds: [embed]});
+        }
+
+        //Если команды нет
+        return message.client.sendMessage({text: `${message.author}, такой команд нет в моей базе!`, message, color: "DarkRed"});
     };
     //====================== ====================== ====================== ======================
     /**
      * @description Создает Embed сообщение + pages
      * @param message
      * @param CommandsList
-     * @private
      */
-    readonly #CreateEmbedMessage = (message: ClientMessage, CommandsList: Command[]): { embed: EmbedConstructor, pages: any[] } => {
+    readonly #CreateEmbedMessage = (message: ClientMessage, CommandsList: Command[][]): { embed: EmbedConstructor, pages: any[] } => {
         const pages: string[] = [];
         const embed: EmbedConstructor = {
             title: "Help Menu",
             color: Colors.Yellow,
-            thumbnail: {
-                url: message.client.user.avatarURL()
-            },
+            thumbnail: { url: message.client.user.avatarURL() },
             timestamp: new Date()
         };
 
         //Преобразуем все команды в string
         CommandsList.forEach((s: any) => {
             const parsedCommand = s.map((command: Command) =>
-                `Команда [**${command.name}**]  
-                    **❯ Сокращения:** ${command.aliases ? `(${command.aliases})` : `(Нет)`} 
-                    **❯ Описание:** ${command.description ? `(${command.description})` : `(Нет)`}`
+                `Команда [**${command.name}**]
+                    **❯ Сокращения:** ${command.aliases ? `(${command.aliases})` : `(Нет)`}
+                    **❯ Описание:** ${command.description ? `(${command.description})` : `(Нет)`}
+                    **❯ Используется:** ${Bot.prefix}${command.name} ${command.usage}`
             ).join('\n\n');
 
             //Если parsedCommand не undefined, то добавляем его в pages
@@ -57,10 +74,7 @@ export default class Help extends Command {
         });
 
         embed.description = pages[0];
-        embed.footer = {
-            text: `${message.author.username} | Лист 1 из ${pages.length}`,
-            iconURL: message.author.displayAvatarURL()
-        }
+        embed.footer = { text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL() }
 
         return {embed, pages};
     };

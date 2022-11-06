@@ -9,6 +9,7 @@ export default class Seek extends Command {
             name: "seek",
             aliases: ['begin', 'sek', 'beg'],
             description: "Пропуск времени в текущем треке!",
+            usage: "00:00 | 20",
 
             options: [{
                 name: "value",
