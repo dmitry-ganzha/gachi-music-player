@@ -11,6 +11,7 @@ export class Command {
 
     //Описание команды
     public readonly description: string;
+
     //Права пользователя и бота (необходимые права для использования команды)
     public readonly permissions: { client: PermissionResolvable[], user: PermissionResolvable[] };
 

@@ -88,6 +88,8 @@ const PlatformReg = {
     vk: /vk.com/gi,
     discord: /cdn.discordapp.com/gi
 };
+//Платформы на которых нельзя получить исходный файл музыки
+const PlatformsAudio = ["SPOTIFY"];
 
 //Поддерживаемые платформы
 export type SupportPlatforms = "YOUTUBE" | "SPOTIFY" | "VK" | "SOUNDCLOUD" | "DISCORD";
@@ -113,7 +115,7 @@ export namespace SongFinder {
     export function findResource(song: Song): Promise<FFmpeg.Format> {
         const {type, url, author, title, duration} = song;
 
-        if (type === "SPOTIFY") return FindTrack(`${author.title} - ${title} (Lyrics)`, duration.seconds);
+        if (PlatformsAudio.includes(type)) return FindTrack(`${author.title} - ${title} (Lyrics)`, duration.seconds);
 
         // @ts-ignore
         const FindPlatform = SupportPlatforms[type];
@@ -123,7 +125,7 @@ export namespace SongFinder {
     }
     //Ищем трек на YouTube
     function FindTrack(nameSong: string, duration: number): Promise<FFmpeg.Format> {
-        return YouTube.SearchVideos(nameSong, {limit: 15}).then((Tracks) => {
+        return YouTube.SearchVideos(nameSong, {limit: 20}).then((Tracks) => {
             //Фильтруем треки оп времени
             const FindTracks: InputTrack[] = Tracks.filter((track: InputTrack) => {
                 const DurationSong = DurationUtils.ParsingTimeToNumber(track.duration.seconds);

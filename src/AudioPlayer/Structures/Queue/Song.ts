@@ -71,20 +71,28 @@ export class Song {
     //Получаем исходник трека
     public resource = (seek: number, req = 0): Promise<string> => new Promise(async (resolve) => {
         if (req > 3) return resolve(null);
+
+        //Если пользователь включил кеширование музыки
         if (cfg.CacheMusic) {
             const isCache = Download(this);
 
+            //Если есть файл выдаем путь до него
             if (isCache) return resolve(isCache as string);
         }
-        const checkResource = await httpsClient.checkLink(this.link);
 
+        //Если нет ссылки, то ищем трек
         if (!this.link) this.link = (await SongFinder.findResource(this))?.url;
 
+        //Проверяем ссылку на работоспособность
+        const checkResource = await httpsClient.checkLink(this.link);
+
+        //Если ссылка работает
         if (checkResource === "OK") {
             if (cfg.CacheMusic) Download(this, this.link);
             return resolve(this.link);
         }
 
+        //Если ссылка не работает, то удаляем ссылку и делаем новый запрос
         req++;
         this.link = null;
         return resolve(this.resource(seek, req));
