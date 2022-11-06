@@ -4,6 +4,8 @@ import {opus} from "prism-media";
 import {Readable} from "stream";
 import fs from "fs";
 
+type FFmpegOptions = {url: string, seek?: number, filters?: AudioFilters};
+
 /**
  * @description Конвертируем аудио в ogg/opus
  */
@@ -13,17 +15,12 @@ export class Decoder extends opus.OggDemuxer {
     #playbackDuration: number = 0;
     #started = false;
 
-    public constructor(options: { url: string, seek?: number, filters?: AudioFilters }) {
+    public constructor(options: FFmpegOptions) {
         super({autoDestroy: false, highWaterMark: 12});
-        let args;
         const resource = this.#choiceResource(options.url);
 
-        //Что из себя представляет resource
-        if (typeof resource === "string") args = ArgsHelper.createArgs(options.url, options?.filters, options?.seek);
-        else args = ArgsHelper.createArgs(null, options?.filters, options?.seek);
-
         //Создаем ffmpeg
-        this.ffmpeg = new FFmpeg.FFmpeg(args);
+        this.ffmpeg = new FFmpeg.FFmpeg(this.#choiceArgs(typeof resource, options));
 
         //Если resource является Readable то загружаем его в ffmpeg
         if (resource instanceof Readable) {
@@ -63,6 +60,11 @@ export class Decoder extends opus.OggDemuxer {
 
     //Что из себя представляем входной аргумент path
     readonly #choiceResource = (path: string): string | Readable => path.endsWith("opus") ? fs.createReadStream(path) : path;
+    //Создаем аргументы в зависимости от типа resource
+    readonly #choiceArgs = (resource: string | Readable, options: FFmpegOptions): FFmpeg.Arguments => {
+        if (resource === "string") return ArgsHelper.createArgs(options.url, options?.filters, options?.seek);
+        return ArgsHelper.createArgs(null, options?.filters, options?.seek);
+    };
 
     //Удаляем лишние данные
     public _destroy(error?: Error | null, callback?: (error: (Error | null)) => void) {
@@ -147,7 +149,7 @@ namespace ArgsHelper {
                 if (!Filter.args) return response.push(Filter.filter);
 
                 const indexFilter = AudioFilters.indexOf(filter);
-                response.push(`${Filter.filter}${AudioFilters.slice(indexFilter + 1)[0]}`)
+                response.push(`${Filter.filter}${AudioFilters.slice(indexFilter + 1)[0]}`);
             }
         });
 

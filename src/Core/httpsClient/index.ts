@@ -152,7 +152,6 @@ type Decoder = BrotliDecompress | Gunzip | Deflate;
 
 // @ts-ignore
 interface ReqOptions extends RequestOptions {
-    path?: string,
     body?: string
 }
 

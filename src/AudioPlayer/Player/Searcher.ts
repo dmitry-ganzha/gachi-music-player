@@ -73,9 +73,12 @@ namespace toPlayerUtils {
     export function typeSong(search: string) {
         if (!search) return "track"; //Если нет search, значит пользователь прикрепил файл
 
-        if (search.match(/playlist/)) return "playlist";
-        else if (search.match(/album/) || search.match(/sets/)) return "album";
-        else if (search.match(UrlSrt)) return "track";
+        //Если ссылка, то это может быть плейлист, альбом или просто трек
+        if (search.match(UrlSrt)) {
+            if (search.match(/playlist/)) return "playlist";
+            else if (search.match(/album/) || search.match(/sets/)) return "album";
+            return "track";
+        }
         return "search";
     }
     //====================== ====================== ====================== ======================

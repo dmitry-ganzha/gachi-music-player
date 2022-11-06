@@ -119,6 +119,7 @@ namespace Utils {
     /**
      * @description Получаем ID
      * @param url {string} Ссылка
+     * @param isPlaylist
      */
     export function getID(url: string, isPlaylist: boolean = false) {
         if (typeof url !== "string") return "Url is not string";

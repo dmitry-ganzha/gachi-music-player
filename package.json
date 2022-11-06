@@ -1,22 +1,22 @@
 {
+  "name": "WatKLOK",
+  "main": "src/Core/Client/Client.js",
   "author": "SNIPPIK",
+  "version": "2.3.0",
+
+  "scripts": {
+    "start": "node ./src/Core/Client/Client.js",
+    "sharder": "node ./src/Core/Client/ShardManager.js",
+    "build": "npm install"
+  },
+
   "dependencies": {
     "@discordjs/voice": "^0.13.1-dev.1666353883-b2658ce.0",
     "discord.js": "^14.6.1-dev.1666353882-b2658ce.0",
     "dotenv": "^16.0.2",
+    "sodium-native": "^3.4.1",
     "tiny-typed-emitter": "^2.1.0"
   },
-  "description": "Discord music bot",
-  "main": "src/Core/Client/Client.js",
-  "name": "WatKLOK",
-  "repository": {
-    "github": "https://github.com/SNIPPIK/WatKLOK.git"
-  },
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "jest"
-  },
-  "type": "commonjs",
-  "types": "src/Core/Client/Client.ts",
-  "version": "2.2.2"
+  "engines": { "node": "18" },
+  "repository": { "github": "https://github.com/SNIPPIK/WatKLOK.git" }
 }

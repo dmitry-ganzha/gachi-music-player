@@ -1,17 +1,13 @@
 import {existsSync, readFileSync, writeFile} from 'node:fs';
 
-//====================== ====================== ====================== ======================
 /**
  * @description Получаем куки из json файла
  */
 export function getCookies(): null | string {
     try {
         if (!existsSync(`./DataBase/Cookie.json`)) return null;
-        let youtubeData = JSON.parse(readFileSync(`./DataBase/Cookie.json`, "utf8"));
-        return youtubeData.cookie;
-    } catch {
-        return null;
-    }
+        return JSON.parse(readFileSync(`./DataBase/Cookie.json`, "utf8")).cookie;
+    } catch { return null; }
 }
 //====================== ====================== ====================== ======================
 /**
@@ -22,26 +18,11 @@ export function uploadCookie(Cookie: string | string[]): void {
     if (!existsSync(`./DataBase/Cookie.json`)) return null;
 
     try {
-        let youtubeData = JSON.parse(readFileSync(`./DataBase/Cookie.json`, "utf8"));
-        let EndCookieString: {};
+        const CookieFile = JSON.parse(readFileSync(`./DataBase/Cookie.json`, "utf8"));
+        const newCookie = ParsingCookieToString({...ParsingCookieToJson(CookieFile.cookie), ...ParsingCookieToJson(Cookie)});
 
-        if (typeof Cookie === "string") {
-            let CookieJson = ParsingCookieToJson(youtubeData.cookie);
-            let newCookieJson = ParsingCookieToJson([Cookie]);
-
-            let EndCookieJson = {...CookieJson, ...newCookieJson};
-            EndCookieString = {cookie: ParsingCookieToString(EndCookieJson)};
-        } else {
-            let CookieJson = ParsingCookieToJson(youtubeData.cookie);
-
-            let newCookieJson = ParsingCookieToJson(Cookie);
-            let EndCookieJson = {...CookieJson, ...newCookieJson};
-            EndCookieString = {cookie: ParsingCookieToString(EndCookieJson)};
-        }
-        return writeFile('./DataBase/Cookie.json', JSON.stringify(EndCookieString, null, `\t`), () => null);
-    } catch (err) {
-        throw new Error("Cookie file has damaged!");
-    }
+        return writeFile('./DataBase/Cookie.json', JSON.stringify({cookie: newCookie}, null, `\t`), () => null);
+    } catch (err) { throw new Error("Cookie file has damaged!"); }
 }
 //====================== ====================== ====================== ======================
 /**
@@ -50,27 +31,23 @@ export function uploadCookie(Cookie: string | string[]): void {
  */
 function ParsingCookieToJson(headCookie: string[] | string): {} {
     let Json = {};
-    if (typeof headCookie === "string") {
-        headCookie.split(';').forEach((z) => {
-            const arr = z.split("=");
-            if (arr.length <= 1) return;
-            const key = arr.shift()?.trim() as string;
-            const value = arr.join("=").trim();
 
-            Json = {...Json, [key]: value};
-        });
-    } else {
-        headCookie.forEach((x: string) => {
-            x.split(";").forEach((z) => {
-                const arr = z.split("=");
-                if (arr.length <= 1) return;
-                const key = arr.shift()?.trim() as string;
-                const value = arr.join("=").trim();
+    //Разбираем куки в JSON
+    const filteredCookie = (cook: string) => cook.split(";").forEach((cookie) => {
+        const arrayCookie = cookie.split("=");
 
-                Json = {...Json, [key]: value};
-            });
-        });
-    }
+        //Если параметра нет, то не добавляем его
+        if (arrayCookie.length <= 1) return;
+
+        const key = arrayCookie.shift()?.trim() as string;
+        const value = arrayCookie.join("=").trim();
+
+        Json = {...Json, [key]: value};
+    });
+
+    if (typeof headCookie === "string") filteredCookie(headCookie);
+    else headCookie.forEach(filteredCookie);
+
     return Json;
 }
 //====================== ====================== ====================== ======================

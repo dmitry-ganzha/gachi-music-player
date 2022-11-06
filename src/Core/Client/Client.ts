@@ -59,9 +59,7 @@ export class WatKLOK extends Client {
             if (clearText) text = text.replace(/[\[,\]}{"`']/gi, "");
             if (text.length > value && value !== false) return `${text.substring(0, value)}...`;
             return text;
-        } catch {
-            return text;
-        }
+        } catch { return text; }
     };
     //Отправляет лог со временем
     public readonly console = (text: string) => {
@@ -93,8 +91,9 @@ export class WatKLOK extends Client {
 
             console.log(`[IgnoreError]:`, err);
             try {
-                const channel = this.channels.cache.get(Channels.sendErrors) as Channel;
-                if (channel) channel.send(`${err.toString()}`).catch(console.log);
+                const channel = this.channels.cache.get(Channels.sendErrors) as ClientMessage["channel"];
+
+                if (channel) channel.send({content: `\`\`\`css\n${err}\n\`\`\``}).catch(console.log);
                 return null;
             } catch {/* Continue */}
         });

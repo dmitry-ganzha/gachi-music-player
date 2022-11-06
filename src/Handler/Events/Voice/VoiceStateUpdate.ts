@@ -20,8 +20,8 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
             const voice = Voice.getVoice(Guild.id), isBotVoice = !!newState.channel?.members?.find(filterBot) ?? !!oldState.channel?.members?.find(filterBot);
             const usersSize = newState.channel?.members?.filter(filter)?.size ?? oldState.channel?.members?.filter(filter)?.size;
 
-            //Если есть голосовое подключение и нет пользователей
-            if (voice && usersSize < 1) Voice.Disconnect(Guild);
+            //Если есть голосовое подключение и нет пользователей и чат соотвествует в котором сидит бот
+            if (voice && usersSize < 1 && voice.joinConfig.channelId === oldState?.channelId) Voice.Disconnect(Guild);
 
             //Если есть очередь
             if (queue) {

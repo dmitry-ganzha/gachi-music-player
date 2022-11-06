@@ -61,7 +61,7 @@ export namespace EmbedMessages {
             thumbnail: { url: !image?.url ? author?.image.url : image?.url ?? Images.NotImage },
             fields: [{ name: "Добавлено в очередь", value: `**❯** [${client.replaceText(title, 40, true)}](${url}})\n**❯** [${duration.full}]` }],
             footer: { text: `${requester.username} | ${DurationUtils.getTimeQueue(songs)} | 🎶: ${songs.length}`, iconURL: requester.avatarURL() }
-        }
+        };
     }
     //====================== ====================== ====================== ======================
     /**
@@ -100,7 +100,7 @@ export namespace EmbedMessages {
             thumbnail: { url: image?.url ?? Images.NotImage },
             timestamp: new Date(),
             footer: { text: `${requester.username} | ${DurationUtils.getTimeQueue(songs)} | 🎶: ${songs.length}`, iconURL: requester?.avatarURL() ?? client.user.displayAvatarURL() }
-        }
+        };
     }
 }
 
@@ -115,9 +115,9 @@ namespace toPlayFunctions {
         const {player, songs, filters, song} = queue;
         const playbackDuration = ConvertTime(player.streamDuration, filters);
         const VisualDuration = MusicDuration(song, playbackDuration);
-
         //Текущий трек
-        let fields = [{ name: "Щас играет", value: `**❯** [${client.replaceText(song.title, 29, true)}](${song.url})\n${VisualDuration}` }];
+        const fields = [{ name: "Щас играет", value: `**❯** [${client.replaceText(song.title, 29, true)}](${song.url})\n${VisualDuration}` }];
+
         //Следующий трек
         if (songs.length > 1) fields.push({ name: "Потом", value: `**❯** [${client.replaceText(songs[1].title, 29, true)}](${songs[1].url})` });
         return fields;

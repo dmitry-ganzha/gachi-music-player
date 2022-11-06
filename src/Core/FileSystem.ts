@@ -42,8 +42,6 @@ function log(type: "Commands" | "Events" | "Modules", dir: string, file: string,
 }
 //Загружаем файлы
 export function LoadFiles(client: WatKLOK) {
-    //Откуда берем для загрузки файлы
-    const loadPath = ["Handler/Commands", "Handler/Events", "Handler/Modules"];
     const loadCallbacks: FileCallback[] = [ //Каким способом их обработать
         (pull: Command, {file, reason, dir}) => {
             if (reason) return log("Commands", dir, file, reason);
@@ -68,12 +66,12 @@ export function LoadFiles(client: WatKLOK) {
     ];
 
     //Загружаем путь, а затем действие
-    loadPath.forEach((path, index) => {
+    ["Handler/Commands", "Handler/Events", "Handler/Modules"].forEach((path, index) => {
         new FileLoader({path, callback: loadCallbacks[index]});
 
         setImmediate(() => {
             if (!client.ShardID || client.ShardID !== 0) Object.entries(FileBase).forEach(([key, value]) =>
-                console.log(`| FileSystem... Loaded [amount: ${value.length}, type: ${key}]\n${value.join("\n")}\n`));
+                console.log(`| FileSystem... Loaded ${key} | ${value.length}\n${value.join("\n")}\n`));
             //После вывода в консоль удаляем
             Object.entries(FileBase).forEach(([key,]) => delete FileBase[key as "Commands" | "Events" | "Modules"]);
         });

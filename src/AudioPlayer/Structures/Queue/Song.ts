@@ -70,7 +70,7 @@ export class Song {
 
     //Получаем исходник трека
     public resource = (seek: number, req = 0): Promise<string> => new Promise(async (resolve) => {
-        if (req > 10) return resolve(null);
+        if (req > 3) return resolve(null);
         if (cfg.CacheMusic) {
             const isCache = Download(this);
 
@@ -86,6 +86,7 @@ export class Song {
         }
 
         req++;
+        this.link = null;
         return resolve(this.resource(seek, req));
     });
 }
