@@ -1,6 +1,7 @@
 {
   "Channels": {
-    "sendErrors": ""
+    "sendErrors": "",
+    "removeUser": ""
   },
   "Bot": {
     "ignoreErrors": true,
