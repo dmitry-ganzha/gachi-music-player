@@ -3,7 +3,7 @@ import {replacer} from "../../Core/Utils/LiteUtils";
 import {FileSystem} from "../../Core/FileSystem";
 import fs from "fs";
 import {httpsClient} from "../../Core/httpsClient";
-import {Debug} from "../../../DataBase/Config.json";
+import {Debug} from "../../../db/Config.json";
 
 export namespace DownloadManager {
     /**

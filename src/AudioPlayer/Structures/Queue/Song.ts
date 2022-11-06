@@ -4,7 +4,7 @@ import {ClientMessage} from "../../../Handler/Events/Activity/Message";
 import {httpsClient} from "../../../Core/httpsClient";
 import {FFmpeg} from "../Media/FFmpeg";
 import {ColorTrack, SongFinder, SupportPlatforms, TypePlatform} from "../SongSupport";
-import cfg from "../../../../DataBase/Config.json";
+import cfg from "../../../../db/Config.json";
 import {DownloadManager} from "../../Manager/DownloadManager";
 
 const Download = DownloadManager.downloadUrl;

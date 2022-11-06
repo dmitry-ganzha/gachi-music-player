@@ -4,7 +4,7 @@ import {PlayerEmitter} from "../../AudioPlayer/execute";
 import {Command} from "../../Structures/Command";
 import {Queue} from "../../AudioPlayer/Structures/Queue/Queue";
 import {messageUtils} from "../Utils/LiteUtils";
-import {Bot, Channels, Debug} from "../../../DataBase/Config.json";
+import {Bot, Channels, Debug} from "../../../db/Config.json";
 import {ClientMessage, EmbedConstructor, Channel} from "../../Handler/Events/Activity/Message";
 import {Voice} from "../../AudioPlayer/Structures/Voice";
 

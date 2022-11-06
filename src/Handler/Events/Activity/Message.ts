@@ -1,5 +1,5 @@
 import {ActionRow,ActionRowBuilder,BaseMessageOptions,ChannelType,DMChannel,EmbedData,Message,MessageEditOptions,MessagePayload,NewsChannel,PartialDMChannel,TextChannel,ThreadChannel} from "discord.js";
-import {Bot} from '../../../../DataBase/Config.json';
+import {Bot} from '../../../../db/Config.json';
 import {WatKLOK} from "../../../Core/Client/Client";
 import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
 import {UtilsPermissions} from "../../../Core/Utils/LiteUtils";

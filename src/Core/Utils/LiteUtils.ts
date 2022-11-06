@@ -1,6 +1,6 @@
 import {ButtonStyle, Colors, MessageReaction, User} from "discord.js";
 import {Command} from "../../Structures/Command";
-import {Bot} from "../../../DataBase/Config.json";
+import {Bot} from "../../../db/Config.json";
 import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
 import {WatKLOK} from "../Client/Client";
 

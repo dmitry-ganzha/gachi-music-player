@@ -3,7 +3,7 @@ import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ApplicationCommandOptionType, Colors} from "discord.js";
 import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
 import {FFmpeg} from "../../../AudioPlayer/Structures/Media/FFmpeg";
-import Filters from "../../../../DataBase/Filters.json";
+import Filters from "../../../../db/Filters.json";
 import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
 
 export default class Filter extends Command {

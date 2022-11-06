@@ -1,6 +1,6 @@
 import {Duplex, DuplexOptions, Readable, Writable} from "stream";
 import {ChildProcessWithoutNullStreams, spawn, spawnSync} from "child_process";
-import AudioFilters from "../../../../DataBase/Filters.json";
+import AudioFilters from "../../../../db/Filters.json";
 
 let FFmpegName: string, FFprobeName: string;
 

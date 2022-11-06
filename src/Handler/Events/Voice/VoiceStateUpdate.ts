@@ -3,7 +3,7 @@ import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {WatKLOK} from "../../../Core/Client/Client";
 import {Event} from "../../../Structures/Event";
 import {Voice} from "../../../AudioPlayer/Structures/Voice";
-import {Debug} from "../../../../DataBase/Config.json";
+import {Debug} from "../../../../db/Config.json";
 
 export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
     public readonly name: string = "voiceStateUpdate";

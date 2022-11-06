@@ -2,7 +2,7 @@ import {Command} from "../../../Structures/Command";
 import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
 import {Colors} from "discord.js";
 import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
-import {Bot} from "../../../../DataBase/Config.json";
+import {Bot} from "../../../../db/Config.json";
 
 export class Help extends Command {
     public constructor() {
@@ -63,9 +63,9 @@ export class Help extends Command {
         //Преобразуем все команды в string
         CommandsList.forEach((s: any) => {
             const parsedCommand = s.map((command: Command) =>
-                `Команда [**${command.name}**]
-                    **❯ Сокращения:** ${command.aliases ? `(${command.aliases})` : `(Нет)`}
-                    **❯ Описание:** ${command.description ? `(${command.description})` : `(Нет)`}
+                `Команда [**${command.name}**] | ${command.type}
+                    **❯ Сокращения:** (${command.aliases.join(", ") ?? `Нет`})
+                    **❯ Описание:** (${command.description ?? `Нет`})
                     **❯ Используется:** ${Bot.prefix}${command.name} ${command.usage}`
             ).join('\n\n');
 

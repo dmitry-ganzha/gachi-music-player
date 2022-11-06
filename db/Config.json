@@ -1,0 +1,13 @@
+{
+  "Channels": {
+    "sendErrors": "",
+    "removeUser": ""
+  },
+  "Bot": {
+    "ignoreErrors": true,
+    "prefix": "!",
+    "OwnerIDs": [""]
+  },
+  "CacheMusic": false,
+  "Debug": false
+}
