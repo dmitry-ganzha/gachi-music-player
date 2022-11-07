@@ -70,8 +70,7 @@ export function LoadFiles(client: WatKLOK) {
         new FileLoader({path, callback: loadCallbacks[index]});
 
         setImmediate(() => {
-            if (!client.ShardID || client.ShardID !== 0) Object.entries(FileBase).forEach(([key, value]) =>
-                console.log(`| FileSystem... Loaded ${key} | ${value.length}\n${value.join("\n")}\n`));
+            if (client.ShardID === undefined) Object.entries(FileBase).forEach(([key, value]) => console.log(`| FileSystem... Loaded ${key} | ${value.length}\n${value.join("\n")}\n`));
             //После вывода в консоль удаляем
             Object.entries(FileBase).forEach(([key,]) => delete FileBase[key as "Commands" | "Events" | "Modules"]);
         });

@@ -23,20 +23,20 @@ if choice gtr 6 goto Fail
 :Client
     echo running Client...
     cd build
-    npm start
+    node ./src/Core/Client/Client.js
     goto menu
 
 :: Запускаем ShardManager
 :ShardManager
     echo running ShardManager...
     cd build
-    npm sharder
+    node ./src/Core/Client/ShardManager.js
     goto menu
 
 :: Запускаем билдер из typescript в javascript
 :Builder
     echo staring build project in watch mode...
-    npm build
+    tsc --watch -p ./tsconfig.json
     goto menu
 
 :: Удаляем аудио кеш
@@ -91,6 +91,6 @@ if choice gtr 6 goto Fail
 :: Устанавливаем все необходимые зависимости
 :Npm
     echo Install other modules
-    npm requirements
+    start npm i
     cls
     goto menu

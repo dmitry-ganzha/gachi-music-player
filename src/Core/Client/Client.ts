@@ -21,7 +21,7 @@ export class WatKLOK extends Client {
     public readonly commands = new CollectionMap<string, Command>(); //База, со всеми командами
     public readonly queue = new CollectionMap<string, Queue>(); //База, в ней содержатся данные о серверах на которых играет музыка
     public readonly player = new PlayerEmitter(); //Плеер
-    public readonly ShardID: number | null = this.shard?.ids[0]; //Если запущен ShardManager, будет отображаться номер дубликата
+    public readonly ShardID: number | undefined = this.shard?.ids[0] ?? undefined; //Если запущен ShardManager, будет отображаться номер дубликата
 
     public constructor() {
         super({
