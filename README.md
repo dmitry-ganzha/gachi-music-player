@@ -8,28 +8,26 @@
 </div>
 
 
-[<img align="right" alt="Avatar bot" width="230px" src="https://cdn.discordapp.com/avatars/678588856588697610/466d3d51e6d497541622085ed18a1ad1.webp?size=4096" />](https://discordapp.com/users/623170593268957214)
+[<img align="right" alt="Avatar bot" width="250px" src="https://cdn.discordapp.com/avatars/678588856588697610/466d3d51e6d497541622085ed18a1ad1.webp?size=4096" />](https://discordapp.com/users/623170593268957214)
 
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
 - Лицензия: [`MIT`](https://github.com/SNIPPIK/WatKLOK/blob/main/LICENSE)
-- Перейти к [настройкам](DataBase/Config.json)
+- Перейти к [настройкам](db/Config.json)
 - Перейти ко [всем командам](src/Handler/Commands) | `Slash + Standart`
 - Перейти к [плееру](src/AudioPlayer)
 - Все сообщения удаляют автоматически через время
+- Для удаления аудио кеша `запустить run и выбрать 6`
 
 ## Гайд по запуску
 1. [`Node.js`](https://nodejs.org/ru/) 16-19
 2. [`FFmpeg & FFprobe`](https://ffmpeg.org/) или npm install (ffmpeg-static и ffprobe-static)
-3. Библиотеки шифрования (на выбор)
-    - `sodium-native`: ^3.3.0 (рекомендуется)
-    - `sodium`: ^3.0.2
-    - `libsodium-wrappers`: ^0.7.9
-4. Добавляем не публичные данные в [.env](.env) и меняем прочие настройки в [LocalBase](DataBase)
-5. Запускаем [`run.bat`](run.bat)
-   - Если нет папки `build` (выбираем 3)
-   - Если менее 1к серверов (выбираем 1)
-   - Если более 1к серверов (выбираем 2)
+3. Указываем данные в [`.env`](.env) 
+4. Запускаем [`run`](run.bat)
+   - Если нет `libSodium` (выбираем 5)
+   - Если нет папки [`node_modules`](node_modules) (выбираем 4)
+   - Если нет папки [`build`](build) (выбираем 3)
+5. Запуск бота `повторяем 4 шаг, но выбираем 1` | Если возникли ошибки повторите шаги заново
 
 ## Поддерживаемые платформы
 
@@ -50,18 +48,18 @@
     SOUNDCLOUD="" #Soundcloud client id
     VK_TOKEN="" #Vk auth token (user token, not a bot token)
    ```
-1. [`Cookie.json`](DataBase/Cookie.json) | необходим для видео 18+
+1. [`Cookie.json`](db/Cookie.json) | необходим для видео 18+
     ```json5
    {
       "Cookie": "КУКИ"
    }
    ```
-2. [`Config.json`](DataBase/Config.json) | основные настройки
+2. [`Config.json`](db/Config.json) | основные настройки
    ```json5
       {
         "Channels": {
-          "sendErrors": "", //ID канала на который будут отображатся ошибки
-          "removeUser": ""  //ID канала на котором будут отображатся пользователи ливнувшие с сервера
+          "sendErrors": "", //ID канала на который будут отображаться ошибки
+          "removeUser": ""  //ID канала на котором будут отображаться пользователи ливнувшие с сервера
         },
         "Bot": {
           "ignoreErrors": true, //Игнорировать ошибки
@@ -71,7 +69,7 @@
         "Debug": false //Отправлять сообщение взаимодействий бота с discord
       }
       ```
-3. [`Filters.json`](DataBase/Filters.json) | Можно добавлять свои фильтры в конфиг | [`FFmpeg Docs`](https://ffmpeg.org/ffmpeg.html)
+3. [`Filters.json`](db/Filters.json) | Можно добавлять свои фильтры в конфиг | [`FFmpeg Docs`](https://ffmpeg.org/ffmpeg.html)
     ```json5
    [
       {
