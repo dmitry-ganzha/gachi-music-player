@@ -3,13 +3,13 @@ import {StageChannel, VoiceChannel} from "discord.js";
 import {InputPlaylist, InputTrack} from "../Structures/Queue/Song";
 import {messageUtils} from "../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../Manager/DurationUtils";
-import {FailRegisterPlatform, SearchPlatforms, SupportPlatforms, SupportType, TypePlatform} from "../Structures/SongSupport";
+import {FailRegisterPlatform, SearchPlatforms, supportPlatforms, SupportType, TypePlatform, SupportPlatforms} from "../Structures/SongSupport";
 import {DownloadManager} from "../Manager/DownloadManager";
 
 //Данные которые необходимо передать для поиска
 interface Options {
     type?: SupportType
-    platform?: SupportPlatforms
+    platform?: supportPlatforms
     search: string
     message: ClientMessage
     voiceChannel: VoiceChannel | StageChannel
@@ -87,24 +87,24 @@ namespace toPlayerUtils {
      * @param search {string} Что там написал пользователь
      * @param message {ClientMessage} Сообщение
      */
-    export function PlatformSong(search: string, message: ClientMessage): SupportPlatforms {
+    export function PlatformSong(search: string, message: ClientMessage): supportPlatforms {
         if (!search) return "DISCORD"; //Если нет search, значит пользователь прикрепил файл
 
         if (search.match(UrlSrt)) return TypePlatform(search);
         const SplitSearch = search.split(' ');
         const platform = SplitSearch[0] as "yt" | "vk" | "sp" | "sc";
 
-        if (SearchPlatforms[platform]) return SearchPlatforms[platform] as SupportPlatforms;
+        if (SearchPlatforms[platform]) return SearchPlatforms[platform] as supportPlatforms;
         return "YOUTUBE";
     }
     //====================== ====================== ====================== ======================
     /**
      * @description Фильтруем ссылку от аргументов поиска
      * @param arg {string} аргументы переданные пользователем
-     * @param platform {SupportPlatforms} Платформа
+     * @param platform {supportPlatforms} Платформа
      * @param type {SupportType} Тип запроса
      */
-    export function findArg(arg: string, platform: SupportPlatforms, type: SupportType): string {
+    export function findArg(arg: string, platform: supportPlatforms, type: SupportType): string {
         if (arg.match(UrlSrt)) return `http${arg.split("http")[1]}`; //Если строка ссылка
         else if (type === "search" && arg.includes(platform)) return arg.split(platform)[1]; //Если строка это поиск на определенной платформе
         return arg;
@@ -170,10 +170,10 @@ namespace SearchSongMessage {
      * @description Собираем найденные треки в <string>
      * @param results {any[]} Результаты поиска
      * @param message {ClientMessage} Сообщение
-     * @param platform {SupportPlatforms} Платформа на которой искали
+     * @param platform {supportPlatforms} Платформа на которой искали
      * @requires {ParsingTimeToString}
      */
-    function ArrayToString(results: InputTrack[], message: ClientMessage, platform: SupportPlatforms): string {
+    function ArrayToString(results: InputTrack[], message: ClientMessage, platform: supportPlatforms): string {
         let NumberTrack = 1, StringTracks;
 
         // @ts-ignore

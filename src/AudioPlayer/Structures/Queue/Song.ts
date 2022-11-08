@@ -3,7 +3,7 @@ import {Images} from "../EmbedMessages";
 import {ClientMessage} from "../../../Handler/Events/Activity/Message";
 import {httpsClient} from "../../../Core/httpsClient";
 import {FFmpeg} from "../Media/FFmpeg";
-import {ColorTrack, SongFinder, SupportPlatforms, TypePlatform} from "../SongSupport";
+import {ColorTrack, SongFinder, supportPlatforms, TypePlatform} from "../SongSupport";
 import cfg from "../../../../db/Config.json";
 import {DownloadManager} from "../../Manager/DownloadManager";
 
@@ -22,7 +22,7 @@ export class Song {
     readonly #requester: SongRequester;
     readonly #isLive: boolean;
     readonly #color: number;
-    readonly #type: SupportPlatforms;
+    readonly #type: supportPlatforms;
     #resLink: string;
 
     public constructor(track: InputTrack, author: ClientMessage["author"]) {

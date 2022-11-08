@@ -26,11 +26,7 @@ export class WatKLOK extends Client {
     public constructor() {
         super({
             intents: (Object.keys(IntentsBitField.Flags)) as any,
-            ws: {
-                properties: {
-                    browser: "Web" as "Discord iOS" | "Web"
-                }
-            },
+            ws: { properties: { browser: "Web" as "Discord iOS" | "Web" } },
             presence: {
                 activities: [{
                     name: "музыку в youtube, spotify, soundcloud, vk",

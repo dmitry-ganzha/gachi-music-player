@@ -51,7 +51,7 @@ export class Help extends Command {
      * @param message
      * @param CommandsList
      */
-    readonly #CreateEmbedMessage = (message: ClientMessage, CommandsList: Command[][]): { embed: EmbedConstructor, pages: any[] } => {
+    readonly #CreateEmbedMessage = (message: ClientMessage, CommandsList: Command[][]): { embed: EmbedConstructor, pages: string[] } => {
         const pages: string[] = [];
         const embed: EmbedConstructor = {
             title: "Help Menu",

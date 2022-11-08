@@ -7,12 +7,12 @@ import {InputPlaylist, InputTrack, Song} from "./Queue/Song";
 import {DurationUtils} from "../Manager/DurationUtils";
 
 /*
-Для добавления своей платформы нужно добавить в {SupportPlatforms} и {PlatformReg}. Для получения названия платформы и данных с нее
+Для добавления своей платформы нужно добавить в {supportPlatforms} и {PlatformReg}. Для получения названия платформы и данных с нее
 Для добавления ее в поиск нужно добавить в {SearchPlatforms} сокращение: название платформы
 Так-же можно добавить свой цвет в {ColorTrack}
 Все для добавления своей поддержки разных платформ находится в этом файле
  */
-export const FailRegisterPlatform: Set<SupportPlatforms> = new Set();
+export const FailRegisterPlatform: Set<supportPlatforms> = new Set();
 
 //Проверяем наличие данных авторизации
 (() => {
@@ -92,17 +92,17 @@ const PlatformReg = {
 const PlatformsAudio = ["SPOTIFY"];
 
 //Поддерживаемые платформы
-export type SupportPlatforms = "YOUTUBE" | "SPOTIFY" | "VK" | "SOUNDCLOUD" | "DISCORD";
+export type supportPlatforms = "YOUTUBE" | "SPOTIFY" | "VK" | "SOUNDCLOUD" | "DISCORD";
 //Поддерживаемые тип для этих платформ
 export type SupportType = "track" | "playlist" | "search" | "album";
 
 //Выдает платформу из ссылки
-export function TypePlatform(url: string): SupportPlatforms {
+export function TypePlatform(url: string): supportPlatforms {
     try {
         const filterPlatforms = Object.entries(PlatformReg).filter(([, value]) => url.match(value));
         const [key] = filterPlatforms[0];
 
-        if (key) return key.toUpperCase() as SupportPlatforms;
+        if (key) return key.toUpperCase() as supportPlatforms;
         return "DISCORD"; //К этому типу привязан ffprobe
     } catch (e) {
         return "DISCORD"; //К этому типу привязан ffprobe

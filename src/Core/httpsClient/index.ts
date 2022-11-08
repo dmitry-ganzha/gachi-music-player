@@ -140,7 +140,8 @@ function ChangeReqOptions(options: httpsClientOptions): void {
     //Добавляем User-Agent
     if (options.options?.userAgent) {
         const {Agent, Version} = GetUserAgent();
-        options.request.headers = {...options.request.headers, "user-agent": Agent};
+
+        if (Agent) options.request.headers = {...options.request.headers, "user-agent": Agent};
         if (Version) options.request.headers = {...options.request.headers, "sec-ch-ua-full-version": Version};
     }
 
