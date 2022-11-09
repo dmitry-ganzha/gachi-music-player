@@ -7,226 +7,7 @@ const ApiUrl = "https://api.spotify.com/v1"; //type/id/params
 const SpotifyUrl = 'https://open.spotify.com';
 const aut = FileSystem.env("SPOTIFY_ID") + ":" + FileSystem.env("SPOTIFY_SECRET");
 
-const SpotifyRes = {
-    Token: "",
-    Time: 0
-};
-
-/**
- * Все доступные взаимодействия с Spotify-API
- */
-export namespace Spotify {
-    /**
-     * @description Получаем данные о треке
-     * @param url {string} Ссылка на трек
-     */
-    export async function getTrack(url: string): Promise<InputTrack | null> {
-        return new Promise<InputTrack | null>(async (resolve) => {
-            const id = getID(url);
-            const result = (await Promise.all([RequestSpotify(`tracks/${id}`)]))[0] as SpotifyTrack & FailResult;
-
-            if (!result || !result?.name) return resolve(null);
-
-            return resolve({
-                title: result.name,
-                url: url,
-                author: (await Promise.all([getAuthorTrack(result.artists[0].external_urls.spotify, result?.artists[0]?.type !== "artist")]))[0],
-                duration: {
-                    seconds: (result.duration_ms / 1000).toFixed(0)
-                },
-                image: result.album.images.pop(),
-                //PrevFile: result.preview_url
-            });
-        });
-    }
-
-    //====================== ====================== ====================== ======================
-    /**
-     * @description получаем данные о плейлисте + треки
-     * @param url {string} Ссылка на плейлист
-     * @param options {limit: number} Настройки
-     */
-    export function getPlaylist(url: string, options: { limit: number } = {limit: 101}): Promise<InputPlaylist | null> {
-        return new Promise<InputPlaylist | null>(async (resolve) => {
-            try {
-                const id = getID(url);
-                const result = (await Promise.all([RequestSpotify(`playlists/${id}?offset=0&limit=${options.limit}`)]))[0] as SpotifyPlaylist & FailResult;
-
-                if (!result || !result?.name) return resolve(null);
-
-                return resolve({
-                    url, title: result.name,
-                    items: await Promise.all(result.tracks.items.map(async ({track}) => {
-                        return {
-                            title: track?.name,
-                            url: `${SpotifyUrl}/track/${track?.id}`,
-                            author: (await Promise.all([getAuthorTrack(track.artists[0].external_urls.spotify)]))[0],
-                            duration: {
-                                seconds: (track.duration_ms / 1000).toFixed(0)
-                            },
-                            image: track.album.images[0] ?? result?.images[0],
-                            //PrevFile: track?.preview_url
-                        }
-                    })),
-                    image: result.images[0],
-                    author: (await Promise.all([getAuthorTrack(`${SpotifyUrl}/artist/${result.owner.id}`, result?.owner?.type !== "artist")]))[0]
-                });
-            } catch (e) {
-                console.log(e);
-                return resolve(null);
-            }
-        });
-    }
-
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Получаем данные на альбом + треки
-     * @param url {string} Ссылка на альбом
-     * @param options {limit: number} Настройки
-     */
-    export function getAlbum(url: string, options: { limit: number } = {limit: 101}): Promise<InputPlaylist | null> {
-        return new Promise<InputPlaylist | null>(async (resolve) => {
-            try {
-                const id = getID(url);
-                const result = (await Promise.all([RequestSpotify(`albums/${id}?offset=0&limit=${options.limit}`)]))[0] as SpotifyAlbumFull & FailResult;
-
-                if (!result || !result?.name) return resolve(null);
-
-                return resolve({
-                    url: url,
-                    title: result.name,
-                    items: await Promise.all(result.tracks.items.map(async (track: SpotifyTrack) => {
-                        return {
-                            title: track.name,
-                            url: `${SpotifyUrl}/track/${track.id}`,
-                            author: (await Promise.all([getAuthorTrack(track.artists[0].external_urls.spotify)]))[0],
-                            duration: {
-                                seconds: (track.duration_ms / 1000).toFixed(0)
-                            },
-                            image: track?.album?.images[0] ?? result?.images[0],
-                            //PrevFile: track.preview_url
-                        }
-                    })),
-                    image: result?.images[0],
-                    author: (await Promise.all([getAuthorTrack(`${SpotifyUrl}/artist/${result.artists[0].id}`, result?.artists[0]?.type !== "artist")]))[0]
-                });
-            } catch (e) {
-                console.log(e);
-                return resolve(null);
-            }
-        });
-    }
-
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Ищем треки в базах spotify
-     * @param search {string} Что ищем
-     * @param options {limit: number} Настройки поиска
-     */
-    export function SearchTracks(search: string, options: { limit: number } = {limit: 15}): Promise<InputTrack[] | null> {
-        return new Promise<InputTrack[] | null>(async (resolve) => {
-            try {
-                const result = (await Promise.all([RequestSpotify(`search?q=${search}&type=track&limit=${options.limit}`)]))[0] as SearchTracks & FailResult;
-
-                if (!result) return resolve(null);
-
-                return resolve(await Promise.all(result.tracks.items.map((track: SpotifyTrack) => {
-                        return {
-                            title: track.name,
-                            url: `${SpotifyUrl}/track/${track.id}`,
-                            author: {
-                                url: `${SpotifyUrl}/artist/${track.artists[0].id}`,
-                                title: track.artists[0].name,
-                                image: null,
-                                isVerified: track.artists[0].popularity >= 500
-                            },
-                            duration: {
-                                seconds: (track.duration_ms / 1000).toFixed(0),
-                            },
-                            image: track.album.images[0],
-                            //PrevFile: track.preview_url
-                        };
-                    }))
-                );
-            } catch (e) {
-                console.log(e);
-                return resolve(null);
-            }
-        });
-    }
-}
-
-//====================== ====================== ====================== ======================
-/**
- * @description Получаем токен
- */
-function getToken(): Promise<void> {
-    return httpsClient.parseJson(`${AccountUrl}/token`, {
-        request: {
-            method: "POST",
-            headers: {
-                "Accept": "application/json",
-                "Authorization": `Basic ${Buffer.from(aut).toString("base64")}`,
-                "Content-Type": "application/x-www-form-urlencoded",
-                "accept-encoding": "gzip, deflate, br"
-            },
-            body: "grant_type=client_credentials"
-        }
-    }).then((result) => {
-        SpotifyRes.Time = Date.now() + result.expires_in;
-        SpotifyRes.Token = result.access_token;
-    });
-}
-
-//====================== ====================== ====================== ======================
-/**
- * @description Создаем запрос к SPOTIFY API и обновляем токен
- * @param method {string} Ссылка api
- */
-function RequestSpotify(method: string): Promise<SpotifyRes> {
-    return new Promise<SpotifyRes>(async (resolve) => {
-        await login();
-        return httpsClient.parseJson(`${ApiUrl}/${method}`, {
-            request: {
-                headers: {
-                    "Accept": "application/json",
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Authorization": "Bearer " + SpotifyRes.Token,
-                    "accept-encoding": "gzip, deflate, br"
-                }
-            }
-        }).then(resolve);
-    });
-}
-
-//====================== ====================== ====================== ======================
-/**
- * @description Получаем данные об авторе или пользователе
- * @param url {string} ссылка на автора или пользователя
- * @param isUser {boolean} Это пользователь
- */
-function getAuthorTrack(url: string, isUser: boolean = false): Promise<InputAuthor> {
-    return new Promise<InputAuthor>(async (resolve) => {
-        const id = getID(url);
-        const result = (await Promise.all([RequestSpotify(`${isUser ? "users" : "artists"}/${id}`)]))[0] as (SpotifyArtist | SpotifyUser) & FailResult
-
-        return resolve({ // @ts-ignore
-            title: result?.name ?? result?.display_name, url,
-            image: result.images[0],
-            isVerified: result.followers.total >= 500
-        });
-    });
-}
-
-//Проверяем надо ли обновлять токен
-function login() {
-    return !isLoggedIn() ? getToken() : null;
-}
-
-//Вышел ли токен из строя (timeout)
-function isLoggedIn() {
-    return SpotifyRes.Token !== undefined && SpotifyRes.Time > Date.now() + 2;
-}
+const SpotifyRes = { token: "", time: 0 };
 
 //Получаем ID трека, плейлиста, альбома
 function getID(url: string): string {
@@ -235,7 +16,160 @@ function getID(url: string): string {
     return new URL(url).pathname.split('/')[2];
 }
 
+//Интеграция с API SPOTIFY
+namespace API {
+    /**
+     * @description Создаем запрос к SPOTIFY API и обновляем токен
+     * @param method {string} Ссылка api
+     */
+    export function Request(method: string): Promise<SpotifyRes> {
+        if (SpotifyRes.token !== undefined && SpotifyRes.time > Date.now() + 2) getToken().catch(() => null);
 
+        return httpsClient.parseJson(`${ApiUrl}/${method}`, {
+            request: {
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Authorization": "Bearer " + SpotifyRes.token,
+                    "accept-encoding": "gzip, deflate, br"
+                }
+            }
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Получаем токен
+     */
+    function getToken(): Promise<void> {
+        return httpsClient.parseJson(`${AccountUrl}/token`, {
+            request: {
+                method: "POST",
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": `Basic ${Buffer.from(aut).toString("base64")}`,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "accept-encoding": "gzip, deflate, br"
+                },
+                body: "grant_type=client_credentials"
+            }
+        }).then((result) => {
+            SpotifyRes.time = Date.now() + result.expires_in;
+            SpotifyRes.token = result.access_token;
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Собираем трек в готовый образ
+     * @param track {SpotifyTrack} Трек из Spotify API
+     */
+    export async function constructTrack(track: SpotifyTrack) {
+        const sortImages = track.album.images[0].width > track.album.images.pop().width ? track.album.images[0] : track.album.images.pop();
+
+        return {
+            title: track.name,
+            url: track.external_urls.spotify,
+            author: (await Promise.all([Spotify.getAuthorTrack(track.artists[0].external_urls.spotify, track?.artists[0]?.type !== "artist")]))[0],
+            duration: { seconds: (track.duration_ms / 1000).toFixed(0) },
+            image: sortImages,
+        }
+    }
+}
+
+export namespace Spotify {
+    /**
+     * @description Получаем данные о треке
+     * @param url {string} Ссылка на трек
+     */
+    export function getTrack(url: string): Promise<InputTrack | null> {
+        const id = getID(url);
+
+        return new Promise(async (resolve) => {
+            const result = await API.Request(`tracks/${id}`) as SpotifyTrack;
+
+            if (!result || !result?.name) return resolve(null);
+
+            return resolve(API.constructTrack(result));
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description получаем данные о плейлисте + треки
+     * @param url {string} Ссылка на плейлист
+     * @param options {limit: number} Настройки
+     */
+    export function getPlaylist(url: string, options: { limit: number } = {limit: 101}): Promise<InputPlaylist | null> {
+        const id = getID(url);
+
+        return new Promise(async (resolve) => {
+            const result = await API.Request(`playlists/${id}?offset=0&limit=${options.limit}`) as SpotifyPlaylist;
+
+            if (!result || !result?.name) return resolve(null);
+
+            return resolve({
+                url, title: result.name, image: result.images[0],
+                items: await Promise.all(result.tracks.items.map(({track}) => API.constructTrack(track))),
+                author: (await Promise.all([getAuthorTrack(`${SpotifyUrl}/artist/${result.owner.id}`, result?.owner?.type !== "artist")]))[0]
+            });
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Получаем данные на альбом + треки
+     * @param url {string} Ссылка на альбом
+     * @param options {limit: number} Настройки
+     */
+    export function getAlbum(url: string, options: { limit: number } = {limit: 101}): Promise<InputPlaylist | null> {
+        const id = getID(url);
+
+        return new Promise(async (resolve) => {
+            const result = await API.Request(`albums/${id}?offset=0&limit=${options.limit}`) as SpotifyAlbumFull;
+
+            if (!result || !result?.name) return resolve(null);
+
+            return resolve({
+                url, title: result.name, image: result.images[0],
+                items: await Promise.all(result.tracks.items.map(API.constructTrack)),
+                author: (await Promise.all([getAuthorTrack(`${SpotifyUrl}/artist/${result?.artists[0].id}`, result?.artists[0]?.type !== "artist")]))[0]
+            });
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Ищем треки в базах spotify
+     * @param search {string} Что ищем
+     * @param options {limit: number} Настройки поиска
+     */
+    export function SearchTracks(search: string, options: { limit: number } = {limit: 101}): Promise<InputTrack[] | null> {
+        return new Promise(async (resolve) => {
+            const result = await API.Request(`search?q=${search}&type=track&limit=${options.limit}`) as SearchTracks;
+
+            if (!result) return resolve(null);
+
+            return resolve(await Promise.all(result.tracks.items.map(API.constructTrack)));
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Получаем данные об авторе или пользователе
+     * @param url {string} ссылка на автора или пользователя
+     * @param isUser {boolean} Это пользователь
+     */
+    export function getAuthorTrack(url: string, isUser: boolean = false): Promise<InputAuthor> {
+        const id = getID(url);
+
+        return new Promise(async (resolve) => {
+            const result = await API.Request(`${isUser ? "users" : "artists"}/${id}`) as SpotifyArtist | SpotifyUser;
+
+            if (!result) return resolve(null);
+
+            return resolve({ // @ts-ignore
+                title: result?.name ?? result?.display_name, url,
+                image: result.images[0],
+                isVerified: result.followers.total >= 500
+            });
+        });
+    }
+}
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
@@ -244,13 +178,7 @@ function getID(url: string): string {
 
 type SpotifyType = "track" | "playlist" | "album" | "artist" | "user";
 type AlbumType = "single";
-type SpotifyRes =
-    SpotifyPlaylist & FailResult
-    | SpotifyTrack & FailResult
-    | SpotifyArtist & FailResult
-    | SpotifyUser & FailResult
-    | SpotifyAlbumFull & FailResult
-    | SearchTracks & FailResult;
+type SpotifyRes = (SpotifyPlaylist | SpotifyTrack | SpotifyArtist | SpotifyUser | SpotifyAlbumFull | SearchTracks) & FailResult;
 
 interface FailResult {
     error: boolean
