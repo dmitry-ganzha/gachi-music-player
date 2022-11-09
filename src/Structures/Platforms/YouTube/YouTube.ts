@@ -51,7 +51,7 @@ namespace construct {
                 title: video.shortBylineText.runs[0].text || undefined,
                 url: `https://www.youtube.com${video.shortBylineText.runs[0].navigationEndpoint.browseEndpoint.canonicalBaseUrl || video.shortBylineText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url}`
             },
-            duration: {seconds: video.lengthSeconds ?? 0},
+            duration: {seconds: video.lengthText ? video.lengthText.simpleText : video.lengthSeconds ?? 0},
             image: {
                 url: video.thumbnail.thumbnails.pop().url,
                 height: video.thumbnail.thumbnails.pop()?.height,

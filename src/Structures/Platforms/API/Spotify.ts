@@ -22,8 +22,9 @@ namespace API {
      * @description Создаем запрос к SPOTIFY API и обновляем токен
      * @param method {string} Ссылка api
      */
-    export function Request(method: string): Promise<SpotifyRes> {
-        if (SpotifyRes.token !== undefined && SpotifyRes.time > Date.now() + 2) getToken().catch(() => null);
+    export async function Request(method: string): Promise<SpotifyRes> {
+        const isLoggedIn = SpotifyRes.token !== undefined && SpotifyRes.time > Date.now() + 2;
+        if (!isLoggedIn) await getToken();
 
         return httpsClient.parseJson(`${ApiUrl}/${method}`, {
             request: {
