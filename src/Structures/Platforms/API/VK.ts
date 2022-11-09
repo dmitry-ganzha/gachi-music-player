@@ -74,11 +74,11 @@ export namespace VK {
         const owner_id = PlaylistFullID[0];
         const key = PlaylistFullID[2];
 
-        return new Promise(async (resolve) => {
+        return new Promise(async (resolve, reject) => {
             const result = await API.Request("audio", "getPlaylistById", `&owner_id=${owner_id}&playlist_id=${playlist_id}&access_key=${key}`) as Playlist & rateLimit;
             const items = await API.Request("audio", "get", `&owner_id=${owner_id}&album_id=${playlist_id}&count=${options.limit}&access_key=${key}`) as SearchTracks;
 
-            if (result.error) throw new Error(result.error.error_msg);
+            if (result.error) throw reject(new Error(result.error.error_msg));
             if (!result?.response || !items?.response) return resolve(null);
 
             const playlist = result.response;
@@ -98,10 +98,10 @@ export namespace VK {
      * @param options {{limit: number}}
      */
     export function SearchTracks(search: string, options: { limit: number } = {limit: 15}): Promise<null | InputTrack[]> {
-        return new Promise(async (resolve) => {
+        return new Promise(async (resolve, reject) => {
             const result = await API.Request("audio", "search", `&q=${search}`) as SearchTracks & rateLimit;
 
-            if (result.error) throw new Error(result.error.error_msg);
+            if (result.error) throw reject(new Error(result.error.error_msg));
             if (!result?.response) return resolve(null);
 
             const trackConst = result.response.items.length;
