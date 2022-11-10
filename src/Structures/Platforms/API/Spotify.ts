@@ -84,10 +84,11 @@ export namespace Spotify {
     export function getTrack(url: string): Promise<InputTrack | null> {
         const id = getID(url);
 
-        return new Promise(async (resolve) => {
-            const result = await API.Request(`tracks/${id}`) as SpotifyTrack;
+        return new Promise(async (resolve, reject) => {
+            const result = await API.Request(`tracks/${id}`) as SpotifyTrack & FailResult;
 
             if (!result || !result?.name) return resolve(null);
+            if (result.error) throw reject(new Error(result.error.message));
 
             return resolve(API.constructTrack(result));
         });
@@ -101,10 +102,11 @@ export namespace Spotify {
     export function getPlaylist(url: string, options: { limit: number } = {limit: 101}): Promise<InputPlaylist | null> {
         const id = getID(url);
 
-        return new Promise(async (resolve) => {
-            const result = await API.Request(`playlists/${id}?offset=0&limit=${options.limit}`) as SpotifyPlaylist;
+        return new Promise(async (resolve, reject) => {
+            const result = await API.Request(`playlists/${id}?offset=0&limit=${options.limit}`) as SpotifyPlaylist & FailResult;
 
             if (!result || !result?.name) return resolve(null);
+            if (result.error) throw reject(new Error(result.error.message));
 
             return resolve({
                 url, title: result.name, image: result.images[0],
@@ -122,10 +124,11 @@ export namespace Spotify {
     export function getAlbum(url: string, options: { limit: number } = {limit: 101}): Promise<InputPlaylist | null> {
         const id = getID(url);
 
-        return new Promise(async (resolve) => {
-            const result = await API.Request(`albums/${id}?offset=0&limit=${options.limit}`) as SpotifyAlbumFull;
+        return new Promise(async (resolve, reject) => {
+            const result = await API.Request(`albums/${id}?offset=0&limit=${options.limit}`) as SpotifyAlbumFull & FailResult;
 
             if (!result || !result?.name) return resolve(null);
+            if (result.error) throw reject(new Error(result.error.message));
 
             return resolve({
                 url, title: result.name, image: result.images[0],
@@ -141,10 +144,11 @@ export namespace Spotify {
      * @param options {limit: number} Настройки поиска
      */
     export function SearchTracks(search: string, options: { limit: number } = {limit: 101}): Promise<InputTrack[] | null> {
-        return new Promise(async (resolve) => {
-            const result = await API.Request(`search?q=${search}&type=track&limit=${options.limit}`) as SearchTracks;
+        return new Promise(async (resolve, reject) => {
+            const result = await API.Request(`search?q=${search}&type=track&limit=${options.limit}`) as SearchTracks & FailResult;
 
             if (!result) return resolve(null);
+            if (result.error) throw reject(new Error(result.error.message));
 
             return resolve(await Promise.all(result.tracks.items.map(API.constructTrack)));
         });
@@ -158,10 +162,11 @@ export namespace Spotify {
     export function getAuthorTrack(url: string, isUser: boolean = false): Promise<InputAuthor> {
         const id = getID(url);
 
-        return new Promise(async (resolve) => {
-            const result = await API.Request(`${isUser ? "users" : "artists"}/${id}`) as SpotifyArtist | SpotifyUser;
+        return new Promise(async (resolve, reject) => {
+            const result = await API.Request(`${isUser ? "users" : "artists"}/${id}`) as (SpotifyArtist | SpotifyUser) & FailResult;
 
             if (!result) return resolve(null);
+            if (result.error) throw reject(new Error(result.error.message));
 
             return resolve({ // @ts-ignore
                 title: result?.name ?? result?.display_name, url,
@@ -182,7 +187,10 @@ type AlbumType = "single";
 type SpotifyRes = (SpotifyPlaylist | SpotifyTrack | SpotifyArtist | SpotifyUser | SpotifyAlbumFull | SearchTracks) & FailResult;
 
 interface FailResult {
-    error: boolean
+    error: {
+        status: number,
+        message: string
+    }
 }
 
 /*   interface global   */

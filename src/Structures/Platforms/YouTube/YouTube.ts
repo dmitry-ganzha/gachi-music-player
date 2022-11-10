@@ -74,7 +74,7 @@ export namespace YouTube {
             const page = await API.Request("STRING", `https://www.youtube.com/watch?v=${ID}&has_verified=1`) as string;
             const result = page.split("var ytInitialPlayerResponse = ")?.[1]?.split(";</script>")[0].split(/(?<=}}});\s*(var|const|let)\s/)[0];
 
-            if (!result) throw reject(new Error("Данные на странице не были найдены"));
+            if (!result) throw reject(new Error("Not found track data!"));
             const jsonResult = JSON.parse(result);
 
             if (jsonResult.playabilityStatus?.status !== "OK") throw reject(new Error(`Не удалось получить данные из-за: ${jsonResult.playabilityStatus.status}`));
@@ -94,6 +94,7 @@ export namespace YouTube {
             return resolve({...await construct.video(details), format: audios});
         });
     }
+    //====================== ====================== ====================== ======================
     /**
      * @description Получаем данные о плейлисте
      * @param url {string} Ссылка на плейлист
@@ -101,11 +102,11 @@ export namespace YouTube {
     export function getPlaylist(url: string): Promise<InputPlaylist> {
         const ID = getID(url, true);
 
-        return new Promise(async (resolve) => {
+        return new Promise(async (resolve, reject) => {
             const page = await API.Request("STRING", `https://www.youtube.com/playlist?list=${ID}`) as string;
             const result = page.split('var ytInitialData = ')[1].split(';</script>')[0].split(/;\s*(var|const|let)\s/)[0];
 
-            if (!result) throw new Error("Данные на странице не были найдены");
+            if (!result) throw reject(new Error("Not found playlist data!"));
 
             const jsonResult = JSON.parse(result);
             const info = jsonResult.sidebar.playlistSidebarRenderer.items[0].playlistSidebarPrimaryInfoRenderer;
@@ -121,6 +122,7 @@ export namespace YouTube {
             });
         });
     }
+    //====================== ====================== ====================== ======================
     /**
     * @description Поиск видео на youtube
     * @param search {string} что ищем
@@ -128,15 +130,15 @@ export namespace YouTube {
     * @constructor
     */
     export async function SearchVideos(search: string, options = {limit: 15}): Promise<InputTrack[]> {
-        return new Promise(async (resolve) => {
+        return new Promise(async (resolve, reject) => {
             const page = await API.Request("STRING", `https://www.youtube.com/results?search_query=${search.replaceAll(' ', '+')}`) as string;
             const result = (page.split("var ytInitialData = ")[1].split("}};")[0] + '}}').split(';</script><script')[0];
 
-            if (!result) throw new Error("Данные на странице не были найдены");
+            if (!result) throw reject(new Error("Not found search data!"));
 
             const details = JSON.parse(result)?.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents[0]?.itemSectionRenderer?.contents;
 
-            if (!details) throw new Error(`Не удалось найти: ${search}`);
+            if (!details) throw reject(new Error(`Не удалось найти: ${search}`));
 
             let num = 0, videos: InputTrack[] = [];
 
@@ -156,6 +158,7 @@ export namespace YouTube {
             return resolve(videos);
         });
     }
+    //====================== ====================== ====================== ======================
     /**
      * @description Получаем данные о пользователе
      * @param id {string} ID канала
@@ -178,7 +181,7 @@ export namespace YouTube {
                 avatar = info?.avatar, badges = info?.badges;
 
             return resolve({
-                title: Channel?.title ?? name ?? "Not found",
+                title: Channel?.title ?? name ?? "Not found name",
                 url: `https://www.youtube.com/channel/${id}`,
                 image: avatar?.thumbnails.pop() ?? null,
                 isVerified: !!badges?.find((badge: any) => VerAuthor.has(badge?.metadataBadgeRenderer?.tooltip))
