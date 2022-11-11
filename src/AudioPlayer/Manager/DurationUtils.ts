@@ -35,6 +35,8 @@ export namespace DurationUtils {
      * @param duration {string} Пример 00:00:00:00
      */
     export function ParsingTimeToNumber(duration: string): number {
+        if (typeof duration === "number") return duration;
+
         const Splitter = duration?.split(":");
         const days = (duration: string) => Number(duration) * ((60 * 60) * 24);
         const hours = (duration: string) => Number(duration) * ((60 * 60) * 24);
