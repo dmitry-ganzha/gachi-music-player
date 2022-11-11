@@ -20,7 +20,7 @@
 - Для удаления аудио кеша `запустить run и выбрать 6`
 
 ## Гайд по запуску
-1. [`Node.js`](https://nodejs.org/ru/) 16-19
+1. [`Node.js`](https://nodejs.org/ru/) 17-19
 2. [`FFmpeg & FFprobe`](https://ffmpeg.org/) или npm install (ffmpeg-static и ffprobe-static)
 3. Указываем данные в [`.env`](.env) 
 4. Запускаем [`run`](run.bat)
