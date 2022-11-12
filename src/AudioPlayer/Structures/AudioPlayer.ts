@@ -4,7 +4,7 @@ import {OpusAudio} from "./Media/OpusAudio";
 
 //Статусы при которых можно пропустить трек
 export const StatusPlayerHasSkipped: Set<string> = new Set(["read", "pause", "idle"]);
-
+const SilentFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe]);
 //Ивенты которые плеер может вернуть
 interface PlayerEvents {
     read: () => any;
@@ -35,14 +35,18 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     public get state() { return this._state; };
     public set state(state) {
         const oldState = this._state;
-        const newStream = oldState.status !== "idle" && state.status === "read" && oldState.stream !== state.stream;
+        const oldStatus = oldState.status, newStatus = state.status
+        const oldStream = oldState.stream, newStream = state.stream;
 
-        if (newStream && !oldState.stream?.destroyed) oldState.stream.cleanup();
+        if (newStatus === "idle") this.#readBuffer("silent");
+
+        //Удаляем не используемый поток
+        if (oldStatus !== "idle" && newStatus === "idle" && oldStream) oldStream.cleanup();
 
         this._state = state;
         this.#CycleStep();
 
-        if (oldState.status !== state.status || newStream) this.emit(state.status);
+        if (oldStatus !== newStatus || oldStream !== newStream) this.emit(newStatus);
     };
     //Если нет голосового канала добавить, если есть удалить
     public voice = (voice: VoiceConnection): void => {
@@ -95,7 +99,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
     //Создаем таймер с помощью которого отправляем пакеты в голосовые каналы
     readonly #CycleStep = (): void => {
-        if (this.state.status === "idle" || !this.state.stream?.readable) return;
+        if (this.state?.status === "idle" || !this.state?.stream?.readable) return;
         this.#hasPlay();
 
         //const index = Math.floor(Math.random() * Durations.length);
@@ -120,7 +124,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         }
 
         //Не читать пакеты при статусе плеера (autoPause)
-        if (state.status === "autoPause") return this.#readBuffer("silent");
+        if (state.status === "autoPause") return [SilentFrame, "silent"].forEach(this.#readBuffer);
 
         //Отправка музыкального пакета
         if (state.status === "read") {

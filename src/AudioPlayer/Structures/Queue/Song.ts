@@ -4,7 +4,7 @@ import {ClientMessage} from "../../../Handler/Events/Activity/Message";
 import {httpsClient} from "../../../Core/httpsClient";
 import {FFmpeg} from "../Media/FFmpeg";
 import {ColorTrack, SongFinder, supportPlatforms, TypePlatform} from "../SongSupport";
-import cfg from "../../../../db/Config.json";
+import {CacheMusic} from "../../../../db/Config.json";
 import {DownloadManager} from "../../Managers/DownloadManager";
 
 const Download = DownloadManager.downloadUrl;
@@ -73,7 +73,7 @@ export class Song {
         if (req > 3) return resolve(null);
 
         //Если пользователь включил кеширование музыки
-        if (cfg.CacheMusic) {
+        if (CacheMusic === true) {
             const isCache = Download(this);
 
             //Если есть файл выдаем путь до него
@@ -88,7 +88,7 @@ export class Song {
 
         //Если ссылка работает
         if (checkResource === "OK") {
-            if (cfg.CacheMusic) Download(this, this.link);
+            if (CacheMusic === true) Download(this, this.link);
             return resolve(this.link);
         }
 

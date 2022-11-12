@@ -1,7 +1,6 @@
 import {StageChannel, VoiceChannel} from "discord.js";
 import { FailRegisterPlatform, SearchPlatforms, SupportPlatforms, supportPlatforms, SupportType, TypePlatform } from "../SongSupport";
 import {ClientMessage} from "../../../Handler/Events/Activity/Message";
-import {DownloadManager} from "../../Managers/DownloadManager";
 import {InputPlaylist, InputTrack} from "../Queue/Song";
 import {messageUtils} from "../../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../../Managers/DurationUtils";
@@ -18,7 +17,6 @@ interface Options {
 
 const UrlSrt = /^(https?:\/\/)/gi;
 const emoji = "❌";
-const Download = DownloadManager.downloadUrl;
 
 export namespace Handle {
     /**
@@ -52,7 +50,7 @@ export namespace Handle {
             if (data instanceof Array) return SearchSongMessage.toSend(data, data.length, {...options, platform, type});
 
             //Сообщаем что трек был найден
-            if (type === "track") message.client.sendMessage({text: `Найден 🔍 | ${type} | Кеш: ${Download(data as any) ? "✔️" : "✖️"}\n➜ ${data.title}`, message, color: "Yellow", type: "css"});
+            if (type === "track") message.client.sendMessage({text: `Найден 🔍 | ${type}\n➜ ${data.title}`, message, color: "Yellow", type: "css"});
 
             //Загружаем трек или плейлист в GuildQueue
             return message.client.player.emit("play", message, voiceChannel, data);

@@ -131,14 +131,14 @@ namespace toPlayFunctions {
     * @requires {ProgressBar}
     */
     function MusicDuration({isLive, duration}: Song, curTime: number | string): string {
-        if (isLive || duration.full === "Live") return `[${duration.full}]`;
+        if (isLive || duration.full === "Live") return `\`\`[${duration.full}]\`\``;
 
         const str = `${duration.full}]`;
         const parsedTimeSong = curTime >= duration.seconds ? duration.full : DurationUtils.ParsingTimeToString(curTime as number);
-        const progress = ProgressBar(curTime as number, duration.seconds, 15);
+        const progress = ProgressBar(curTime as number, duration.seconds, 20);
 
-        if (Bar.Enable) return `**❯** [${parsedTimeSong} \\ ${str}\n${progress}`;
-        return `**❯** [${parsedTimeSong} \\ ${str}`;
+        if (Bar.Enable) return `**❯** \`\`[${parsedTimeSong} \\ ${str}\`\` \n\`\`\|${progress}|\`\``;
+        return `**❯** \`\`[${parsedTimeSong} \\ ${str}\`\``;
     }
     //====================== ====================== ====================== ======================
     /**
@@ -166,8 +166,8 @@ namespace toPlayFunctions {
 
             return `${progressText}${Bar.button}${emptyText}`;
         } catch (err) {
-            if (err === "RangeError: Invalid count value") return "**❯** [Error value]";
-            return "**❯** [Loading]";
+            if (err === "RangeError: Invalid count value") return "**❯** \`\`[Error value]\`\`";
+            return "**❯** \`\`[Loading]\`\`";
         }
     }
 }

@@ -20,8 +20,8 @@ export class OpusAudio extends opus.OggDemuxer {
     private get ffmpeg() { return this.#streams[0] as FFmpeg.FFmpeg; };
     private set ffmpeg(ffmpeg) { this.#streams.push(ffmpeg); };
 
-    public constructor(path: string, options: FFmpegOptions, duplexOptions: DuplexOptions = {highWaterMark: 12, autoDestroy: false}) {
-        super(duplexOptions);
+    public constructor(path: string, options: FFmpegOptions, duplexOptions: DuplexOptions = {highWaterMark: 12}) {
+        super({autoDestroy: true, ...duplexOptions});
         const resource = this.#choiceResource(path);
 
         //Создаем ffmpeg
@@ -70,12 +70,13 @@ export class OpusAudio extends opus.OggDemuxer {
         delete this._readable;
 
         this.#streams.forEach((stream) => {
-            if (!stream?.destroyed) stream?.destroy();
+            if ("destroyed" in stream) stream?.destroy();
 
             const index = this.#streams.indexOf(stream);
             if (index !== -1) this.#streams.splice(index, 0);
         });
     };
+    public _destroy = () => this.cleanup();
 }
 
 
