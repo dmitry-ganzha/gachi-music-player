@@ -1,7 +1,7 @@
 import {Command} from "../../../Structures/Command";
 import {ClientMessage} from "../../Events/Activity/Message";
 
-export default class Replay extends Command {
+export class Replay extends Command {
     public constructor() {
         super({
             name: "replay",

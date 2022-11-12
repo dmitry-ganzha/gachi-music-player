@@ -1,8 +1,8 @@
 import {Command} from "../../../Structures/Command";
 import {ApplicationCommandOptionType} from "discord.js";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {Handle} from "../../../AudioPlayer/Player/Searcher";
 import {ClientMessage} from "../../Events/Activity/Message";
+import {Handle} from "../../../AudioPlayer/Structures/Handle/Handle";
 
 export class Play extends Command {
     public constructor() {

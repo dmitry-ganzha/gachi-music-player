@@ -3,7 +3,7 @@ import {MessageReaction, ReactionCollector, User} from "discord.js";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
 import {Song} from "../../../AudioPlayer/Structures/Queue/Song";
-import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
+import {DurationUtils} from "../../../AudioPlayer/Managers/DurationUtils";
 import {ClientMessage} from "../../Events/Activity/Message";
 
 export default class CommandQueue extends Command {

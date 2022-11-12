@@ -1,7 +1,7 @@
 import {Command} from "../../../Structures/Command";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {Voice} from "../../../AudioPlayer/Structures/Voice";
+import {Voice} from "../../../AudioPlayer/Structures/Voice/Voice";
 import {ClientMessage} from "../../Events/Activity/Message";
 
 export default class Join extends Command {
@@ -44,7 +44,7 @@ export default class Join extends Command {
             queue.message = message;
             queue.voice = voiceChannel;
 
-            queue.player.subscribe(connection); //Подключаем голосовой канал к плееру
+            queue.player.voice(connection); //Подключаем голосовой канал к плееру
 
             queue.TimeDestroying("cancel"); //Отменяем удаление очереди
             return;

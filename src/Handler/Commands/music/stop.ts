@@ -2,7 +2,7 @@ import {Command} from "../../../Structures/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ClientMessage} from "../../Events/Activity/Message";
 
-export default class Stop extends Command {
+export class Stop extends Command {
     public constructor() {
         super({
             name: "stop",

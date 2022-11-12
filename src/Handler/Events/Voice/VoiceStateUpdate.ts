@@ -2,7 +2,7 @@ import {GuildMember, VoiceState} from "discord.js";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {WatKLOK} from "../../../Core/Client/Client";
 import {Event} from "../../../Structures/Event";
-import {Voice} from "../../../AudioPlayer/Structures/Voice";
+import {Voice} from "../../../AudioPlayer/Structures/Voice/Voice";
 import {Debug} from "../../../../db/Config.json";
 
 export class voiceStateUpdate extends Event<VoiceState, VoiceState> {

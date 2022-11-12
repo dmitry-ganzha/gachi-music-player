@@ -39,7 +39,7 @@ export default class Resume extends Command {
         });
 
         //Если музыка уже играет
-        if (queue.player.state.status === "playing") return message.client.sendMessage({
+        if (queue.player.state.status === "read") return message.client.sendMessage({
             text: `${message.author}, ⚠ Музыка щас играет.`,
             message,
             color: "DarkRed"

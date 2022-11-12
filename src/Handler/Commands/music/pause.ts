@@ -2,7 +2,7 @@ import {Command} from "../../../Structures/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ClientMessage} from "../../Events/Activity/Message";
 
-export default class Pause extends Command {
+export class Pause extends Command {
     public constructor() {
         super({
             name: "pause",
@@ -38,7 +38,7 @@ export default class Pause extends Command {
         });
 
         //Если музыка уже приостановлена
-        if (queue.player.state.status === "paused") return message.client.sendMessage({
+        if (queue.player.state.status === "pause") return message.client.sendMessage({
             text: `${message.author}, ⚠ | Музыка уже приостановлена!`,
             message,
             color: "DarkRed"

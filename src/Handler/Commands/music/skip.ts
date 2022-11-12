@@ -3,7 +3,7 @@ import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ApplicationCommandOptionType} from "discord.js";
 import {ClientMessage} from "../../Events/Activity/Message";
 
-export default class Skip extends Command {
+export class Skip extends Command {
     public constructor() {
         super({
             name: "skip",

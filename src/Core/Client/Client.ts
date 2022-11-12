@@ -1,12 +1,12 @@
 import {ActivityType, Client, Colors, Guild, IntentsBitField, VoiceState} from "discord.js";
 import {FileSystem, LoadFiles} from "../FileSystem";
-import {PlayerEmitter} from "../../AudioPlayer/execute";
+import {PlayerEmitter} from "../../AudioPlayer";
 import {Command} from "../../Structures/Command";
 import {Queue} from "../../AudioPlayer/Structures/Queue/Queue";
 import {messageUtils} from "../Utils/LiteUtils";
 import {Bot, Channels, Debug} from "../../../db/Config.json";
-import {ClientMessage, EmbedConstructor, Channel} from "../../Handler/Events/Activity/Message";
-import {Voice} from "../../AudioPlayer/Structures/Voice";
+import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
+import {Voice} from "../../AudioPlayer/Structures/Voice/Voice";
 
 class CollectionMap<K, V> extends Map<K, V> {
     public get Array(): V[] | null {

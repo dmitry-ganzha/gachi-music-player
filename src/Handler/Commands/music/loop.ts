@@ -3,7 +3,7 @@ import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ApplicationCommandOptionType} from "discord.js";
 import {ClientMessage} from "../../Events/Activity/Message";
 
-export default class Loop extends Command {
+export class Loop extends Command {
     public constructor() {
         super({
             name: "loop",

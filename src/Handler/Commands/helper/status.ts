@@ -3,7 +3,7 @@ import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
 import {SupportPlatforms, supportPlatforms, SupportType, FailRegisterPlatform} from "../../../AudioPlayer/Structures/SongSupport";
 import {Colors} from "discord.js";
 import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
-import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
+import {DurationUtils} from "../../../AudioPlayer/Managers/DurationUtils";
 
 const ParsingTimeToString = DurationUtils.ParsingTimeToString;
 

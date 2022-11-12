@@ -3,7 +3,7 @@ import os from 'node:os';
 import pak from "../../../../package.json";
 import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
 import {messageUtils} from "../../../Core/Utils/LiteUtils";
-import {DurationUtils} from "../../../AudioPlayer/Manager/DurationUtils";
+import {DurationUtils} from "../../../AudioPlayer/Managers/DurationUtils";
 import {Colors} from "discord.js";
 import ParsingTimeToString = DurationUtils.ParsingTimeToString;
 
@@ -15,7 +15,7 @@ interface OptionsEmbed {
     guilds: number;
 }
 
-export default class Info extends Command {
+export class Info extends Command {
     public constructor() {
         super({
             name: "info",
