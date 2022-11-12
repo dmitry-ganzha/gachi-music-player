@@ -2,9 +2,6 @@ import {TypedEmitter} from "tiny-typed-emitter";
 import {VoiceConnection} from "@discordjs/voice";
 import {OpusAudio} from "./Media/OpusAudio";
 
-//Задержки отправки пакета
-const Durations = [18, 19, 20, 21];
-
 //Статусы при которых можно пропустить трек
 export const StatusPlayerHasSkipped: Set<string> = new Set(["read", "pause", "idle"]);
 
@@ -26,6 +23,7 @@ interface PlayerStatus {
 export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     private _voices: VoiceConnection[] = [];
     private _state: PlayerStatus = {status: "idle"};
+    private _time: number = Date.now();
 
     //Общее время проигрывания музыки
     public get streamDuration() { return this._state?.stream?.duration ?? 0 };
@@ -100,13 +98,14 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (this.state.status === "idle" || !this.state.stream?.readable) return;
         this.#hasPlay();
 
-        const index = Math.floor(Math.random() * Durations.length);
-        setTimeout(this.#CycleStep, Durations[index]);
+        //const index = Math.floor(Math.random() * Durations.length);
+        setTimeout(this.#CycleStep, this._time - Date.now());
     };
 
     //Проверяем можно ли отправить пакет в голосовой канал
     readonly #hasPlay = (): void => {
         const state = this.state;
+        this._time += 20;
 
         //Если статус (idle или pause) прекратить выполнение функции
         if (state.status === "idle" || state.status === "pause") return;
@@ -132,5 +131,11 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
             this.#readBuffer("silent");
             this.stop();
         }
+    };
+
+    public readonly cleanup = () => {
+        delete this._time;
+        delete this._state;
+        delete this._voices;
     };
 }

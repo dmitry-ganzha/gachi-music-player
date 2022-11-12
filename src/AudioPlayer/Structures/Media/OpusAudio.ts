@@ -66,6 +66,9 @@ export class OpusAudio extends opus.OggDemuxer {
         super._destroy(error, callback);
         this.destroy(error);
 
+        delete this._duration;
+        delete this._readable;
+
         this.#streams.forEach((stream) => {
             if (!stream?.destroyed) stream?.destroy();
 

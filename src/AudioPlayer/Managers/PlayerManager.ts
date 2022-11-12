@@ -20,7 +20,7 @@ export namespace PlayerEventsCallBacks {
             }
 
             return queue.play(); //Включаем трек
-        }, 2e3);
+        }, 1200);
     }
     //====================== ====================== ====================== ======================
     /**
@@ -38,7 +38,7 @@ export namespace PlayerEventsCallBacks {
                 queue.songs.shift();
                 setTimeout(() => queue.play(), 1e3);
             }
-        }, 1e3);
+        }, 1200);
     }
     //====================== ====================== ====================== ======================
     /**

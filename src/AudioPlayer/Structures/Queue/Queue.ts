@@ -93,6 +93,7 @@ export class Queue {
             //Отвязываем плеер от PlayerEvents
             this.player.removeAllListeners();
             this.player.stop();
+            this.player.cleanup();
         }
 
         clearTimeout(this.#Timer);
