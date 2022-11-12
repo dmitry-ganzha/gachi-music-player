@@ -137,8 +137,8 @@ namespace toPlayFunctions {
         const parsedTimeSong = curTime >= duration.seconds ? duration.full : DurationUtils.ParsingTimeToString(curTime as number);
         const progress = ProgressBar(curTime as number, duration.seconds, 15);
 
-        if (Bar.Enable) return `**❯** [${parsedTimeSong} - ${str}\n${progress}`;
-        return `**❯** [${curTime} - ${str}`;
+        if (Bar.Enable) return `**❯** [${parsedTimeSong} \\ ${str}\n${progress}`;
+        return `**❯** [${parsedTimeSong} \\ ${str}`;
     }
     //====================== ====================== ====================== ======================
     /**
