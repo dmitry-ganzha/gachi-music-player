@@ -20,12 +20,12 @@ export class OpusAudio extends opus.OggDemuxer {
     private get ffmpeg() { return this.#streams[0] as FFmpeg.FFmpeg; };
     private set ffmpeg(ffmpeg) { this.#streams.push(ffmpeg); };
 
-    public constructor(path: string, options: FFmpegOptions, duplexOptions: DuplexOptions = {highWaterMark: 12}) {
-        super({autoDestroy: true, ...duplexOptions});
+    public constructor(path: string, options: FFmpegOptions, duplexOptions: DuplexOptions = {}) {
+        super({autoDestroy: false, highWaterMark: 128, ...duplexOptions});
         const resource = this.#choiceResource(path);
 
         //Создаем ffmpeg
-        this.ffmpeg = new FFmpeg.FFmpeg(this.#choiceArgs(path, typeof resource, options));
+        this.ffmpeg = new FFmpeg.FFmpeg(this.#choiceArgs(path, typeof resource, options), { highWaterMark: 128 });
 
         //Если resource является Readable то загружаем его в ffmpeg
         if (resource instanceof Readable) {

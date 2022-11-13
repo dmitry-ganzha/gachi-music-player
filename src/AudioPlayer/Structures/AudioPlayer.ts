@@ -4,7 +4,7 @@ import {OpusAudio} from "./Media/OpusAudio";
 
 //Статусы при которых можно пропустить трек
 export const StatusPlayerHasSkipped: Set<string> = new Set(["read", "pause", "idle"]);
-const SilentFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe]);
+const SilentFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe, 0xfae]);
 //Ивенты которые плеер может вернуть
 interface PlayerEvents {
     read: () => any;
@@ -23,7 +23,7 @@ interface PlayerStatus {
 export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     private _voices: VoiceConnection[] = [];
     private _state: PlayerStatus = {status: "idle"};
-    private _time: number = Date.now();
+    private _time: number;
 
     //Общее время проигрывания музыки
     public get streamDuration() { return this._state?.stream?.duration ?? 0 };
@@ -35,18 +35,24 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     public get state() { return this._state; };
     public set state(state) {
         const oldState = this._state;
-        const oldStatus = oldState.status, newStatus = state.status
+        const oldStatus = oldState.status, newStatus = state.status;
         const oldStream = oldState.stream, newStream = state.stream;
-
-        if (newStatus === "idle") this.#readBuffer("silent");
 
         //Удаляем не используемый поток
         if (oldStatus !== "idle" && newStatus === "idle" && oldStream) oldStream.cleanup();
 
-        this._state = state;
-        this.#CycleStep();
+        //Заставляем ивенты работать
+        if (oldStatus !== newStatus || oldStatus !== "idle" && newStatus === "read" && oldStream !== newStream) {
+            this.#readBuffer(SilentFrame);
+            this.emit(newStatus);
+        }
 
-        if (oldStatus !== newStatus || oldStream !== newStream) this.emit(newStatus);
+        //Задаем время для отправки пакета
+        this._time = Date.now();
+        this._state = state;
+
+        //Запускаем таймер
+        this.#CycleStep();
     };
     //Если нет голосового канала добавить, если есть удалить
     public voice = (voice: VoiceConnection): void => {
@@ -99,17 +105,20 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
     //Создаем таймер с помощью которого отправляем пакеты в голосовые каналы
     readonly #CycleStep = (): void => {
-        if (this.state?.status === "idle" || !this.state?.stream?.readable) return;
-        this.#hasPlay();
+        if (this.state?.status === "idle") return;
 
-        //const index = Math.floor(Math.random() * Durations.length);
+        //Включаем следующий трек
+        if (!this.state?.stream?.readable) return void (this.state = {status: "idle"});
+
+        //Соблюдая правила отправляем пакет
+        this.#hasPlay();
         setTimeout(this.#CycleStep, this._time - Date.now());
     };
 
     //Проверяем можно ли отправить пакет в голосовой канал
     readonly #hasPlay = (): void => {
         const state = this.state;
-        this._time += 20;
+        this._time += 20; //Добавляем к задержке отправки пакета 20 ms
 
         //Если статус (idle или pause) прекратить выполнение функции
         if (state.status === "idle" || state.status === "pause") return;
