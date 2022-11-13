@@ -105,7 +105,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
     //Создаем таймер с помощью которого отправляем пакеты в голосовые каналы
     readonly #CycleStep = (): void => {
-        if (this.state?.status === "idle") return;
+        if (this.state?.status === "idle" || !this._state?.status) return;
 
         //Включаем следующий трек
         if (!this.state?.stream?.readable) return void (this.state = {status: "idle"});
