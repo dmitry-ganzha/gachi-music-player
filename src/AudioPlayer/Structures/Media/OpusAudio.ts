@@ -138,7 +138,7 @@ namespace ArgsHelper {
         const response: Array<string> = [];
 
         //Более плавное включение музыки
-        response.push("afade=t=in:st=0:d=1.5");
+        response.push("afade=t=in:st=0:d=3");
 
         if (AudioFilters) AudioFilters.forEach((filter: string | number) => {
             if (typeof filter === "number") return;
