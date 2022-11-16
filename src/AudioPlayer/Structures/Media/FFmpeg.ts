@@ -13,7 +13,7 @@ function FFmpegCheck() {
             return FFmpegName = source;
         } catch {/* Nothing */}
     }
-    return Error("FFmpeg not found!");
+    throw Error("FFmpeg not found!");
 }
 //При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a и для <FFprobeName> задаем название для FFprobe, если они будут найдены!
 function FFprobeCheck() {
@@ -24,11 +24,11 @@ function FFprobeCheck() {
             return FFprobeName = source;
         } catch {/* Nothing */}
     }
-    return new Error("FFprobe not found!");
+    throw new Error("FFprobe not found!");
 }
 
-if (FFprobeName === undefined) Promise.all([FFprobeCheck()]).catch();
-if (FFmpegName === undefined) Promise.all([FFmpegCheck()]).catch();
+if (FFmpegName === undefined) Promise.all([FFmpegCheck()]).catch(console.log);
+if (FFprobeName === undefined) Promise.all([FFprobeCheck()]).catch(console.log);
 
 
 export namespace FFmpeg {
@@ -105,7 +105,8 @@ export namespace FFmpeg {
          * @description Запускаем FFmpeg
          * @param Arguments {Arguments} Указываем аргументы для запуска
          */
-        readonly #SpawnFFmpeg = (Arguments: Arguments): any => spawn(FFmpegName, [...Arguments, "pipe:1"] as any, { shell: false, windowsHide: true });}
+        readonly #SpawnFFmpeg = (Arguments: Arguments): any => spawn(FFmpegName, [...Arguments, "pipe:1"] as any, { shell: false, windowsHide: true });
+    }
 
     /**
      * ffprobe gathers information from multimedia streams and prints it in human- and machine-readable fashion.
@@ -145,7 +146,9 @@ export namespace FFmpeg {
          * @param Arguments {Arguments} Указываем аргументы для запуска
          * @private
          */
-        readonly #SpawnProbe = (Arguments: Array<string>) => spawn(FFprobeName, ["-print_format", "json", "-show_format", ...Arguments], { shell: false, windowsHide: true });}
+        readonly #SpawnProbe = (Arguments: Array<string>) => spawn(FFprobeName, ["-print_format", "json", "-show_format", ...Arguments], { shell: false, windowsHide: true });
+    }
+
     //Ищем Filter в Array<Filter>
     export function getFilter(name: string): Filter { return (AudioFilters as Filter[]).find((fn) => fn.names.includes(name)); }
 }
