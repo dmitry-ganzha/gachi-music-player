@@ -1,34 +1,39 @@
 import {Duplex, DuplexOptions, Readable, Writable} from "stream";
 import {ChildProcessWithoutNullStreams, spawn, spawnSync} from "child_process";
 import AudioFilters from "../../../../db/Filters.json";
+import {dependencies} from "../../../../package.json";
 
 let FFmpegName: string, FFprobeName: string;
 
-//Проверяем есть ли FFmpeg в системе
-function FFmpegCheck() {
-    for (let source of ["ffmpeg", "avconv", "./FFmpeg/ffmpeg", "./FFmpeg/avconv", "./node_modules/ffmpeg-static/ffmpeg"]) {
-        try {
-            const result = spawnSync(source, ["-h"], {windowsHide: true, shell: false});
-            if (result.error) continue;
-            return FFmpegName = source;
-        } catch {/* Nothing */}
+function CheckFile(paths: string[], error: string) {
+    for (let path of paths) {
+        const result = spawnSync(path, ["-h"], {windowsHide: true, shell: false});
+        if (result.error) continue;
+        return path;
     }
-    throw Error("FFmpeg not found!");
-}
-//При старте этого файла в параметр <FFmpegName> задаем название FFmpeg'a и для <FFprobeName> задаем название для FFprobe, если они будут найдены!
-function FFprobeCheck() {
-    for (let source of ["ffprobe", "./FFmpeg/ffprobe", "./node_modules/ffprobe-static/ffprobe"]) {
-        try {
-            const result = spawnSync(source, ["-h"], {windowsHide: true, shell: false});
-            if (result.error) continue;
-            return FFprobeName = source;
-        } catch {/* Nothing */}
-    }
-    throw new Error("FFprobe not found!");
+    throw Error(error);
 }
 
-if (FFmpegName === undefined) Promise.all([FFmpegCheck()]).catch(console.log);
-if (FFprobeName === undefined) Promise.all([FFprobeCheck()]).catch(console.log);
+//Проверяем есть ли FFmpeg в системе
+if (FFmpegName === undefined) {
+    const paths = ["ffmpeg", "avconv"];
+
+    try {
+        if (Object.keys(dependencies).includes("ffmpeg-static")) paths.push(require("ffmpeg-static"));
+    } catch (e) {/* Null */}
+
+    FFmpegName = CheckFile(paths, "FFmpeg not found!");
+}
+//Проверяем есть ли FFprobe в системе
+if (FFprobeName === undefined) {
+    const paths = ["ffprobe"];
+
+    try {
+        if (Object.keys(dependencies).includes("ffprobe-static")) paths.push(require("ffprobe-static").path);
+    } catch (e) {/* Null */}
+
+    FFprobeName = CheckFile(paths, "FFprobe not found!");
+}
 
 
 export namespace FFmpeg {
