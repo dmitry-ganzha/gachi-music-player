@@ -51,7 +51,7 @@ namespace construct {
                 title: video.shortBylineText.runs[0].text || undefined,
                 url: `https://www.youtube.com${video.shortBylineText.runs[0].navigationEndpoint.browseEndpoint.canonicalBaseUrl || video.shortBylineText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url}`
             },
-            duration: {seconds: video.lengthText ? video.lengthText.simpleText : video.lengthSeconds ?? 0},
+            duration: {seconds: video.lengthSeconds ?? video.lengthText?.simpleText ?? 0},
             image: {
                 url: video.thumbnail.thumbnails.pop().url,
                 height: video.thumbnail.thumbnails.pop()?.height,
@@ -118,7 +118,7 @@ export namespace YouTube {
                 title: info.title.runs[0].text, url,
                 items: videos.map(({playlistVideoRenderer}) => construct.playlist(playlistVideoRenderer)),
                 author: await getChannel({ id: author.navigationEndpoint.browseEndpoint.browseId, name: author.title.runs[0].text }),
-                image: info.thumbnailRenderer.playlistVideoThumbnailRenderer.thumbnail
+                image: info.thumbnailRenderer.playlistVideoThumbnailRenderer.thumbnail.thumbnails.pop()
             });
         });
     }
