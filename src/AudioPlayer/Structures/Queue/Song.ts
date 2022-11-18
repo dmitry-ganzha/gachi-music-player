@@ -2,7 +2,7 @@ import {DurationUtils} from "../../Managers/DurationUtils";
 import {Images} from "../EmbedMessages";
 import {ClientMessage} from "../../../Handler/Events/Activity/Message";
 import {httpsClient} from "../../../Core/httpsClient";
-import {FFmpeg} from "../Media/FFmpeg";
+import {FFspace} from "../Media/FFspace";
 import {ColorTrack, SongFinder, supportPlatforms, TypePlatform} from "../SongSupport";
 import {CacheMusic} from "../../../../db/Config.json";
 import {DownloadManager} from "../../Managers/DownloadManager";
@@ -124,7 +124,7 @@ export interface InputTrack {
         };
         isVerified?: boolean;
     },
-    format?: FFmpeg.Format | { url: string | undefined };
+    format?: FFspace.Format | { url: string | undefined };
     isLive?: boolean;
     isPrivate?: boolean;
     isValid?: boolean;

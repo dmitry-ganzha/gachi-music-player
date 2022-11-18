@@ -1,8 +1,8 @@
 import {httpsClient} from "../../../Core/httpsClient";
 import {InputPlaylist, InputTrack} from "../../../AudioPlayer/Structures/Queue/Song";
-import {FFmpeg} from "../../../AudioPlayer/Structures/Media/FFmpeg";
+import {FFspace} from "../../../AudioPlayer/Structures/Media/FFspace";
 import {FileSystem} from "../../../Core/FileSystem";
-import FFmpegFormat = FFmpeg.Format;
+import FFmpegFormat = FFspace.Format;
 
 const APiLink = "https://api-v2.soundcloud.com";
 const clientID = FileSystem.env("SOUNDCLOUD");

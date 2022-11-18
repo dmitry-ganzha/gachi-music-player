@@ -1,6 +1,6 @@
 import {FileSystem} from "../../Core/FileSystem";
 import {SoundCloud, Spotify, VK, YouTube} from "../../Structures/Platforms";
-import {FFmpeg} from "./Media/FFmpeg";
+import {FFspace} from "./Media/FFspace";
 import {Images} from "./EmbedMessages";
 import {Colors} from "discord.js";
 import {InputPlaylist, InputTrack, Song} from "./Queue/Song";
@@ -50,7 +50,7 @@ export const SupportPlatforms = {
     },
     //Discord
     "DISCORD": {
-        "track": (search: string): Promise<InputTrack> => new FFmpeg.FFprobe(["-i", search]).getInfo().then((trackInfo: any) => {
+        "track": (search: string): Promise<InputTrack> => new FFspace.FFprobe(["-i", search]).getInfo().then((trackInfo: any) => {
             //Если не найдена звуковая дорожка
             if (!trackInfo) return null;
 
@@ -112,7 +112,7 @@ export function TypePlatform(url: string): supportPlatforms {
 //Ищет исходный ресурс треков
 export namespace SongFinder {
     //Получаем данные о треке заново
-    export function findResource(song: Song): Promise<FFmpeg.Format> {
+    export function findResource(song: Song): Promise<FFspace.Format> {
         const {type, url, author, title, duration} = song;
 
         if (PlatformsAudio.includes(type)) return FindTrack(`${author.title} - ${title} (Lyrics)`, duration.seconds);
@@ -124,7 +124,7 @@ export namespace SongFinder {
         return FindCallback.then((track: InputTrack) => track?.format);
     }
     //Ищем трек на YouTube
-    function FindTrack(nameSong: string, duration: number): Promise<FFmpeg.Format> {
+    function FindTrack(nameSong: string, duration: number): Promise<FFspace.Format> {
         return YouTube.SearchVideos(nameSong, {limit: 20}).then((Tracks) => {
             //Фильтруем треки оп времени
             const FindTracks: InputTrack[] = Tracks.filter((track: InputTrack) => {
@@ -138,7 +138,7 @@ export namespace SongFinder {
             if (FindTracks?.length < 1) return null;
 
             //Получаем данные о треке
-            return YouTube.getVideo(FindTracks[0].url).then((video) => video.format) as Promise<FFmpeg.Format>;
+            return YouTube.getVideo(FindTracks[0].url).then((video) => video.format) as Promise<FFspace.Format>;
         });
     }
 }

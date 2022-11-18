@@ -1,13 +1,13 @@
 import {opus} from "prism-media";
 import {DuplexOptions, Readable} from "stream";
-import {FFmpeg} from "./FFmpeg";
+import {FFspace} from "./FFspace";
 import fs from "fs";
 import {AudioFilters} from "../Queue/Queue";
 
 type FFmpegOptions = {seek?: number, filters?: AudioFilters};
 
 export class OpusAudio extends opus.OggDemuxer {
-    readonly #streams: Array<Readable | FFmpeg.FFmpeg> = [];
+    readonly #streams: Array<Readable | FFspace.FFmpeg> = [];
     private _duration: number = 0;
     private _readable: boolean;
     private readonly _durFrame: number = 20;
@@ -17,7 +17,7 @@ export class OpusAudio extends opus.OggDemuxer {
     public get readable(): boolean { return this._readable; };
 
     //Выдаем или добавляем ffmpeg из this.streams
-    private get ffmpeg() { return this.#streams[0] as FFmpeg.FFmpeg; };
+    private get ffmpeg() { return this.#streams[0] as FFspace.FFmpeg; };
     private set ffmpeg(ffmpeg) { this.#streams.push(ffmpeg); };
 
     public constructor(path: string, options: FFmpegOptions, duplexOptions: DuplexOptions = {}) {
@@ -25,7 +25,7 @@ export class OpusAudio extends opus.OggDemuxer {
         const resource = this.#choiceResource(path);
 
         //Создаем ffmpeg
-        this.ffmpeg = new FFmpeg.FFmpeg(this.#choiceArgs(path, typeof resource, options), { highWaterMark: 128 });
+        this.ffmpeg = new FFspace.FFmpeg(this.#choiceArgs(path, typeof resource, options), { highWaterMark: 128 });
 
         //Если resource является Readable то загружаем его в ffmpeg
         if (resource instanceof Readable) {
@@ -56,7 +56,7 @@ export class OpusAudio extends opus.OggDemuxer {
     //Что из себя представляем входной аргумент path
     readonly #choiceResource = (path: string): string | Readable => path.endsWith("opus") ? fs.createReadStream(path) : path;
     //Создаем аргументы в зависимости от типа resource
-    readonly #choiceArgs = (url: string, resource: string | Readable, options: FFmpegOptions): FFmpeg.Arguments => {
+    readonly #choiceArgs = (url: string, resource: string | Readable, options: FFmpegOptions): FFspace.Arguments => {
         if (resource === "string") return ArgsHelper.createArgs(url, options?.filters, options?.seek);
         return ArgsHelper.createArgs(null, options?.filters, options?.seek);
     };
@@ -88,7 +88,7 @@ namespace ArgsHelper {
      * @param url {string} Ссылка
      * @param seek {number} Пропуск музыки до 00:00:00
      */
-    export function createArgs(url: string, AudioFilters: AudioFilters, seek: number): FFmpeg.Arguments {
+    export function createArgs(url: string, AudioFilters: AudioFilters, seek: number): FFspace.Arguments {
         let thisArgs = ["-reconnect", 1, "-reconnect_streamed", 1, "-reconnect_delay_max", 5];
         const audioDecoding = ["-c:a", "libopus", "-f", "opus"];
         const audioBitrate = ["-b:a", "256k"];
@@ -114,7 +114,7 @@ namespace ArgsHelper {
             //Если filter число, пропускаем!
             if (typeof filter === "number") return;
 
-            const findFilter = FFmpeg.getFilter(filter);
+            const findFilter = FFspace.getFilter(filter);
 
             if (findFilter?.speed) {
                 if (typeof findFilter.speed === "number") NumberDuration *= Number(findFilter.speed);
@@ -143,7 +143,7 @@ namespace ArgsHelper {
         if (AudioFilters) AudioFilters.forEach((filter: string | number) => {
             if (typeof filter === "number") return;
 
-            const Filter = FFmpeg.getFilter(filter);
+            const Filter = FFspace.getFilter(filter);
 
             if (Filter) {
                 if (!Filter.args) return response.push(Filter.filter);
