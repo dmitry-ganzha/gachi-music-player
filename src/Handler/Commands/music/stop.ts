@@ -18,7 +18,7 @@ export class Stop extends Command {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         //Если есть очередь то
-        if (queue) return queue.cleanup(true);
+        if (queue) queue.cleanup(true);
 
         try {
             return message.client.sendMessage({text: `${message.author}, 👌`, message: message});

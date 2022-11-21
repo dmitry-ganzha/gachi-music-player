@@ -1,6 +1,7 @@
 import {MessageReaction, User} from "discord.js";
 import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
 import {messageUtils} from "./LiteUtils";
+import {ClientInteraction} from "../../Handler/Events/Activity/SlashCommand";
 
 const emojis = {
     back: "⬅️",
@@ -22,14 +23,18 @@ export class ReactionMenu {
      * @param callbacks {Callbacks} Функции
      * @requires {reaction}
      */
-    public constructor(embed: EmbedConstructor | string, message: ClientMessage, callbacks: Callbacks) {
+    public constructor(embed: EmbedConstructor | string, message: ClientMessage | ClientInteraction, callbacks: Callbacks) {
         setImmediate(() => {
-            message.channel.send(typeof embed === "string" ? embed : {embeds: [embed]}).then((msg) => Object.entries(callbacks).forEach(([key, value]) => {
-                const callback = (reaction: MessageReaction) => value(reaction, message.author, message, msg);
-                // @ts-ignore
-                const emoji = emojis[key];
-                return messageUtils.createReaction(msg, emoji, (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id, callback, 60e3);
-            }));
+            // @ts-ignore
+            message.reply(typeof embed === "string" ? {content: embed, fetchReply: true} : {embeds: [embed], fetchReply: true}).then((msg) =>
+                Object.entries(callbacks).forEach(([key, value]) => {
+                    const callback = (reaction: MessageReaction) => value(reaction, message.author, message, msg);
+                    // @ts-ignore
+                    const emoji = emojis[key];
+                    return messageUtils.createReaction(msg, emoji,
+                        (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id, callback,
+                        60e3);
+                }));
         });
     };
     //====================== ====================== ====================== ======================

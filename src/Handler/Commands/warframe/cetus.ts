@@ -20,9 +20,7 @@ export default class Cetus extends Command {
     };
 
     public readonly run = (message: ClientMessage) => {
-        httpsClient.parseJson(CetusCycle).then((res: CetusCycle) => {
-            message.channel.send({embeds: [this.#EmbedChange(res)]}).then((msg) => messageUtils.deleteMessage(msg, 25e3)).catch(err => console.log(err));
-        });
+        httpsClient.parseJson(CetusCycle).then((res: CetusCycle) => message.client.sendMessage({text: this.#EmbedChange(res), message}));
     };
     //====================== ====================== ====================== ======================
     /**

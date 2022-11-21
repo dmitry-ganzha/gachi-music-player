@@ -53,7 +53,7 @@ export default class Trader extends Command {
             return;
         }
         //Если инвентаря нет просто отправляем сообщение
-        message.channel.send({embeds: [EmbedVoidTrader]}).then((msg) => messageUtils.deleteMessage(msg, 25e3));
+        message.client.sendMessage({text: EmbedVoidTrader, message});
     };
     //====================== ====================== ====================== ======================
     /**

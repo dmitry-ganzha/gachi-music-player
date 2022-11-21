@@ -131,7 +131,8 @@ namespace SearchSongMessage {
             const SongsString = ArrayToString(results, message, platform);
 
             //Отправляем сообщение
-            message.channel.send(`\`\`\`css\n${ConstFind}\n${Requester}\n\n${SongsString}\`\`\``).then((msg: ClientMessage) => {
+            // @ts-ignore
+            message.reply({content: `\`\`\`css\n${ConstFind}\n${Requester}\n\n${SongsString}\`\`\``, fetchReply: true}).then((msg: ClientMessage) => {
                 //Создаем сборщик
                 const collector = messageUtils.createCollector(message, (m) => {
                     const messageNum = parseInt(m.content);

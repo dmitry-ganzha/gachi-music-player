@@ -11,6 +11,6 @@ export class guildMemberRemove extends Event<GuildMember, null> {
     public readonly run = (member: GuildMember, f2: null, client: WatKLOK): any => {
         const channel = client.channels.cache.get(Channels.removeUser) as ClientMessage["channel"];
 
-        if (channel) channel.send({content: `Нас покинул: ${member.user.username}${member.user.tag}`}).catch(() => null);
+        if (channel) channel.send({content: `Нас покинул: ${member.user.tag}`}).catch(() => null);
     };
 }

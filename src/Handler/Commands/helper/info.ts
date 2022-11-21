@@ -38,13 +38,12 @@ export class Info extends Command {
                 message.client.shard.fetchClientValues("guilds.cache.size").then((numbers) => this.#AutoConverter(numbers, guilds));
                 message.client.shard.fetchClientValues("queue.size").then((numbers) => this.#AutoConverter(numbers, queue));
             } finally {
-                message.channel.send({embeds: [this.#EmbedConstructor(message, {channels, guilds, queue})]})
-                    .then((msg) => messageUtils.deleteMessage(msg, 25e3));
+                message.client.sendMessage({text: this.#EmbedConstructor(message, {channels, guilds, queue}), message});
             }
             return;
         }
 
-        message.channel.send({embeds: [this.#EmbedConstructor(message)]}).then((msg) => messageUtils.deleteMessage(msg, 25e3));
+        message.client.sendMessage({text: this.#EmbedConstructor(message), message});
     };
     //====================== ====================== ====================== ======================
     /**

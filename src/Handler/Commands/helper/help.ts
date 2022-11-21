@@ -1,6 +1,6 @@
 import {Command} from "../../../Structures/Command";
 import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
-import {Colors} from "discord.js";
+import {ApplicationCommandOptionType, Colors} from "discord.js";
 import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
 import {Bot} from "../../../../db/Config.json";
 
@@ -11,6 +11,15 @@ export class Help extends Command {
             aliases: ["h"],
             description: "Можешь глянуть все мои команды!",
             usage: "all | command name",
+
+            options: [
+                {
+                    name: "command-name-or-all",
+                    description: "Укажи название команды, или укажи all для просмотра всех команд",
+                    required: true,
+                    type: ApplicationCommandOptionType.String
+                }
+            ],
 
             slash: true,
             enable: true,
@@ -38,8 +47,7 @@ export class Help extends Command {
         if (command) {
             const {embed} = this.#CreateEmbedMessage(message, [[command]]);
 
-            //Запускаем ReactionMenu
-            return message.channel.send({embeds: [embed]});
+            return message.client.sendMessage({text: embed, message, color: "DarkRed"});
         }
 
         //Если команды нет

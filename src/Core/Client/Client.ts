@@ -7,6 +7,7 @@ import {messageUtils} from "../Utils/LiteUtils";
 import {Bot, Channels, Debug} from "../../../db/Config.json";
 import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
 import {Voice} from "../../AudioPlayer/Structures/Voice/Voice";
+import {ClientInteraction} from "../../Handler/Events/Activity/SlashCommand";
 
 class CollectionMap<K, V> extends Map<K, V> {
     public get Array(): V[] | null {
@@ -39,15 +40,20 @@ export class WatKLOK extends Client {
     };
     //Отправить не полное embed сообщение
     public readonly sendMessage = ({color, text, type, message}: SendOptions) => {
-        const Embed: EmbedConstructor = {
-            // @ts-ignore
-            color: typeof color === "number" ? color : Colors[color] ?? Colors.Blue,
-            description: typeof type === "string" ? `\`\`\`${type}\n${text}\n\`\`\`` : text
-        };
+        let Embed: EmbedConstructor;
 
-        const sendMessage = message.channel.send({embeds: [Embed]});
-        sendMessage.then(messageUtils.deleteMessage);
-        sendMessage.catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
+        if (typeof text === "string") Embed = { color: typeof color === "number" ? color : Colors[color] ?? Colors.Blue, description: typeof type === "string" ? `\`\`\`${type}\n${text}\n\`\`\`` : text };
+        else Embed = text;
+
+        //Отправляем сообщение с упоминанием
+        if ("isChatInputCommand" in message) {
+            message.reply({embeds: [Embed as any]}).catch((): null => null);
+            setTimeout(() => message.deleteReply().catch((): null => null), 15e3);
+        } else { //Отправляем обычное сообщение
+            const sendMessage = message.reply({embeds: [Embed as any]}) as Promise<ClientMessage>;
+            sendMessage.then(messageUtils.deleteMessage);
+            sendMessage.catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
+        }
     };
     //Обрезает текс до необходимых значений
     public readonly replaceText = (text: string, value: number | any, clearText: boolean = false) => {
@@ -100,8 +106,8 @@ export class WatKLOK extends Client {
 new WatKLOK().login().catch(err => console.log("[Failed login]:", err));
 
 type SendOptions = {
-    text: string;
+    text: string | EmbedConstructor;
     color?: "DarkRed" | "Blue" | "Green" | "Default" | "Yellow" | "Grey" | "Navy" | "Gold" | "Orange" | "Purple" | number;
-    message: ClientMessage;
+    message: ClientMessage | ClientInteraction;
     type?: "css" | "js" | "ts" | "cpp" | "html" | "cs" | "json";
 }

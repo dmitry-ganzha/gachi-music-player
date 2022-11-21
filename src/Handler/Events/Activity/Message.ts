@@ -67,6 +67,7 @@ export interface ClientMessage extends Message {
     client: WatKLOK;
     channel: { send(options: SendMessageOptions): Promise<ClientMessage> } & Channel;
     edit(content: SendMessageOptions | MessageEditOptions): Promise<ClientMessage>
+    reply(options: SendMessageOptions): Promise<ClientMessage>
 }
 
 //Все текстовые каналы

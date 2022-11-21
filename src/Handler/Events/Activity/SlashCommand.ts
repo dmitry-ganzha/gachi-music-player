@@ -1,6 +1,7 @@
 import {BaseInteraction, CommandInteractionOption, GuildMember, User} from "discord.js";
 import {WatKLOK} from "../../../Core/Client/Client";
 import {Event} from "../../../Structures/Event";
+import {ClientMessage} from "./Message";
 
 export class SlashCommand extends Event<ClientInteraction, null> {
     public readonly name: string = "interactionCreate";
@@ -9,7 +10,6 @@ export class SlashCommand extends Event<ClientInteraction, null> {
     public readonly run = (interaction: ClientInteraction, _: null, client: WatKLOK) => {
         if (!interaction.inGuild()) return; //Если это не сервер, игнорируем!
 
-        DeleteInteraction(interaction);
         editInteraction(interaction);
 
         const {commandName, options} = interaction;
@@ -22,13 +22,6 @@ export class SlashCommand extends Event<ClientInteraction, null> {
             else DeleteCommandInInteraction(client, interaction);
         }
     };
-}
-// Удаляем через 200 мс взаимодействие
-function DeleteInteraction(interaction: ClientInteraction) {
-    return setTimeout(() => {
-        interaction.deleteReply().catch((): null => null);
-        interaction.deferReply().catch((): null => null);
-    }, 200);
 }
 // Меняем взаимодействие под ClientMessage
 function editInteraction(interaction: ClientInteraction): void {
@@ -43,6 +36,8 @@ function DeleteCommandInInteraction(client: WatKLOK, interaction: ClientInteract
 }
 
 export interface ClientInteraction extends BaseInteraction {
+    client: WatKLOK;
     member: GuildMember; customId: string; commandName: string; commandId: string; author: User;
     delete: () => void; deferReply: () => Promise<void>; deleteReply: () => Promise<void>; options?: { _hoistedOptions: any[] };
+    reply: ClientMessage["channel"]["send"] & {fetchReply?: boolean};
 }

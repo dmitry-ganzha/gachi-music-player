@@ -2,11 +2,10 @@ import {ButtonStyle, Colors, MessageReaction, User} from "discord.js";
 import {Command} from "../../Structures/Command";
 import {Bot} from "../../../db/Config.json";
 import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
-import {WatKLOK} from "../Client/Client";
 
 export namespace messageUtils {
     //Удаляем сообщение
-    export function deleteMessage(message: ClientMessage, time: number = 12e3): void {
+    export function deleteMessage(message: ClientMessage, time: number = 15e3): void {
         setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, time);
     }
     //Создаем сборщик сообщений
