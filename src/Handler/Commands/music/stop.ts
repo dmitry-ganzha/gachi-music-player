@@ -1,6 +1,6 @@
 import {Command} from "../../../Structures/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {ClientMessage} from "../../Events/Activity/interactiveCreate";
 
 export class Stop extends Command {
     public constructor() {
@@ -9,8 +9,8 @@ export class Stop extends Command {
             aliases: ["leave", "disconnect", "discon"],
             description: "Завершаем воспроизведение музыки!",
 
-            enable: true,
-            slash: true
+            isEnable: true,
+            isSlash: true
         });
     };
 

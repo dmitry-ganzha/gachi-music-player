@@ -1,5 +1,5 @@
 import {Command} from "../../../Structures/Command";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
 import {Colors} from "discord.js";
 
 export class Twitch extends Command {
@@ -7,9 +7,10 @@ export class Twitch extends Command {
         super({
             name: "twitch",
 
-            enable: true,
+            isEnable: true,
             isOwner: true,
-            slash: false
+            isSlash: false,
+            isGuild: false
         });
     };
 

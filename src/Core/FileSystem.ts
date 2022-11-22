@@ -54,7 +54,10 @@ export function LoadFiles(client: WatKLOK) {
             if (reason) return log("Events", dir, file, reason);
             else if (!pull.name) return log("Events", dir, file, "Parameter name has undefined");
 
-            client.on(pull.name, (ev: any, ev2: any) => pull.run(ev, ev2, client));
+            //если мы хотим 2 и более ивентами прослушивать один класс
+            if (typeof pull.name === "string") client.on(pull.name, (ev: any, ev2: any) => pull.run(ev, ev2, client));
+            else pull.name.forEach((name) => client.on(name, (ev: any, ev2: any) => pull.run(ev, ev2, client)));
+
             log("Events", dir, file);
         },
         (pull: Module, {file, reason, dir}) => {
@@ -101,7 +104,7 @@ class FileLoader {
 
                 //Добавляем ошибки если они как таковые есть
                 if (!pull) reason = "Not found exports";
-                else if (!pull.enable) reason = "Parameter enable has false";
+                else if (!pull.isEnable) reason = "Parameter isEnable has false";
                 else if (!pull.run) reason = "Function run has not found";
 
                 //Если при загрузке произошла ошибка

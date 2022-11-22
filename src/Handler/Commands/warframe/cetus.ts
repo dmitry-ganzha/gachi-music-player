@@ -1,7 +1,6 @@
 import {Command} from "../../../Structures/Command";
 import {httpsClient} from "../../../Core/httpsClient";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
-import {messageUtils} from "../../../Core/Utils/LiteUtils";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
 import {Colors} from "discord.js";
 
 const CetusCycle = "https://api.warframestat.us/pc/cetusCycle";
@@ -14,8 +13,10 @@ export default class Cetus extends Command {
             name: "cetus",
             description: "Сколько щас времени на цетусе!",
             aliases: ["цетус"],
-            slash: true,
-            enable: true
+
+            isSlash: true,
+            isEnable: true,
+            isGuild: false
         });
     };
 

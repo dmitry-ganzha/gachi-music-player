@@ -1,8 +1,7 @@
 import {Command} from "../../../Structures/Command";
 import os from 'node:os';
 import pak from "../../../../package.json";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
-import {messageUtils} from "../../../Core/Utils/LiteUtils";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
 import {DurationUtils} from "../../../AudioPlayer/Managers/DurationUtils";
 import {Colors} from "discord.js";
 import ParsingTimeToString = DurationUtils.ParsingTimeToString;
@@ -19,12 +18,14 @@ export class Info extends Command {
     public constructor() {
         super({
             name: "info",
-            description: "Здесь показана моя информация!",
             aliases: ["information"],
+            description: "Здесь показана моя информация!",
 
-            slash: true,
-            enable: true,
-            CoolDown: 10
+            isGuild: false,
+            isSlash: true,
+            isEnable: true,
+
+            isCLD: 10
         });
     };
 

@@ -4,20 +4,18 @@ import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
 import {Song} from "../../../AudioPlayer/Structures/Queue/Song";
 import {DurationUtils} from "../../../AudioPlayer/Managers/DurationUtils";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {ClientMessage} from "../../Events/Activity/interactiveCreate";
 
 export default class CommandQueue extends Command {
-    readonly #getTime = DurationUtils.getTimeQueue;
-
     public constructor() {
         super({
             name: "queue",
             aliases: ["queue", "list", "musiclist"],
             description: "Показать всю музыку добавленную в очередь этого сервера?",
 
-            enable: true,
-            slash: true
-        })
+            isEnable: true,
+            isSlash: true
+        });
     };
 
     public readonly run = (message: ClientMessage): Promise<ReactionCollector> | void => {
@@ -32,7 +30,7 @@ export default class CommandQueue extends Command {
         //Получаем то что надо было преобразовать в string[]
         const pages = this.#parsedSongs(queue.songs, message.client.replaceText);
         const CurrentPlaying = `Current playing -> [${queue.song.title}]`; //Музыка, которая играет сейчас
-        const Footer = `${message.author.username} | ${this.#getTime(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}`; //Что будет снизу сообщения
+        const Footer = `${message.author.username} | ${DurationUtils.getTimeQueue(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}`; //Что будет снизу сообщения
 
         //Запускаем CollectorSortReaction
         new ReactionMenu(`\`\`\`css\n➡️ | ${CurrentPlaying}\n\n${pages[0]}\n\n${Footer}\`\`\``, message, this.#Callbacks(1, pages, queue));
@@ -117,7 +115,7 @@ export default class CommandQueue extends Command {
      */
     readonly #EditMessage = (queue: Queue, message: ClientMessage, msg: ClientMessage, pages: string[], page: number) => {
         const CurrentPlaying = `Current playing -> [${queue.song.title}]`;
-        const Footer = `${message.author.username} | ${this.#getTime(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}`;
+        const Footer = `${message.author.username} | ${DurationUtils.getTimeQueue(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}`;
 
         return msg.edit(`\`\`\`css\n➡️ | ${CurrentPlaying}\n\n${pages[page - 1]}\n\n${Footer}\`\`\``);
     };

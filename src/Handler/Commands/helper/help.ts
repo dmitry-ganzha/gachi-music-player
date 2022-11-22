@@ -1,7 +1,7 @@
 import {Command} from "../../../Structures/Command";
 import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
 import {ApplicationCommandOptionType, Colors} from "discord.js";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
 import {Bot} from "../../../../db/Config.json";
 
 export class Help extends Command {
@@ -10,8 +10,8 @@ export class Help extends Command {
             name: "help",
             aliases: ["h"],
             description: "Можешь глянуть все мои команды!",
-            usage: "all | command name",
 
+            usage: "all | command name",
             options: [
                 {
                     name: "command-name-or-all",
@@ -21,9 +21,11 @@ export class Help extends Command {
                 }
             ],
 
-            slash: true,
-            enable: true,
-            CoolDown: 35
+            isGuild: false,
+            isSlash: true,
+            isEnable: true,
+
+            isCLD: 35
         });
     };
 

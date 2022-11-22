@@ -1,26 +1,27 @@
 import {Command} from "../../../Structures/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ApplicationCommandOptionType} from "discord.js";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {ClientMessage} from "../../Events/Activity/interactiveCreate";
 
-export default class Remove extends Command {
+export class Remove extends Command {
     public constructor() {
         super({
             name: "remove",
             aliases: [],
             description: "Эта команда удаляет из очереди музыку!",
-            usage: "1 | Можно убрать любой трек из очереди | Если аргумент не указан он будет равен 1",
 
+            usage: "1 | Можно убрать любой трек из очереди | Если аргумент не указан он будет равен 1",
             options: [
                 {
                     name: "value",
-                    description: "Remove song in value",
+                    description: "Номер трека который надо удалить из очереди",
                     required: true,
                     type: ApplicationCommandOptionType.String
                 }
             ],
-            enable: true,
-            slash: true
+
+            isEnable: true,
+            isSlash: true
         })
     };
 

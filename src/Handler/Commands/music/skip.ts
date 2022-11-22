@@ -1,7 +1,7 @@
 import {Command} from "../../../Structures/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ApplicationCommandOptionType} from "discord.js";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {ClientMessage} from "../../Events/Activity/interactiveCreate";
 
 export class Skip extends Command {
     public constructor() {
@@ -9,15 +9,16 @@ export class Skip extends Command {
             name: "skip",
             aliases: ['s'],
             description: "Пропуск текущей музыки!",
-            usage: "1 | Все треки будут пропущены до указанного | Если аргумент не указан, то будет пропущен текущий трек",
 
+            usage: "1 | Все треки будут пропущены до указанного | Если аргумент не указан, то будет пропущен текущий трек",
             options: [{
                 name: "value",
                 description: "Укажите какую музыку пропускаем!",
                 type: ApplicationCommandOptionType.String
             }],
-            enable: true,
-            slash: true
+
+            isSlash: true,
+            isEnable: true
         });
     };
 

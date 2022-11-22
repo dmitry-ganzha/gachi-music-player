@@ -1,5 +1,5 @@
 import {Command} from "../../../Structures/Command";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {ClientMessage} from "../../Events/Activity/interactiveCreate";
 
 export class Replay extends Command {
     public constructor() {
@@ -8,9 +8,9 @@ export class Replay extends Command {
             aliases: ['repl'],
             description: "Повторить текущий трек?",
 
-            enable: true,
-            slash: true
-        })
+            isEnable: true,
+            isSlash: true
+        });
     };
 
     public readonly run = (message: ClientMessage): void => {

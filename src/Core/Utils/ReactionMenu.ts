@@ -1,7 +1,6 @@
 import {MessageReaction, User} from "discord.js";
-import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
+import {ClientMessage, EmbedConstructor, ClientInteractive} from "../../Handler/Events/Activity/interactiveCreate";
 import {messageUtils} from "./LiteUtils";
-import {ClientInteraction} from "../../Handler/Events/Activity/SlashCommand";
 
 const emojis = {
     back: "⬅️",
@@ -23,7 +22,7 @@ export class ReactionMenu {
      * @param callbacks {Callbacks} Функции
      * @requires {reaction}
      */
-    public constructor(embed: EmbedConstructor | string, message: ClientMessage | ClientInteraction, callbacks: Callbacks) {
+    public constructor(embed: EmbedConstructor | string, message: ClientInteractive, callbacks: Callbacks) {
         setImmediate(() => {
             // @ts-ignore
             message.reply(typeof embed === "string" ? {content: embed, fetchReply: true} : {embeds: [embed], fetchReply: true}).then((msg) =>

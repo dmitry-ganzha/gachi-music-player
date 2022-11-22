@@ -2,13 +2,12 @@ import {Command} from "../../../Structures/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {Song} from "../../../AudioPlayer/Structures/Queue/Song";
 import {ApplicationCommandOptionType} from "discord.js";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {ClientMessage} from "../../Events/Activity/interactiveCreate";
 
 export class Shuffle extends Command {
     public constructor() {
         super({
             name: "shuffle",
-            aliases: [],
             description: "Перетасовка музыки в очереди текущего сервера!",
 
             options: [{
@@ -17,8 +16,9 @@ export class Shuffle extends Command {
                 required: true,
                 type: ApplicationCommandOptionType.String
             }],
-            enable: true,
-            slash: true
+
+            isEnable: true,
+            isSlash: true
         });
     };
 

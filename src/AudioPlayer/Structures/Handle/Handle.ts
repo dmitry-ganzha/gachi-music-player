@@ -1,6 +1,6 @@
 import {StageChannel, VoiceChannel} from "discord.js";
 import { FailRegisterPlatform, SearchPlatforms, SupportPlatforms, supportPlatforms, SupportType, TypePlatform } from "../SongSupport";
-import {ClientMessage} from "../../../Handler/Events/Activity/Message";
+import {ClientMessage} from "../../../Handler/Events/Activity/interactiveCreate";
 import {InputPlaylist, InputTrack} from "../Queue/Song";
 import {messageUtils} from "../../../Core/Utils/LiteUtils";
 import {DurationUtils} from "../../Managers/DurationUtils";

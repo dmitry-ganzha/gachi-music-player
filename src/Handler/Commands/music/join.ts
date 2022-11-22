@@ -2,9 +2,9 @@ import {Command} from "../../../Structures/Command";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {Voice} from "../../../AudioPlayer/Structures/Voice/Voice";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {ClientMessage} from "../../Events/Activity/interactiveCreate";
 
-export default class Join extends Command {
+export class Join extends Command {
     public constructor() {
         super({
             name: "join",
@@ -15,8 +15,9 @@ export default class Join extends Command {
                 user: null,
                 client: ['Speak', 'Connect']
             },
-            slash: true,
-            enable: true,
+
+            isSlash: true,
+            isEnable: true,
         });
     };
 

@@ -3,7 +3,7 @@ import {Song} from "./Structures/Queue/Song";
 import {VoiceState} from "discord.js";
 import {StatusPlayerHasSkipped} from "./Structures/AudioPlayer";
 import {DurationUtils} from "./Managers/DurationUtils";
-import {ClientMessage} from "../Handler/Events/Activity/Message";
+import {ClientMessage} from "../Handler/Events/Activity/interactiveCreate";
 
 const ParsingTimeToString = DurationUtils.ParsingTimeToString;
 

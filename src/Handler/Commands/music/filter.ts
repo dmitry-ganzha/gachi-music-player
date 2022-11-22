@@ -1,7 +1,7 @@
 import {Command} from "../../../Structures/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ApplicationCommandOptionType, Colors} from "discord.js";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
 import {FFspace} from "../../../AudioPlayer/Structures/Media/FFspace";
 import Filters from "../../../../db/Filters.json";
 import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
@@ -21,9 +21,11 @@ export default class Filter extends Command {
                     type: ApplicationCommandOptionType.String
                 }
             ],
-            slash: true,
-            enable: true,
-            CoolDown: 12
+
+            isSlash: true,
+            isEnable: true,
+
+            isCLD: 12
         });
     };
 

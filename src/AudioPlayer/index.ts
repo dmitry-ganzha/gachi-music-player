@@ -2,7 +2,7 @@ import {PlayerController} from "./Controller";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {QueueManager} from "./Managers/QueueManager";
 import {TypedEmitter} from "tiny-typed-emitter";
-import {ClientMessage} from "../Handler/Events/Activity/Message";
+import {ClientMessage} from "../Handler/Events/Activity/interactiveCreate";
 import {InputPlaylist, InputTrack} from "./Structures/Queue/Song";
 
 interface PlayerEvents {

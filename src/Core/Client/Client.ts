@@ -5,9 +5,8 @@ import {Command} from "../../Structures/Command";
 import {Queue} from "../../AudioPlayer/Structures/Queue/Queue";
 import {messageUtils} from "../Utils/LiteUtils";
 import {Bot, Channels, Debug} from "../../../db/Config.json";
-import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
+import {ClientInteraction, ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/interactiveCreate";
 import {Voice} from "../../AudioPlayer/Structures/Voice/Voice";
-import {ClientInteraction} from "../../Handler/Events/Activity/SlashCommand";
 
 class CollectionMap<K, V> extends Map<K, V> {
     public get Array(): V[] | null {
@@ -50,7 +49,7 @@ export class WatKLOK extends Client {
             message.reply({embeds: [Embed as any]}).catch((): null => null);
             setTimeout(() => message.deleteReply().catch((): null => null), 15e3);
         } else { //Отправляем обычное сообщение
-            const sendMessage = message.reply({embeds: [Embed as any]}) as Promise<ClientMessage>;
+            const sendMessage = message.channel.send({embeds: [Embed as any]}) as Promise<ClientMessage>;
             sendMessage.then(messageUtils.deleteMessage);
             sendMessage.catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
         }

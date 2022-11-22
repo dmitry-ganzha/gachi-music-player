@@ -1,6 +1,6 @@
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, Guild, Message} from "discord.js";
 import {WatKLOK} from "../../../Core/Client/Client";
-import {EmbedConstructor} from "../Activity/Message";
+import {EmbedConstructor} from "../Activity/interactiveCreate";
 import {Event} from "../../../Structures/Event";
 
 const Buttons = () => {
@@ -13,7 +13,7 @@ const Buttons = () => {
 
 export class guildCreate extends Event<Guild, null> {
     public readonly name: string = "guildCreate";
-    public readonly enable: boolean = true;
+    public readonly isEnable: boolean = true;
 
     public readonly run = (guild: Guild, f2: null, client: WatKLOK): void | Promise<Message> => {
         if (!guild.systemChannel) return;

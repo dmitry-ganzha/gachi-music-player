@@ -1,7 +1,7 @@
 import {StageChannel, VoiceChannel} from "discord.js";
 import {AudioPlayer} from "../AudioPlayer";
 import {Song} from "./Song";
-import {ClientMessage} from "../../../Handler/Events/Activity/Message";
+import {ClientMessage} from "../../../Handler/Events/Activity/interactiveCreate";
 import {PlayerEventsCallBacks} from "../../Managers/PlayerManager";
 import {VoiceConnection} from "@discordjs/voice";
 import {MessagePlayer} from "../../Managers/PlayerMessages";

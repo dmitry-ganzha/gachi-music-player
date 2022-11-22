@@ -1,7 +1,7 @@
 import {Command} from "../../../Structures/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ApplicationCommandOptionType} from "discord.js";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {ClientMessage} from "../../Events/Activity/interactiveCreate";
 
 export class Loop extends Command {
     public constructor() {
@@ -9,17 +9,18 @@ export class Loop extends Command {
             name: "loop",
             aliases: ["repeat", "rept"],
             description: "Включение повтора и выключение повтора музыки!",
-            usage: "song | Доступны: song, songs, off",
 
+            usage: "song | Доступны: song, songs, off",
             options: [
                 {
                     name: "type",
-                    description: "Type - (song, on, off)",
+                    description: "Необходимо указать что-то из | song, on, off",
                     type: ApplicationCommandOptionType.String
                 }
             ],
-            slash: true,
-            enable: true,
+
+            isSlash: true,
+            isEnable: true
         })
     };
 

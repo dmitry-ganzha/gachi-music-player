@@ -1,6 +1,6 @@
 import {Command} from "../../../Structures/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {ClientMessage} from "../../Events/Activity/interactiveCreate";
 
 export class Pause extends Command {
     public constructor() {
@@ -8,8 +8,8 @@ export class Pause extends Command {
             name: "pause",
             description: "Приостановить воспроизведение текущего трека?!",
 
-            enable: true,
-            slash: true
+            isEnable: true,
+            isSlash: true
         })
     };
 

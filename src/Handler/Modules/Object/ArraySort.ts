@@ -1,7 +1,7 @@
 import {Module} from "../../../Structures/Module";
 
 export class ArraySort extends Module {
-    public readonly enable: boolean = true;
+    public readonly isEnable: boolean = true;
 
     public run = (): void => {
         Object.defineProperty(Array.prototype, "ArraySort", {

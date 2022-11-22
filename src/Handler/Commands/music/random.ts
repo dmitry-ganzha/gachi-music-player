@@ -1,6 +1,6 @@
 import {Command} from "../../../Structures/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {ClientMessage} from "../../Events/Activity/interactiveCreate";
 
 export default class Random extends Command {
     public constructor() {
@@ -9,8 +9,8 @@ export default class Random extends Command {
             aliases: ["rm"],
             description: 'После каждой проигранной музыки будет выбрана случайная музыка!',
 
-            enable: true,
-            slash: true
+            isEnable: true,
+            isSlash: true
         })
     };
 

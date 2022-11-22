@@ -1,25 +1,27 @@
 import {Command} from "../../../Structures/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ApplicationCommandOptionType} from "discord.js";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {ClientMessage} from "../../Events/Activity/interactiveCreate";
 
-export default class Seek extends Command {
+export class Seek extends Command {
     public constructor() {
         super({
             name: "seek",
             aliases: ['begin', 'sek', 'beg'],
             description: "Пропуск времени в текущем треке!",
-            usage: "00:00 | 20",
 
+            usage: "00:00 | 20",
             options: [{
                 name: "value",
                 description: "Пример - 00:00",
                 required: true,
                 type: ApplicationCommandOptionType.String
             }],
-            enable: true,
-            slash: true,
-            CoolDown: 10
+
+            isEnable: true,
+            isSlash: true,
+
+            isCLD: 10
         });
     };
 

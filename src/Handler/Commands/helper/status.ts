@@ -1,5 +1,5 @@
 import {Command} from "../../../Structures/Command";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
 import {SupportPlatforms, supportPlatforms, SupportType, FailRegisterPlatform} from "../../../AudioPlayer/Structures/SongSupport";
 import {Colors} from "discord.js";
 import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
@@ -14,9 +14,11 @@ export default class Status extends Command {
             aliases: ["state", "platforms"],
             description: "Проверка работоспособности платформ!",
 
-            slash: true,
-            enable: true,
-            CoolDown: 10
+            isGuild: false,
+            isSlash: true,
+            isEnable: true,
+
+            isCLD: 10
         });
     };
 

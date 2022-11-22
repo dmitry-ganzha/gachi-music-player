@@ -1,7 +1,7 @@
 import {Command} from "../../../Structures/Command";
 import {ApplicationCommandOptionType} from "discord.js";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {ClientMessage} from "../../Events/Activity/interactiveCreate";
 import {Handle} from "../../../AudioPlayer/Structures/Handle/Handle";
 
 export class Play extends Command {
@@ -27,9 +27,11 @@ export class Play extends Command {
                     type: ApplicationCommandOptionType.String
                 }
             ],
-            enable: true,
-            slash: true,
-            CoolDown: 8
+
+            isEnable: true,
+            isSlash: true,
+
+            isCLD: 8
         });
     };
 

@@ -1,14 +1,15 @@
-import {Command, TypeSlashCommand} from "../../../Structures/Command";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {Command} from "../../../Structures/Command";
+import {ClientMessage} from "../../Events/Activity/interactiveCreate";
 
-export default class Deploy extends Command {
+export class Deploy extends Command {
     public constructor() {
         super({
             name: "deploy",
 
-            enable: true,
+            isEnable: true,
             isOwner: true,
-            slash: false
+            isSlash: false,
+            isGuild: false
         });
     };
 
@@ -26,9 +27,9 @@ export default class Deploy extends Command {
         let TotalCommands: number = 0;
 
         message.client.commands.Array.forEach((command) => {
-            if (command.isOwner || !command.slash) return null;
+            if (command.isOwner || !command.isSlash) return null;
             const SlashCommands = message.client.application.commands;
-            let slashCommandData: TypeSlashCommand = { name: command.name, description: command.description };
+            let slashCommandData: any = { name: command.name, description: command.description };
 
             if (command.options.length > 0) slashCommandData = {...slashCommandData, options: command.options};
 

@@ -1,6 +1,6 @@
 import {Command} from "../../../Structures/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {ClientMessage} from "../../Events/Activity/Message";
+import {ClientMessage} from "../../Events/Activity/interactiveCreate";
 
 export default class Resume extends Command {
     public constructor() {
@@ -9,9 +9,9 @@ export default class Resume extends Command {
             aliases: [],
             description: "Возобновить воспроизведение текущего трека?!",
 
-            enable: true,
-            slash: true
-        })
+            isEnable: true,
+            isSlash: true
+        });
     };
 
     public readonly run = (message: ClientMessage): void => {

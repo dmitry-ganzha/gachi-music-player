@@ -2,7 +2,7 @@ import {WatKLOK} from "../../Core/Client/Client";
 import {InputPlaylist, Song} from "./Queue/Song";
 import {AudioFilters, Queue} from "./Queue/Queue";
 import {DurationUtils} from "../Managers/DurationUtils";
-import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/Message";
+import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/interactiveCreate";
 import {Colors} from "discord.js";
 
 // Настройки прогресс бара текущей музыки

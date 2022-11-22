@@ -1,7 +1,6 @@
 import {Command} from "../../../Structures/Command";
 import {httpsClient} from "../../../Core/httpsClient";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
-import {messageUtils} from "../../../Core/Utils/LiteUtils";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
 import {Colors, MessageReaction, User} from "discord.js";
 import {ReactionMenu} from "../../../Core/Utils/ReactionMenu";
 
@@ -14,8 +13,9 @@ export default class Trader extends Command {
             description: "Когда прейдет баро или когда он уйдет, так-же что он щас продает!",
             aliases: ["торговец", "trader", "voidtrader", "void", "KiTeer"],
 
-            slash: true,
-            enable: true
+            isSlash: true,
+            isEnable: true,
+            isGuild: false
         });
     }
 

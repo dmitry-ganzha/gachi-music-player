@@ -1,16 +1,17 @@
 import {Command} from "../../../Structures/Command";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/Message";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
 import {messageUtils} from "../../../Core/Utils/LiteUtils";
 import {Colors} from "discord.js";
 
-export default class Eval extends Command {
+export class Eval extends Command {
     public constructor() {
         super({
             name: "eval",
 
-            enable: true,
+            isEnable: true,
             isOwner: true,
-            slash: false
+            isSlash: false,
+            isGuild: false
         });
     };
 

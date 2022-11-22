@@ -7,7 +7,7 @@ import {Debug} from "../../../../db/Config.json";
 
 export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
     public readonly name: string = "voiceStateUpdate";
-    public readonly enable: boolean = true;
+    public readonly isEnable: boolean = true;
 
     public readonly run = (oldState: VoiceState, newState: VoiceState, client: WatKLOK): void => {
         const queue: Queue = client.queue.get(newState.guild.id); //Очередь сервера
