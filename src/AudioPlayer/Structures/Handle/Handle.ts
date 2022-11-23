@@ -32,7 +32,7 @@ export namespace Handle {
         //Если нельзя получить данные с определенной платформы
         if (FailRegisterPlatform.has(platform)) return message.client.sendMessage({
             text: `${message.author}, я не могу взять данные с этой платформы **${platform}**. Причина: [**Authorization data not found**].`,
-            message, color: "DarkRed", type: "css"
+            message, color: "DarkRed"
         });
 
         const findPlatform = SupportPlatforms[platform]; //Ищем в списке платформу
