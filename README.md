@@ -9,8 +9,11 @@
 - Все сообщения удаляют автоматически через время
 - Для удаления аудио кеша `запустить run и выбрать 6`
 
+[<img align="center" alt="PGI Settings" width="1000px" src="https://github.com/SNIPPIK/WatKLOK/blob/v2/_resource/PGI.png?raw=true" />]()
+
+
 ## Гайд по запуску
-1. [`Node.js`](https://nodejs.org/ru/) 17-19
+1. [`Node.js`](https://nodejs.org/ru/) 16-19
 2. [`FFmpeg & FFprobe`](https://ffmpeg.org/) или npm install (ffmpeg-static и ffprobe-static)
 3. Указываем данные в [`.env`](.env) 
 4. Запускаем [`run`](run.bat)
