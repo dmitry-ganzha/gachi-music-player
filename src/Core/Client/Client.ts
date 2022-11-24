@@ -3,9 +3,10 @@ import {LoadFiles} from "../FileSystem";
 import {PlayerEmitter} from "../../AudioPlayer";
 import {Command} from "../../Structures/Handle/Command";
 import {Queue} from "../../AudioPlayer/Structures/Queue/Queue";
-import {Bot, Debug} from "../../../db/Config.json";
+import {Bot, Debug, Channels} from "../../../db/Config.json";
 import {env} from "../env";
 import {DurationUtils} from "../../AudioPlayer/Managers/DurationUtils";
+import {ClientMessage} from "../../Handler/Events/Activity/interactiveCreate";
 
 export function consoleTime(data: string) {
     const date = new Date();
@@ -79,6 +80,16 @@ export class WatKLOK extends Client {
         return super.login(token);
     };
 }
-new WatKLOK().login().then(() => {
-    if (Bot.ignoreErrors) process.on("uncaughtException", console.warn);
+const client = new WatKLOK();
+
+client.login().then(() => {
+    if (Bot.ignoreErrors) process.on("uncaughtException", (err) => {
+        consoleTime(`[IgnoreError]: ${err.name} | ${err.message}\n${err.stack}`);
+
+        try {
+            const channel = client.channels.cache.get(Channels.sendErrors) as ClientMessage["channel"];
+
+            if (channel) channel.send({content: `\`\`\`ts\nError: ${err.message}\nType: ${err.name}\n\n${err.stack}\n\`\`\``}).catch(console.log);
+        } catch {/* Continue */}
+    });
 })
