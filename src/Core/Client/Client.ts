@@ -10,7 +10,7 @@ import {ClientMessage} from "../../Handler/Events/Activity/interactiveCreate";
 
 export function consoleTime(data: string) {
     const date = new Date();
-    const reformatDate = [date.getHours(), date.getMinutes(), date.getSeconds()].map(DurationUtils.splitterN);
+    const reformatDate = [date.getHours(), date.getMinutes(), date.getSeconds()].map(DurationUtils.toFixed0);
 
     return console.log(`[${reformatDate.join(":")}.${date.getMilliseconds()}] ${data}`);
 }

@@ -56,16 +56,16 @@ export namespace DurationUtils {
      * @description Добавляем 0 к числу. Пример: 01:10
      * @param duration {string | number} Число
      */
-    export function splitterN(duration: string | number): string | number {
+    export function toFixed0(duration: string | number): string | number {
         return (duration < 10) ? ("0" + duration) : duration;
     }
     //====================== ====================== ====================== ======================
     /**
      * @description Делаем из числа строку, так-же добавляем к числу 0 если это надо
      * @param duration {number} Желательно число
-     * @requires {splitterN}
+     * @requires {toFixed0}
      */
     function toString(duration: number): string | number {
-        return splitterN(parseInt(duration as any));
+        return toFixed0(parseInt(duration as any));
     }
 }

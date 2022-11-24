@@ -1,6 +1,6 @@
 import {WatKLOK} from "../../Core/Client/Client";
 import {InputPlaylist, Song} from "./Queue/Song";
-import {AudioFilters, Queue} from "./Queue/Queue";
+import {Queue} from "./Queue/Queue";
 import {DurationUtils} from "../Managers/DurationUtils";
 import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/interactiveCreate";
 import {Colors} from "discord.js";
@@ -104,18 +104,15 @@ export namespace EmbedMessages {
         };
     }
 }
-
 namespace toPlayFunctions {
     /**
      * @description Создаем Message<Fields>
      * @param queue {Queue} Очередь
      * @param client {WatKLOK} Клиент
-     * @requires {ConvertTime, MusicDuration}
      */
     export function getFields(queue: Queue, client: WatKLOK): { name: string, value: string }[] {
-        const {player, songs, filters, song} = queue;
-        const playbackDuration = ConvertTime(player.streamDuration, filters);
-        const VisualDuration = MusicDuration(song, playbackDuration);
+        const {songs, song, player} = queue;
+        const VisualDuration = playTime.toString(song.duration, player.streamDuration);
         //Текущий трек
         const fields = [{ name: "Щас играет", value: `**❯** [${replacer.replaceText(song.title, 29, true)}](${song.url})\n${VisualDuration}` }];
 
@@ -123,42 +120,31 @@ namespace toPlayFunctions {
         if (songs.length > 1) fields.push({ name: "Потом", value: `**❯** [${replacer.replaceText(songs[1].title, 29, true)}](${songs[1].url})` });
         return fields;
     }
-    //====================== ====================== ====================== ======================
+}
+
+namespace playTime {
     /**
-    * @description Создаем визуал таймера трека
-    * @param isLive {Song<isLive>} Текущий трек, стрим?
-    * @param duration {Song<duration>} Продолжительность трека
-    * @param curTime {number | string} Текущее время проигрывания трека
-    * @requires {ProgressBar}
-    */
-    function MusicDuration({isLive, duration}: Song, curTime: number | string): string {
-        if (isLive || duration.full === "Live") return `\`\`[${duration.full}]\`\``;
+     * @description Получаем время трека для embed сообщения
+     * @param duration
+     * @param playDuration
+     */
+    export function toString(duration: { seconds: number, full: string }, playDuration: number) {
+        if (duration.full === "Live" || !Bar.Enable) return `\`\`[${duration}]\`\``;
 
-        const str = `${duration.full}]`;
-        const parsedTimeSong = curTime >= duration.seconds ? duration.full : DurationUtils.ParsingTimeToString(curTime as number);
-        const progress = ProgressBar(curTime as number, duration.seconds, 20);
+        const parsedDuration = DurationUtils.ParsingTimeToString(playDuration);
+        const progress = matchBar(playDuration as number, duration.seconds, 20);
+        const string = `**❯** \`\`[${parsedDuration} \\ ${duration.full}]\`\` \n\`\`\``;
 
-        if (Bar.Enable) return `**❯** \`\`[${parsedTimeSong} \\ ${str}\`\` \n\`\`\|${progress}|\`\``;
-        return `**❯** \`\`[${parsedTimeSong} \\ ${str}\`\``;
+        return `${string}${progress}\`\``;
     }
     //====================== ====================== ====================== ======================
     /**
-    * @description Конвертируем секунды проигранные плеером
-    * @param streamDuration {number} Сколько прошло времени с момента включения
-    * @param filters {AudioFilters} Фильтры
-    */
-    function ConvertTime(streamDuration: number, filters: AudioFilters): number | string {
-        if (Bar.Enable) return streamDuration;
-        return DurationUtils.ParsingTimeToString(streamDuration);
-    }
-    //====================== ====================== ====================== ======================
-    /**
-    * @description Вычисляем прогресс бар
-    * @param currentTime {number} Текущие время
-    * @param maxTime {number} Макс времени
-    * @param size {number} Кол-во символов
-    */
-    function ProgressBar(currentTime: number, maxTime: number, size: number = 15): string {
+     * @description Вычисляем прогресс бар
+     * @param currentTime {number} Текущие время
+     * @param maxTime {number} Макс времени
+     * @param size {number} Кол-во символов
+     */
+    function matchBar(currentTime: number, maxTime: number, size: number = 15) {
         try {
             const CurrentDuration = isNaN(currentTime) ? 0 : currentTime;
             const progressSize = Math.round(size * (CurrentDuration / maxTime));

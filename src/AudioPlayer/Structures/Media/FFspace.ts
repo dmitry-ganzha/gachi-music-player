@@ -55,7 +55,7 @@ export namespace FFspace {
 
         public constructor(args: Arguments, options: DuplexOptions = {}) {
             super({autoDestroy: true, objectMode: true, ...options});
-            //Используется для загрузки потока в ffmpeg. Неообходимо не указывать параметр -i
+            //Используется для загрузки потока в ffmpeg. Необходимо не указывать параметр -i
             if (!args.includes("-i")) args = ["-i", "-", ...args];
 
             this.#process = this.#SpawnFFmpeg(args);

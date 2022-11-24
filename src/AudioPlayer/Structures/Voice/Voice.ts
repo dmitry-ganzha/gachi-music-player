@@ -50,7 +50,7 @@ export namespace Voice {
     //====================== ====================== ====================== ======================
     /**
      * @description Все пользователи в голосовом канале
-     * @param Guild {Guild} Сервер с котороно надо взять данные
+     * @param Guild {Guild} Сервер с которого надо взять данные
      */
     export function Members(Guild: Guild): VoiceState[] | "Fail" {
         const connection = getVoice(Guild.id), Users: VoiceState[] = [];
