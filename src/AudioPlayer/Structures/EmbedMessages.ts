@@ -133,7 +133,7 @@ namespace playTime {
 
         const parsedDuration = DurationUtils.ParsingTimeToString(playDuration);
         const progress = matchBar(playDuration as number, duration.seconds, 20);
-        const string = `**❯** \`\`[${parsedDuration} \\ ${duration.full}]\`\` \n\`\`\``;
+        const string = `**❯** \`\`[${parsedDuration} \\ ${duration.full}]\`\` \n\`\``;
 
         return `${string}${progress}\`\``;
     }

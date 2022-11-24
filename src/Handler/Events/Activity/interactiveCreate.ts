@@ -1,10 +1,10 @@
-import {ActionRow,ActionRowBuilder,BaseInteraction,BaseMessageOptions,ChannelType,Colors,CommandInteractionOption,DMChannel,EmbedData,GuildMember,Message,MessageEditOptions,MessagePayload,NewsChannel,PartialDMChannel,TextChannel,ThreadChannel,User} from "discord.js";
+import {ActionRow,ActionRowBuilder,BaseInteraction,BaseMessageOptions,ChannelType,CommandInteractionOption,DMChannel,EmbedData,GuildMember,Message,MessageEditOptions,MessagePayload,NewsChannel,PartialDMChannel,TextChannel,ThreadChannel,User} from "discord.js";
 import {Bot} from '../../../../db/Config.json';
 import {WatKLOK} from "../../../Core/Client/Client";
 import {DurationUtils} from "../../../AudioPlayer/Managers/DurationUtils";
 import {Event} from "../../../Structures/Handle/Event";
 import ParsingTimeToString = DurationUtils.ParsingTimeToString;
-import {Command, messageUtils} from "../../../Structures/Handle/Command";
+import {messageUtils} from "../../../Structures/Handle/Command";
 
 const DefaultPrefix = Bot.prefix; //Префикс
 const CoolDownBase = new Map<string, { time: number }>();
@@ -14,28 +14,37 @@ export class interactiveCreate extends Event<ClientInteractive, null> {
     public readonly isEnable = true;
 
     public readonly run = (message: ClientInteractive) => {
-        if (message.author?.bot || message.user?.bot) return; //Игнорим ботов
+        //Игнорируем ботов
+        if (message.author?.bot || message.user?.bot) return;
 
-        //Если message не является командой или начинает не с префикса, то игнор
-        if ("isChatInputCommand" in message && !message.isChatInputCommand() || "content" in message && !message.content?.startsWith(DefaultPrefix)) return;
+        //Если в сообщении нет префикса или interaction type не команда, то игнорируем
+        if ("content" in message && !message.content?.startsWith(DefaultPrefix) || "isChatInputCommand" in message && !message.isChatInputCommand()) return;
 
-        const isSlash = !("content" in message);
+        const isInteraction = !("content" in message);
+        const {author, client} = message;
+        const commandName = isInteraction ? message.commandName : message.content?.split(" ")[0]?.slice(DefaultPrefix.length)?.toLowerCase();
+        const command = message.client.commands.get(commandName) ?? client.commands.Array.find(cmd => cmd.aliases.includes(commandName));
+        const args: string[] = isInteraction ? message.options?._hoistedOptions?.map((f: CommandInteractionOption) => `${f.value}`) : message.content.split(" ").slice(1);
+
         //Удаляем сообщение через 12 сек
-        if (!isSlash) setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, 12e3);
-        //Делаем ClientInteraction похожим на ClientMessage
-        if (isSlash) {
+        if (!isInteraction) setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, 12e3);
+        else { //Делаем ClientInteraction похожим на ClientMessage
             message.author = message.member.user ?? message.user;
             message.delete = (): Promise<void> => (message as ClientInteraction).deleteReply().catch((): null => null);
         }
 
-        const {author, client} = message;
-        const commandName = isSlash ? message.commandName : this.#parsingMessageContent(message.content);
+        //Если нет команды, которую требует пользователь сообщаем ему об этом
+        if (!command) return messageUtils.sendMessage({text: `${author}, Я не нахожу такой команды, используй ${DefaultPrefix}help  :confused:`,
+            message, color: "DarkRed"
+        });
 
-        const command = message.client.commands.get(commandName) ?? client.commands.Array.find(cmd => cmd.aliases.includes(commandName));
-        const args: string[] = isSlash ? message.options?._hoistedOptions?.map((f: CommandInteractionOption) => `${f.value}`) : message.content.split(" ").slice(1);
+        //Если пользователь не входит в состав разработчиков
+        if (!Bot.OwnerIDs.includes(author.id)) {
+            //Если команда для разработчиков
+            if (command.isOwner) return messageUtils.sendMessage({
+                text: `${author}, Эта команда не для тебя!`, message, color: "DarkRed"
+            });
 
-        //Если пользователь является одним из разработчиков, не добавляем его в CoolDown!
-        if (UtilsPermissions.isOwner(true, author.id)) {
             //Проверяем находится ли пользователь в базе
             if (CoolDownBase.get(author.id)) return messageUtils.sendMessage({
                 text: `${author}, я тебе что квантовый компьютер. Подожди ${ParsingTimeToString(CoolDownBase.get(author.id).time)}`,
@@ -48,81 +57,43 @@ export class interactiveCreate extends Event<ClientInteractive, null> {
             }
         }
 
-        if (!command) return messageUtils.sendMessage({
-            text: `${author}, Я не нахожу такой команды, используй ${DefaultPrefix}help  :confused:`, message, color: "DarkRed"
-        });
-
-        //Если команда предназначена для разработчика
-        if (UtilsPermissions.isOwner(command.isOwner, author.id)) return messageUtils.sendMessage({
-            text: `${author}, Эта команда не для тебя!`, message, color: "DarkRed"
-        });
-
-        //Если нет прав у пользователя или бота
-        if (UtilsPermissions.isPermissions(command.permissions, message)) return;
-
         //Если команду нельзя использовать все сервера
-        if (command.isGuild && !message.guild) return messageUtils.sendMessage({text: `${author}, эта команда не работает вне сервера!`, message, color: "DarkRed"});
+        if (command.isGuild && !message.guild) return messageUtils.sendMessage({text: `${author}, эта команда не работает вне сервера!`,
+            message, color: "DarkRed"
+        });
 
+        const permissions = command.permissions;
+
+        //Проверяем нет ли у бота ограничений на права
+        if (permissions.client?.length > 0) {
+            const ClientString: string[] = [];
+
+            for (let i in permissions.client) {
+                if (!message.guild.members.me?.permissions?.has(permissions.client[i])) ClientString.push(permissions.client[i] as string);
+            }
+
+            if (ClientString.length > 0) return messageUtils.sendMessage({text: `Внимание ${author.tag}\nУ меня нет прав на: ${ClientString.join(", ")}`,
+                message, color: "DarkRed", type: "css"
+            });
+        }
+
+        //Проверяем нет ли у пользователя ограничений на права
+        if (permissions.user?.length > 0) {
+            const UserString: string[] = [];
+
+            for (let i in permissions.user) {
+                if (!message.member.permissions.has(permissions.user[i])) UserString.push(permissions.user[i] as string);
+            }
+
+            if (UserString.length > 0) return messageUtils.sendMessage({text: `Внимание ${author.tag}\nУ тебя нет прав на: ${UserString.join(", ")}`,
+                message, color: "DarkRed", type: "css"
+            });
+        }
+
+        //Передаем данные в команду
         return command.run(message, args ?? []);
     };
-    //Получаем command<name>
-    readonly #parsingMessageContent = (content: string) => content.split(" ")[0]?.slice(DefaultPrefix.length)?.toLowerCase();
 }
-
-//Проверка прав (проверят права указанные в команде)
-export namespace UtilsPermissions {
-    //Пользователь owner?
-    export function isOwner(isOwner: boolean, AuthorID: string) {
-        return isOwner && !Bot.OwnerIDs.includes(AuthorID);
-    }
-    //У пользователя есть ограничения?
-    export function isPermissions(permissions: Command['permissions'], message: ClientInteractive): boolean {
-        if (permissions.client?.length > 0 || permissions.user?.length > 0) {
-            const {client, user} = _parsePermissions(permissions, message);
-            const Embed: EmbedConstructor = {
-                color: Colors.Blue,
-                author: {name: message.author.username, iconURL: message.author.displayAvatarURL({})},
-                thumbnail: {url: message.client.user.displayAvatarURL({})},
-                timestamp: new Date() as any
-            };
-
-            //Добавляем fields если есть ограничения для бота
-            if (client) Embed.fields.push({name: "У меня нет этих прав!", value: client});
-
-            //Добавляем fields если есть ограничения для пользователя
-            if (user) Embed.fields.push({name: "У тебя нет этих прав!", value: user});
-
-            //Отправляем сообщение
-            if (user || client) {
-                messageUtils.sendMessage({text: Embed, message});
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-    //Создает строку с правами которые не доступны
-    function _parsePermissions(permissions: Command['permissions'], message: ClientInteractive): { user: string, client: string } {
-        let ClientString = "", UserString = "";
-
-        //Если permissions.client больше 0, то делаем проверку
-        if (permissions.client?.length > 0) {
-            for (let i in permissions.client) {
-                if (!message.guild.members.me?.permissions?.has(permissions.client[i])) ClientString += `•${permissions.client[i]}\n`;
-            }
-        }
-        //Если permissions.user больше 0, то делаем проверку
-        if (permissions.user?.length > 0) {
-            for (let i in permissions.user) {
-                if (!message.member.permissions.has(permissions.user[i])) UserString += `•${permissions.user[i]}\n`;
-            }
-        }
-
-        return {user: UserString, client: ClientString};
-    }
-}
-
 
 export type ClientInteractive = ClientMessage | ClientInteraction;
 type SendMessageOptions = string | MessagePayload | BaseMessageOptions | { embeds?: EmbedConstructor[], components?: ActionRow<any> | ActionRowBuilder<any> };

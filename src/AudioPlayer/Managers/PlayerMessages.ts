@@ -217,7 +217,7 @@ namespace MessageUpdater {
      */
     function StepCycleMessage() {
         try {
-            setImmediate(() => MessagesData.messages.forEach(UpdateMessage));
+            setTimeout(() => MessagesData.messages.forEach(UpdateMessage), 1e3);
         } finally {
             MessagesData.timer = setTimeout(StepCycleMessage, 15e3);
         }

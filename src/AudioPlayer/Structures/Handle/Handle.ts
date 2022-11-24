@@ -25,13 +25,13 @@ export namespace Handle {
      */
     export function toPlayer(options: Options): void {
         const {search, message, voiceChannel} = options;
-        const type = toPlayerUtils.typeSong(search); //Тип запроса
-        const platform = toPlayerUtils.PlatformSong(search, message); //Платформа с которой будем взаимодействовать
-        const parsedSearch = toPlayerUtils.findArg(search, platform, type); //Правит ошибку с некоторыми ссылками
+        const type = HandleUtils.typeSong(search); //Тип запроса
+        const platform = HandleUtils.PlatformSong(search, message); //Платформа с которой будем взаимодействовать
+        const parsedSearch = HandleUtils.findArg(search, platform, type); //Правит ошибку с некоторыми ссылками
 
         //Если нельзя получить данные с определенной платформы
         if (FailRegisterPlatform.has(platform)) return messageUtils.sendMessage({
-            text: `${message.author}, я не могу взять данные с этой платформы **${platform}**. Причина: [**Authorization data not found**].`,
+            text: `${message.author}, я не могу взять данные с этой платформы **${platform}**\n Причина: [**Authorization data not found**]`,
             message, color: "DarkRed", type: "css"
         });
 
@@ -64,7 +64,7 @@ export namespace Handle {
 /**
  * @description Функции для Searcher<toPlayer>
  */
-namespace toPlayerUtils {
+namespace HandleUtils {
     /**
      * @description Независимо от платформы делаем проверку типа ссылки
      * @param search {string} Что там написал пользователь
