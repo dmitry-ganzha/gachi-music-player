@@ -21,9 +21,8 @@ export class interactiveCreate extends Event<ClientInteractive, null> {
         if ("content" in message && !message.content?.startsWith(DefaultPrefix) || "isChatInputCommand" in message && !message.isChatInputCommand()) return;
 
         const isInteraction = !("content" in message);
-        const {author, client} = message;
         const commandName = isInteraction ? message.commandName : message.content?.split(" ")[0]?.slice(DefaultPrefix.length)?.toLowerCase();
-        const command = message.client.commands.get(commandName) ?? client.commands.Array.find(cmd => cmd.aliases.includes(commandName));
+        const command = message.client.commands.get(commandName) ?? message.client.commands.Array.find(cmd => cmd.aliases.includes(commandName));
         const args: string[] = isInteraction ? message.options?._hoistedOptions?.map((f: CommandInteractionOption) => `${f.value}`) : message.content.split(" ").slice(1);
 
         //Удаляем сообщение через 12 сек
@@ -32,6 +31,7 @@ export class interactiveCreate extends Event<ClientInteractive, null> {
             message.author = message.member.user ?? message.user;
             message.delete = (): Promise<void> => (message as ClientInteraction).deleteReply().catch((): null => null);
         }
+        const {author} = message;
 
         //Если нет команды, которую требует пользователь сообщаем ему об этом
         if (!command) return messageUtils.sendMessage({text: `${author}, Я не нахожу такой команды, используй ${DefaultPrefix}help  :confused:`,
