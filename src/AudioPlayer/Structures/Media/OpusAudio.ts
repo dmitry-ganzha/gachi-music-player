@@ -45,8 +45,8 @@ export class OpusAudio extends opus.OggDemuxer {
         ["end", "close", "error"].forEach((event) => this.once(event, this.destroy));
     };
 
-    public read = () => {
-        const packet: Buffer = super.read();
+    public read = (size: number = 16) => {
+        const packet: Buffer = super.read(size);
 
         if (packet) this._duration += this._durFrame;
 

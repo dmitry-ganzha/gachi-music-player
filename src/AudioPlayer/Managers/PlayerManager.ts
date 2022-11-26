@@ -3,7 +3,6 @@ import {Queue} from "../Structures/Queue/Queue";
 
 //Ивенты плеера для всех серверов
 export namespace PlayerEventsCallBacks {
-    //====================== ====================== ====================== ======================
     /**
      * @description Когда плеер завершит песню, он возвратит эту функцию
      * @param queue {Queue} Сама очередь

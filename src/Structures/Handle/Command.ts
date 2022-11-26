@@ -81,6 +81,7 @@ export namespace messageUtils {
         message.react(emoji).then(() => message.createReactionCollector({filter, time})
             .on("collect", (reaction: MessageReaction) => callback(reaction))).catch(() => undefined);
     }
+    //Отправляем сообщение
     export function sendMessage({color, text, type, message}: SendOptions) {
         let Embed: EmbedConstructor;
 
