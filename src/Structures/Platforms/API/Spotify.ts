@@ -99,7 +99,7 @@ export namespace Spotify {
      * @param url {string} Ссылка на плейлист
      * @param options {limit: number} Настройки
      */
-    export function getPlaylist(url: string, options: { limit: number } = {limit: 101}): Promise<InputPlaylist | null> {
+    export function getPlaylist(url: string, options: { limit: number } = {limit: 50}): Promise<InputPlaylist | null> {
         const id = getID(url);
 
         return new Promise(async (resolve, reject) => {
@@ -121,7 +121,7 @@ export namespace Spotify {
      * @param url {string} Ссылка на альбом
      * @param options {limit: number} Настройки
      */
-    export function getAlbum(url: string, options: { limit: number } = {limit: 101}): Promise<InputPlaylist | null> {
+    export function getAlbum(url: string, options: { limit: number } = {limit: 50}): Promise<InputPlaylist | null> {
         const id = getID(url);
 
         return new Promise(async (resolve, reject) => {
@@ -143,7 +143,7 @@ export namespace Spotify {
      * @param search {string} Что ищем
      * @param options {limit: number} Настройки поиска
      */
-    export function SearchTracks(search: string, options: { limit: number } = {limit: 101}): Promise<InputTrack[] | null> {
+    export function SearchTracks(search: string, options: { limit: number } = {limit: 15}): Promise<InputTrack[] | null> {
         return new Promise(async (resolve, reject) => {
             const result = await API.Request(`search?q=${search}&type=track&limit=${options.limit}`) as SearchTracks & FailResult;
 
