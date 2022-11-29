@@ -1,7 +1,7 @@
-import {Command, messageUtils} from "../../../Structures/Handle/Command";
+import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ApplicationCommandOptionType} from "discord.js";
-import {ClientMessage} from "../../Events/Activity/interactiveCreate";
+import {ClientMessage} from "../../Events/Activity/interactionCreate";
 
 export class Skip extends Command {
     public constructor() {
@@ -22,39 +22,26 @@ export class Skip extends Command {
         });
     };
 
-    public readonly run = (message: ClientMessage, args: string[] = ["0"]): void => {
+    public readonly run = async (message: ClientMessage, args: string[] = ["0"]): Promise<ResolveData> => {
         const queue: Queue = message.client.queue.get(message.guild.id);
         const argsNum = parseInt(args[0]);
 
         //Если нет очереди
-        if (!queue) return messageUtils.sendMessage({
-            text: `${message.author}, ⚠ | Музыка щас не играет.`,
-            message,
-            color: "DarkRed"
-        });
+        if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
 
         //Если пользователь не подключен к голосовым каналам
-        if (!message.member?.voice?.channel || !message.member?.voice) return messageUtils.sendMessage({
-            text: `${message.author}, Подключись к голосовому каналу!`,
-            message,
-            color: "DarkRed"
-        });
+        if (!message.member?.voice?.channel || !message.member?.voice) return { text: `${message.author}, Подключись к голосовому каналу!`, color: "DarkRed" };
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
-        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return messageUtils.sendMessage({
+        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return {
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
-            message,
             color: "DarkRed"
-        });
+        };
 
         try {
             return void message.client.player.emit("skip", message, args && args[0] && !isNaN(argsNum) ? argsNum : null);
         } catch {
-            return messageUtils.sendMessage({
-                text: `${message.author}, Ошибка... попробуй еще раз!!!`,
-                message,
-                color: "DarkRed"
-            });
+            return { text: `${message.author}, Ошибка... попробуй еще раз!!!`, color: "DarkRed" };
         }
     };
 }

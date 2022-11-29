@@ -1,6 +1,10 @@
 import {MessageReaction, User} from "discord.js";
-import {ClientMessage, EmbedConstructor, ClientInteractive} from "../Handler/Events/Activity/interactiveCreate";
-import {messageUtils} from "./Handle/Command";
+import {
+    ClientMessage,
+    EmbedConstructor,
+    ClientInteractive,
+    messageUtils
+} from "../Handler/Events/Activity/interactionCreate";
 
 const emojis = {
     back: "⬅️",
@@ -20,20 +24,23 @@ export class ReactionMenu {
      * @param embed { EmbedConstructor | string } MessageEmbed или текст
      * @param message {ClientMessage} Сообщение с сервера
      * @param callbacks {Callbacks} Функции
+     * @param isSlash
      * @requires {reaction}
      */
-    public constructor(embed: EmbedConstructor | string, message: ClientInteractive, callbacks: Callbacks) {
+    public constructor(embed: EmbedConstructor | string, message: ClientInteractive, callbacks: Callbacks, isSlash: boolean = false) {
         setImmediate(() => {
-            // @ts-ignore
-            message.reply(typeof embed === "string" ? {content: embed, fetchReply: true} : {embeds: [embed], fetchReply: true}).then((msg) =>
-                Object.entries(callbacks).forEach(([key, value]) => {
-                    const callback = (reaction: MessageReaction) => value(reaction, message.author, message, msg);
-                    // @ts-ignore
-                    const emoji = emojis[key];
-                    return messageUtils.createReaction(msg, emoji,
-                        (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id, callback,
-                        60e3);
-                }));
+            const promise = (msg: ClientMessage) => Object.entries(callbacks).forEach(([key, value]) => {
+                const callback = (reaction: MessageReaction) => value(reaction, message.author, message, msg);
+                // @ts-ignore
+                const emoji = emojis[key];
+                return messageUtils.createReaction(msg, emoji,
+                    (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id, callback,
+                    60e3);
+            });
+            const args = typeof embed === "string" ? {content: embed, fetchReply: true} : {embeds: [embed], fetchReply: true};
+
+            if (isSlash) message.reply(args).then(promise);
+            else (message as ClientMessage).channel.send(args).then(promise);
         });
     };
     //====================== ====================== ====================== ======================

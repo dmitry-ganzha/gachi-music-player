@@ -1,7 +1,7 @@
-import {Command, messageUtils} from "../../../Structures/Handle/Command";
+import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import {ReactionMenu} from "../../../Structures/ReactionMenu";
 import {ApplicationCommandOptionType, Colors} from "discord.js";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
 import {Bot} from "../../../../db/Config.json";
 
 export class Help extends Command {
@@ -29,7 +29,7 @@ export class Help extends Command {
         });
     };
 
-    public readonly run = (message: ClientMessage, args: string[]): any => {
+    public readonly run = async (message: ClientMessage, args: string[]): Promise<ResolveData> => {
         const memberArg = args[args.length - 1];
 
         //Показать все команды
@@ -40,20 +40,19 @@ export class Help extends Command {
             const {embed, pages} = this.#CreateEmbedMessage(message, List);
 
             //Запускаем ReactionMenu
-            return new ReactionMenu(embed, message, ReactionMenu.Callbacks(1, pages, embed));
+            return {embed, callbacks: ReactionMenu.Callbacks(1, pages, embed)}
         }
 
         const command = message.client.commands.Array.find((command) => command.name === memberArg || command.aliases.includes(memberArg));
-
         //Отображаем одну команду
         if (command) {
             const {embed} = this.#CreateEmbedMessage(message, [[command]]);
 
-            return messageUtils.sendMessage({text: embed, message, color: "DarkRed"});
+            return {embed, color: "DarkRed"};
         }
 
         //Если команды нет
-        return messageUtils.sendMessage({text: `${message.author}, такой команд нет в моей базе!`, message, color: "DarkRed"});
+        return {text: `${message.author}, такой команд нет в моей базе!`, color: "DarkRed"};
     };
     //====================== ====================== ====================== ======================
     /**

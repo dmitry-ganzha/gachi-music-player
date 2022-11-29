@@ -1,5 +1,5 @@
-import {Command} from "../../../Structures/Handle/Command";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
+import {Command, ResolveData} from "../../../Structures/Handle/Command";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
 import {Colors} from "discord.js";
 
 export class Twitch extends Command {
@@ -14,7 +14,7 @@ export class Twitch extends Command {
         });
     };
 
-    public readonly run = (message: ClientMessage, args: string[]): void => {
+    public readonly run = async (message: ClientMessage, args: string[]): Promise<ResolveData> => {
         const embed: EmbedConstructor = {
             color: Colors.Purple,
             author: {
@@ -29,5 +29,6 @@ export class Twitch extends Command {
 
 
         if (channel) channel.send({embeds: [embed]});
+        return;
     };
 }

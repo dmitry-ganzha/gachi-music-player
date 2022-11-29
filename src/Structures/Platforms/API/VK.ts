@@ -55,7 +55,7 @@ export namespace VK {
         const ID = getID(url);
 
         return new Promise(async (resolve) => {
-            const result = await API.Request("audio", "getById", `&audios=${ID}`) as Track;
+            const result = await API.Request("audio", "getById", `&audios=${ID}`) as Track & rateLimit;
 
             if (!result || !result.response) return resolve(null);
 

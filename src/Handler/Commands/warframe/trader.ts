@@ -1,6 +1,6 @@
-import {Command, messageUtils} from "../../../Structures/Handle/Command";
+import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import {httpsClient} from "../../../Core/httpsClient";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
 import {Colors, MessageReaction, User} from "discord.js";
 import {ReactionMenu} from "../../../Structures/ReactionMenu";
 
@@ -19,12 +19,11 @@ export class Trader extends Command {
         });
     }
 
-    public readonly run = (message: ClientMessage) => {
-        httpsClient.parseJson(TraderApi).then((res: voidTrader) => {
-            const pagesInventory = this.#parsedInventory(res.inventory);
+    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+        const result = await httpsClient.parseJson(TraderApi);
+        const pagesInventory = this.#parsedInventory(result.inventory);
 
-            return this.#SendMessage(message, res, pagesInventory)
-        });
+        return this.#SendMessage(message, result, pagesInventory);
     };
     //====================== ====================== ====================== ======================
     /**
@@ -53,7 +52,7 @@ export class Trader extends Command {
             return;
         }
         //Если инвентаря нет просто отправляем сообщение
-        messageUtils.sendMessage({text: EmbedVoidTrader, message});
+        return {embed: EmbedVoidTrader};
     };
     //====================== ====================== ====================== ======================
     /**

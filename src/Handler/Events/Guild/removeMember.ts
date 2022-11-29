@@ -1,7 +1,7 @@
 import {GuildMember} from "discord.js";
 import {WatKLOK} from "../../../Core/Client/Client";
 import {Event} from "../../../Structures/Handle/Event";
-import {ClientMessage} from "../Activity/interactiveCreate";
+import {ClientMessage} from "../Activity/interactionCreate";
 import {Channels} from "../../../../db/Config.json";
 
 export class guildMemberRemove extends Event<GuildMember, null> {

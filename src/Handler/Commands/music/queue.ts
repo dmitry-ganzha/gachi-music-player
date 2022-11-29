@@ -1,10 +1,9 @@
-import {Command, messageUtils, replacer} from "../../../Structures/Handle/Command";
-import {MessageReaction, ReactionCollector, User} from "discord.js";
+import {Command, replacer, ResolveData} from "../../../Structures/Handle/Command";
+import {MessageReaction, User} from "discord.js";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {ReactionMenu} from "../../../Structures/ReactionMenu";
 import {Song} from "../../../AudioPlayer/Structures/Queue/Song";
 import {DurationUtils} from "../../../AudioPlayer/Managers/DurationUtils";
-import {ClientMessage} from "../../Events/Activity/interactiveCreate";
+import {ClientMessage} from "../../Events/Activity/interactionCreate";
 
 export default class CommandQueue extends Command {
     public constructor() {
@@ -18,22 +17,18 @@ export default class CommandQueue extends Command {
         });
     };
 
-    public readonly run = (message: ClientMessage): Promise<ReactionCollector> | void => {
+    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         //Если нет очереди
-        if (!queue) return messageUtils.sendMessage({
-            text: `${message.author}, ⚠ | Музыка щас не играет.`,
-            message,
-            color: "DarkRed"
-        });
+        if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
         //Получаем то что надо было преобразовать в string[]
         const pages = this.#parsedSongs(queue.songs);
         const CurrentPlaying = `Current playing -> [${queue.song.title}]`; //Музыка, которая играет сейчас
         const Footer = `${message.author.username} | ${DurationUtils.getTimeQueue(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}`; //Что будет снизу сообщения
 
-        //Запускаем CollectorSortReaction
-        new ReactionMenu(`\`\`\`css\n➡️ | ${CurrentPlaying}\n\n${pages[0]}\n\n${Footer}\`\`\``, message, this.#Callbacks(1, pages, queue));
+
+        return {embed: `\`\`\`css\n➡️ | ${CurrentPlaying}\n\n${pages[0]}\n\n${Footer}\`\`\``, callbacks: this.#Callbacks(1, pages, queue)}
     };
 
     //====================== ====================== ====================== ======================

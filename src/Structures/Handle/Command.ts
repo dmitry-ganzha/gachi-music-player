@@ -1,10 +1,10 @@
-import {ApplicationCommandOptionType, Colors, MessageReaction, PermissionResolvable, User} from "discord.js";
+import { ApplicationCommandOptionType, PermissionResolvable } from "discord.js";
 import {
     ClientInteraction,
     ClientInteractive,
     ClientMessage,
     EmbedConstructor
-} from "../../Handler/Events/Activity/interactiveCreate";
+} from "../../Handler/Events/Activity/interactionCreate";
 
 interface InteractiveOptions {
     name: string,
@@ -34,7 +34,7 @@ export class Command {
             if (options[key] !== null) this[key] = options[key];
         });
     };
-    public readonly run: (message: ClientInteractive, args?: string[]) => any;
+    public readonly run: (message: ClientInteractive, args?: string[]) => Promise<ResolveData>;
 
     public readonly name: string = null;
     public readonly aliases: string[] = [];
@@ -53,51 +53,26 @@ export class Command {
     public readonly type: string;
 }
 
+export type ResolveData = ResolveEmbed | ResolveText | ResolveMenu;
 
-type SendOptions = {
+export interface messageUtilsOptions {
     text: string | EmbedConstructor;
-    color?: "DarkRed" | "Blue" | "Green" | "Default" | "Yellow" | "Grey" | "Navy" | "Gold" | "Orange" | "Purple" | number;
+    color?: ResolveText["color"];
     message: ClientMessage | ClientInteraction;
-    type?: "css" | "js" | "ts" | "cpp" | "html" | "cs" | "json";
+    codeBlock?: ResolveText["codeBlock"];
 }
-
-/**
- * @description Взаимодействия с сообщениями
- */
-export namespace messageUtils {
-    //Удаляем сообщение
-    export function deleteMessage(message: ClientMessage, time: number = 15e3): void {
-        setTimeout(() => message.deletable ? message.delete().catch(() => null) : null, time);
-    }
-    //Создаем сборщик сообщений
-    export function createCollector(message: ClientMessage, filter: (m: ClientMessage) => boolean, max: number = 1, time: number = 20e3) {
-        // @ts-ignore
-        return message.channel.createMessageCollector({filter, max, time});
-    }
-    //Добавляем реакцию к сообщению + взаимодействие
-    export function createReaction(message: ClientMessage, emoji: string, filter: (reaction: MessageReaction, user: User) => boolean, callback: (reaction: MessageReaction) => any, time = 35e3): void {
-        setTimeout(() => message?.deletable ? message?.delete().catch(() => undefined) : null, time);
-
-        message.react(emoji).then(() => message.createReactionCollector({filter, time})
-            .on("collect", (reaction: MessageReaction) => callback(reaction))).catch(() => undefined);
-    }
-    //Отправляем сообщение
-    export function sendMessage({color, text, type, message}: SendOptions) {
-        let Embed: EmbedConstructor;
-
-        if (typeof text === "string") Embed = { color: typeof color === "number" ? color : Colors[color] ?? Colors.Blue, description: typeof type === "string" ? `\`\`\`${type}\n${text}\n\`\`\`` : text };
-        else Embed = text;
-
-        //Отправляем сообщение с упоминанием
-        if ("isChatInputCommand" in message) {
-            message.reply({embeds: [Embed as any]}).catch((): null => null);
-            setTimeout(() => message.deleteReply().catch((): null => null), 15e3);
-        } else { //Отправляем обычное сообщение
-            const sendMessage = message.channel.send({embeds: [Embed as any]}) as Promise<ClientMessage>;
-            sendMessage.then(messageUtils.deleteMessage);
-            sendMessage.catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
-        }
-    }
+interface ResolveEmbed {
+    embed: EmbedConstructor;
+}
+interface ResolveText {
+    text: string;
+    codeBlock?: "css" | "js" | "ts" | "cpp" | "html" | "cs" | "json",
+    color?: "DarkRed" | "Blue" | "Green" | "Default" | "Yellow" | "Grey" | "Navy" | "Gold" | "Orange" | "Purple" | number;
+    thenCallbacks?: Array<Function>;
+}
+interface ResolveMenu {
+    embed: EmbedConstructor | string;
+    callbacks: any;
 }
 
 /**

@@ -1,18 +1,12 @@
-import {Command, messageUtils} from "../../../Structures/Handle/Command";
+import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import os from 'node:os';
 import pak from "../../../../package.json";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
 import {DurationUtils} from "../../../AudioPlayer/Managers/DurationUtils";
 import {Colors} from "discord.js";
 import ParsingTimeToString = DurationUtils.ParsingTimeToString;
 
 const core = os.cpus()[0];
-
-interface OptionsEmbed {
-    queue: number;
-    channels: number;
-    guilds: number;
-}
 
 export class Info extends Command {
     public constructor() {
@@ -29,31 +23,17 @@ export class Info extends Command {
         });
     };
 
-    public readonly run = async (message: ClientMessage): Promise<void> => {
-        //Если запущен ShardManager
-        if (message.client.shard) {
-            let queue = message.client.queue.size, guilds = message.client.guilds.cache.size,
-                channels = message.client.channels.cache.size;
-            try {
-                message.client.shard.fetchClientValues("channels.cache.size").then((numbers) => this.#AutoConverter(numbers, channels));
-                message.client.shard.fetchClientValues("guilds.cache.size").then((numbers) => this.#AutoConverter(numbers, guilds));
-                message.client.shard.fetchClientValues("queue.size").then((numbers) => this.#AutoConverter(numbers, queue));
-            } finally {
-                messageUtils.sendMessage({text: this.#EmbedConstructor(message, {channels, guilds, queue}), message});
-            }
-            return;
+    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+        return {
+            embed: this.#EmbedConstructor(message)
         }
-
-        messageUtils.sendMessage({text: this.#EmbedConstructor(message), message});
     };
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем <EmbedConstructor>
      * @param message {ClientMessage} Сообщение
-     * @param options {OptionsEmbed} Данные
-     * @private
      */
-    readonly #EmbedConstructor = (message: ClientMessage, options?: OptionsEmbed): EmbedConstructor => {
+    readonly #EmbedConstructor = (message: ClientMessage): EmbedConstructor => {
         return {
             color: Colors.Green,
             thumbnail: {
@@ -69,11 +49,11 @@ export class Info extends Command {
                 },
                 {
                     name: "Статистика",
-                    value: `\`\`\`css\n• Platform   => ${process.platform}\n• Node       => ${process.version}\n\n• Servers    => ${options?.guilds ?? message.client.guilds.cache.size}\n• Channels   => ${options?.channels ?? message.client.channels.cache.size}\n\`\`\`\n`
+                    value: `\`\`\`css\n• Platform   => ${process.platform}\n• Node       => ${process.version}\n\n• Servers    => ${message.client.guilds.cache.size}\n• Channels   => ${message.client.channels.cache.size}\n\`\`\`\n`
                 },
                 {
                     name: "Музыка",
-                    value: `\`\`\`css\n• Queue      => ${options?.queue ?? message.client.queue.size}\n• Player     => ${message.client.queue.get(message.guild.id) ? message.client.queue.get(message.guild.id).player.state.status : 'Is not a work player'}\`\`\``
+                    value: `\`\`\`css\n• Queue      => ${message.client.queue.size}\n• Player     => ${message.client.queue.get(message.guild.id) ? message.client.queue.get(message.guild.id).player.state.status : 'Is not a work player'}\`\`\``
                 }
             ],
             timestamp: new Date(),
@@ -83,5 +63,4 @@ export class Info extends Command {
             }
         }
     };
-    readonly #AutoConverter = (Array: any[], PushBase: any) => Array.forEach((number) => PushBase += number);
 }

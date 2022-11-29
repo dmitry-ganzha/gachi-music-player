@@ -1,8 +1,8 @@
-import {Command, messageUtils} from "../../../Structures/Handle/Command";
+import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {Song} from "../../../AudioPlayer/Structures/Queue/Song";
 import {ApplicationCommandOptionType} from "discord.js";
-import {ClientMessage} from "../../Events/Activity/interactiveCreate";
+import {ClientMessage} from "../../Events/Activity/interactionCreate";
 
 export class Shuffle extends Command {
     public constructor() {
@@ -22,46 +22,29 @@ export class Shuffle extends Command {
         });
     };
 
-    public readonly run = (message: ClientMessage): void => {
+    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         //Если нет очереди
-        if (!queue) return messageUtils.sendMessage({
-            text: `${message.author}, ⚠ | Музыка щас не играет.`,
-            message,
-            color: "DarkRed"
-        });
+        if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
 
         //Если пользователь не подключен к голосовым каналам
-        if (!message.member?.voice?.channel || !message.member?.voice) return messageUtils.sendMessage({
-            text: `${message.author}, Подключись к голосовому каналу!`,
-            message,
-            color: "DarkRed"
-        });
+        if (!message.member?.voice?.channel || !message.member?.voice) return { text: `${message.author}, Подключись к голосовому каналу!`, color: "DarkRed" };
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
-        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return messageUtils.sendMessage({
+        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return {
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
-            message,
             color: "DarkRed"
-        });
+        };
 
         //Если нет треков в очереди
-        if (!queue.songs) return messageUtils.sendMessage({
-            text: `${message.author}, Нет музыки в очереди!`,
-            message,
-            color: "DarkRed"
-        });
+        if (!queue.songs) return { text: `${message.author}, Нет музыки в очереди!`, color: "DarkRed" };
 
         //Если треков меньше 3
-        if (queue.songs.length < 3) return messageUtils.sendMessage({
-            text: `${message.author}, Очень мало музыки, нужно более 3`,
-            message,
-            color: "DarkRed"
-        });
+        if (queue.songs.length < 3) return { text: `${message.author}, Очень мало музыки, нужно более 3`, color: "DarkRed" };
 
         this.#shuffleSongs(queue.songs);
-        return messageUtils.sendMessage({text: `🔀 | Shuffle total [${queue.songs.length}]`, message, type: "css"});
+        return {text: `🔀 | Shuffle total [${queue.songs.length}]`, codeBlock: "css"};
     };
 
     readonly #shuffleSongs = (songs: Song[]): void => {

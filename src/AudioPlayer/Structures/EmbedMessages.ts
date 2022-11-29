@@ -2,7 +2,7 @@ import {WatKLOK} from "../../Core/Client/Client";
 import {InputPlaylist, Song} from "./Queue/Song";
 import {Queue} from "./Queue/Queue";
 import {DurationUtils} from "../Managers/DurationUtils";
-import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/interactiveCreate";
+import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/interactionCreate";
 import {Colors} from "discord.js";
 import {replacer} from "../../Structures/Handle/Command";
 
@@ -60,7 +60,7 @@ export namespace EmbedMessages {
         return { color,
             author: { name: replacer.replaceText(author.title, 45, false), iconURL: author?.image?.url ?? Images.NotImage, url: author.url },
             thumbnail: { url: !image?.url ? author?.image.url : image?.url ?? Images.NotImage },
-            fields: [{ name: "Добавлено в очередь", value: `**❯** [${replacer.replaceText(title, 40, true)}](${url}})\n**❯** [\`\`${duration.full}]\`\`` }],
+            fields: [{ name: "Добавлено в очередь", value: `**❯** [${replacer.replaceText(title, 40, true)}](${url}})\n**❯** \`\`[${duration.full}]\`\`` }],
             footer: { text: `${requester.username} | ${DurationUtils.getTimeQueue(songs)} | 🎶: ${songs.length}`, iconURL: requester.avatarURL() }
         };
     }

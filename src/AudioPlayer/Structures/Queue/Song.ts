@@ -1,6 +1,6 @@
 import {DurationUtils} from "../../Managers/DurationUtils";
 import {Images} from "../EmbedMessages";
-import {ClientMessage} from "../../../Handler/Events/Activity/interactiveCreate";
+import {ClientMessage} from "../../../Handler/Events/Activity/interactionCreate";
 import {httpsClient} from "../../../Core/httpsClient";
 import {FFspace} from "../Media/FFspace";
 import {ColorTrack, SongFinder, supportPlatforms, TypePlatform} from "../SongSupport";

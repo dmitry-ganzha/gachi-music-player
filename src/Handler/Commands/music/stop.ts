@@ -1,6 +1,6 @@
-import {Command, messageUtils} from "../../../Structures/Handle/Command";
+import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {ClientMessage} from "../../Events/Activity/interactiveCreate";
+import {ClientMessage} from "../../Events/Activity/interactionCreate";
 
 export class Stop extends Command {
     public constructor() {
@@ -14,16 +14,16 @@ export class Stop extends Command {
         });
     };
 
-    public readonly run = (message: ClientMessage): void => {
+    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         //Если есть очередь то
-        if (queue) queue.cleanup(true);
+        if (queue) queue.cleanup();
 
         try {
-            return messageUtils.sendMessage({text: `${message.author}, 👌`, message: message});
+            return {text: `${message.author}, 👌`};
         } catch { //Если что-то пошло не так
-            return messageUtils.sendMessage({text: `${message.author}, 🤔`, message: message});
+            return {text: `${message.author}, 🤔`};
         }
     };
 }

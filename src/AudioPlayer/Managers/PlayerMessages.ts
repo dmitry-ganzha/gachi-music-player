@@ -2,8 +2,7 @@ import {Queue} from "../Structures/Queue/Queue";
 import {InputPlaylist, Song} from "../Structures/Queue/Song";
 import {EmbedMessages} from "../Structures/EmbedMessages";
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType} from "discord.js";
-import {ClientMessage} from "../../Handler/Events/Activity/interactiveCreate";
-import {messageUtils} from "../../Structures/Handle/Command";
+import {ClientMessage, messageUtils} from "../../Handler/Events/Activity/interactionCreate";
 import {consoleTime} from "../../Core/Client/Client";
 
 //Кнопки над сообщением о проигрывании трека
@@ -121,7 +120,10 @@ function UpdateMessage(message: ClientMessage): void {
         const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue);
 
         //Обновляем сообщение
-        return message.edit({embeds: [CurrentPlayEmbed]}).catch((e) => consoleTime(`[MessageEmitter]: [function: UpdateMessage]: ${e.message}`));
+        return message.edit({embeds: [CurrentPlayEmbed]}).catch((e) => {
+            if (e.message === "Unknown Message") MessageUpdater.toRemove(message);
+            consoleTime(`[MessageEmitter]: [function: UpdateMessage]: ${e.message}`)
+        });
     });
 }
 //====================== ====================== ====================== ======================
@@ -157,6 +159,7 @@ function CreateCollector(message: ClientMessage, queue: Queue) {
     });
 
     //Добавляем ему ивент сборки кнопок
+    // @ts-ignore
     collector.on("collect", (i) => {
         switch (i.customId) {
             case "resume_pause": { //Если надо приостановить музыку или продолжить воспроизведение
@@ -216,10 +219,10 @@ namespace MessageUpdater {
      * @description Обновляем сообщения на текстовый каналах
      */
     function StepCycleMessage() {
-        try {
-            setTimeout(() => MessagesData.messages.forEach(UpdateMessage), 1e3);
-        } finally {
-            MessagesData.timer = setTimeout(StepCycleMessage, 15e3);
-        }
+        setImmediate(() => {
+            try {
+                setTimeout(() => MessagesData.messages.forEach(UpdateMessage), 1e3);
+            } finally { MessagesData.timer = setTimeout(StepCycleMessage, 15e3); }
+        });
     }
 }

@@ -48,10 +48,7 @@ export function LoadFiles(client: WatKLOK) {
             if (reason) return log("Events", dir, file, reason);
             else if (!pull.name) return log("Events", dir, file, "Parameter name has undefined");
 
-            //если мы хотим 2 и более ивентами прослушивать один класс
-            if (typeof pull.name === "string") client.on(pull.name, (ev: any, ev2: any) => pull.run(ev, ev2, client));
-            else pull.name.forEach((name) => client.on(name, (ev: any, ev2: any) => pull.run(ev, ev2, client)));
-
+            client.on(pull.name, (ev: any, ev2: any) => pull.run(ev, ev2, client));
             log("Events", dir, file);
         },
         (pull: Module, {file, reason, dir}) => {

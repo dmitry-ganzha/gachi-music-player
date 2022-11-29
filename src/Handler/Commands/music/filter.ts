@@ -1,7 +1,7 @@
-import {Command, messageUtils} from "../../../Structures/Handle/Command";
+import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ApplicationCommandOptionType, Colors} from "discord.js";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
 import {FFspace} from "../../../AudioPlayer/Structures/Media/FFspace";
 import Filters from "../../../../db/Filters.json";
 import {ReactionMenu} from "../../../Structures/ReactionMenu";
@@ -29,40 +29,27 @@ export default class Filter extends Command {
         });
     };
 
-    public readonly run = (message: ClientMessage, args: string[]): void => {
+    public readonly run = async (message: ClientMessage, args: string[]): Promise<ResolveData> => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         //Если нет очереди
-        if (!queue) return messageUtils.sendMessage({
-            text: `${message.author}, ⚠ | Музыка щас не играет.`,
-            message,
-            color: "DarkRed"
-        });
+        if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
 
         //Если пользователь не подключен к голосовым каналам
-        if (!message.member?.voice?.channel || !message.member?.voice) return messageUtils.sendMessage({
-            text: `${message.author}, Подключись к голосовому каналу!`,
-            message,
-            color: "DarkRed"
-        });
+        if (!message.member?.voice?.channel || !message.member?.voice) return { text: `${message.author}, Подключись к голосовому каналу!`, color: "DarkRed" };
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
-        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return messageUtils.sendMessage({
+        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return {
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
-            message,
             color: "DarkRed"
-        });
+        };
 
         //Если текущий трек является потоковым
-        if (queue.song.isLive) return messageUtils.sendMessage({
-            text: `${message.author}, Фильтры не работают со стримами`,
-            message,
-            color: "DarkRed"
-        });
+        if (queue.song.isLive) return { text: `${message.author}, Фильтры не работают со стримами`, color: "DarkRed" };
 
         const FilterArg = args.length > 1 ? Number(args[args?.length - 1]) : null;
         const FilterName = args[args?.length - 2 ?? args?.length - 1] ?? args[0];
-        const SendArg: { color: any, type: "css", message: ClientMessage } = {color: "Blue", type: "css", message};
+        const SendArg: { color: any, codeBlock: "css" } = {color: "Blue", codeBlock: "css"};
 
         //Показываем все доступные фильтры
         if (FilterName === "all") return this.#ReactionMenuFilters(Filters, message);
@@ -75,7 +62,7 @@ export default class Filter extends Command {
 
         //Если пользователь не указал название фильтра
         if (!FilterName) {
-            if (queue.filters.length === 0) return messageUtils.sendMessage({text: `${message.author.username}, включенных аудио фильтров нет!`, ...SendArg});
+            if (queue.filters.length === 0) return {text: `${message.author.username}, включенных аудио фильтров нет!`, ...SendArg};
             const ArrayFilters: typeof Filters = [];
 
             queue.filters.forEach((filter) => {
@@ -86,53 +73,55 @@ export default class Filter extends Command {
             return this.#ReactionMenuFilters(ArrayFilters, message);
         }
 
-        //Получаем данные о фильтре
-        const Filter = FFspace.getFilter(FilterName);
+        try {
+            //Получаем данные о фильтре
+            const Filter = FFspace.getFilter(FilterName);
 
-        //Если есть такой фильтр
-        if (Filter) {
-            const enableFilter = !!queue.filters.find((filter) => typeof filter === "number" ? null : Filter.names.includes(filter));
+            //Если есть такой фильтр
+            if (Filter) {
+                const enableFilter = !!queue.filters.find((filter) => typeof filter === "number" ? null : Filter.names.includes(filter));
 
-            //Если фильтр есть в очереди
-            if (enableFilter) {
-                const index = queue.filters.indexOf(FilterName);
+                //Если фильтр есть в очереди
+                if (enableFilter) {
+                    const index = queue.filters.indexOf(FilterName);
 
-                //Если пользователь указал аргумент, значит его надо заменить
-                if (FilterArg && Filter.args) {
+                    //Если пользователь указал аргумент, значит его надо заменить
+                    if (FilterArg && Filter.args) {
 
-                    //Изменяем аргумент фильтра
-                    if (FilterArg >= Filter.args[0] && FilterArg <= Filter.args[1]) {
-                        queue.filters[index + 1] = FilterArg;
+                        //Изменяем аргумент фильтра
+                        if (FilterArg >= Filter.args[0] && FilterArg <= Filter.args[1]) {
+                            queue.filters[index + 1] = FilterArg;
 
-                        messageUtils.sendMessage({text: `${message.author.username} | Filter: ${FilterName} был изменен аргумент на ${FilterArg}!`, ...SendArg});
-                        //Если аргументы не подходят
-                    } else return messageUtils.sendMessage({text: `${message.author.username} | Filter: ${FilterName} не изменен из-за несоответствия аргументов!`, ...SendArg});
+                            return {text: `${message.author.username} | Filter: ${FilterName} был изменен аргумент на ${FilterArg}!`, ...SendArg};
+                            //Если аргументы не подходят
+                        } else return {text: `${message.author.username} | Filter: ${FilterName} не изменен из-за несоответствия аргументов!`, ...SendArg};
 
-                } else { //Если пользователь не указал аргумент, значит его надо удалить
-                    if (Filter.args) queue.filters.splice(index, 2); //Удаляем фильтр и аргумент
-                    else queue.filters.splice(index, 1); //Удаляем только фильтр
+                    } else { //Если пользователь не указал аргумент, значит его надо удалить
+                        if (Filter.args) queue.filters.splice(index, 2); //Удаляем фильтр и аргумент
+                        else queue.filters.splice(index, 1); //Удаляем только фильтр
 
-                    messageUtils.sendMessage({text: `${message.author.username} | Filter: ${FilterName} отключен!`, ...SendArg});
-                }
-            } else { //Если фильтра нет в очереди, значит его надо добавить
-                if (FilterArg && Filter.args) { //Если есть аргумент
+                        return {text: `${message.author.username} | Filter: ${FilterName} отключен!`, ...SendArg};
+                    }
+                } else { //Если фильтра нет в очереди, значит его надо добавить
+                    if (FilterArg && Filter.args) { //Если есть аргумент
 
-                    //Добавляем с аргументом
-                    if (FilterArg >= Filter.args[0] && FilterArg <= Filter.args[1]) {
+                        //Добавляем с аргументом
+                        if (FilterArg >= Filter.args[0] && FilterArg <= Filter.args[1]) {
+                            queue.filters.push(Filter.names[0]);
+                            queue.filters.push(FilterArg as any);
+                            return {text: `${message.author.username} | Filter: ${FilterName}:${FilterArg} включен!`, ...SendArg};
+                            //Если аргументы не подходят
+                        } else return {text: `${message.author.username} | Filter: ${FilterName} не включен из-за несоответствия аргументов!`, ...SendArg};
+                    } else { //Если нет аргумента
                         queue.filters.push(Filter.names[0]);
-                        queue.filters.push(FilterArg as any);
-                        messageUtils.sendMessage({text: `${message.author.username} | Filter: ${FilterName}:${FilterArg} включен!`, ...SendArg});
-                        //Если аргументы не подходят
-                    } else return messageUtils.sendMessage({text: `${message.author.username} | Filter: ${FilterName} не включен из-за несоответствия аргументов!`, ...SendArg});
-                } else { //Если нет аргумента
-                    queue.filters.push(Filter.names[0]);
 
-                    messageUtils.sendMessage({text: `${message.author.username} | Filter: ${FilterName} включен!`, ...SendArg});
+                        return {text: `${message.author.username} | Filter: ${FilterName} включен!`, ...SendArg};
+                    }
                 }
-            }
-        } else return messageUtils.sendMessage({ text: `${message.author.username}, у меня нет такого фильтра. Все фильтры - all`, message });
-
-        this.#executeFilter(message);
+            } else return {text: `${message.author.username}, у меня нет такого фильтра. Все фильтры - all`, ...SendArg};
+        } finally {
+            this.#executeFilter(message);
+        }
     };
 
     //Заставляем плеер перезапустить поток для применения фильтра
@@ -167,6 +156,6 @@ export default class Filter extends Command {
         embed.description = pages[0];
         embed.footer = { text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL() }
 
-        new ReactionMenu(embed, message, ReactionMenu.Callbacks(1, pages, embed));
+        return {embed, callbacks: ReactionMenu.Callbacks(1, pages, embed)};
     };
 }

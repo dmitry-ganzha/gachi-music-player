@@ -1,13 +1,13 @@
-import {Command, messageUtils} from "../../../Structures/Handle/Command";
+import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import {httpsClient} from "../../../Core/httpsClient";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
 import {Colors} from "discord.js";
 
 const CetusCycle = "https://api.warframestat.us/pc/cetusCycle";
 const CetusDay = "https://media.discordapp.net/attachments/850775689107865641/996406014192668712/CetusSplashScreen.webp";
 const CetusNight = "https://media.discordapp.net/attachments/850775689107865641/996406014498848828/Warframe.jpg";
 
-export default class Cetus extends Command {
+export class Cetus extends Command {
     public constructor() {
         super({
             name: "cetus",
@@ -20,8 +20,9 @@ export default class Cetus extends Command {
         });
     };
 
-    public readonly run = (message: ClientMessage) => {
-        httpsClient.parseJson(CetusCycle).then((res: CetusCycle) => messageUtils.sendMessage({text: this.#EmbedChange(res), message}));
+    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+        const result = await httpsClient.parseJson(CetusCycle);
+        return {embed: this.#EmbedChange(result)};
     };
     //====================== ====================== ====================== ======================
     /**

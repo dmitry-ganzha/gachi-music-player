@@ -3,8 +3,7 @@ import {Song} from "./Structures/Queue/Song";
 import {VoiceState} from "discord.js";
 import {StatusPlayerHasSkipped} from "./Structures/AudioPlayer";
 import {DurationUtils} from "./Managers/DurationUtils";
-import {ClientMessage} from "../Handler/Events/Activity/interactiveCreate";
-import {messageUtils} from "../Structures/Handle/Command";
+import {ClientMessage, messageUtils} from "../Handler/Events/Activity/interactionCreate";
 import {Voice} from "./Structures/Voice/Voice";
 
 const ParsingTimeToString = DurationUtils.ParsingTimeToString;
@@ -23,7 +22,7 @@ export namespace PlayerController {
         //Продолжаем воспроизведение музыки если она на паузе
         if (player.state.status === "pause") {
             player.resume();
-            return messageUtils.sendMessage({text: `▶️ | Resume song | ${title}`, message, type: "css", color});
+            return messageUtils.sendMessage({text: `▶️ | Resume song | ${title}`, message, codeBlock: "css", color});
         }
         return messageUtils.sendMessage({
             text: `${author}, Текущий статус плеера [${player.state.status}]`, message,
@@ -43,7 +42,7 @@ export namespace PlayerController {
         //Приостанавливаем музыку если она играет
         if (player.state.status === "read") {
             player.pause();
-            return messageUtils.sendMessage({text: `⏸ | Pause song | ${title}`, message, type: "css", color});
+            return messageUtils.sendMessage({text: `⏸ | Pause song | ${title}`, message, codeBlock: "css", color});
         }
         return messageUtils.sendMessage({
             text: `${author}, Текущий статус плеера [${player.state.status}]`, message,
@@ -77,7 +76,7 @@ export namespace PlayerController {
                 if (args === 1) toStop(message);
                 songs.splice(args - 1, 1);
 
-                return messageUtils.sendMessage({text: `⏭️ | Remove song | ${title}`, message, type: "css", color});
+                return messageUtils.sendMessage({text: `⏭️ | Remove song | ${title}`, message, codeBlock: "css", color});
             }
 
             //Если пользователю нельзя это сделать
@@ -103,7 +102,7 @@ export namespace PlayerController {
         try {
             messageUtils.sendMessage({
                 text: `⏭️ | Seeking to [${ParsingTimeToString(seek)}] song | ${title}`, message,
-                type: "css",
+                codeBlock: "css",
                 color
             });
             return queue.play(seek);
@@ -141,7 +140,7 @@ export namespace PlayerController {
             //Если пользователю позволено пропустить музыку
             if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {
                 if (StatusPlayerHasSkipped.has(player.state.status)) {
-                    messageUtils.sendMessage({text: `⏭️ | Skip song | ${title}`, message, type: "css", color});
+                    messageUtils.sendMessage({text: `⏭️ | Skip song | ${title}`, message, codeBlock: "css", color});
                     return toStop(message);
                 }
             }
@@ -165,7 +164,7 @@ export namespace PlayerController {
 
         //Сообщаем о том что музыка начата с начала
         try {
-            messageUtils.sendMessage({text: `🔂 | Replay | ${title}`, message, color, type: "css"});
+            messageUtils.sendMessage({text: `🔂 | Replay | ${title}`, message, color, codeBlock: "css"});
             return queue.play();
         } catch {
             return messageUtils.sendMessage({
@@ -239,7 +238,7 @@ function toSkipNumber(message: ClientMessage, args: number): void {
             if (queue.options.loop === "songs") for (let i = 0; i < args - 2; i++) queue.songs.push(queue.songs.shift());
             else queue.songs = queue.songs.slice(args - 2);
 
-            messageUtils.sendMessage({text: `⏭️ | Skip to song [${args}] | ${title}`, message, type: "css", color});
+            messageUtils.sendMessage({text: `⏭️ | Skip to song [${args}] | ${title}`, message, codeBlock: "css", color});
             return PlayerController.toStop(message);
         }
 

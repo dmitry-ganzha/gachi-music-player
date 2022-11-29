@@ -2,7 +2,7 @@ import {WatKLOK} from "../../Core/Client/Client";
 
 export class Event<K, P> {
     //Название ивента (Discord.js)
-    public readonly name: string | string[] = "undefined";
+    public readonly name: string = "undefined";
 
     //Загружать ли ивент
     public readonly isEnable: boolean = false;

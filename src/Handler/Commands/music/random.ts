@@ -1,6 +1,6 @@
-import {Command, messageUtils} from "../../../Structures/Handle/Command";
+import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {ClientMessage} from "../../Events/Activity/interactiveCreate";
+import {ClientMessage} from "../../Events/Activity/interactionCreate";
 
 export default class Random extends Command {
     public constructor() {
@@ -14,43 +14,30 @@ export default class Random extends Command {
         })
     };
 
-    public readonly run = (message: ClientMessage): void => {
+    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         //Если нет очереди
-        if (!queue) return messageUtils.sendMessage({
-            text: `${message.author}, ⚠ | Музыка щас не играет.`,
-            message,
-            color: "DarkRed"
-        });
+        if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
 
         //Если пользователь не подключен к голосовым каналам
-        if (!message.member?.voice?.channel || !message.member?.voice) return messageUtils.sendMessage({
-            text: `${message.author}, Подключись к голосовому каналу!`,
-            message,
-            color: "DarkRed"
-        });
+        if (!message.member?.voice?.channel || !message.member?.voice) return { text: `${message.author}, Подключись к голосовому каналу!`, color: "DarkRed" };
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
-        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return messageUtils.sendMessage({
+        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return {
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
-            message,
             color: "DarkRed"
-        });
+        };
 
         //Если всего 2 и менее треков
-        if (queue.songs.length <= 2) return messageUtils.sendMessage({
-            text: `${message.author}, Всего в списке ${queue.songs.length}, нет смысла!`,
-            message,
-            color: "DarkRed"
-        });
+        if (queue.songs.length <= 2) return { text: `${message.author}, Всего в списке ${queue.songs.length}, нет смысла!`, color: "DarkRed" };
 
         if (queue.options.random === false) {
             queue.options.random = true;
-            return messageUtils.sendMessage({text: `🔀 | Auto shuffle enable`, message, type: "css"});
+            return {text: `🔀 | Auto shuffle enable`, codeBlock: "css"};
         } else {
             queue.options.random = false
-            return messageUtils.sendMessage({text: `🔀 | Auto shuffle disable`, message, type: "css"});
+            return {text: `🔀 | Auto shuffle disable`, codeBlock: "css"};
         }
     };
 }

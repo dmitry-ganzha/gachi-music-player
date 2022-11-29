@@ -1,8 +1,8 @@
-import {Command, messageUtils} from "../../../Structures/Handle/Command";
+import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {Voice} from "../../../AudioPlayer/Structures/Voice/Voice";
-import {ClientMessage} from "../../Events/Activity/interactiveCreate";
+import {ClientMessage} from "../../Events/Activity/interactionCreate";
 
 export class Join extends Command {
     public constructor() {
@@ -21,23 +21,21 @@ export class Join extends Command {
         });
     };
 
-    public readonly run = (message: ClientMessage): void => {
+    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
         const voiceChannel: VoiceChannel | StageChannel = message.member.voice.channel;
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         //Если пользователь не подключен к голосовым каналам
-        if (!message.member?.voice?.channel || !message.member?.voice) return messageUtils.sendMessage({
+        if (!message.member?.voice?.channel || !message.member?.voice) return {
             text: `${message.author}, Подключись к голосовому каналу!`,
-            message,
             color: "DarkRed"
-        });
+        };
 
         //Если пользователь пытается подключить бота к тому же каналу
-        if (voiceChannel.id === message.guild.members.me.voice.id) return messageUtils.sendMessage({
+        if (voiceChannel.id === message.guild.members.me.voice.id) return {
             text: `${message.author}, Я уже в этом канале <#${queue.voice.id}>.`,
-            message,
             color: "DarkRed"
-        });
+        };
 
         if (queue) { //Если есть очередь, то
             const connection = Voice.Join(voiceChannel); //Подключаемся к голосовому каналу

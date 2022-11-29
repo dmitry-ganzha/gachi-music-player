@@ -6,7 +6,7 @@ import {Queue} from "../../AudioPlayer/Structures/Queue/Queue";
 import {Bot, Debug, Channels} from "../../../db/Config.json";
 import {env} from "../env";
 import {DurationUtils} from "../../AudioPlayer/Managers/DurationUtils";
-import {ClientMessage} from "../../Handler/Events/Activity/interactiveCreate";
+import {ClientMessage} from "../../Handler/Events/Activity/interactionCreate";
 
 export function consoleTime(data: string) {
     const date = new Date();
@@ -89,7 +89,7 @@ client.login().then(() => {
         try {
             const channel = client.channels.cache.get(Channels.sendErrors) as ClientMessage["channel"];
 
-            if (channel) channel.send({content: `\`\`\`ts\nError: ${err.message}\nType: ${err.name}\n\n${err.stack}\n\`\`\``}).catch(console.log);
+            if (channel) channel.send({content: `\`\`\`ts\nError: ${err.message}\nType: ${err.name}\n\nFull Error: ${err.stack}\n\`\`\``}).catch(console.log);
         } catch {/* Continue */}
     });
 })

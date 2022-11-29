@@ -1,5 +1,5 @@
-import {Command} from "../../../Structures/Handle/Command";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactiveCreate";
+import {Command, ResolveData} from "../../../Structures/Handle/Command";
+import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
 import {SupportPlatforms, supportPlatforms, SupportType, FailRegisterPlatform} from "../../../AudioPlayer/Structures/SongSupport";
 import {Colors} from "discord.js";
 import {ReactionMenu} from "../../../Structures/ReactionMenu";
@@ -22,7 +22,7 @@ export default class Status extends Command {
         });
     };
 
-    public readonly run = (message: ClientMessage): any => {
+    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
         const Platforms = Object.keys(SupportPlatforms) as supportPlatforms[];
         const parsePlatforms: string[] = [];
 
@@ -51,6 +51,6 @@ export default class Status extends Command {
         };
 
         //Создаем интерактивное меню
-        return new ReactionMenu(embed, message, ReactionMenu.Callbacks(1, parsePlatforms, embed));
+        return {embed, callbacks: ReactionMenu.Callbacks(1, parsePlatforms, embed)}
     };
 }

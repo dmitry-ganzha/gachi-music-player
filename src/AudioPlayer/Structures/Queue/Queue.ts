@@ -1,12 +1,11 @@
 import {StageChannel, VoiceChannel} from "discord.js";
 import {AudioPlayer} from "../AudioPlayer";
 import {Song} from "./Song";
-import {ClientMessage} from "../../../Handler/Events/Activity/interactiveCreate";
+import {ClientMessage} from "../../../Handler/Events/Activity/interactionCreate";
 import {PlayerEventsCallBacks} from "../../Managers/PlayerManager";
 import {VoiceConnection} from "@discordjs/voice";
 import {MessagePlayer} from "../../Managers/PlayerMessages";
 import {OpusAudio} from "../Media/OpusAudio";
-import {messageUtils} from "../../../Structures/Handle/Command";
 import {consoleTime} from "../../../Core/Client/Client";
 
 export type AudioFilters = Array<string> | Array<string | number>;
@@ -80,7 +79,7 @@ export class Queue {
         return;
     };
     //Удаление очереди
-    public readonly cleanup = (sendDelQueue: boolean = true) => {
+    public readonly cleanup = () => {
         const message = this.message;
         const {client, guild} = message;
 
@@ -99,13 +98,6 @@ export class Queue {
         }
 
         clearTimeout(this.#Timer);
-
-        //Если надо отправить сообщение об удалении очереди
-        if (sendDelQueue && client.queue.get(guild.id)) {
-            if (this.options.stop) messageUtils.sendMessage({text: "🎵 | Музыка была выключена", message, type: "css"});
-            else messageUtils.sendMessage({text: "🎵 | Музыка закончилась", message, type: "css"});
-        }
-
         client.queue.delete(guild.id);
     };
     //Удаление очереди через время
@@ -116,7 +108,7 @@ export class Queue {
         if (state === "start") {
             if (this.#hasDestroying) return;
 
-            this.#Timer = setTimeout(() => this.cleanup(false), 20e3);
+            this.#Timer = setTimeout(this.cleanup, 20e3);
             this.#hasDestroying = true;
             player.pause();
         } else { //Отменяем запущенный таймер

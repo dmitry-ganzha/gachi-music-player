@@ -1,7 +1,7 @@
-import {Command, messageUtils} from "../../../Structures/Handle/Command";
+import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ApplicationCommandOptionType} from "discord.js";
-import {ClientMessage} from "../../Events/Activity/interactiveCreate";
+import {ClientMessage} from "../../Events/Activity/interactionCreate";
 
 export class Loop extends Command {
     public constructor() {
@@ -24,59 +24,47 @@ export class Loop extends Command {
         })
     };
 
-    public readonly run = (message: ClientMessage, args: string[]): void => {
+    public readonly run = async (message: ClientMessage, args: string[]): Promise<ResolveData> => {
         const queue: Queue = message.client.queue.get(message.guild.id);
 
         //Если пользователь не подключен к голосовым каналам
-        if (!message.member?.voice?.channel || !message.member?.voice) return messageUtils.sendMessage({
+        if (!message.member?.voice?.channel || !message.member?.voice) return {
             text: `${message.author}, Подключись к голосовому каналу!`,
-            message,
             color: "DarkRed"
-        });
+        };
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
-        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return messageUtils.sendMessage({
+        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return {
             text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
-            message,
             color: "DarkRed"
-        });
+        };
 
         //Если нет очереди
-        if (!queue) return messageUtils.sendMessage({
-            text: `${message.author}, ⚠ | Музыка щас не играет.`,
-            message,
-            color: "DarkRed"
-        });
+        if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
 
         switch (args[0]) {
             case "выкл":
             case "off":
                 queue.options.loop = "off";
-                return messageUtils.sendMessage({text: `❌ | Повтор выключен`, message, type: "css"});
+                return {text: `❌ | Повтор выключен`, codeBlock: "css"};
 
             case "вкл":
             case "on":
                 queue.options.loop = "songs";
-                return messageUtils.sendMessage({text: `🔁 | Повтор всей музыки`, message, type: "css"});
+                return {text: `🔁 | Повтор всей музыки`, codeBlock: "css"};
 
             case "one":
             case "1":
             case "song":
                 queue.options.loop = "song";
-                return messageUtils.sendMessage({
+                return {
                     text: `🔂 | Повтор  | ${queue.songs[0].title}`,
-                    message,
-                    type: "css",
+                    codeBlock: "css",
                     color: queue.songs[0].color
-                });
+                };
             default:
                 queue.options.loop = queue.options.loop !== "songs" ? "songs" : "off";
-
-                let loop = null;
-                if (queue.options.loop === "songs") loop = 'всей музыки';
-                else if (queue.options.loop === "off") loop = 'выкл';
-                else if (queue.options.loop === "song") loop = 'одной музыки';
-                return messageUtils.sendMessage({text: `🎶 | Повтор ${loop}`, message, type: "css"});
+                return {text: `🎶 | Повтор ${queue.options.loop}`, codeBlock: "css"};
         }
     };
 }

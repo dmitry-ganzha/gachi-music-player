@@ -1,5 +1,5 @@
-import {Command, messageUtils} from "../../../Structures/Handle/Command";
-import {ClientMessage} from "../../Events/Activity/interactiveCreate";
+import {Command, ResolveData} from "../../../Structures/Handle/Command";
+import {ClientMessage} from "../../Events/Activity/interactionCreate";
 
 export class Deploy extends Command {
     public constructor() {
@@ -13,10 +13,11 @@ export class Deploy extends Command {
         });
     };
 
-    public readonly run = (message: ClientMessage): void => messageUtils.sendMessage({
-        text: `${message.author}, Load: [${this.#createSlashCommand(message)}]`,
-        message
-    });
+    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+        return {
+            text: `${message.author}, Load: [${this.#createSlashCommand(message)}]`,
+        }
+    }
     //====================== ====================== ====================== ======================
     /**
      * @description Отправляем данные на сервера discord о SlashCommand

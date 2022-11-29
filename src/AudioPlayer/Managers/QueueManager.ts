@@ -3,7 +3,7 @@ import {Queue} from "../Structures/Queue/Queue";
 import {InputPlaylist, InputTrack, Song} from "../Structures/Queue/Song";
 import {Voice} from "../Structures/Voice/Voice";
 import {MessagePlayer} from "./PlayerMessages";
-import {ClientMessage} from "../../Handler/Events/Activity/interactiveCreate";
+import {ClientMessage} from "../../Handler/Events/Activity/interactionCreate";
 
 //Что можно сделать с очередью (в будущем будет дорабатываться)
 export namespace QueueManager {
