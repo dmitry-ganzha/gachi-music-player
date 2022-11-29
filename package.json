@@ -2,7 +2,7 @@
   "name": "WatKLOK",
   "main": "src/Core/Client/Client.js",
   "author": "SNIPPIK",
-  "version": "2.3.2",
+  "version": "2.3.4",
   "scripts": {
     "start": "node ./src/Core/Client/Client.js",
     "sharder": "node ./src/Core/Client/ShardManager.js",
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@discordjs/voice": "^0.13.0",
-    "discord.js": "^14.6.0",
+    "discord.js": "^14.7.0",
     "dotenv": "^16.0.2",
     "tiny-typed-emitter": "^2.1.0"
   },
