@@ -29,6 +29,9 @@ export default class Random extends Command {
             color: "DarkRed"
         };
 
+        //Если включен режим радио
+        if (queue.options.radioMode) return { text: `${message.author}, Невозможно из-за включенного режима радио!`, color: "DarkRed" };
+
         //Если всего 2 и менее треков
         if (queue.songs.length <= 2) return { text: `${message.author}, Всего в списке ${queue.songs.length}, нет смысла!`, color: "DarkRed" };
 

@@ -1,7 +1,7 @@
 import {Queue} from "../Structures/Queue/Queue";
 import {InputPlaylist, Song} from "../Structures/Queue/Song";
 import {EmbedMessages} from "../Structures/EmbedMessages";
-import {ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType} from "discord.js";
+import {ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType, User} from "discord.js";
 import {ClientMessage, messageUtils} from "../../Handler/Events/Activity/interactionCreate";
 import {consoleTime} from "../../Core/Client/Client";
 
@@ -153,26 +153,27 @@ function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> 
  */
 function CreateCollector(message: ClientMessage, queue: Queue) {
     //Создаем сборщик кнопок
-    const collector = message.createMessageComponentCollector({
-        filter: (i) => ButtonID.has(i.customId), //Фильтруем
-        componentType: ComponentType.Button //Какие компоненты принимать
-    });
+    const collector = message.createMessageComponentCollector({ filter: (i) => ButtonID.has(i.customId), componentType: ComponentType.Button });
+    const {player} = queue;
+    const EmitPlayer = message.client.player;
 
     //Добавляем ему ивент сборки кнопок
-    // @ts-ignore
-    collector.on("collect", (i) => {
+    collector.on("collect", (i): void => {
+        message.author = i?.member?.user as User ?? i?.user;
+        try { i.deferReply(); i.deleteReply(); } catch (e) {/*Notfing*/}
+
         switch (i.customId) {
             case "resume_pause": { //Если надо приостановить музыку или продолжить воспроизведение
-                switch (queue?.player.state.status) {
-                    case "read": return message.client.commands.get("pause").run(i as any);
-                    case "pause": return message.client.commands.get("resume").run(i as any);
+                switch (player.state.status) {
+                    case "read": return void EmitPlayer.emit("pause", message);
+                    case "pause": return void EmitPlayer.emit("resume", message);
                 }
                 return;
             }
             //Пропуск текущей музыки
-            case "skip": return message.client.commands.get("skip").run(i as any);
+            case "skip": return void EmitPlayer.emit("skip", message);
             //Повторно включить текущую музыку
-            case "replay": return message.client.commands.get("replay").run(i as any);
+            case "replay": return void EmitPlayer.emit("replay", message);
             //Включить последнею из списка музыку
             case "last": return queue?.swapSongs();
         }

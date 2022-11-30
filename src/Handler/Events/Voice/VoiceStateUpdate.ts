@@ -21,10 +21,10 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
             const usersSize = newState.channel?.members?.filter(filter)?.size ?? oldState.channel?.members?.filter(filter)?.size;
 
             //Если есть голосовое подключение и нет пользователей и чат соотвествует в котором сидит бот
-            if (voice && usersSize < 1 && voice.joinConfig.channelId === oldState?.channelId) Voice.Disconnect(Guild);
+            if (voice && usersSize < 1 && voice.joinConfig.channelId === oldState?.channelId && !queue?.options?.radioMode) Voice.Disconnect(Guild);
 
             //Если есть очередь
-            if (queue) {
+            if (queue && !queue?.options?.radioMode) {
                 if (usersSize < 1 && !isBotVoice) queue.TimeDestroying("start"); //Если есть очередь сервера, удаляем!
                 else if (usersSize > 0) queue.TimeDestroying("cancel"); //Если есть очередь сервера, отмена удаления!
             }

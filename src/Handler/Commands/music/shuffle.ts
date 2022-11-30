@@ -37,6 +37,9 @@ export class Shuffle extends Command {
             color: "DarkRed"
         };
 
+        //Если включен режим радио
+        if (queue.options.radioMode) return { text: `${message.author}, Невозможно из-за включенного режима радио!`, color: "DarkRed" };
+
         //Если нет треков в очереди
         if (!queue.songs) return { text: `${message.author}, Нет музыки в очереди!`, color: "DarkRed" };
 

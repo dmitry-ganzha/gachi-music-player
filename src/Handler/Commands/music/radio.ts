@@ -2,12 +2,17 @@ import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
 import {ClientMessage} from "../../Events/Activity/interactionCreate";
 
-export class Stop extends Command {
+export class Radio extends Command {
     public constructor() {
         super({
-            name: "stop",
-            aliases: ["leave", "disconnect", "discon"],
-            description: "Завершаем воспроизведение музыки!",
+            name: "radio",
+            aliases: ["rm"],
+            description: "Режим радио!",
+
+            permissions: {
+                user: ["Administrator"],
+                client: ["Speak", "Connect"]
+            },
 
             isEnable: true,
             isSlash: true
@@ -20,10 +25,8 @@ export class Stop extends Command {
         //Если нет очереди
         if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
 
-        //Если включен режим радио
-        if (queue.options.radioMode) return { text: `${message.author}, Невозможно из-за включенного режима радио!`, color: "DarkRed" };
+        queue.options.radioMode = !queue.options.radioMode;
 
-        queue.cleanup();
-        return {text: `${message.author}, 👌`};
+        return { text: `${message.author}, 📻 | RadioMode: ${queue.options.radioMode}`, color: "Green" };
     };
 }

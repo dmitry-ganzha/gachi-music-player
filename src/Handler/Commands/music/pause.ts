@@ -28,6 +28,9 @@ export class Pause extends Command {
             color: "DarkRed"
         };
 
+        //Если включен режим радио
+        if (queue.options.radioMode) return { text: `${message.author}, Включен режим радио!`, color: "DarkRed" };
+
         //Если музыка уже приостановлена
         if (queue.player.state.status === "pause") return { text: `${message.author}, ⚠ | Музыка уже приостановлена!`, color: "DarkRed" };
 

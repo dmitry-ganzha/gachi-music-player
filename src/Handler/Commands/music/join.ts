@@ -38,6 +38,9 @@ export class Join extends Command {
         };
 
         if (queue) { //Если есть очередь, то
+            //Если включен режим радио
+            if (queue.options.radioMode) return { text: `${message.author}, Невозможно из-за включенного режима радио!`, color: "DarkRed" };
+
             const connection = Voice.Join(voiceChannel); //Подключаемся к голосовому каналу
 
             queue.message = message;

@@ -45,6 +45,8 @@ export namespace PlayerEventsCallBacks {
      * @param queue {Queue} Очередь сервера
      */
     function isRemoveSong({options, songs}: Queue): void {
+        if (options.radioMode) return;
+
         switch (options?.loop) {
             case "song": return;
             case "songs": return void songs.push(songs.shift());

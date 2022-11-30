@@ -15,13 +15,11 @@ export class interactionCreate extends Event<ClientInteraction, null> {
 
     public readonly run = (message: ClientInteraction) => {
         //Игнорируем ботов
-        if (message?.user.bot || message?.member?.user?.bot) return;
-
         //Если в сообщении нет префикса или interaction type не команда, то игнорируем
-        if (!message.isChatInputCommand() && !message.isButton() && !message.isRepliable() && message.isCommand()) return;
+        if (message?.user.bot || message?.member?.user?.bot || message?.isButton() || !message?.isChatInputCommand() || !message?.isRepliable() || !message?.isCommand()) return;
         const args = message.options?._hoistedOptions?.map((f: CommandInteractionOption) => `${f.value}`);
         const command = message.client.commands.get(message.commandName) ?? message.client.commands.Array.find(cmd => cmd.aliases.includes(message.commandName));
-        message.author = message?.member?.user ?? message?.user
+        message.author = message?.member?.user ?? message?.user;
 
         return interactionCreate.runCommand(message, command, args);
     };
@@ -32,7 +30,7 @@ export class interactionCreate extends Event<ClientInteraction, null> {
      * @param command {Command} Команда
      * @param args {string[]} Аргументы
      */
-    public static runCommand = async (message: ClientInteractive, command: Command, args: string[] = []) => {
+    public static runCommand = async (message: ClientInteractive, command: Command, args: string[] = []): Promise<void> => {
         const {author} = message;
 
         //Если нет команды, которую требует пользователь сообщаем ему об этом
@@ -61,9 +59,9 @@ export class interactionCreate extends Event<ClientInteraction, null> {
      * @param message {ClientInteractive} Сообщение
      * @param command {ResolveData} Данные для отправки сообщения
      */
-    private static sendMessage = (message: ClientInteractive, command: ResolveData) => {
+    private static sendMessage = (message: ClientInteractive, command: ResolveData): void => {
         //Запускаем ReactionMenu
-        if ("callbacks" in command) return new ReactionMenu(command.embed, message, command.callbacks);
+        if ("callbacks" in command) new ReactionMenu(command.embed, message, command.callbacks);
 
         //Отправляем просто сообщение
         else if ("text" in command) messageUtils.sendMessage({ text: command.text, color: command.color, codeBlock: command.codeBlock, message });
@@ -187,8 +185,7 @@ export namespace messageUtils {
 
         try {
             //Отправляем сообщение с упоминанием
-            if ("commandName" in message && message.isChatInputCommand()) sendMsg = message.reply({ embeds: [Embed as any], fetchReply: true });
-
+            if ("isButton" in message) sendMsg = message.reply({ embeds: [Embed as any], fetchReply: true });
             //Отправляем обычное сообщение
             else sendMsg = message.channel.send({embeds: [Embed as any]}) as Promise<ClientMessage>;
         } catch (e) {/* Notfing */}

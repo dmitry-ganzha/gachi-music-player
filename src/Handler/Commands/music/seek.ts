@@ -44,6 +44,9 @@ export class Seek extends Command {
             color: "DarkRed"
         };
 
+        //Если включен режим радио
+        if (queue.options.radioMode) return { text: `${message.author}, Невозможно из-за включенного режима радио!`, color: "DarkRed" };
+
         //Если текущий трек является потоковым
         if (queue.song.isLive) return { text: `${message.author}, А как? Это же стрим!`, color: "DarkRed" };
 

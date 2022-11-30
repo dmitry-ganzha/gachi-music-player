@@ -25,6 +25,9 @@ export class Replay extends Command {
             color: "DarkRed"
         };
 
+        //Если включен режим радио
+        if (queue.options.radioMode) return { text: `${message.author}, Невозможно из-за включенного режима радио!`, color: "DarkRed" };
+
         //Если нет очереди
         if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
 

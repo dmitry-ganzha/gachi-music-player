@@ -1,4 +1,4 @@
-import {Bot} from '../../../../db/Config.json';
+import {Bot} from "../../../../db/Config.json";
 import {Event} from "../../../Structures/Handle/Event";
 import {ClientMessage, interactionCreate, messageUtils} from "./interactionCreate";
 
