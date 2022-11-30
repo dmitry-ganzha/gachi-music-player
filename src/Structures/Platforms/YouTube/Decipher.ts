@@ -43,7 +43,7 @@ export namespace Decipher {
 
             return formats;
         } catch (e) {
-            consoleTime(`[YouTube Decipher]: Message: Using old Decipher`);
+            consoleTime(`[YouTube Decipher]: Message: Uses old version Decipher`);
             return OldDecipher.parseFormats(formats, html5player);
         }
     }
