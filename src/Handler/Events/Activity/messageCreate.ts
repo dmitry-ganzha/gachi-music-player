@@ -15,6 +15,9 @@ export class messageCreate extends Event<ClientMessage, null> {
         //Если в сообщении нет префикса то игнорируем
         if (message?.author?.bot || !message.content?.startsWith(DefaultPrefix)) return;
 
+        //Заставляем бота делать вид что он что-то печатает
+        message.channel.sendTyping().catch((e) => console.warn(e.message));
+
         //Удаляем сообщение пользователя
         setTimeout(() => messageUtils.deleteMessage(message), 15e3);
 
