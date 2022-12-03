@@ -1,6 +1,9 @@
 import {httpsClient} from "../../../Core/httpsClient";
+import {consoleTime} from "../../../Core/Client/Client";
 import * as vm from "vm";
 import * as querystring from "querystring";
+import { URL, URLSearchParams } from 'node:url';
+import {swapPositions} from "../../../AudioPlayer/Structures/Queue/Queue";
 
 const ESCAPING_SEGMENT = [
     // Strings
@@ -149,9 +152,6 @@ interface scriptVM { runInNewContext: (object: {}) => string; }
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
-import { URL, URLSearchParams } from 'node:url';
-import {consoleTime} from "../../../Core/Client/Client";
-
 // RegExp for various js functions
 const var_js = '[a-zA-Z_\\$]\\w*';
 const singleQuote = `'[^'\\\\]*(:?\\\\[\\s\\S][^'\\\\]*)*'`;
@@ -181,7 +181,6 @@ const reverse_regexp = new RegExp(`(?:^|,)(${key_js})${reverse_function}`, 'm');
 const slice_regexp = new RegExp(`(?:^|,)(${key_js})${slice_function}`, 'm');
 const splice_regexp = new RegExp(`(?:^|,)(${key_js})${splice_function}`, 'm');
 const swap_regexp = new RegExp(`(?:^|,)(${key_js})${swap_function}`, 'm');
-
 
 namespace OldDecipher {
     /**
@@ -222,44 +221,29 @@ namespace OldDecipher {
         return formats;
     }
 }
+//====================== ====================== ====================== ======================
 /**
  * @description Проводим некоторые манипуляции с signature
  * @param tokens {string[]}
  * @param signature {string}
  */
-function DecodeSignature(tokens: string[], signature: string) {
+function DecodeSignature(tokens: string[], signature: string): string {
     let sig = signature.split("");
 
-    tokens.forEach((token) => {
-        let pos: number;
+    for (const token of tokens) {
+        let position;
+        const nameToken = token.slice(2);
 
         switch (token.slice(0, 2)) {
-            case 'sw':
-                pos = parseInt(token.slice(2));
-                swapPositions(sig, pos);
-                break;
-            case 'rv':
-                sig.reverse();
-                break;
-            case 'sl':
-                pos = parseInt(token.slice(2));
-                sig = sig.slice(pos);
-                break;
-            case 'sp':
-                pos = parseInt(token.slice(2));
-                sig.splice(0, pos);
-                break;
+            case "sw": { position = parseInt(nameToken); swapPositions(sig, position); break; }
+            case "sl": { position = parseInt(nameToken); sig = sig.slice(position); break; }
+            case "sp": { position = parseInt(nameToken); sig.splice(0, position); break; }
+            case "rv": { sig.reverse(); break; }
         }
-    });
+    }
     return sig.join("");
 }
-
-function swapPositions(array: string[], position: number) {
-    const first = array[0];
-    array[0] = array[position];
-    array[position] = first;
-}
-
+//====================== ====================== ====================== ======================
 /**
  * @description Берем данные с youtube html5player
  * @param page {string} Страница html5player
@@ -295,13 +279,16 @@ function parseTokens(page: string): string[] {
     return tokens;
 }
 
+//====================== ====================== ====================== ======================
 /**
  * @description Уменьшаем кол-во кода
  * @param res {RegExpExecArray}
  */
-function replacer(res: RegExpExecArray) {
+function replacer(res: RegExpExecArray):string {
     return res && res[1].replace(/\$/g, '\\$').replace(/\$|^'|^"|'$|"$/g, '');
 }
+
+//====================== ====================== ====================== ======================
 /**
  * Сопоставление начальной и конечной фигурной скобки входного JS
  * @param {string} mixedJson

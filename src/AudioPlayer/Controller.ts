@@ -94,24 +94,13 @@ export namespace PlayerController {
      * @requires {ParsingTimeToString}
      */
     export function toSeek(message: ClientMessage, seek: number): void {
-        const {client, guild, author} = message;
+        const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
         const {title, color}: Song = queue.song;
 
+        queue.play(seek);
         //Отправляем сообщение о пропуске времени
-        try {
-            messageUtils.sendMessage({
-                text: `⏭️ | Seeking to [${ParsingTimeToString(seek)}] song | ${title}`, message,
-                codeBlock: "css",
-                color
-            });
-            return queue.play(seek);
-        } catch {
-            return messageUtils.sendMessage({
-                text: `${author}, Произошла ошибка... Попробуй еще раз!`, message,
-                color: "DarkRed"
-            });
-        }
+        return messageUtils.sendMessage({ text: `⏭️ | Seeking to [${ParsingTimeToString(seek)}] song | ${title}`, message, codeBlock: "css", color });
     }
     //====================== ====================== ====================== ======================
     /**
@@ -158,20 +147,13 @@ export namespace PlayerController {
      * @param message {ClientMessage} Сообщение с сервера
      */
     export function toReplay(message: ClientMessage): void {
-        const {client, guild, author} = message;
+        const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
         const {title, color}: Song = queue.song;
 
+        queue.play();
         //Сообщаем о том что музыка начата с начала
-        try {
-            messageUtils.sendMessage({text: `🔂 | Replay | ${title}`, message, color, codeBlock: "css"});
-            return queue.play();
-        } catch {
-            return messageUtils.sendMessage({
-                text: `${author}, Произошла ошибка... Попробуй еще раз!`, message,
-                color: "DarkRed"
-            });
-        }
+        return messageUtils.sendMessage({text: `🔂 | Replay | ${title}`, message, color, codeBlock: "css"});
     }
     //====================== ====================== ====================== ======================
     /**
@@ -179,19 +161,12 @@ export namespace PlayerController {
      * @param message {ClientMessage} Сообщение с сервера
      */
     export function toFilter(message: ClientMessage): void {
-        const {client, guild, author} = message;
+        const {client, guild} = message;
         const queue: Queue = client.queue.get(guild.id);
         const player = queue.player;
         const seek: number = player.streamDuration;
 
-        try {
-            return queue.play(seek);
-        } catch {
-            return messageUtils.sendMessage({
-                text: `${author}, Произошла ошибка... Попробуй еще раз!`, message,
-                color: "DarkRed"
-            });
-        }
+        return queue.play(seek);
     }
     //====================== ====================== ====================== ======================
     /**

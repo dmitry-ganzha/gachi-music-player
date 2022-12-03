@@ -1,7 +1,5 @@
 import {httpsClient} from "../../../Core/httpsClient";
 import {InputPlaylist, InputTrack} from "../../../AudioPlayer/Structures/Queue/Song";
-import {FFspace} from "../../../AudioPlayer/Structures/Media/FFspace";
-import FFmpegFormat = FFspace.Format;
 import {env} from "../../../Core/env";
 
 const APiLink = "https://api-v2.soundcloud.com";
@@ -26,13 +24,13 @@ namespace API {
      * @param formats {SoundCloudFormat[]} Зашифрованные форматы аудио
      * @param ClientID {string} ID клиента
      */
-    export function getFormat(formats: SoundCloudFormat[], ClientID: string): Promise<FFmpegFormat> {
+    export function getFormat(formats: SoundCloudFormat[], ClientID: string): Promise<string> {
         const filterFormats = formats.filter((d) => d.format.protocol === "progressive").pop() ?? formats[0];
 
-        return new Promise<FFmpegFormat>(async (resolve) => {
+        return new Promise(async (resolve) => {
             const EndFormat = await httpsClient.parseJson(`${filterFormats.url}?client_id=${ClientID}`);
 
-            return resolve({ url: EndFormat.url });
+            return resolve(EndFormat.url);
         });
     }
     function getClientID(): Promise<string> | string {
@@ -111,7 +109,7 @@ export namespace SoundCloud {
             if (!result?.id || !result) return resolve(null);
             const format = await API.getFormat(result.media.transcodings, ClientID);
 
-            return resolve({...construct.track(result, url), format});
+            return resolve({...construct.track(result, url), format: {url: format}});
         });
     }
     //====================== ====================== ====================== ======================

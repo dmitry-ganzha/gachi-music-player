@@ -2,7 +2,6 @@ import {DurationUtils} from "../../Managers/DurationUtils";
 import {Images} from "../EmbedMessages";
 import {ClientMessage} from "../../../Handler/Events/Activity/interactionCreate";
 import {httpsClient} from "../../../Core/httpsClient";
-import {FFspace} from "../Media/FFspace";
 import {ColorTrack, SongFinder, supportPlatforms, TypePlatform} from "../SongSupport";
 import {CacheMusic} from "../../../../db/Config.json";
 import {DownloadManager} from "../../Managers/DownloadManager";
@@ -81,7 +80,7 @@ export class Song {
         }
 
         //Если нет ссылки, то ищем трек
-        if (!this.link) this.link = (await SongFinder.findResource(this))?.url;
+        if (!this.link) this.link = await SongFinder.findResource(this);
 
         //Проверяем ссылку на работоспособность
         const checkResource = await httpsClient.checkLink(this.link);
@@ -124,7 +123,7 @@ export interface InputTrack {
         };
         isVerified?: boolean;
     },
-    format?: FFspace.Format | { url: string | undefined };
+    format?: { url: string | undefined };
     isLive?: boolean;
     isPrivate?: boolean;
     isValid?: boolean;

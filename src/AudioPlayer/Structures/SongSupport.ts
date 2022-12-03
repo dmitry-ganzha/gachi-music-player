@@ -103,16 +103,14 @@ export function TypePlatform(url: string): supportPlatforms {
         const [key] = filterPlatforms[0];
 
         if (key) return key.toUpperCase() as supportPlatforms;
-        return "DISCORD"; //К этому типу привязан ffprobe
-    } catch (e) {
-        return "DISCORD"; //К этому типу привязан ffprobe
-    }
+        return "DISCORD";
+    } catch (e) { return "DISCORD"; }
 }
 
 //Ищет исходный ресурс треков
 export namespace SongFinder {
     //Получаем данные о треке заново
-    export function findResource(song: Song): Promise<FFspace.Format> {
+    export function findResource(song: Song): Promise<string> {
         const {type, url, author, title, duration} = song;
 
         if (PlatformsAudio.includes(type)) return FindTrack(`${author.title} - ${title} (Lyrics)`, duration.seconds);
@@ -121,10 +119,10 @@ export namespace SongFinder {
         const FindPlatform = SupportPlatforms[type];
         const FindCallback = FindPlatform["track"](url);
 
-        return FindCallback.then((track: InputTrack) => track?.format);
+        return FindCallback.then((track: InputTrack) => track?.format?.url);
     }
     //Ищем трек на YouTube
-    function FindTrack(nameSong: string, duration: number): Promise<FFspace.Format> {
+    function FindTrack(nameSong: string, duration: number): Promise<string> {
         return YouTube.SearchVideos(nameSong, {limit: 20}).then((Tracks) => {
             //Фильтруем треки оп времени
             const FindTracks: InputTrack[] = Tracks.filter((track: InputTrack) => {
@@ -138,7 +136,7 @@ export namespace SongFinder {
             if (FindTracks?.length < 1) return null;
 
             //Получаем данные о треке
-            return YouTube.getVideo(FindTracks[0].url).then((video) => video.format) as Promise<FFspace.Format>;
+            return YouTube.getVideo(FindTracks[0].url).then((video) => video?.format?.url) as Promise<string>;
         });
     }
 }

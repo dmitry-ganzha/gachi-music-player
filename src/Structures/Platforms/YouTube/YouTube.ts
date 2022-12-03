@@ -127,7 +127,6 @@ export namespace YouTube {
     * @description Поиск видео на youtube
     * @param search {string} что ищем
     * @param options {limit} Настройки
-    * @constructor
     */
     export async function SearchVideos(search: string, options = {limit: 15}): Promise<InputTrack[]> {
         return new Promise(async (resolve, reject) => {
@@ -178,7 +177,7 @@ export namespace YouTube {
             });
             const data = channel[1]?.response ?? channel?.response ?? null as any;
             const info = data?.header?.c4TabbedHeaderRenderer, Channel = data?.metadata?.channelMetadataRenderer,
-                avatar = info?.avatar, badges = info?.badges;
+                  avatar = info?.avatar, badges = info?.badges;
 
             return resolve({
                 title: Channel?.title ?? name ?? "Not found name",

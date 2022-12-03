@@ -70,12 +70,17 @@ export class Queue {
     public readonly swapSongs = (num?: number) => {
         if (this.songs.length === 1) return this.player.stop();
 
+        swapPositions(this.songs, num ?? this.songs.length - 1)
+
+        /*
         const SetNum = num ? num : this.songs.length - 1;
         const ArraySongs: Array<Song> = this.songs;
         const hasChange = ArraySongs[SetNum];
 
         ArraySongs[SetNum] = ArraySongs[0];
         ArraySongs[0] = hasChange;
+         */
+
         this.player.stop();
         return;
     };
@@ -143,4 +148,15 @@ export class Queue {
             MessagePlayer.toPlay(this.message); //Если стрим не пустышка отправляем сообщение
         }
     };
+}
+
+/**
+ * @description Смена позиции в Array
+ * @param array {Array<any>} Array
+ * @param position {number} Номер позиции
+ */
+export function swapPositions(array: any[], position: number): void {
+    const first = array[0];
+    array[0] = array[position];
+    array[position] = first;
 }

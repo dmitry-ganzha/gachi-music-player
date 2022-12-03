@@ -3,6 +3,10 @@ import {ChildProcessWithoutNullStreams, spawn, spawnSync} from "child_process";
 import AudioFilters from "../../../../db/Filters.json";
 import {dependencies} from "../../../../package.json";
 
+const paths = {
+    ffmpeg: ["ffmpeg", "avconv"],
+    ffprobe: ["ffprobe"]
+}
 let FFmpegName: string, FFprobeName: string;
 
 function CheckFile(paths: string[], error: string) {
@@ -15,31 +19,23 @@ function CheckFile(paths: string[], error: string) {
 }
 
 //Проверяем есть ли FFmpeg в системе
-if (FFmpegName === undefined) {
-    const paths = ["ffmpeg", "avconv"];
+if (!FFmpegName) {
+    try { if (Object.keys(dependencies).includes("ffmpeg-static")) paths.ffmpeg.push(require("ffmpeg-static")); } catch (e) {/* Null */}
 
-    try {
-        if (Object.keys(dependencies).includes("ffmpeg-static")) paths.push(require("ffmpeg-static"));
-    } catch (e) {/* Null */}
-
-    FFmpegName = CheckFile(paths, "FFmpeg not found!");
+    FFmpegName = CheckFile(paths.ffmpeg, "FFmpeg not found!");
+    delete paths.ffmpeg;
 }
 //Проверяем есть ли FFprobe в системе
-if (FFprobeName === undefined) {
-    const paths = ["ffprobe"];
+if (!FFprobeName) {
+    try { if (Object.keys(dependencies).includes("ffprobe-static")) paths.ffprobe.push(require("ffprobe-static").path); } catch (e) {/* Null */}
 
-    try {
-        if (Object.keys(dependencies).includes("ffprobe-static")) paths.push(require("ffprobe-static").path);
-    } catch (e) {/* Null */}
-
-    FFprobeName = CheckFile(paths, "FFprobe not found!");
+    FFprobeName = CheckFile(paths.ffprobe, "FFprobe not found!");
+    delete paths.ffprobe;
 }
 
 
 export namespace FFspace {
     export type Arguments = Array<string | number> | Array<string>;
-    //FFmpeg формат для воспроизведения
-    export type Format = { url: string }
 
     /**
      * ffmpeg is a very fast video and audio converter that can also grab from a live audio/video source. It can also convert between arbitrary sample rates and resize video on the fly with a high quality polyphase filter.
