@@ -16,7 +16,7 @@ export class guildCreate extends Event<Guild, null> {
     public readonly isEnable: boolean = true;
 
     public readonly run = (guild: Guild, f2: null, client: WatKLOK): void | Promise<Message> => {
-        if (!guild.systemChannel) return;
+        if (!guild.systemChannel || guild.systemChannel?.permissionsFor(client.user)) return;
 
         const Embed: EmbedConstructor = {
             color: Colors.Blue,
