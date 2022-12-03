@@ -113,7 +113,7 @@ export class interactionCreate extends Event<ClientInteraction, null> {
     private static checkOwners = (author: User, command: Command): ResolveData => {
         if (!Bot.OwnerIDs.includes(author.id)) {
             //Если команда для разработчиков
-            if (!command.isOwner) return { text: `${author}, Эта команда не для тебя!`, color: "DarkRed" }
+            if (command.isOwner) return { text: `${author}, Эта команда не для тебя!`, color: "DarkRed" };
 
             //Проверяем находится ли пользователь в базе
             if (CoolDownBase.get(author.id)) return { text: `${author}, я тебе что квантовый компьютер. Подожди ${DurationUtils.ParsingTimeToString(CoolDownBase.get(author.id).time)}`, color: "DarkRed" }
