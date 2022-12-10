@@ -44,10 +44,6 @@ export class WatKLOK extends Client {
                 //Emoji and stickers (Бот может получать данные о emoji или стакерах)
                 //IntentsBitField.Flags.GuildEmojisAndStickers,
 
-                //Typing (Бот может делать вид что пишет в текстовый канал)
-                //IntentsBitField.Flags.GuildMessageTyping,
-                //IntentsBitField.Flags.DirectMessageTyping,
-
                 //Slash Commands (Пользователям доступны slash команды)
                 IntentsBitField.Flags.GuildIntegrations,
 
@@ -89,7 +85,7 @@ client.login().then(() => {
         try {
             const channel = client.channels.cache.get(Channels.sendErrors) as ClientMessage["channel"];
 
-            if (channel) channel.send({content: `\`\`\`ts\nError: ${err.message}\nType: ${err.name}\n\nFull Error: ${err.stack}\n\`\`\``}).catch(console.log);
+            if (channel) channel.send({content: `\`\`\`ts\nError: ${err.message}\nType: ${err.name}\n\nFull Error: ${err.stack}\n\`\`\``}).catch(() => null);
         } catch {/* Continue */}
     });
 })

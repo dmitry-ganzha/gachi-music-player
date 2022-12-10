@@ -11,7 +11,7 @@ interface PlayerEvents {
     pause: () => any;
     autoPause: () => any;
     idle: () => any;
-    error: (error: Error | string, skipSong: boolean) => void;
+    error: (error: Error, skipSong: boolean) => void;
 }
 
 //Статусы и тип потока
@@ -25,13 +25,19 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     private _state: PlayerStatus = {status: "idle"};
     private _time: number;
 
-    //Общее время проигрывания музыки
+    /**
+     * @description Общее время проигрывания музыки
+     */
     public get streamDuration() { return this._state?.stream?.duration ?? 0 };
-
-    //Все голосовые каналы к которым подключен плеер
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Все голосовые каналы к которым подключен плеер
+     */
     public get voices() { return this._voices; };
-
-    //Смена действий плеера
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Смена действий плеера
+     */
     public get state() { return this._state; };
     public set state(state) {
         const oldState = this._state;
@@ -43,26 +49,48 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
         //Заставляем ивенты работать
         if (oldStatus !== newStatus || oldStatus !== "idle" && newStatus === "read" && oldStream !== newStream) {
-            this.#readBuffer(SilentFrame);
+            this.#setSpeak(SilentFrame);
             this.emit(newStatus);
         }
 
-        //Задаем время для отправки пакета
+        //Задаем время начала (когда плеер начал отправлять пакеты)
         this._time = Date.now();
         this._state = state;
 
         //Запускаем таймер
         this.#CycleStep();
     };
-    //Если нет голосового канала добавить, если есть удалить
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Если нет голосового канала добавить, если есть удалить
+     * @param voice {VoiceConnection} Голосовое подключение
+     */
     public voice = (voice: VoiceConnection): void => {
         const index = this._voices.indexOf(voice);
 
         if (index === -1) this._voices.push(voice);
         else this._voices.splice(index);
     };
-
-    //Начинаем чтение стрима
+    //Ставим на паузу плеер
+    public pause = (): void => {
+        if (this.state.status !== "read") return;
+        this.state = {...this.state, status: "pause"};
+    };
+    //Убираем с паузы плеер
+    public resume = (): void => {
+        if (this.state.status !== "pause") return;
+        this.state = {...this.state, status: "read"};
+    };
+    //Останавливаем воспроизведение текущего трека
+    public stop = (): void => {
+        if (this.state.status === "idle") return;
+        this.state = {status: "idle"};
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Начинаем чтение стрима
+     * @param stream {OpusAudio} Сам стрим
+     */
     public readStream = (stream: PlayerStatus["stream"]) => {
         if (!stream) return this.emit("error", new Error(`Stream is null`), true);
 
@@ -80,30 +108,23 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
             stream.once("error", () => this.emit("error", new Error("Fail read stream"), true));
         }
     };
-
-    //Ставим на паузу плеер
-    public pause = (): void => {
-        if (this.state.status !== "read") return;
-        this.state = {...this.state, status: "pause"};
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Передача пакетов в голосовые каналы
+     * @param packet {Buffer | null} Пакет
+     * @private
+     */
+    readonly #setSpeak = (packet: Buffer | null): void => {
+        for (const voice of this.voices) {
+            if (packet && voice.state.status === "ready") voice.playOpusPacket(packet);
+            else voice.setSpeaking(false);
+        }
     };
-    //Убираем с паузы плеер
-    public resume = (): void => {
-        if (this.state.status !== "pause") return;
-        this.state = {...this.state, status: "read"};
-    };
-    //Останавливаем воспроизведение текущего трека
-    public stop = (): void => {
-        if (this.state.status === "idle") return;
-        this.state = {status: "idle"};
-    };
-
-    //Отправляем пакет в голосовой канал или ставим setSpeaking false на все голосовые каналы
-    readonly #readBuffer = (packet: Buffer | "silent"): void => this.voices.forEach((voice) => {
-        if (packet === "silent") voice.setSpeaking(false);
-        else if (voice.state.status === "ready") voice.playOpusPacket(packet);
-    });
-
-    //Создаем таймер с помощью которого отправляем пакеты в голосовые каналы
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Создаем таймер с помощью которого отправляем пакеты в голосовые каналы
+     * @private
+     */
     readonly #CycleStep = (): void => {
         if (this.state?.status === "idle" || !this._state?.status) return;
 
@@ -114,11 +135,14 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         this.#hasPlay();
         setTimeout(this.#CycleStep, this._time - Date.now());
     };
-
-    //Проверяем можно ли отправить пакет в голосовой канал
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Проверяем можно ли отправить пакет в голосовой канал
+     * @private
+     */
     readonly #hasPlay = (): void => {
         const state = this.state;
-        this._time += 20; //Добавляем к задержке отправки пакета 20 ms
+        this._time += 20; //Добавляем время отправки следующего пакета
 
         //Если статус (idle или pause) прекратить выполнение функции
         if (state.status === "idle" || state.status === "pause") return;
@@ -133,19 +157,20 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         }
 
         //Не читать пакеты при статусе плеера (autoPause)
-        if (state.status === "autoPause") return [SilentFrame, "silent"].forEach(this.#readBuffer);
+        if (state.status === "autoPause") return;
 
         //Отправка музыкального пакета
         if (state.status === "read") {
             const packet: Buffer | null = state.stream?.read();
 
-            //Если есть аудио пакет отправляем во все голосовые каналы к которым подключен плеер
-            if (packet) return this.#readBuffer(packet);
-            this.#readBuffer("silent");
-            this.stop();
+            this.#setSpeak(packet);
+            if (!packet) this.stop();
         }
     };
-
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Чистим плеер от ненужных данных
+     */
     public readonly cleanup = () => {
         delete this._time;
         delete this._state;

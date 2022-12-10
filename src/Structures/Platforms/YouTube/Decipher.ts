@@ -220,74 +220,72 @@ namespace OldDecipher {
 
         return formats;
     }
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Проводим некоторые манипуляции с signature
- * @param tokens {string[]}
- * @param signature {string}
- */
-function DecodeSignature(tokens: string[], signature: string): string {
-    let sig = signature.split("");
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Проводим некоторые манипуляции с signature
+     * @param tokens {string[]}
+     * @param signature {string}
+     */
+    function DecodeSignature(tokens: string[], signature: string): string {
+        let sig = signature.split("");
 
-    for (const token of tokens) {
-        let position;
-        const nameToken = token.slice(2);
+        for (const token of tokens) {
+            let position;
+            const nameToken = token.slice(2);
 
-        switch (token.slice(0, 2)) {
-            case "sw": { position = parseInt(nameToken); swapPositions(sig, position); break; }
-            case "sl": { position = parseInt(nameToken); sig = sig.slice(position); break; }
-            case "sp": { position = parseInt(nameToken); sig.splice(0, position); break; }
-            case "rv": { sig.reverse(); break; }
-        }
-    }
-    return sig.join("");
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Берем данные с youtube html5player
- * @param page {string} Страница html5player
- */
-function parseTokens(page: string): string[] {
-    const funAction = function_regexp.exec(page);
-    const objAction = obj_regexp.exec(page);
-
-    if (!funAction || !objAction) return null;
-
-    const object = objAction[1].replace(/\$/g, '\\$');
-    const objPage = objAction[2].replace(/\$/g, '\\$');
-    const funPage = funAction[1].replace(/\$/g, '\\$');
-
-    let result: RegExpExecArray, tokens: string[] = [], keys: string[] = [];
-
-    [reverse_regexp, slice_regexp, splice_regexp, swap_regexp].forEach((res) => (result = res.exec(objPage), keys.push(replacer(result))));
-
-    const parsedKeys = `(${keys.join('|')})`;
-    const tokenizeRegexp = new RegExp(`(?:a=)?${object}(?:\\.${parsedKeys}|\\['${parsedKeys}'\\]|\\["${parsedKeys}"\\])` + `\\(a,(\\d+)\\)`, 'g');
-
-    while ((result = tokenizeRegexp.exec(funPage)) !== null) {
-        (() => {
-            const key = result[1] || result[2] || result[3];
-            switch (key) {
-                case keys[3]: return tokens.push(`sw${result[4]}`);
-                case keys[0]: return tokens.push('rv');
-                case keys[1]: return tokens.push(`sl${result[4]}`);
-                case keys[2]: return tokens.push(`sp${result[4]}`);
+            switch (token.slice(0, 2)) {
+                case "sw": { position = parseInt(nameToken); swapPositions(sig, position); break; }
+                case "sl": { position = parseInt(nameToken); sig = sig.slice(position); break; }
+                case "sp": { position = parseInt(nameToken); sig.splice(0, position); break; }
+                case "rv": { sig.reverse(); break; }
             }
-        })();
+        }
+        return sig.join("");
     }
-    return tokens;
-}
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Берем данные с youtube html5player
+     * @param page {string} Страница html5player
+     */
+    function parseTokens(page: string): string[] {
+        const funAction = function_regexp.exec(page);
+        const objAction = obj_regexp.exec(page);
 
-//====================== ====================== ====================== ======================
-/**
- * @description Уменьшаем кол-во кода
- * @param res {RegExpExecArray}
- */
-function replacer(res: RegExpExecArray):string {
-    return res && res[1].replace(/\$/g, '\\$').replace(/\$|^'|^"|'$|"$/g, '');
-}
+        if (!funAction || !objAction) return null;
 
+        const object = objAction[1].replace(/\$/g, '\\$');
+        const objPage = objAction[2].replace(/\$/g, '\\$');
+        const funPage = funAction[1].replace(/\$/g, '\\$');
+
+        let result: RegExpExecArray, tokens: string[] = [], keys: string[] = [];
+
+        [reverse_regexp, slice_regexp, splice_regexp, swap_regexp].forEach((res) => (result = res.exec(objPage), keys.push(replacer(result))));
+
+        const parsedKeys = `(${keys.join('|')})`;
+        const tokenizeRegexp = new RegExp(`(?:a=)?${object}(?:\\.${parsedKeys}|\\['${parsedKeys}'\\]|\\["${parsedKeys}"\\])` + `\\(a,(\\d+)\\)`, 'g');
+
+        while ((result = tokenizeRegexp.exec(funPage)) !== null) {
+            (() => {
+                const key = result[1] || result[2] || result[3];
+                switch (key) {
+                    case keys[3]: return tokens.push(`sw${result[4]}`);
+                    case keys[0]: return tokens.push('rv');
+                    case keys[1]: return tokens.push(`sl${result[4]}`);
+                    case keys[2]: return tokens.push(`sp${result[4]}`);
+                }
+            })();
+        }
+        return tokens;
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Уменьшаем кол-во кода
+     * @param res {RegExpExecArray}
+     */
+    function replacer(res: RegExpExecArray):string {
+        return res && res[1].replace(/\$/g, '\\$').replace(/\$|^'|^"|'$|"$/g, '');
+    }
+}
 //====================== ====================== ====================== ======================
 /**
  * Сопоставление начальной и конечной фигурной скобки входного JS
