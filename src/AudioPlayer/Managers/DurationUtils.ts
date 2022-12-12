@@ -1,16 +1,16 @@
 import {Queue} from "../Structures/Queue/Queue";
-import {Song} from "../Structures/Queue/Song";
+import {InputTrack, Song} from "../Structures/Queue/Song";
 
 export namespace DurationUtils {
     /**
      * @description Совмещаем время всех треков из очереди
      * @param queue {Queue | any[]} Очередь
      */
-    export function getTimeQueue(queue: Queue | any[]): string {
+    export function getTimeQueue(queue: Queue | Song[] | InputTrack[]): string {
         let Timer: number = 0;
 
         if (queue instanceof Queue) queue.songs.forEach((song: Song) => Timer += song.duration.seconds);
-        else queue.forEach((song: { duration: { seconds: string } }) => Timer += parseInt(song.duration.seconds));
+        else queue.forEach((song) => Timer += parseInt(song.duration.seconds as any));
 
         return ParsingTimeToString(Timer);
     }

@@ -23,28 +23,29 @@ export class Shuffle extends Command {
     };
 
     public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
-        const queue: Queue = message.client.queue.get(message.guild.id);
+        const {author, member, guild, client} = message;
+        const queue: Queue = client.queue.get(guild.id);
 
         //Если нет очереди
-        if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
+        if (!queue) return { text: `${author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
 
         //Если пользователь не подключен к голосовым каналам
-        if (!message.member?.voice?.channel || !message.member?.voice) return { text: `${message.author}, Подключись к голосовому каналу!`, color: "DarkRed" };
+        if (!member?.voice?.channel || !member?.voice) return { text: `${author}, Подключись к голосовому каналу!`, color: "DarkRed" };
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
-        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return {
-            text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
+        if (queue && queue.voice && member?.voice?.channel?.id !== queue.voice.id) return {
+            text: `${author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
             color: "DarkRed"
         };
 
         //Если включен режим радио
-        if (queue.options.radioMode) return { text: `${message.author}, Невозможно из-за включенного режима радио!`, color: "DarkRed" };
+        if (queue.options.radioMode) return { text: `${author}, Невозможно из-за включенного режима радио!`, color: "DarkRed" };
 
         //Если нет треков в очереди
-        if (!queue.songs) return { text: `${message.author}, Нет музыки в очереди!`, color: "DarkRed" };
+        if (!queue.songs) return { text: `${author}, Нет музыки в очереди!`, color: "DarkRed" };
 
         //Если треков меньше 3
-        if (queue.songs.length < 3) return { text: `${message.author}, Очень мало музыки, нужно более 3`, color: "DarkRed" };
+        if (queue.songs.length < 3) return { text: `${author}, Очень мало музыки, нужно более 3`, color: "DarkRed" };
 
         this.#shuffleSongs(queue.songs);
         return {text: `🔀 | Shuffle total [${queue.songs.length}]`, codeBlock: "css"};

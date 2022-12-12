@@ -23,6 +23,7 @@ export default class Status extends Command {
     };
 
     public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+        const {author, client} = message;
         const Platforms = Object.keys(SupportPlatforms) as supportPlatforms[];
         const parsePlatforms: string[] = [];
 
@@ -44,10 +45,10 @@ export default class Status extends Command {
 
         //Создаем embed data
         const embed: EmbedConstructor = { color: Colors.Yellow, description: parsePlatforms[0], timestamp: new Date() };
-        embed.thumbnail = { url: message.client.user.displayAvatarURL() };
+        embed.thumbnail = { url: client.user.displayAvatarURL() };
         embed.footer = {
-            text: `${message.author.username} | Лист 1 из ${parsePlatforms.length} | Uptime: ${ParsingTimeToString(message.client.uptime / 1000)}`,
-            iconURL: message.author.displayAvatarURL()
+            text: `${author.username} | Лист 1 из ${parsePlatforms.length} | Uptime: ${ParsingTimeToString(client.uptime / 1000)}`,
+            iconURL: author.displayAvatarURL()
         };
 
         //Создаем интерактивное меню

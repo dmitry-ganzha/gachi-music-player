@@ -1,6 +1,6 @@
 import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import {httpsClient} from "../../../Core/httpsClient";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
+import {EmbedConstructor} from "../../Events/Activity/interactionCreate";
 import {Colors} from "discord.js";
 
 const CetusCycle = "https://api.warframestat.us/pc/cetusCycle";
@@ -20,7 +20,7 @@ export class Cetus extends Command {
         });
     };
 
-    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+    public readonly run = async (_: any): Promise<ResolveData> => {
         const result = await httpsClient.parseJson(CetusCycle);
         return {embed: this.#EmbedChange(result)};
     };

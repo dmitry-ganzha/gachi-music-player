@@ -26,27 +26,28 @@ export class Remove extends Command {
     };
 
     public readonly run = async (message: ClientMessage, args: string[]): Promise<ResolveData> => {
-        const queue: Queue = message.client.queue.get(message.guild.id);
+        const {author, member, guild, client} = message;
+        const queue: Queue = client.queue.get(guild.id);
         const argsNum = args[0] ? parseInt(args[0]) : 1;
 
         //Если нет очереди
-        if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
+        if (!queue) return { text: `${author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
 
         //Если пользователь не подключен к голосовым каналам
-        if (!message.member?.voice?.channel || !message.member?.voice) return { text: `${message.author}, Подключись к голосовому каналу!`, color: "DarkRed" };
+        if (!member?.voice?.channel || !member?.voice) return { text: `${author}, Подключись к голосовому каналу!`, color: "DarkRed" };
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
-        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return {
-            text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
+        if (queue && queue.voice && member?.voice?.channel?.id !== queue.voice.id) return {
+            text: `${author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
             color: "DarkRed"
         };
 
         //Если аргумент не число
-        if (isNaN(argsNum)) return { text: `${message.author}, Это не число!`, color: "DarkRed" };
+        if (isNaN(argsNum)) return { text: `${author}, Это не число!`, color: "DarkRed" };
 
         //Если аргумент больше кол-ва треков
-        if (argsNum > queue.songs.length) return { text: `${message.author}, Я не могу убрать музыку, поскольку всего ${queue.songs.length}!`, color: "DarkRed" };
+        if (argsNum > queue.songs.length) return { text: `${author}, Я не могу убрать музыку, поскольку всего ${queue.songs.length}!`, color: "DarkRed" };
 
-        return void message.client.player.emit("remove", message, argsNum);
+        return void client.player.emit("remove", message, argsNum);
     };
 }

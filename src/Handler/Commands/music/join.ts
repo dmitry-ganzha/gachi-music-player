@@ -16,30 +16,26 @@ export class Join extends Command {
                 client: ['Speak', 'Connect']
             },
 
+            isGuild: true,
             isSlash: true,
             isEnable: true,
         });
     };
 
     public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
-        const voiceChannel: VoiceChannel | StageChannel = message.member.voice.channel;
-        const queue: Queue = message.client.queue.get(message.guild.id);
+        const {author, member, guild} = message;
+        const voiceChannel: VoiceChannel | StageChannel = member.voice.channel;
+        const queue: Queue = message.client.queue.get(guild.id);
 
         //Если пользователь не подключен к голосовым каналам
-        if (!message.member?.voice?.channel || !message.member?.voice) return {
-            text: `${message.author}, Подключись к голосовому каналу!`,
-            color: "DarkRed"
-        };
+        if (!member?.voice?.channel || !member?.voice) return { text: `${author}, Подключись к голосовому каналу!`, color: "DarkRed" };
 
         //Если пользователь пытается подключить бота к тому же каналу
-        if (voiceChannel.id === message.guild.members.me.voice.id) return {
-            text: `${message.author}, Я уже в этом канале <#${queue.voice.id}>.`,
-            color: "DarkRed"
-        };
+        if (voiceChannel.id === guild.members.me.voice.id) return { text: `${author}, Я уже в этом канале <#${queue.voice.id}>.`, color: "DarkRed" };
 
         if (queue) { //Если есть очередь, то
             //Если включен режим радио
-            if (queue.options.radioMode) return { text: `${message.author}, Невозможно из-за включенного режима радио!`, color: "DarkRed" };
+            if (queue.options.radioMode) return { text: `${author}, Невозможно из-за включенного режима радио!`, color: "DarkRed" };
 
             const connection = Voice.Join(voiceChannel); //Подключаемся к голосовому каналу
 

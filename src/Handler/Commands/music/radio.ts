@@ -20,13 +20,14 @@ export class Radio extends Command {
     };
 
     public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
-        const queue: Queue = message.client.queue.get(message.guild.id);
+        const {author, guild} = message;
+        const queue: Queue = message.client.queue.get(guild.id);
 
         //Если нет очереди
-        if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
+        if (!queue) return { text: `${author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
 
         queue.options.radioMode = !queue.options.radioMode;
 
-        return { text: `${message.author}, 📻 | RadioMode: ${queue.options.radioMode}`, color: "Green" };
+        return { text: `${author}, 📻 | RadioMode: ${queue.options.radioMode}`, color: "Green" };
     };
 }

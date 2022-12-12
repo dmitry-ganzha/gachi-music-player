@@ -6,13 +6,13 @@ import {ClientMessage} from "../Handler/Events/Activity/interactionCreate";
 import {InputPlaylist, InputTrack} from "./Structures/Queue/Song";
 
 interface PlayerEvents {
-    play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack | InputPlaylist) => boolean | void | Promise<void | ClientMessage | NodeJS.Timeout>;
+    play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack | InputPlaylist) => void;
     pause: (message: ClientMessage) => void;
     resume: (message: ClientMessage) => void;
     skip: (message: ClientMessage, args?: number) => void;
     replay: (message: ClientMessage) => void;
     filter: (message: ClientMessage) => void;
-    remove: (message: ClientMessage, args: number) => boolean | void;
+    remove: (message: ClientMessage, args: number) => void;
     seek: (message: ClientMessage, seek: number) => void;
 }
 

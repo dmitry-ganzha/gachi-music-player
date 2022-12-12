@@ -18,14 +18,15 @@ export default class CommandQueue extends Command {
     };
 
     public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
-        const queue: Queue = message.client.queue.get(message.guild.id);
+        const {author, guild} = message;
+        const queue: Queue = message.client.queue.get(guild.id);
 
         //Если нет очереди
-        if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
+        if (!queue) return { text: `${author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
         //Получаем то что надо было преобразовать в string[]
         const pages = this.#parsedSongs(queue.songs);
         const CurrentPlaying = `Current playing -> [${queue.song.title}]`; //Музыка, которая играет сейчас
-        const Footer = `${message.author.username} | ${DurationUtils.getTimeQueue(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}`; //Что будет снизу сообщения
+        const Footer = `${author.username} | ${DurationUtils.getTimeQueue(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}`; //Что будет снизу сообщения
 
 
         return {embed: `\`\`\`css\n➡️ | ${CurrentPlaying}\n\n${pages[0]}\n\n${Footer}\`\`\``, callbacks: this.#Callbacks(1, pages, queue)}

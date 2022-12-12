@@ -32,7 +32,7 @@ export namespace MessagePlayer {
      */
     export function toPlay(message: ClientMessage) {
         //Если уже есть сообщение то удаляем
-        if (MessagesData.messages.get(message.channelId)) MessageUpdater.toRemove(message);
+        if (MessagesData.messages.get(message.channelId)) MessageUpdater.toRemove(message.channelId);
 
         setImmediate(() => {
             const msg = pushCurrentSongMessage(message);
@@ -110,8 +110,8 @@ export namespace MessagePlayer {
 function UpdateMessage(message: ClientMessage): void {
     const queue: Queue = message.client.queue.get(message.guild.id);
 
-    //Если очереди нет, то удаляем сообщение
-    if (!queue || !queue?.song) return MessageUpdater.toRemove(message);
+    //Если очереди нет или сообщение нельяз отредактировать, то удаляем сообщение
+    if (!queue || !queue?.song || !message.editable) return MessageUpdater.toRemove(message.channelId);
 
     //Если у плеера статус при котором нельзя обновлять сообщение
     if (PlayerStatuses.has(queue.player.state.status)) return;
@@ -121,7 +121,7 @@ function UpdateMessage(message: ClientMessage): void {
 
         //Обновляем сообщение
         return message.edit({embeds: [CurrentPlayEmbed]}).catch((e) => {
-            if (e.message === "Unknown Message") MessageUpdater.toRemove(message);
+            if (e.message === "Unknown Message") MessageUpdater.toRemove(message.channelId);
             consoleTime(`[MessageEmitter]: [function: UpdateMessage]: ${e.message}`)
         });
     });
@@ -199,15 +199,15 @@ namespace MessageUpdater {
     //====================== ====================== ====================== ======================
     /**
      * @description Удаляем сообщение из <Message[]>, так-же проверяем отключить ли таймер
-     * @param message {ClientMessage} Сообщение
+     * @param ChannelID {string} ID канала
      * @requires {Message}
      */
-    export function toRemove(message: ClientMessage) {
-        const Find = MessagesData.messages.get(message.channelId); //Ищем сообщение е базе
+    export function toRemove(ChannelID: string) {
+        const Find = MessagesData.messages.get(ChannelID); //Ищем сообщение е базе
         if (!Find) return; //Если его нет ничего не делаем
 
         if (Find.deletable) Find.delete().catch(() => undefined); //Если его возможно удалить, удаляем!
-        MessagesData.messages.delete(message.channelId); //Удаляем сообщение из базы
+        MessagesData.messages.delete(ChannelID); //Удаляем сообщение из базы
 
         //Если в базе больше нет сообщений
         if (MessagesData.messages.size === 0) {

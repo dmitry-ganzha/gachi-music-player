@@ -16,8 +16,8 @@ export class Eval extends Command {
     };
 
     public readonly run = async (message: ClientMessage, args: string[]): Promise<ResolveData> => {
-        const queue = message.client.queue.get(message.guild.id);
-        const client = message.client;
+        const {client, member, guild, channel, user} = message;
+        const queue = client.queue.get(guild.id);
 
         const UserCode = args.join(" ");
         const StartMs = new Date().getMilliseconds();

@@ -100,7 +100,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
             //Включаем поток когда можно будет начать читать
             stream.once("readable", () => {
                 //Удаляем прошлый поток если введен новый
-                if (this.state?.stream && !this.state?.stream?.destroyed) this.state?.stream?.destroy();
+                if (this.state?.stream && !this.state?.stream?.destroyed) this.state?.stream?.cleanup();
 
                 this.state = {status: "read", stream};
             });

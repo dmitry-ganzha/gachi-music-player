@@ -15,25 +15,26 @@ export default class Random extends Command {
     };
 
     public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
-        const queue: Queue = message.client.queue.get(message.guild.id);
+        const {author, member, guild, client} = message;
+        const queue: Queue = client.queue.get(guild.id);
 
         //Если нет очереди
-        if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
+        if (!queue) return { text: `${author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
 
         //Если пользователь не подключен к голосовым каналам
-        if (!message.member?.voice?.channel || !message.member?.voice) return { text: `${message.author}, Подключись к голосовому каналу!`, color: "DarkRed" };
+        if (!member?.voice?.channel || !member?.voice) return { text: `${author}, Подключись к голосовому каналу!`, color: "DarkRed" };
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
-        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return {
-            text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
+        if (queue && queue.voice && member?.voice?.channel?.id !== queue.voice.id) return {
+            text: `${author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
             color: "DarkRed"
         };
 
         //Если включен режим радио
-        if (queue.options.radioMode) return { text: `${message.author}, Невозможно из-за включенного режима радио!`, color: "DarkRed" };
+        if (queue.options.radioMode) return { text: `${author}, Невозможно из-за включенного режима радио!`, color: "DarkRed" };
 
         //Если всего 2 и менее треков
-        if (queue.songs.length <= 2) return { text: `${message.author}, Всего в списке ${queue.songs.length}, нет смысла!`, color: "DarkRed" };
+        if (queue.songs.length <= 2) return { text: `${author}, Всего в списке ${queue.songs.length}, нет смысла!`, color: "DarkRed" };
 
         if (queue.options.random === false) {
             queue.options.random = true;

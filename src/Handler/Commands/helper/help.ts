@@ -30,11 +30,12 @@ export class Help extends Command {
     };
 
     public readonly run = async (message: ClientMessage, args: string[]): Promise<ResolveData> => {
+        const {author, client} = message;
         const memberArg = args[args.length - 1];
 
         //Показать все команды
         if (memberArg === "all") {
-            const Commands: Command[] = message.client.commands.Array.filter((command) => !command.isOwner);
+            const Commands: Command[] = client.commands.Array.filter((command) => !command.isOwner);
             // @ts-ignore
             const List: Command[][] = Commands.ArraySort(5);
             const {embed, pages} = this.#CreateEmbedMessage(message, List);
@@ -43,7 +44,7 @@ export class Help extends Command {
             return {embed, callbacks: ReactionMenu.Callbacks(1, pages, embed)}
         }
 
-        const command = message.client.commands.Array.find((command) => command.name === memberArg || command.aliases.includes(memberArg));
+        const command = client.commands.Array.find((command) => command.name === memberArg || command.aliases.includes(memberArg));
         //Отображаем одну команду
         if (command) {
             const {embed} = this.#CreateEmbedMessage(message, [[command]]);
@@ -52,7 +53,7 @@ export class Help extends Command {
         }
 
         //Если команды нет
-        return {text: `${message.author}, такой команд нет в моей базе!`, color: "DarkRed"};
+        return {text: `${author}, такой команд нет в моей базе!`, color: "DarkRed"};
     };
     //====================== ====================== ====================== ======================
     /**

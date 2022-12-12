@@ -6,8 +6,8 @@ export class Stop extends Command {
     public constructor() {
         super({
             name: "stop",
-            aliases: ["leave", "disconnect", "discon"],
-            description: "Завершаем воспроизведение музыки!",
+            aliases: ["end"],
+            description: "Удаление музыкальной очереди!",
 
             isEnable: true,
             isSlash: true
@@ -15,15 +15,21 @@ export class Stop extends Command {
     };
 
     public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
-        const queue: Queue = message.client.queue.get(message.guild.id);
+        const {author, guild, member} = message;
+        const queue: Queue = message.client.queue.get(guild.id);
 
         //Если нет очереди
-        if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
+        if (!queue) return { text: `${author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
+
+        //Если есть очередь и пользователь не подключен к тому же голосовому каналу
+        if (queue.voice && member?.voice?.channel?.id !== queue.voice.id) return {
+            text: `${author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`, color: "DarkRed"
+        };
 
         //Если включен режим радио
-        if (queue.options.radioMode) return { text: `${message.author}, Невозможно из-за включенного режима радио!`, color: "DarkRed" };
+        if (queue.options.radioMode) return { text: `${author}, Невозможно из-за включенного режима радио!`, color: "DarkRed" };
 
         queue.cleanup();
-        return {text: `${message.author}, 👌`};
+        return {text: `${author}, музыкальная очередь удалена!`};
     };
 }

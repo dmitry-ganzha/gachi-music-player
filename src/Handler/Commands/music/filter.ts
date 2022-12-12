@@ -30,22 +30,23 @@ export default class Filter extends Command {
     };
 
     public readonly run = async (message: ClientMessage, args: string[]): Promise<ResolveData> => {
-        const queue: Queue = message.client.queue.get(message.guild.id);
+        const {author, member, guild, client} = message;
+        const queue: Queue = client.queue.get(guild.id);
 
         //Если нет очереди
-        if (!queue) return { text: `${message.author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
+        if (!queue) return { text: `${author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
 
         //Если пользователь не подключен к голосовым каналам
-        if (!message.member?.voice?.channel || !message.member?.voice) return { text: `${message.author}, Подключись к голосовому каналу!`, color: "DarkRed" };
+        if (!member?.voice?.channel || !member?.voice) return { text: `${author}, Подключись к голосовому каналу!`, color: "DarkRed" };
 
         //Если есть очередь и пользователь не подключен к тому же голосовому каналу
-        if (queue && queue.voice && message.member?.voice?.channel?.id !== queue.voice.id) return {
-            text: `${message.author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
+        if (queue && queue.voice && member?.voice?.channel?.id !== queue.voice.id) return {
+            text: `${author}, Музыка уже играет в другом голосовом канале!\nМузыка включена тут <#${queue.voice.id}>`,
             color: "DarkRed"
         };
 
         //Если текущий трек является потоковым
-        if (queue.song.isLive) return { text: `${message.author}, Фильтры не работают со стримами`, color: "DarkRed" };
+        if (queue.song.isLive) return { text: `${author}, Фильтр не может работать совместно с Live треками!`, color: "DarkRed" };
 
         const FilterArg = args.length > 1 ? Number(args[args?.length - 1]) : null;
         const FilterName = args[args?.length - 2 ?? args?.length - 1] ?? args[0];
@@ -56,13 +57,13 @@ export default class Filter extends Command {
         //Выключаем все фильтры
         else if (FilterName === "off") {
             queue.filters.splice(0, queue.filters.length);
-            this.#executeFilter(message);
+            client.player.emit("filter", message);
             return;
         }
 
         //Если пользователь не указал название фильтра
         if (!FilterName) {
-            if (queue.filters.length === 0) return {text: `${message.author.username}, включенных аудио фильтров нет!`, ...SendArg};
+            if (queue.filters.length === 0) return {text: `${author.username}, включенных аудио фильтров нет!`, ...SendArg};
             const ArrayFilters: typeof Filters = [];
 
             queue.filters.forEach((filter) => {
@@ -92,15 +93,15 @@ export default class Filter extends Command {
                         if (FilterArg >= Filter.args[0] && FilterArg <= Filter.args[1]) {
                             queue.filters[index + 1] = FilterArg;
 
-                            return {text: `${message.author.username} | Filter: ${FilterName} был изменен аргумент на ${FilterArg}!`, ...SendArg};
+                            return {text: `${author.username} | Filter: ${FilterName} был изменен аргумент на ${FilterArg}!`, ...SendArg};
                             //Если аргументы не подходят
-                        } else return {text: `${message.author.username} | Filter: ${FilterName} не изменен из-за несоответствия аргументов!`, ...SendArg};
+                        } else return {text: `${author.username} | Filter: ${FilterName} не изменен из-за несоответствия аргументов!`, ...SendArg};
 
                     } else { //Если пользователь не указал аргумент, значит его надо удалить
                         if (Filter.args) queue.filters.splice(index, 2); //Удаляем фильтр и аргумент
                         else queue.filters.splice(index, 1); //Удаляем только фильтр
 
-                        return {text: `${message.author.username} | Filter: ${FilterName} отключен!`, ...SendArg};
+                        return {text: `${author.username} | Filter: ${FilterName} отключен!`, ...SendArg};
                     }
                 } else { //Если фильтра нет в очереди, значит его надо добавить
                     if (FilterArg && Filter.args) { //Если есть аргумент
@@ -109,23 +110,20 @@ export default class Filter extends Command {
                         if (FilterArg >= Filter.args[0] && FilterArg <= Filter.args[1]) {
                             queue.filters.push(Filter.names[0]);
                             queue.filters.push(FilterArg as any);
-                            return {text: `${message.author.username} | Filter: ${FilterName}:${FilterArg} включен!`, ...SendArg};
+                            return {text: `${author.username} | Filter: ${FilterName}:${FilterArg} включен!`, ...SendArg};
                             //Если аргументы не подходят
-                        } else return {text: `${message.author.username} | Filter: ${FilterName} не включен из-за несоответствия аргументов!`, ...SendArg};
+                        } else return {text: `${author.username} | Filter: ${FilterName} не включен из-за несоответствия аргументов!`, ...SendArg};
                     } else { //Если нет аргумента
                         queue.filters.push(Filter.names[0]);
 
-                        return {text: `${message.author.username} | Filter: ${FilterName} включен!`, ...SendArg};
+                        return {text: `${author.username} | Filter: ${FilterName} включен!`, ...SendArg};
                     }
                 }
-            } else return {text: `${message.author.username}, у меня нет такого фильтра. Все фильтры - all`, ...SendArg};
+            } else return {text: `${author.username}, у меня нет такого фильтра. Все фильтры - all`, ...SendArg};
         } finally {
-            this.#executeFilter(message);
+            message.client.player.emit("filter", message);
         }
     };
-
-    //Заставляем плеер перезапустить поток для применения фильтра
-    readonly #executeFilter = (message: ClientMessage) => message.client.player.emit("filter", message);
     //Запускаем ReactionMenu
     readonly #ReactionMenuFilters = (filters: typeof Filters, message: ClientMessage) => {
         let numFilter = 1;

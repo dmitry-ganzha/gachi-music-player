@@ -2,7 +2,6 @@ import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import {httpsClient} from "../../../Core/httpsClient";
 import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
 import {Colors, MessageReaction, User} from "discord.js";
-import {ReactionMenu} from "../../../Structures/ReactionMenu";
 
 const TraderApi = "https://api.warframestat.us/pc/ru/voidTrader/";
 const VoidIcon = "https://cdn.discordapp.com/attachments/850775689107865641/996413936595378256/BaroBanner.webp";
@@ -19,21 +18,20 @@ export class Trader extends Command {
         });
     }
 
-    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+    public readonly run = async (_: any): Promise<ResolveData> => {
         const result = await httpsClient.parseJson(TraderApi);
         const pagesInventory = this.#parsedInventory(result.inventory);
 
-        return this.#SendMessage(message, result, pagesInventory);
+        return this.#SendMessage(result, pagesInventory);
     };
     //====================== ====================== ====================== ======================
     /**
      * @description Отправляем сообщение
-     * @param message {ClientMessage} Само сообщение
      * @param res {voidTrader} Данные о торговце
      * @param pagesInventory {string[]} Измененный инвентарь
      * @private
      */
-    readonly #SendMessage = (message: ClientMessage, res: voidTrader, pagesInventory: string[]) => {
+    readonly #SendMessage = (res: voidTrader, pagesInventory: string[]): ResolveData => {
         const EmbedVoidTrader: EmbedConstructor = {
             color: Colors.DarkBlue,
             thumbnail: {url: VoidIcon},
@@ -48,8 +46,8 @@ export class Trader extends Command {
         //Если есть инвентарь, то запускаем CollectorSortReaction
         if (pagesInventory.length >= 1) {
             EmbedVoidTrader.description = pagesInventory[0];
-            new ReactionMenu(EmbedVoidTrader, message, this.#Callbacks(1, pagesInventory, EmbedVoidTrader));
-            return;
+
+            return {embed: EmbedVoidTrader, callbacks: this.#Callbacks(1, pagesInventory, EmbedVoidTrader)}
         }
         //Если инвентаря нет просто отправляем сообщение
         return {embed: EmbedVoidTrader};

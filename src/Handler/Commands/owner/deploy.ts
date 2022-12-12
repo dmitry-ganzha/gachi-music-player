@@ -1,5 +1,6 @@
 import {Command, ResolveData} from "../../../Structures/Handle/Command";
 import {ClientMessage} from "../../Events/Activity/interactionCreate";
+import {WatKLOK} from "../../../Core/Client/Client";
 
 export class Deploy extends Command {
     public constructor() {
@@ -14,22 +15,21 @@ export class Deploy extends Command {
     };
 
     public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
-        return {
-            text: `${message.author}, Load: [${this.#createSlashCommand(message)}]`,
-        }
-    }
+        const {author, client} = message;
+        return { text: `${author}, Load: [${this.#createSlashCommand(client)}]` };
+    };
     //====================== ====================== ====================== ======================
     /**
      * @description Отправляем данные на сервера discord о SlashCommand
-     * @param message {ClientMessage} Сообщение
+     * @param client {WatKLOK} Клиент
      * @private
      */
-    readonly #createSlashCommand = (message: ClientMessage) => {
+    readonly #createSlashCommand = (client: WatKLOK) => {
         let TotalCommands: number = 0;
 
-        message.client.commands.Array.forEach((command) => {
+        client.commands.Array.forEach((command) => {
             if (command.isOwner || !command.isSlash) return null;
-            const SlashCommands = message.client.application.commands;
+            const SlashCommands = client.application.commands;
             let slashCommandData: any = { name: command.name, description: command.description };
 
             if (command.options.length > 0) slashCommandData = {...slashCommandData, options: command.options};
