@@ -10,6 +10,6 @@
 # EN
 - **Falsification is prohibited.**
 - **Issuing a code for your own is prohibited.**
-- **The bot-code should be used for private hosting and personal usage only.**
+- **The bot-code should be used for personal usage only.**
 
 **_NOTE:_**  **If something does not suit you, do not use this code**
