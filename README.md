@@ -2,7 +2,7 @@
 
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
-- Лицензия: [`WatKLOK LICENSE`](https://github.com/SNIPPIK/WatKLOK/blob/v2/LICENSE)
+- Лицензия: [`WatKLOK LICENSE`](https://github.com/SNIPPIK/WatKLOK/blob/v2/LICENSE.md)
 - Перейти к [настройкам](db/Config.json)
 - Перейти ко [всем командам](src/Handler/Commands) | `Slash + Standart`
 - Перейти к [плееру](src/AudioPlayer)
