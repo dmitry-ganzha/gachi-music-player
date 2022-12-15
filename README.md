@@ -1,10 +1,10 @@
-[<img align="right" alt="Avatar bot" width="250px" src="https://cdn.discordapp.com/avatars/678588856588697610/466d3d51e6d497541622085ed18a1ad1.webp?size=4096" />](https://discordapp.com/users/623170593268957214)
+[<img align="right" alt="Avatar bot" width="200px" src="https://cdn.discordapp.com/avatars/678588856588697610/466d3d51e6d497541622085ed18a1ad1.webp?size=4096" />](https://discordapp.com/users/623170593268957214)
 
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
-- Лицензия: [`WatKLOK LICENSE`](https://github.com/SNIPPIK/WatKLOK/blob/v2/LICENSE.md)
+- Лицензия: [`WatKLOK LICENSE`](LICENSE.md)
 - Перейти к [настройкам](db/Config.json)
-- Перейти ко [всем командам](src/Handler/Commands) | `Slash + Standart`
+- Перейти к [командам](src/Handler/Commands) | `Slash + Standart`
 - Перейти к [плееру](src/AudioPlayer)
 - Все сообщения удаляют автоматически через время
 - Для удаления аудио кеша `запустить run и выбрать 6`
@@ -83,7 +83,6 @@
       }
    ]
      ```
-   
 ## Mini demonstration
 <div align="center">
   <a href="https://www.youtube.com/watch?v=ncvpyWaxycw"><img src="https://repository-images.githubusercontent.com/442515515/da0a54ad-9b76-40ab-8bb7-c394afeefbf0" width="1000px" alt="Demo video"></a>
