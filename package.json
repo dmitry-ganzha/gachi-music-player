@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@discordjs/voice": "^0.14.0",
-    "discord.js": "^14.7.0",
+    "discord.js": "^14.7.1",
     "dotenv": "^16.0.2",
     "tiny-typed-emitter": "^2.1.0"
   },
