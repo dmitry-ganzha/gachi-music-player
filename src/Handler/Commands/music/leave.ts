@@ -6,8 +6,7 @@ import { Voice } from "../../../AudioPlayer/Structures/Voice/Voice";
 export class Leave extends Command {
     public constructor() {
         super({
-            name: "stop",
-            aliases: ["end"],
+            name: "leave",
             description: "Отключение от голосового канала!",
 
             isGuild: true,
