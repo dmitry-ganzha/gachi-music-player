@@ -15,7 +15,7 @@ const Buttons = new ActionRowBuilder().addComponents([
 //Кнопки с которыми можно взаимодействовать
 const ButtonID = new Set(["skip", "resume_pause", "replay", "last"]);
 //Статусы плеера при которых не надо обновлять сообщение
-const PlayerStatuses = new Set(["idle", "paused", "autoPaused"]);
+const PlayerStatuses = new Set(["idle", "pause", "autoPause"]);
 
 //База с сообщениями
 const MessagesData = {
