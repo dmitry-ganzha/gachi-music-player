@@ -16,8 +16,8 @@ export class Leave extends Command {
     };
 
     public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
-        const {guild, member, author} = message;
-        const queue: Queue = message.client.queue.get(guild.id);
+        const {guild, member, author, client} = message;
+        const queue: Queue = client.queue.get(guild.id);
         const actVoice = Voice.getVoice(guild.id);
 
         //Если бот не подключен к голосовому каналу

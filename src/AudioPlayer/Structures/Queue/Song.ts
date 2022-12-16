@@ -3,7 +3,7 @@ import {Images} from "../EmbedMessages";
 import {ClientMessage} from "../../../Handler/Events/Activity/interactionCreate";
 import {httpsClient} from "../../../Core/httpsClient";
 import {ColorTrack, SongFinder, supportPlatforms, TypePlatform} from "../SongSupport";
-import {CacheMusic} from "../../../../db/Config.json";
+import {Music} from "../../../../db/Config.json";
 import {DownloadManager} from "../../Managers/DownloadManager";
 
 const Download = DownloadManager.downloadUrl;
@@ -72,7 +72,7 @@ export class Song {
         if (req > 3) return resolve(null);
 
         //Если пользователь включил кеширование музыки
-        if (CacheMusic) {
+        if (Music.CacheMusic) {
             const isCache = Download(this);
 
             //Если есть файл выдаем путь до него
@@ -87,7 +87,7 @@ export class Song {
 
         //Если ссылка работает
         if (checkResource === "OK") {
-            if (CacheMusic) Download(this, this.link);
+            if (Music.CacheMusic) Download(this, this.link);
             return resolve(this.link);
         }
 

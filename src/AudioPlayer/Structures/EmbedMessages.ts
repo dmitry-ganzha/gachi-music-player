@@ -5,19 +5,10 @@ import {DurationUtils} from "../Managers/DurationUtils";
 import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/interactionCreate";
 import {Colors} from "discord.js";
 import {replacer} from "../../Structures/Handle/Command";
+import {Music} from "../../../db/Config.json";
 
 // Настройки прогресс бара текущей музыки
-const Bar = {
-    //Состояние прогресс бара
-    Enable: true,
-
-    //Текст после кнопкой
-    empty: "─",
-    //Текст перед кнопкой
-    full: "─",
-    //Если оставить пустым не будет деления между empty и full
-    button: "⚪"
-}
+const Bar = Music.ProgressBar;
 
 //Вспомогательный элемент
 export namespace Images {
@@ -35,15 +26,15 @@ export namespace EmbedMessages {
     * @param queue {Queue} Очередь
     */
     export function toPlay(client: WatKLOK, queue: Queue): EmbedConstructor {
-        const song = queue.song;
+        const { color, author, image, requester } = queue.song;
 
-        return { color: song.color,
-            author: { name: replacer.replaceText(song.author.title, 45, false), url: song.author.url,
-                iconURL: song.author.isVerified === undefined ? Images.NotFound : song.author.isVerified ? Images.Verification : Images.NotVerification },
-            thumbnail: { url: song.author?.image?.url ?? Images.NotImage },
+        return { color: color,
+            author: { name: replacer.replaceText(author.title, 45, false), url: author.url,
+            iconURL: author.isVerified === undefined ? Images.NotFound : author.isVerified ? Images.Verification : Images.NotVerification },
+            thumbnail: { url: author?.image?.url ?? Images.NotImage },
             fields: toPlayFunctions.getFields(queue, client),
-            image: { url: song.image?.url ?? null },
-            footer: { text: `${song.requester.username} | ${DurationUtils.getTimeQueue(queue)} | 🎶: ${queue.songs.length}`, iconURL: song.requester.avatarURL() }
+            image: { url: image?.url ?? null },
+            footer: { text: `${requester.username} | ${DurationUtils.getTimeQueue(queue)} | 🎶: ${queue.songs.length}`, iconURL: requester.avatarURL() }
         };
     }
     //====================== ====================== ====================== ======================
@@ -129,7 +120,7 @@ namespace playTime {
      * @param playDuration
      */
     export function toString(duration: { seconds: number, full: string }, playDuration: number) {
-        if (duration.full === "Live" || !Bar.Enable) return `\`\`[${duration}]\`\``;
+        if (duration.full === "Live" || !Bar.enable) return `\`\`[${duration}]\`\``;
 
         const parsedDuration = DurationUtils.ParsingTimeToString(playDuration);
         const progress = matchBar(playDuration as number, duration.seconds, 20);

@@ -34,7 +34,7 @@ export class Command {
             if (options[key] !== null) this[key] = options[key];
         });
     };
-    public readonly run: (message: ClientInteractive, args?: string[]) => Promise<ResolveData>;
+    public readonly run: (message: ClientInteractive, args?: string[]) => Promise<ResolveData> | ResolveData;
 
     public readonly name: string = null;
     public readonly aliases: string[] = [];

@@ -1,12 +1,4 @@
-import {
-    ChannelType,
-    Guild,
-    GuildMember,
-    InternalDiscordGatewayAdapterCreator,
-    StageChannel,
-    VoiceChannel,
-    VoiceState
-} from "discord.js";
+import {ChannelType,Guild,GuildMember,InternalDiscordGatewayAdapterCreator,StageChannel,VoiceChannel,VoiceState} from "discord.js";
 import {DiscordGatewayAdapterCreator, getVoiceConnection, getVoiceConnections, joinVoiceChannel} from "@discordjs/voice";
 
 //Допустимые голосовые каналы
@@ -62,19 +54,6 @@ export namespace Voice {
         });
 
         return Users.length > 0 ? Users : "Fail";
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Проверяем есть ли пользователь в голосовом канале
-     * @param Guild {Guild} Сервер с которого надо взять данные
-     * @param user {GuildMember} Пользователь с сервера
-     */
-    export function checkMember(Guild: Guild, user: GuildMember): boolean {
-        const members = Members(Guild);
-
-        if (members === "Fail") return false;
-
-        return !!members.filter((voice) => voice.member.id === user.id);
     }
     //====================== ====================== ====================== ======================
     /**

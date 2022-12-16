@@ -3,8 +3,12 @@ import {DuplexOptions, Readable} from "stream";
 import {FFspace} from "./FFspace";
 import fs from "fs";
 import {AudioFilters} from "../Queue/Queue";
+import {Music} from "../../../../db/Config.json";
 
 type FFmpegOptions = {seek?: number, filters?: AudioFilters};
+
+//Резервируем в памяти
+const Audio = Music.Audio;
 
 export class OpusAudio extends opus.OggDemuxer {
     readonly #streams: Array<Readable | FFspace.FFmpeg> = [];
@@ -18,7 +22,7 @@ export class OpusAudio extends opus.OggDemuxer {
 
     //Выдаем или добавляем ffmpeg из this.streams
     private get ffmpeg() { return this.#streams[0] as FFspace.FFmpeg; };
-    private set ffmpeg(ffmpeg) { this.#streams.push(ffmpeg); };
+    private set ffmpeg(ffmpeg: FFspace.FFmpeg) { this.#streams.push(ffmpeg); };
 
     public constructor(path: string, options: FFmpegOptions, duplexOptions: DuplexOptions = {}) {
         super({autoDestroy: false, highWaterMark: 128, ...duplexOptions});
@@ -42,7 +46,7 @@ export class OpusAudio extends opus.OggDemuxer {
         //Когда можно будет читать поток записываем его в <this.#started>
         this.once("readable", () => (this._readable = true));
         //Если в <this.playStream> будет один из этих статусов, чистим память!
-        ["end", "close", "error"].forEach((event) => this.once(event, this.destroy));
+        ["end", "close", "error"].forEach((event: string) => this.once(event, this.destroy));
     };
 
     public read = () => {
@@ -91,7 +95,7 @@ namespace ArgsHelper {
     export function createArgs(url: string, AudioFilters: AudioFilters, seek: number): FFspace.Arguments {
         let thisArgs = ["-reconnect", 1, "-reconnect_streamed", 1, "-reconnect_delay_max", 5];
         const audioDecoding = ["-c:a", "libopus", "-f", "opus"];
-        const audioBitrate = ["-b:a", "256k"];
+        const audioBitrate = ["-b:a", Audio.bitrate];
 
         if (seek) thisArgs = [...thisArgs, "-ss", seek ?? 0];
         if (url) thisArgs = [...thisArgs, "-i", url];

@@ -1,6 +1,9 @@
 import {TypedEmitter} from "tiny-typed-emitter";
 import {VoiceConnection} from "@discordjs/voice";
 import {OpusAudio} from "./Media/OpusAudio";
+import {Music} from "../../../db/Config.json";
+
+const AudioPlayerSettings = Music.AudioPlayer;
 
 //Статусы при которых можно пропустить трек
 export const StatusPlayerHasSkipped: Set<string> = new Set(["read", "pause", "idle"]);
@@ -54,7 +57,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         }
 
         //Задаем время начала (когда плеер начал отправлять пакеты)
-        this._time = Date.now();
+        this._time = Date.now() + AudioPlayerSettings.sendDuration;
         this._state = state;
 
         //Запускаем таймер

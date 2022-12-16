@@ -20,8 +20,8 @@ export class Radio extends Command {
     };
 
     public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
-        const {author, guild} = message;
-        const queue: Queue = message.client.queue.get(guild.id);
+        const {author, guild, client} = message;
+        const queue: Queue = client.queue.get(guild.id);
 
         //Если нет очереди
         if (!queue) return { text: `${author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
