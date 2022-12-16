@@ -110,7 +110,7 @@ export namespace MessagePlayer {
 function UpdateMessage(message: ClientMessage): void {
     const queue: Queue = message.client.queue.get(message.guild.id);
 
-    //Если очереди нет или сообщение нельяз отредактировать, то удаляем сообщение
+    //Если очереди нет или сообщение нельзя отредактировать, то удаляем сообщение
     if (!queue || !queue?.song || !message.editable) return MessageUpdater.toRemove(message.channelId);
 
     //Если у плеера статус при котором нельзя обновлять сообщение
