@@ -8,6 +8,22 @@
     "prefix": "!",
     "OwnerIDs": [""]
   },
-  "CacheMusic": false,
-  "Debug": false
+  "Debug": false,
+
+  "Music": {
+    "CacheMusic": false,
+    
+    "AudioPlayer": {
+      "sendDuration": 50
+    },
+    "ProgressBar": {
+      "enable": true,
+      "empty": "─",
+      "full": "─",
+      "button": "⚪"
+    },
+    "Audio": {
+      "bitrate": "256k"
+    }
+  }
 }
