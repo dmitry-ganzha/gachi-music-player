@@ -1,7 +1,7 @@
-import {TypedEmitter} from "tiny-typed-emitter";
 import {VoiceConnection} from "@discordjs/voice";
-import {OpusAudio} from "./Media/OpusAudio";
-import {Music} from "../../../db/Config.json";
+import {TypedEmitter} from "tiny-typed-emitter";
+import {Music} from "@db/Config.json";
+import {OpusAudio} from "@OpusAudio";
 
 const AudioPlayerSettings = Music.AudioPlayer;
 

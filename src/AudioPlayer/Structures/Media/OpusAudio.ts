@@ -1,9 +1,9 @@
-import {opus} from "prism-media";
 import {DuplexOptions, Readable} from "stream";
-import {FFspace} from "./FFspace";
+import {AudioFilters} from "@Queue/Queue";
+import {Music} from "@db/Config.json";
+import {FFspace} from "@FFspace";
+import {opus} from "prism-media";
 import fs from "fs";
-import {AudioFilters} from "../Queue/Queue";
-import {Music} from "../../../../db/Config.json";
 
 type FFmpegOptions = {seek?: number, filters?: AudioFilters};
 

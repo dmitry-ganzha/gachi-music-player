@@ -1,5 +1,5 @@
-import {Queue} from "../Structures/Queue/Queue";
-import {InputTrack, Song} from "../Structures/Queue/Song";
+import {InputTrack, Song} from "@Queue/Song";
+import {Queue} from "@Queue/Queue";
 
 export namespace DurationUtils {
     /**

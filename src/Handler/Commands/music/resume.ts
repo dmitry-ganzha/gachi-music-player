@@ -1,8 +1,8 @@
-import {Command, ResolveData} from "../../../Structures/Handle/Command";
-import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {ClientMessage} from "../../Events/Activity/interactionCreate";
+import {Command, ResolveData} from "@Structures/Handle/Command";
+import {ClientMessage} from "@Client/interactionCreate";
+import {Queue} from "@Queue/Queue";
 
-export default class Resume extends Command {
+export class Resume extends Command {
     public constructor() {
         super({
             name: "resume",
@@ -14,7 +14,7 @@ export default class Resume extends Command {
         });
     };
 
-    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+    public readonly run = (message: ClientMessage): ResolveData => {
         const {author, member, guild, client} = message;
         const queue: Queue = client.queue.get(guild.id);
 

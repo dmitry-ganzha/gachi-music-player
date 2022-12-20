@@ -1,9 +1,9 @@
-import {PlayerController} from "./Controller";
+import {ClientMessage} from "@Client/interactionCreate";
+import {InputPlaylist, InputTrack} from "@Queue/Song";
 import {StageChannel, VoiceChannel} from "discord.js";
-import {QueueManager} from "./Managers/QueueManager";
+import {QueueManager} from "@Managers/QueueManager";
 import {TypedEmitter} from "tiny-typed-emitter";
-import {ClientMessage} from "../Handler/Events/Activity/interactionCreate";
-import {InputPlaylist, InputTrack} from "./Structures/Queue/Song";
+import {PlayerController} from "./Controller";
 
 interface PlayerEvents {
     play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack | InputPlaylist) => void;

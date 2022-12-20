@@ -1,5 +1,5 @@
 import {MessagePlayer} from "./PlayerMessages";
-import {Queue} from "../Structures/Queue/Queue";
+import {Queue} from "@Queue/Queue";
 
 //Ивенты плеера для всех серверов
 export namespace PlayerEventsCallBacks {

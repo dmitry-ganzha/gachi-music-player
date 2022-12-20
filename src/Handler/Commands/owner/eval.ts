@@ -1,7 +1,7 @@
-import {Command, ResolveData} from "../../../Structures/Handle/Command";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
+import {ClientMessage, EmbedConstructor} from "@Client/interactionCreate";
+import {Command, ResolveData} from "@Structures/Handle/Command";
+import {consoleTime} from "@Client/Client";
 import {Colors} from "discord.js";
-import {consoleTime} from "../../../Core/Client/Client";
 
 export class Eval extends Command {
     public constructor() {
@@ -15,7 +15,7 @@ export class Eval extends Command {
         });
     };
 
-    public readonly run = async (message: ClientMessage, args: string[]): Promise<ResolveData> => {
+    public readonly run = (message: ClientMessage, args: string[]): ResolveData => {
         const {client, member, guild, channel, user} = message;
         const queue = client.queue.get(guild.id);
 
@@ -46,23 +46,12 @@ export class Eval extends Command {
      * @private
      */
     readonly #getEmbed = (response: string, color: number, code: string, StartTime: number, EndTime: number): EmbedConstructor => {
-        return {
-            color,
-            fields: [
-                {
-                    name: "Input Code:",
-                    value: `\`\`\`js\n${code}\n\`\`\``,
-                    inline: false
-                },
-                {
-                    name: "Output Code:",
-                    value: `\`\`\`js\n${response}\`\`\``,
-                    inline: false
-                }
-            ],
-            footer: {
-                text: `Time: ${EndTime - StartTime} ms`
-            }
+        return { color, fields:
+                [
+                    { name: "Input Code:", value: `\`\`\`js\n${code}\n\`\`\``, inline: false },
+                    { name: "Output Code:", value: `\`\`\`js\n${response}\`\`\``, inline: false }
+                ],
+            footer: { text: `Time: ${EndTime - StartTime} ms` }
         };
     };
 }

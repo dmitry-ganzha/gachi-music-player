@@ -1,8 +1,8 @@
-import {Command, ResolveData} from "../../../Structures/Handle/Command";
-import {ReactionMenu} from "../../../Structures/ReactionMenu";
+import {ClientMessage, EmbedConstructor} from "@Client/interactionCreate";
+import {Command, ResolveData} from "@Structures/Handle/Command";
 import {ApplicationCommandOptionType, Colors} from "discord.js";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
-import {Bot} from "../../../../db/Config.json";
+import {ReactionMenu} from "@Structures/ReactionMenu";
+import {Bot} from "@db/Config.json";
 
 export class Help extends Command {
     public constructor() {
@@ -29,13 +29,13 @@ export class Help extends Command {
         });
     };
 
-    public readonly run = async (message: ClientMessage, args: string[]): Promise<ResolveData> => {
+    public readonly run = (message: ClientMessage, args: string[]): ResolveData => {
         const {author, client} = message;
         const memberArg = args[args.length - 1];
 
         //Показать все команды
         if (memberArg === "all") {
-            const Commands: Command[] = client.commands.Array.filter((command) => !command.isOwner);
+            const Commands: Command[] = client.commands.Array.filter((command: Command) => !command.isOwner);
             // @ts-ignore
             const List: Command[][] = Commands.ArraySort(5);
             const {embed, pages} = this.#CreateEmbedMessage(message, List);
@@ -44,7 +44,7 @@ export class Help extends Command {
             return {embed, callbacks: ReactionMenu.Callbacks(1, pages, embed)}
         }
 
-        const command = client.commands.Array.find((command) => command.name === memberArg || command.aliases.includes(memberArg));
+        const command = client.commands.Array.find((command: Command) => command.name === memberArg || command.aliases.includes(memberArg));
         //Отображаем одну команду
         if (command) {
             const {embed} = this.#CreateEmbedMessage(message, [[command]]);

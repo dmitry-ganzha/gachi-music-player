@@ -1,10 +1,10 @@
-import {Queue} from "./Structures/Queue/Queue";
-import {Song} from "./Structures/Queue/Song";
+import {ClientMessage, messageUtils} from "@Client/interactionCreate";
+import {StatusPlayerHasSkipped} from "@Structures/AudioPlayer";
+import {DurationUtils} from "@Managers/DurationUtils";
 import {VoiceState} from "discord.js";
-import {StatusPlayerHasSkipped} from "./Structures/AudioPlayer";
-import {DurationUtils} from "./Managers/DurationUtils";
-import {ClientMessage, messageUtils} from "../Handler/Events/Activity/interactionCreate";
-import {Voice} from "./Structures/Voice/Voice";
+import {Voice} from "@VoiceManager";
+import {Queue} from "@Queue/Queue";
+import {Song} from "@Queue/Song";
 
 const ParsingTimeToString = DurationUtils.ParsingTimeToString;
 

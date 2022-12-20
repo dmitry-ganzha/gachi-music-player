@@ -1,8 +1,8 @@
-import {Command, ResolveData} from "../../../Structures/Handle/Command";
-import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {Song} from "../../../AudioPlayer/Structures/Queue/Song";
+import {Command, ResolveData} from "@Structures/Handle/Command";
+import {ClientMessage} from "@Client/interactionCreate";
 import {ApplicationCommandOptionType} from "discord.js";
-import {ClientMessage} from "../../Events/Activity/interactionCreate";
+import {Queue} from "@Queue/Queue";
+import {Song} from "@Queue/Song";
 
 export class Shuffle extends Command {
     public constructor() {
@@ -22,7 +22,7 @@ export class Shuffle extends Command {
         });
     };
 
-    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+    public readonly run = (message: ClientMessage): ResolveData => {
         const {author, member, guild, client} = message;
         const queue: Queue = client.queue.get(guild.id);
 

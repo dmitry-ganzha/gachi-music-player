@@ -1,9 +1,9 @@
-import {VoiceChannel} from "discord.js";
-import {Queue} from "../Structures/Queue/Queue";
-import {InputPlaylist, InputTrack, Song} from "../Structures/Queue/Song";
-import {Voice} from "../Structures/Voice/Voice";
+import {InputPlaylist, InputTrack, Song} from "@Queue/Song";
+import {ClientMessage} from "@Client/interactionCreate";
 import {MessagePlayer} from "./PlayerMessages";
-import {ClientMessage} from "../../Handler/Events/Activity/interactionCreate";
+import {VoiceChannel} from "discord.js";
+import {Voice} from "@VoiceManager";
+import {Queue} from "@Queue/Queue";
 
 //Что можно сделать с очередью (в будущем будет дорабатываться)
 export namespace QueueManager {

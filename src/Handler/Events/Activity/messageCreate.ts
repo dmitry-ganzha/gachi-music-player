@@ -1,6 +1,6 @@
-import {Bot} from "../../../../db/Config.json";
-import {Event} from "../../../Structures/Handle/Event";
 import {ClientMessage, interactionCreate, messageUtils} from "./interactionCreate";
+import {Event} from "@Structures/Handle/Event";
+import {Bot} from "@db/Config.json";
 
 //Префикс
 const DefaultPrefix = Bot.prefix;

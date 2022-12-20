@@ -1,10 +1,10 @@
-import {Command, ResolveData} from "../../../Structures/Handle/Command";
-import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
+import {ClientMessage, EmbedConstructor} from "@Client/interactionCreate";
 import {ApplicationCommandOptionType, Colors} from "discord.js";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
-import {FFspace} from "../../../AudioPlayer/Structures/Media/FFspace";
-import Filters from "../../../../db/Filters.json";
-import {ReactionMenu} from "../../../Structures/ReactionMenu";
+import {Command, ResolveData} from "@Structures/Handle/Command";
+import {ReactionMenu} from "@Structures/ReactionMenu";
+import {FFspace} from "@Structures/Media/FFspace";
+import Filters from "@db/Filters.json";
+import {Queue} from "@Queue/Queue";
 
 export default class Filter extends Command {
     public constructor() {
@@ -29,7 +29,7 @@ export default class Filter extends Command {
         });
     };
 
-    public readonly run = async (message: ClientMessage, args: string[]): Promise<ResolveData> => {
+    public readonly run = (message: ClientMessage, args: string[]): ResolveData => {
         const {author, member, guild, client} = message;
         const queue: Queue = client.queue.get(guild.id);
 
@@ -73,11 +73,10 @@ export default class Filter extends Command {
 
             return this.#ReactionMenuFilters(ArrayFilters, message);
         }
+        //Получаем данные о фильтре
+        const Filter = FFspace.getFilter(FilterName);
 
         try {
-            //Получаем данные о фильтре
-            const Filter = FFspace.getFilter(FilterName);
-
             //Если есть такой фильтр
             if (Filter) {
                 const enableFilter = !!queue.filters.find((filter) => typeof filter === "number" ? null : Filter.names.includes(filter));
@@ -121,7 +120,7 @@ export default class Filter extends Command {
                 }
             } else return {text: `${author.username}, у меня нет такого фильтра. Все фильтры - all`, ...SendArg};
         } finally {
-            message.client.player.emit("filter", message);
+            if (Filter) message.client.player.emit("filter", message);
         }
     };
     //Запускаем ReactionMenu

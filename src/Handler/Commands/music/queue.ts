@@ -1,9 +1,9 @@
-import {Command, replacer, ResolveData} from "../../../Structures/Handle/Command";
+import {Command, replacer, ResolveData} from "@Structures/Handle/Command";
+import {ClientMessage} from "@Client/interactionCreate";
+import {DurationUtils} from "@Managers/DurationUtils";
 import {MessageReaction, User} from "discord.js";
-import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {Song} from "../../../AudioPlayer/Structures/Queue/Song";
-import {DurationUtils} from "../../../AudioPlayer/Managers/DurationUtils";
-import {ClientMessage} from "../../Events/Activity/interactionCreate";
+import {Queue} from "@Queue/Queue";
+import {Song} from "@Queue/Song";
 
 export default class CommandQueue extends Command {
     public constructor() {
@@ -17,7 +17,7 @@ export default class CommandQueue extends Command {
         });
     };
 
-    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+    public readonly run = (message: ClientMessage): ResolveData => {
         const {author, guild} = message;
         const queue: Queue = message.client.queue.get(guild.id);
 

@@ -1,4 +1,4 @@
-import {Module} from "../../../Structures/Handle/Module";
+import {Module} from "@Structures/Handle/Module";
 
 export class ArraySort extends Module {
     public readonly isEnable: boolean = true;

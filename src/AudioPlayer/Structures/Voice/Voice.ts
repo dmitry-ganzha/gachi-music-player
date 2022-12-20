@@ -1,5 +1,5 @@
-import {ChannelType,Guild,GuildMember,InternalDiscordGatewayAdapterCreator,StageChannel,VoiceChannel,VoiceState} from "discord.js";
 import {DiscordGatewayAdapterCreator, getVoiceConnection, getVoiceConnections, joinVoiceChannel} from "@discordjs/voice";
+import {ChannelType,Guild,InternalDiscordGatewayAdapterCreator,StageChannel,VoiceChannel,VoiceState} from "discord.js";
 
 //Допустимые голосовые каналы
 type VoiceChannels = VoiceChannel | StageChannel;

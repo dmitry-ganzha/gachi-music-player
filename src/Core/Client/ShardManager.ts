@@ -8,7 +8,8 @@ class ShardManager extends ShardingManager {
             token: process.env.TOKEN,
             mode: "process",
             respawn: true,
-            totalShards: "auto"
+            totalShards: "auto",
+            execArgv: ["-r tsconfig-paths/register"]
         });
         //Ивент создания дубликата
         this.on("shardCreate", (shard: Shard) => {

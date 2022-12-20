@@ -1,9 +1,9 @@
+import {consoleTime, WatKLOK} from "@Client/Client";
 import {GuildMember, VoiceState} from "discord.js";
-import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {consoleTime, WatKLOK} from "../../../Core/Client/Client";
-import {Event} from "../../../Structures/Handle/Event";
-import {Voice} from "../../../AudioPlayer/Structures/Voice/Voice";
-import {Debug} from "../../../../db/Config.json";
+import {Event} from "@Structures/Handle/Event";
+import {Debug} from "@db/Config.json";
+import {Voice} from "@VoiceManager";
+import {Queue} from "@Queue/Queue";
 
 export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
     public readonly name: string = "voiceStateUpdate";

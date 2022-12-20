@@ -1,8 +1,8 @@
+import {ClientMessage} from "@Client/interactionCreate";
+import {Event} from "@Structures/Handle/Event";
 import {GuildMember} from "discord.js";
-import {WatKLOK} from "../../../Core/Client/Client";
-import {Event} from "../../../Structures/Handle/Event";
-import {ClientMessage} from "../Activity/interactionCreate";
-import {Channels} from "../../../../db/Config.json";
+import {Channels} from "db/Config.json";
+import {WatKLOK} from "@Client/Client";
 
 export class guildMemberRemove extends Event<GuildMember, null> {
     public readonly name: string = "guildMemberRemove";

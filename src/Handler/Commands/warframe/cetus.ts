@@ -1,6 +1,6 @@
-import {Command, ResolveData} from "../../../Structures/Handle/Command";
-import {httpsClient} from "../../../Core/httpsClient";
-import {EmbedConstructor} from "../../Events/Activity/interactionCreate";
+import {Command, ResolveData} from "@Structures/Handle/Command";
+import {EmbedConstructor} from "@Client/interactionCreate";
+import {httpsClient} from "@httpsClient";
 import {Colors} from "discord.js";
 
 const CetusCycle = "https://api.warframestat.us/pc/cetusCycle";

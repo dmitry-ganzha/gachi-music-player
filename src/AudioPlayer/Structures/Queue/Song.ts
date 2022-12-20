@@ -1,10 +1,10 @@
-import {DurationUtils} from "../../Managers/DurationUtils";
-import {Images} from "../EmbedMessages";
-import {ClientMessage} from "../../../Handler/Events/Activity/interactionCreate";
-import {httpsClient} from "../../../Core/httpsClient";
 import {ColorTrack, SongFinder, supportPlatforms, TypePlatform} from "../SongSupport";
-import {Music} from "../../../../db/Config.json";
-import {DownloadManager} from "../../Managers/DownloadManager";
+import {DownloadManager} from "@Managers/DownloadManager";
+import {ClientMessage} from "@Client/interactionCreate";
+import {DurationUtils} from "@Managers/DurationUtils";
+import {httpsClient} from "@httpsClient";
+import {Images} from "../EmbedMessages";
+import {Music} from "@db/Config.json";
 
 const Download = DownloadManager.downloadUrl;
 
@@ -34,7 +34,7 @@ export class Song {
         this.#author = {
             url: track.author?.url ?? `https://discordapp.com/users/${id}`,
             title: track.author?.title ?? username,
-            image: track.author?.image ?? {url: Images.NotImage},
+            image: track.author?.image ?? Images._image,
             isVerified: track.author?.isVerified ?? undefined
         };
         this.#duration = {seconds, full: seconds > 0 ? DurationUtils.ParsingTimeToString(seconds) : "Live"};

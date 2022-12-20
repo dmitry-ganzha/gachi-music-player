@@ -1,12 +1,12 @@
+import {PlayerEventsCallBacks} from "@Managers/PlayerManager";
+import {ClientMessage} from "@Client/interactionCreate";
+import {MessagePlayer} from "@Managers/PlayerMessages";
 import {StageChannel, VoiceChannel} from "discord.js";
-import {AudioPlayer} from "../AudioPlayer";
-import {Song} from "./Song";
-import {ClientMessage} from "../../../Handler/Events/Activity/interactionCreate";
-import {PlayerEventsCallBacks} from "../../Managers/PlayerManager";
 import {VoiceConnection} from "@discordjs/voice";
-import {MessagePlayer} from "../../Managers/PlayerMessages";
-import {OpusAudio} from "../Media/OpusAudio";
-import {consoleTime} from "../../../Core/Client/Client";
+import {AudioPlayer} from "../AudioPlayer";
+import {consoleTime} from "@Client/Client";
+import {OpusAudio} from "@OpusAudio";
+import {Song} from "./Song";
 
 export type AudioFilters = Array<string> | Array<string | number>;
 
@@ -18,10 +18,9 @@ export class Queue {
     readonly #player: AudioPlayer = new AudioPlayer(); //Сам плеер
     //Каналы (message: TextChannel, voice: VoiceChannel)
     readonly #channels: { message: ClientMessage, voice: VoiceChannel | StageChannel };
-    readonly #options: { random: boolean, loop: "song" | "songs" | "off", stop: boolean, radioMode: boolean } = { //Уникальные настройки
+    readonly #options: { random: boolean, loop: "song" | "songs" | "off", radioMode: boolean } = { //Уникальные настройки
         random: false, //Рандомные треки (каждый раз в плеере будет играть разная музыка из очереди)
         loop: "off", //Тип повтора (off, song, songs)
-        stop: false, //Пользователь выключил музыки или музыка сама закончилась
         radioMode: false //Режим радио
     };
     #filters: Array<string> | Array<string | number> = [];  //Фильтры для FFmpeg
@@ -135,7 +134,7 @@ export class Queue {
 
         if (!seek) {
             consoleTime(`[GuildID: ${this.guild.id}]: ${this.song.title}`); //Отправляем лог о текущем треке
-            MessagePlayer.toPlay(this.message); //Если стрим не пустышка отправляем сообщение
+            MessagePlayer.toPlay(this.message); //Отправляем сообщение с авто обновлением
         }
     };
 }

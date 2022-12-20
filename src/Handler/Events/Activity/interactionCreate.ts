@@ -1,10 +1,10 @@
 import {ActionRow,ActionRowBuilder,BaseInteraction,BaseMessageOptions,ChannelType,Colors,CommandInteractionOption,DMChannel,EmbedData,GuildMember,Message,MessageEditOptions,MessagePayload,MessageReaction,NewsChannel,PartialDMChannel,TextChannel,ThreadChannel,User} from "discord.js";
-import {Bot} from '../../../../db/Config.json';
-import {WatKLOK} from "../../../Core/Client/Client";
-import {DurationUtils} from "../../../AudioPlayer/Managers/DurationUtils";
-import {Event} from "../../../Structures/Handle/Event";
-import {Command, messageUtilsOptions, ResolveData} from "../../../Structures/Handle/Command";
-import {ReactionMenu} from "../../../Structures/ReactionMenu";
+import {Command, messageUtilsOptions, ResolveData} from "@Structures/Handle/Command";
+import {DurationUtils} from "@Managers/DurationUtils";
+import {ReactionMenu} from "@Structures/ReactionMenu";
+import {Event} from "@Structures/Handle/Event";
+import {WatKLOK} from "@Client/Client";
+import {Bot} from '@db/Config.json';
 
 //База с пользователями которые слишком часто используют команды
 const CoolDownBase = new Map<string, { time: number }>();
@@ -30,7 +30,7 @@ export class interactionCreate extends Event<ClientInteraction, null> {
      * @param command {Command} Команда
      * @param args {string[]} Аргументы
      */
-    public static runCommand = async (message: ClientInteractive, command: Command, args: string[] = []): Promise<void> => {
+    public static runCommand = (message: ClientInteractive, command: Command, args: string[] = []): void => {
         const {author} = message;
 
         //Если нет команды, которую требует пользователь сообщаем ему об этом
@@ -49,9 +49,13 @@ export class interactionCreate extends Event<ClientInteraction, null> {
         if (permissions) return interactionCreate.sendMessage(message, permissions);
 
         //Передаем данные в команду
-        const runCommand = await command.run(message, args ?? []);
+        const runCommand = command.run(message, args ?? []);
+
         //Если есть что отправить на канал
-        if (runCommand) return interactionCreate.sendMessage(message, runCommand);
+        if (runCommand) {
+            if (!(runCommand instanceof Promise)) return interactionCreate.sendMessage(message, runCommand);
+            runCommand.then((data) => interactionCreate.sendMessage(message, data));
+        }
     };
     //====================== ====================== ====================== ======================
     /**
@@ -116,7 +120,7 @@ export class interactionCreate extends Event<ClientInteraction, null> {
             if (command.isOwner) return { text: `${author}, Эта команда не для тебя!`, color: "DarkRed" };
 
             //Проверяем находится ли пользователь в базе
-            if (CoolDownBase.get(author.id)) return { text: `${author}, я тебе что квантовый компьютер. Подожди ${DurationUtils.ParsingTimeToString(CoolDownBase.get(author.id).time)}`, color: "DarkRed" }
+            if (CoolDownBase.get(author.id)) return { text: `${author}, ты слишком быстро отправляем сообщения! Подожди ${DurationUtils.ParsingTimeToString(CoolDownBase.get(author.id).time)}`, color: "DarkRed" }
             else {
                 //Добавляем пользователя в CoolDown базу
                 CoolDownBase.set(author.id, {time: command.isCLD});
@@ -178,7 +182,7 @@ export namespace messageUtils {
      * @param callbacks {Array<Function>} Любые функции которые надо запустить после отправления сообщения
      */
     export function sendMessage({color, text, codeBlock, message}: messageUtilsOptions, callbacks?: Array<Function>): void {
-        let Embed: EmbedConstructor, sendMsg;
+        let Embed: EmbedConstructor, sendMsg: Promise<ClientMessage>;
 
         if (typeof text === "string") Embed = { color: typeof color === "number" ? color : Colors[color] ?? Colors.Blue, description: typeof codeBlock === "string" ? `\`\`\`${codeBlock}\n${text}\n\`\`\`` : text };
         else Embed = text;
@@ -187,10 +191,10 @@ export namespace messageUtils {
             //Отправляем сообщение с упоминанием
             if ("isButton" in message) sendMsg = message.reply({ embeds: [Embed as any], fetchReply: true });
             //Отправляем обычное сообщение
-            else sendMsg = message.channel.send({embeds: [Embed as any]}) as Promise<ClientMessage>;
+            else sendMsg = message.channel.send({embeds: [Embed as any]});
         } catch (e) {/* Notfing */}
 
-        sendMsg.then((msg) => {
+        sendMsg.then((msg: ClientMessage) => {
             messageUtils.deleteMessage(msg);
 
             if (callbacks) callbacks.forEach((cb) => cb(msg));

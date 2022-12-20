@@ -1,7 +1,7 @@
-import {Command, ResolveData} from "../../../Structures/Handle/Command";
-import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
+import {Command, ResolveData} from "@Structures/Handle/Command";
+import {ClientMessage} from "@Client/interactionCreate";
 import {ApplicationCommandOptionType} from "discord.js";
-import {ClientMessage} from "../../Events/Activity/interactionCreate";
+import {Queue} from "@Queue/Queue";
 
 export class Skip extends Command {
     public constructor() {
@@ -22,7 +22,7 @@ export class Skip extends Command {
         });
     };
 
-    public readonly run = async (message: ClientMessage, args: string[] = ["0"]): Promise<ResolveData> => {
+    public readonly run = (message: ClientMessage, args: string[] = ["0"]): ResolveData => {
         const {author, member, guild, client} = message;
         const queue: Queue = client.queue.get(guild.id);
         const argsNum = parseInt(args[0]);

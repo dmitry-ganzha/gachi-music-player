@@ -1,8 +1,8 @@
-import {Command} from "../Structures/Handle/Command";
 import {existsSync, mkdirSync, readdirSync} from "node:fs";
-import {Module} from "../Structures/Handle/Module";
-import {Event} from "../Structures/Handle/Event";
-import {WatKLOK} from "./Client/Client";
+import {Command} from "@Structures/Handle/Command";
+import {Module} from "@Structures/Handle/Module";
+import {Event} from "@Structures/Handle/Event";
+import {WatKLOK} from "@Client/Client";
 type TypeFileLoad = Command | Event<any, any> | Module;
 type FileCallback = (pull: TypeFileLoad, {}: { dir: string, file: string, reason: string }) => void;
 

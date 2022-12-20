@@ -1,6 +1,6 @@
-import {httpsClient} from "../../../Core/httpsClient";
-import {InputPlaylist, InputTrack} from "../../../AudioPlayer/Structures/Queue/Song";
-import {env} from "../../../Core/env";
+import {InputPlaylist, InputTrack} from "@Queue/Song";
+import {httpsClient} from "@httpsClient";
+import {env} from "@env";
 
 const vkApiLink = "https://api.vk.com/method/";
 const connectString = `?access_token=${env.get("VK_TOKEN")}`;

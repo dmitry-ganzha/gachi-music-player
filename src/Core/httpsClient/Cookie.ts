@@ -18,8 +18,8 @@ export function uploadCookie(Cookie: string | string[]): void {
     if (!existsSync(`./DataBase/Cookie.json`)) return null;
 
     try {
-        const CookieFile = JSON.parse(readFileSync(`./DataBase/Cookie.json`, "utf8"));
-        const newCookie = ParsingCookieToString({...ParsingCookieToJson(CookieFile.cookie), ...ParsingCookieToJson(Cookie)});
+        const CookieFile: {cookie: string} = JSON.parse(readFileSync(`./DataBase/Cookie.json`, "utf8"));
+        const newCookie: string = ParsingCookieToString({...ParsingCookieToJson(CookieFile.cookie), ...ParsingCookieToJson(Cookie)});
 
         return writeFile('./db/Cookie.json', JSON.stringify({cookie: newCookie}, null, `\t`), () => null);
     } catch (err) { throw new Error("Cookie file has damaged!"); }
@@ -39,8 +39,8 @@ function ParsingCookieToJson(headCookie: string[] | string): {} {
         //Если параметра нет, то не добавляем его
         if (arrayCookie.length <= 1) return;
 
-        const key = arrayCookie.shift()?.trim() as string;
-        const value = arrayCookie.join("=").trim();
+        const key: string = arrayCookie.shift()?.trim();
+        const value: string = arrayCookie.join("=").trim();
 
         Json = {...Json, [key]: value};
     });
@@ -56,8 +56,8 @@ function ParsingCookieToJson(headCookie: string[] | string): {} {
  * @param JsonCookie {object} Json куки
  */
 function ParsingCookieToString(JsonCookie: {}) {
-    let result = [];
+    let result: string[] = [];
 
-    for (let [key, value] of Object.entries(JsonCookie)) result.push(`${key}=${value}`);
+    for (const [key, value] of Object.entries(JsonCookie)) result.push(`${key}=${value}`);
     return result.join("; ");
 }

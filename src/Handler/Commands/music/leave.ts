@@ -1,7 +1,7 @@
-import {Command, ResolveData} from "../../../Structures/Handle/Command";
-import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {ClientMessage} from "../../Events/Activity/interactionCreate";
-import { Voice } from "../../../AudioPlayer/Structures/Voice/Voice";
+import {Command, ResolveData} from "@Structures/Handle/Command"
+import {ClientMessage} from "@Client/interactionCreate";
+import { Voice } from "@VoiceManager";
+import {Queue} from "@Queue/Queue";
 
 export class Leave extends Command {
     public constructor() {
@@ -15,7 +15,7 @@ export class Leave extends Command {
         });
     };
 
-    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+    public readonly run = (message: ClientMessage): ResolveData => {
         const {guild, member, author, client} = message;
         const queue: Queue = client.queue.get(guild.id);
         const actVoice = Voice.getVoice(guild.id);

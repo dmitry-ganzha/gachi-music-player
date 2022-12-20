@@ -1,10 +1,9 @@
-import {StageChannel, VoiceChannel} from "discord.js";
 import {FailRegisterPlatform, SearchPlatforms, SupportPlatforms, supportPlatforms, SupportType, TypePlatform} from "../SongSupport";
-import {ClientInteraction, ClientInteractive, ClientMessage, messageUtils} from "../../../Handler/Events/Activity/interactionCreate";
-import {InputPlaylist, InputTrack} from "../Queue/Song";
-import {DurationUtils} from "../../Managers/DurationUtils";
-import {replacer, ResolveData} from "../../../Structures/Handle/Command";
-
+import {ClientInteraction, ClientInteractive, ClientMessage, messageUtils} from "@Client/interactionCreate";
+import {replacer, ResolveData} from "@Structures/Handle/Command";
+import {InputPlaylist, InputTrack} from "@Queue/Song";
+import {StageChannel, VoiceChannel} from "discord.js";
+import {DurationUtils} from "@Managers/DurationUtils";
 
 //Данные которые необходимо передать для поиска
 interface Options {

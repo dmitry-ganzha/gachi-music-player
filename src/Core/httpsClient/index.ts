@@ -1,8 +1,8 @@
 import {BrotliDecompress, createBrotliDecompress, createDeflate, createGunzip, Deflate, Gunzip} from 'node:zlib';
-import {IncomingMessage} from "http";
-import {request, RequestOptions} from "https";
 import {getCookies, uploadCookie} from "./Cookie";
+import {request, RequestOptions} from "https";
 import UserAgents from "./UserAgents.json";
+import {IncomingMessage} from "http";
 
 let Cookie = getCookies(); //Получаем куки если он был указан в файле
 const decoderBase = {

@@ -1,9 +1,9 @@
-import {Queue} from "../Structures/Queue/Queue";
-import {InputPlaylist, Song} from "../Structures/Queue/Song";
-import {EmbedMessages} from "../Structures/EmbedMessages";
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType, User} from "discord.js";
-import {ClientMessage, messageUtils} from "../../Handler/Events/Activity/interactionCreate";
-import {consoleTime} from "../../Core/Client/Client";
+import {ClientMessage, messageUtils} from "@Client/interactionCreate";
+import {EmbedMessages} from "@Structures/EmbedMessages";
+import {InputPlaylist, Song} from "@Queue/Song";
+import {consoleTime} from "@Client/Client";
+import {Queue} from "@Queue/Queue";
 
 //Кнопки над сообщением о проигрывании трека
 const Buttons = new ActionRowBuilder().addComponents([
@@ -122,7 +122,7 @@ function UpdateMessage(message: ClientMessage): void {
         //Обновляем сообщение
         return message.edit({embeds: [CurrentPlayEmbed]}).catch((e) => {
             if (e.message === "Unknown Message") MessageUpdater.toRemove(message.channelId);
-            consoleTime(`[MessageEmitter]: [function: UpdateMessage]: ${e.message}`)
+            consoleTime(`[MessageEmitter]: [function: UpdateMessage]: ${e.message}`);
         });
     });
 }

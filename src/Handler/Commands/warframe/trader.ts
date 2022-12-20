@@ -1,7 +1,7 @@
-import {Command, ResolveData} from "../../../Structures/Handle/Command";
-import {httpsClient} from "../../../Core/httpsClient";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
+import {ClientMessage, EmbedConstructor} from "@Client/interactionCreate";
+import {Command, ResolveData} from "@Structures/Handle/Command";
 import {Colors, MessageReaction, User} from "discord.js";
+import {httpsClient} from "@httpsClient";
 
 const TraderApi = "https://api.warframestat.us/pc/ru/voidTrader/";
 const VoidIcon = "https://cdn.discordapp.com/attachments/850775689107865641/996413936595378256/BaroBanner.webp";

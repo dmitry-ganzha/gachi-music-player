@@ -1,4 +1,4 @@
-import {WatKLOK} from "../../Core/Client/Client";
+import {WatKLOK} from "@Client/Client";
 
 export class Module {
     //Включать модуль

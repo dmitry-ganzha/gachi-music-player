@@ -1,10 +1,5 @@
+import { ClientInteraction, ClientInteractive, ClientMessage, EmbedConstructor } from "@Client/interactionCreate";
 import { ApplicationCommandOptionType, PermissionResolvable } from "discord.js";
-import {
-    ClientInteraction,
-    ClientInteractive,
-    ClientMessage,
-    EmbedConstructor
-} from "../../Handler/Events/Activity/interactionCreate";
 
 interface InteractiveOptions {
     name: string,

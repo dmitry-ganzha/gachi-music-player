@@ -1,21 +1,25 @@
-import {WatKLOK} from "../../Core/Client/Client";
-import {InputPlaylist, Song} from "./Queue/Song";
-import {Queue} from "./Queue/Queue";
-import {DurationUtils} from "../Managers/DurationUtils";
-import {ClientMessage, EmbedConstructor} from "../../Handler/Events/Activity/interactionCreate";
+import {ClientMessage, EmbedConstructor} from "@Client/interactionCreate";
+import {DurationUtils} from "@Managers/DurationUtils";
+import {replacer} from "@Structures/Handle/Command";
+import {InputPlaylist, Song} from "@Queue/Song";
+import {WatKLOK} from "@Client/Client";
+import {Music} from "@db/Config.json";
+import {Queue} from "@Queue/Queue";
 import {Colors} from "discord.js";
-import {replacer} from "../../Structures/Handle/Command";
-import {Music} from "../../../db/Config.json";
 
-// Настройки прогресс бара текущей музыки
+// Настройки прогресс бара, трека который сейчас проигрывается
 const Bar = Music.ProgressBar;
 
-//Вспомогательный элемент
-export namespace Images {
-    export const Verification = "https://media.discordapp.net/attachments/815897363188154408/1028014390299082852/Ok.png";
-    export const NotVerification = "https://media.discordapp.net/attachments/815897363188154408/1028014389934174308/Not.png";
-    export const NotFound = "https://media.discordapp.net/attachments/815897363188154408/1028014390752055306/WTF.png";
-    export const NotImage = "https://media.discordapp.net/attachments/815897363188154408/1028014391146328124/MusciNote.png";
+//Иконки верификации, так-же картинка на замену отсутствующей
+export const Images = {
+    //✔️ - Подтвержденный автор
+    ver: {url: "https://media.discordapp.net/attachments/815897363188154408/1028014390299082852/Ok.png"},
+    //✖️ - Не подтвержденный автор
+    _ver: {url: "https://media.discordapp.net/attachments/815897363188154408/1028014389934174308/Not.png"},
+    //❓ - Не удалось получить данные
+    _found: {url: "https://media.discordapp.net/attachments/815897363188154408/1028014390752055306/WTF.png" },
+    //⛔️ - Нет картинки
+    _image: {url: "https://media.discordapp.net/attachments/815897363188154408/1028014391146328124/MusciNote.png" }
 }
 
 //Здесь хранятся все EMBED данные о сообщениях (Используется в MessagePlayer)
@@ -27,13 +31,11 @@ export namespace EmbedMessages {
     */
     export function toPlay(client: WatKLOK, queue: Queue): EmbedConstructor {
         const { color, author, image, requester } = queue.song;
+        const fields = toPlayFunctions.getFields(queue, client);
+        const AuthorSong = replacer.replaceText(author.title, 45, false);
 
-        return { color: color,
-            author: { name: replacer.replaceText(author.title, 45, false), url: author.url,
-            iconURL: author.isVerified === undefined ? Images.NotFound : author.isVerified ? Images.Verification : Images.NotVerification },
-            thumbnail: { url: author?.image?.url ?? Images.NotImage },
-            fields: toPlayFunctions.getFields(queue, client),
-            image: { url: image?.url ?? null },
+        return { color, image, thumbnail: author?.image ?? Images._image, fields,
+            author: { name: AuthorSong, url: author.url, iconURL: checkVer(author.isVerified) },
             footer: { text: `${requester.username} | ${DurationUtils.getTimeQueue(queue)} | 🎶: ${queue.songs.length}`, iconURL: requester.avatarURL() }
         };
     }
@@ -47,11 +49,12 @@ export namespace EmbedMessages {
      */
     export function toPushSong(client: WatKLOK, song: Song, {songs}: Queue): EmbedConstructor {
         const { color, author, image, title, url, duration, requester } = song;
+        const AuthorSong = replacer.replaceText(author.title, 45, false);
+        const fields = [{ name: "**Добавлено в очередь**", value: `**❯** **[${replacer.replaceText(title, 40, true)}](${url}})\n**❯** \`\`[${duration.full}]\`\`**` }];
 
-        return { color,
-            author: { name: replacer.replaceText(author.title, 45, false), iconURL: author?.image?.url ?? Images.NotImage, url: author.url },
-            thumbnail: { url: !image?.url ? author?.image.url : image?.url ?? Images.NotImage },
-            fields: [{ name: "Добавлено в очередь", value: `**❯** [${replacer.replaceText(title, 40, true)}](${url}})\n**❯** \`\`[${duration.full}]\`\`` }],
+        return { color, fields,
+            author: { name: AuthorSong, iconURL: author?.image?.url ?? Images._image.url, url: author.url },
+            thumbnail: !image?.url ? author?.image : image ?? Images._image,
             footer: { text: `${requester.username} | ${DurationUtils.getTimeQueue(songs)} | 🎶: ${songs.length}`, iconURL: requester.avatarURL() }
         };
     }
@@ -66,11 +69,10 @@ export namespace EmbedMessages {
     export function toPushPlaylist({client, author: DisAuthor}: ClientMessage, playlist: InputPlaylist): EmbedConstructor {
         const { author, image, url, title, items } = playlist;
 
-        return { color: Colors.Blue,
-            author: { name: author?.title, iconURL: author?.image?.url ?? Images.NotImage, url: author?.url },
-            thumbnail: { url: typeof image === "string" ? image : image.url ?? Images.NotImage },
-            description: `Найден плейлист [${title}](${url})`,
-            timestamp: new Date(),
+        return { color: Colors.Blue, timestamp: new Date(),
+            author: { name: author?.title, iconURL: author?.image?.url ?? Images._image.url, url: author?.url },
+            thumbnail: typeof image === "string" ? {url: image} : image ?? Images._image,
+            description: `Найден плейлист **[${title}](${url})**`,
             footer: { text: `${DisAuthor.username} | ${DurationUtils.getTimeQueue(items)} | 🎶: ${items?.length}`, iconURL: DisAuthor.displayAvatarURL({}) }
         };
     }
@@ -84,13 +86,11 @@ export namespace EmbedMessages {
     */
     export function toError(client: WatKLOK, {songs, song}: Queue, err: Error | string): EmbedConstructor {
         const {color, author, image, title, url, requester} = song;
+        const AuthorSong = replacer.replaceText(author.title, 45, false);
 
-        return { color,
+        return { color, thumbnail: image ?? Images._image, timestamp: new Date(),
             description: `\n[${title}](${url})\n\`\`\`js\n${err}...\`\`\``,
-            author: { name: replacer.replaceText(author.title, 45, false), url: author.url,
-                iconURL: author.isVerified === undefined ? Images.NotFound : author.isVerified ? Images.Verification : Images.NotVerification },
-            thumbnail: { url: image?.url ?? Images.NotImage },
-            timestamp: new Date(),
+            author: { name: AuthorSong, url: author.url, iconURL: checkVer(author.isVerified) },
             footer: { text: `${requester.username} | ${DurationUtils.getTimeQueue(songs)} | 🎶: ${songs.length}`, iconURL: requester?.avatarURL() ?? client.user.displayAvatarURL() }
         };
     }
@@ -105,10 +105,10 @@ namespace toPlayFunctions {
         const {songs, song, player} = queue;
         const VisualDuration = playTime.toString(song.duration, player.streamDuration);
         //Текущий трек
-        const fields = [{ name: "Щас играет", value: `**❯** [${replacer.replaceText(song.title, 29, true)}](${song.url})\n${VisualDuration}` }];
+        const fields = [{ name: "**Щас играет**", value: `**❯** **[${replacer.replaceText(song.title, 29, true)}](${song.url})**\n${VisualDuration}` }];
 
         //Следующий трек
-        if (songs.length > 1) fields.push({ name: "Потом", value: `**❯** [${replacer.replaceText(songs[1].title, 29, true)}](${songs[1].url})` });
+        if (songs.length > 1) fields.push({ name: "**Потом**", value: `**❯** **[${replacer.replaceText(songs[1].title, 29, true)}](${songs[1].url})**` });
         return fields;
     }
 }
@@ -123,7 +123,7 @@ namespace playTime {
         if (duration.full === "Live" || !Bar.enable) return `\`\`[${duration}]\`\``;
 
         const parsedDuration = DurationUtils.ParsingTimeToString(playDuration);
-        const progress = matchBar(playDuration as number, duration.seconds, 20);
+        const progress = matchBar(playDuration, duration.seconds, 20);
         const string = `**❯** \`\`[${parsedDuration} \\ ${duration.full}]\`\` \n\`\``;
 
         return `${string}${progress}\`\``;
@@ -148,4 +148,14 @@ namespace playTime {
             return "**❯** \`\`[Loading]\`\`";
         }
     }
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Выдаем иконку проверки автора музыки
+ * @param isVer {boolean} Подтвержденный пользователь?
+ */
+function checkVer(isVer: boolean): string {
+    if (isVer === undefined) return Images._found.url;
+    else if (isVer) return Images.ver.url;
+    return Images._ver.url;
 }

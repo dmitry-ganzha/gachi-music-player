@@ -1,10 +1,10 @@
-import {SoundCloud, Spotify, VK, YouTube} from "../../Structures/Platforms";
-import {FFspace} from "./Media/FFspace";
+import {InputPlaylist, InputTrack, Song} from "@Queue/Song";
+import {SoundCloud, Spotify, VK, YouTube} from "@APIs";
+import {DurationUtils} from "@Managers/DurationUtils";
 import {Images} from "./EmbedMessages";
 import {Colors} from "discord.js";
-import {InputPlaylist, InputTrack, Song} from "./Queue/Song";
-import {DurationUtils} from "../Managers/DurationUtils";
-import {env} from "../../Core/env";
+import {FFspace} from "@FFspace";
+import {env} from "@env";
 
 /*
 Для добавления своей платформы нужно добавить в {supportPlatforms} и {PlatformReg}. Для получения названия платформы и данных с нее
@@ -54,11 +54,8 @@ export const SupportPlatforms = {
             //Если не найдена звуковая дорожка
             if (!trackInfo) return null;
 
-            return {
-                url: search,
+            return { url: search, author: null, image: Images._image,
                 title: search.split("/").pop(),
-                author: null,
-                image: {url: Images.NotImage},
                 duration: {seconds: trackInfo.format.duration},
                 format: {url: trackInfo.format.filename}
             };

@@ -1,8 +1,8 @@
-import {Command, ResolveData} from "../../../Structures/Handle/Command";
+import {Command, ResolveData} from "@Structures/Handle/Command";
+import {ClientMessage} from "@Client/interactionCreate";
 import {StageChannel, VoiceChannel} from "discord.js";
-import {Queue} from "../../../AudioPlayer/Structures/Queue/Queue";
-import {Voice} from "../../../AudioPlayer/Structures/Voice/Voice";
-import {ClientMessage} from "../../Events/Activity/interactionCreate";
+import {Voice} from "@VoiceManager";
+import {Queue} from "@Queue/Queue";
 
 export class Join extends Command {
     public constructor() {
@@ -22,7 +22,7 @@ export class Join extends Command {
         });
     };
 
-    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+    public readonly run = (message: ClientMessage): ResolveData => {
         const {author, member, guild} = message;
         const voiceChannel: VoiceChannel | StageChannel = member.voice.channel;
         const queue: Queue = message.client.queue.get(guild.id);

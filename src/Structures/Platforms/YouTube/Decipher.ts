@@ -1,9 +1,9 @@
-import {httpsClient} from "../../../Core/httpsClient";
-import {consoleTime} from "../../../Core/Client/Client";
-import * as vm from "vm";
-import * as querystring from "querystring";
 import { URL, URLSearchParams } from 'node:url';
-import {swapPositions} from "../../../AudioPlayer/Structures/Queue/Queue";
+import {swapPositions} from "@Queue/Queue";
+import {consoleTime} from "@Client/Client";
+import * as querystring from "querystring";
+import {httpsClient} from "@httpsClient";
+import * as vm from "vm";
 
 const ESCAPING_SEGMENT = [
     // Strings

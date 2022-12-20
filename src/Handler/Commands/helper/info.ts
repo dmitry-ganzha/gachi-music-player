@@ -1,12 +1,11 @@
-import {Command, ResolveData} from "../../../Structures/Handle/Command";
-import os from 'node:os';
-import pak from "../../../../package.json";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
-import {DurationUtils} from "../../../AudioPlayer/Managers/DurationUtils";
+import {ClientMessage, EmbedConstructor} from "@Client/interactionCreate";
+import {Command, ResolveData} from "@Structures/Handle/Command";
+import {DurationUtils} from "@Managers/DurationUtils";
 import {Colors} from "discord.js";
-import ParsingTimeToString = DurationUtils.ParsingTimeToString;
+import pak from "package.json";
+import os from "node:os";
 
-const core = os.cpus()[0];
+const processor = os.cpus()[0].model;
 
 export class Info extends Command {
     public constructor() {
@@ -23,7 +22,7 @@ export class Info extends Command {
         });
     };
 
-    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+    public readonly run = (message: ClientMessage): ResolveData => {
         return {
             embed: this.#EmbedConstructor(message)
         }
@@ -47,7 +46,7 @@ export class Info extends Command {
             fields: [
                 {
                     name: "Основные",
-                    value: `**❯ Разработчик: SNIPPIK#4178 **\n**❯ Команд:** ${client.commands.size}\n**❯ Версия:** [${pak.version}]\n**❯ Процессор [${core?.model}]**`
+                    value: `**❯ Разработчик: SNIPPIK#4178 **\n**❯ Команд:** ${client.commands.size}\n**❯ Версия:** [${pak.version}]\n**❯ Процессор [${processor}]**`
                 },
                 {
                     name: "Статистика",
@@ -60,7 +59,7 @@ export class Info extends Command {
             ],
             timestamp: new Date(),
             footer: {
-                text: `Latency - ${(Date.now() - message.createdTimestamp < 0 ? Math.random() * 78 : Date.now() - message.createdTimestamp).toFixed(0)} | Api - ${(client.ws.ping < 0 ? Math.random() * 78 : client.ws.ping).toFixed(0)} | Uptime: ${ParsingTimeToString(client.uptime / 1000)}`,
+                text: `Latency - ${(Date.now() - message.createdTimestamp < 0 ? Math.random() * 78 : Date.now() - message.createdTimestamp).toFixed(0)} | Api - ${(client.ws.ping < 0 ? Math.random() * 78 : client.ws.ping).toFixed(0)} | Uptime: ${DurationUtils.ParsingTimeToString(client.uptime / 1000)}`,
                 iconURL: client.user.displayAvatarURL()
             }
         }

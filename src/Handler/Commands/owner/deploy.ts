@@ -1,6 +1,6 @@
-import {Command, ResolveData} from "../../../Structures/Handle/Command";
-import {ClientMessage} from "../../Events/Activity/interactionCreate";
-import {WatKLOK} from "../../../Core/Client/Client";
+import {Command, ResolveData} from "@Structures/Handle/Command";
+import {ClientMessage} from "@Client/interactionCreate";
+import {WatKLOK} from "@Client/Client";
 
 export class Deploy extends Command {
     public constructor() {
@@ -14,7 +14,7 @@ export class Deploy extends Command {
         });
     };
 
-    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+    public readonly run = (message: ClientMessage): ResolveData => {
         const {author, client} = message;
         return { text: `${author}, Load: [${this.#createSlashCommand(client)}]` };
     };

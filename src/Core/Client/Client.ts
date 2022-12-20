@@ -1,12 +1,12 @@
+import {DurationUtils} from "@AudioPlayer/Managers/DurationUtils";
 import {ActivityType, Client, IntentsBitField} from "discord.js";
-import {LoadFiles} from "../FileSystem";
-import {PlayerEmitter} from "../../AudioPlayer";
-import {Command} from "../../Structures/Handle/Command";
-import {Queue} from "../../AudioPlayer/Structures/Queue/Queue";
-import {Bot, Debug, Channels} from "../../../db/Config.json";
-import {env} from "../env";
-import {DurationUtils} from "../../AudioPlayer/Managers/DurationUtils";
-import {ClientMessage} from "../../Handler/Events/Activity/interactionCreate";
+import {ClientMessage} from "@Client/interactionCreate";
+import {Bot, Debug, Channels} from "@db/Config.json";
+import {Command} from "@Structures/Handle/Command";
+import {PlayerEmitter} from "@AudioPlayer/index";
+import {Queue} from "@Structures/Queue/Queue";
+import {LoadFiles} from "@FileSystem";
+import {env} from "@env";
 
 export function consoleTime(data: string) {
     const date = new Date();
@@ -42,7 +42,7 @@ export class WatKLOK extends Client {
                 IntentsBitField.Flags.DirectMessageReactions,
 
                 //Emoji and stickers (Бот может получать данные о emoji или стакерах)
-                //IntentsBitField.Flags.GuildEmojisAndStickers,
+                IntentsBitField.Flags.GuildEmojisAndStickers,
 
                 //Slash Commands (Пользователям доступны slash команды)
                 IntentsBitField.Flags.GuildIntegrations,

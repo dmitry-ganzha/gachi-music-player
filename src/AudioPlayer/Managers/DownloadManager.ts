@@ -1,9 +1,9 @@
-import {Song} from "../Structures/Queue/Song";
-import {FileSystem} from "../../Core/FileSystem";
+import {replacer} from "@Structures/Handle/Command";
+import {Debug, Music} from "@db/Config.json";
+import {httpsClient} from "@httpsClient";
+import {FileSystem} from "@FileSystem";
+import {Song} from "@Queue/Song";
 import fs from "fs";
-import {httpsClient} from "../../Core/httpsClient";
-import {Debug} from "../../../db/Config.json";
-import {replacer} from "../../Structures/Handle/Command";
 
 export namespace DownloadManager {
     /**
@@ -14,11 +14,12 @@ export namespace DownloadManager {
      */
     export function downloadUrl(song: Song, url?: string): boolean | string {
         if (song.duration.seconds >= 1000 || song.duration.full === "Live") return;
+        if (Music.CacheDir.endsWith("/")) Music.CacheDir.slice(Music.CacheDir.length - 1);
 
         const SongTitle = replacer.replaceArray(song.title, ["|", ",", "<", ">", ":", "\\", "/", "*", "?"]);
         const SongAuthor = replacer.replaceArray(song.author.title, ["|", ",", "<", ">", ":", "\\", "/", "*", "?"]);
 
-        const AudioDir = `AudioCache/[${SongAuthor}]`;
+        const AudioDir = `${Music.CacheDir}/[${SongAuthor}]`;
         FileSystem.createDirs(AudioDir);
 
         //Выдаем файл если уже он скачен

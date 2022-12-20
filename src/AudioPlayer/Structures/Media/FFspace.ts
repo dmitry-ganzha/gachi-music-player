@@ -1,7 +1,7 @@
-import {Duplex, DuplexOptions, Readable, Writable} from "stream";
 import {ChildProcessWithoutNullStreams, spawn, spawnSync} from "child_process";
-import AudioFilters from "../../../../db/Filters.json";
-import {dependencies} from "../../../../package.json";
+import {Duplex, DuplexOptions, Readable, Writable} from "stream";
+import AudioFilters from "@db/Filters.json";
+import {dependencies} from "package.json";
 
 const paths = {
     ffmpeg: ["ffmpeg", "avconv"],

@@ -1,9 +1,9 @@
-import {Command, ResolveData} from "../../../Structures/Handle/Command";
-import {ClientMessage, EmbedConstructor} from "../../Events/Activity/interactionCreate";
-import {SupportPlatforms, supportPlatforms, SupportType, FailRegisterPlatform} from "../../../AudioPlayer/Structures/SongSupport";
+import {SupportPlatforms, supportPlatforms, SupportType, FailRegisterPlatform} from "@Structures/SongSupport";
+import {ClientMessage, EmbedConstructor} from "@Client/interactionCreate";
+import {Command, ResolveData} from "@Structures/Handle/Command";
+import {ReactionMenu} from "@Structures/ReactionMenu";
+import {DurationUtils} from "@Managers/DurationUtils";
 import {Colors} from "discord.js";
-import {ReactionMenu} from "../../../Structures/ReactionMenu";
-import {DurationUtils} from "../../../AudioPlayer/Managers/DurationUtils";
 
 const ParsingTimeToString = DurationUtils.ParsingTimeToString;
 
@@ -22,7 +22,7 @@ export default class Status extends Command {
         });
     };
 
-    public readonly run = async (message: ClientMessage): Promise<ResolveData> => {
+    public readonly run = (message: ClientMessage): ResolveData => {
         const {author, client} = message;
         const Platforms = Object.keys(SupportPlatforms) as supportPlatforms[];
         const parsePlatforms: string[] = [];
