@@ -23,14 +23,14 @@ if choice gtr 6 goto Fail
 :Client
     echo running Client...
     cd build
-    node ./src/Core/Client/Client.js
+    node -r tsconfig-paths/register src/Core/Client/Client.js
     goto menu
 
 :: Запускаем ShardManager
 :ShardManager
     echo running ShardManager...
     cd build
-    node ./src/Core/Client/ShardManager.js
+    node -r tsconfig-paths/register src/Core/Client/ShardManager.js
     goto menu
 
 :: Запускаем билдер из typescript в javascript
