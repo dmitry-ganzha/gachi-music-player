@@ -6,13 +6,14 @@
   "Bot": {
     "ignoreErrors": true,
     "prefix": "!",
-    "OwnerIDs": [""]
+    "OwnerIDs": []
   },
   "Debug": false,
 
   "Music": {
     "CacheMusic": false,
-    
+    "CacheDir": "AudioCache",
+
     "AudioPlayer": {
       "sendDuration": 50
     },
@@ -24,6 +25,13 @@
     },
     "Audio": {
       "bitrate": "256k"
+    }
+  },
+  "ReactionMenuSettings": {
+    "emojis": {
+        "back": "⬅️",
+        "next": "➡️",
+        "cancel": "❌"
     }
   }
 }
