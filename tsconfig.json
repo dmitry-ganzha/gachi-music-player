@@ -1,9 +1,26 @@
 {
   "compilerOptions": {
-    "moduleResolution": "Node",
-    "baseUrl": "./",
+    "paths": {
+      "@db/*": ["db/*"],
+      "@env": ["src/Core/env"],
+      "@Client/*": ["src/Core/Client/*", "src/Handler/Events/Activity/*"],
+
+      "@Structures/*": ["src/Structures/*", "src/AudioPlayer/Structures/*"],
+      "@Managers/*": ["src/AudioPlayer/Managers/*"],
+      "@httpsClient": ["src/Core/httpsClient/index"],
+      "@FileSystem": ["src/Core/FileSystem"],
+      "@APIs": ["src/Structures/Platforms/index"],
+      "@FFspace": ["src/AudioPlayer/Structures/Media/FFspace"],
+
+      "@AudioPlayer/*": ["src/AudioPlayer/*"],
+      "@Queue/*": ["src/AudioPlayer/Structures/Queue/*"],
+      "@VoiceManager": ["src/AudioPlayer/Structures/Voice/Voice"],
+      "@OpusAudio": ["src/AudioPlayer/Structures/Media/OpusAudio"]
+    },
+    "baseUrl": ".",
     // Основные настройки.
-    "module": "CommonJS",                // Определяет тип импорта кода в итоговом файле
+    "module": "CommonJS",                 // Определяет тип импорта кода в итоговом файле
+    "moduleResolution": "Node",
     "outDir": "build",                   // Поместить все скомпилированные файлы в данную папку
     "alwaysStrict": true,                // Компилировать ли каждый файл в строгом режиме и создавать ли 'use strict'
     "sourceMap": false,                  // Создавать ли соответствующие source map файлы ".map"?
@@ -25,10 +42,11 @@
     "strictNullChecks": false,           // Значения "null" и "undefined" могут быть присвоены только значениям данного типа
     "allowUnreachableCode": true,        // Сообщить об ошибке в случае обнаружения кода, который никогда не будет выполнен?
     "noImplicitThis": true,              // Показывать ошибку на "this", если где-то задан тип "any".
-    "importHelpers": false,              // Имортировать созданные хелперы (__extends, __rest и так далее) из "tslib".
+    "importHelpers": true,              // Имортировать созданные хелперы (__extends, __rest и так далее) из "tslib".
     "noImplicitAny": true                // Запрет на использование any
   },
   "exclude": [                           // Секция "exclude" позволяет исключить при компиляции определенные файлы
     "node_modules"
-  ]
+  ],
+  "include": ["tsconfig.json", "src", "db"]
 }
