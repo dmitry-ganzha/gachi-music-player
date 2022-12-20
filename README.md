@@ -15,7 +15,7 @@
 ## Гайд по запуску
 1. [`Node.js`](https://nodejs.org/ru/) 17-19
 2. [`FFmpeg & FFprobe`](https://ffmpeg.org/) или npm install (ffmpeg-static и ffprobe-static)
-3. Указываем данные в [`.env`](.env) 
+3. Указываем данные в [`.env`](.env)
 4. Запускаем [`run`](run.bat)
    - Если нет `libSodium` (выбираем 5)
    - Если нет папки [`node_modules`](node_modules) (выбираем 4)
@@ -58,15 +58,15 @@
       "Bot": {
          "ignoreErrors": true, //Игнорировать ошибки
          "prefix": "!", //Префикс
-	  "OwnerIDs": [] //Люди у которых есть доступ к разделу Owner
+         "OwnerIDs": [] //Пользователи у которых есть доступ к разделу Owner
       },
       "Debug": false, //Отправлять сообщение взаимодействий бота с discord
-   
+
       //Настройки музыки
       "Music": {
          "CacheMusic": false, //Кешировать музыку? (Значительно ускоряет работу фильтров и seek, как уменьшает кол-во запросов на сервера)
          "CacheDir": "AudioCache", //Путь, где будет сохраниться кеш музыки
-   
+
          //Настройки плеера
          "AudioPlayer": {
             "sendDuration": 50 //Задержка до начала отправления пакетов
@@ -83,9 +83,9 @@
             "bitrate": "256k" //Битрейт аудио
          }
       },
-   
+
       //Настройка меню
-      "ReactionMenuSettings": { 
+      "ReactionMenuSettings": {
          "emojis": {
             "back": "⬅️", //Кнопка назад
             "next": "➡️", //Кнопка вперед
