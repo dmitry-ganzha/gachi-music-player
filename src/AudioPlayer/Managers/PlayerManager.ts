@@ -2,7 +2,7 @@ import {MessagePlayer} from "./PlayerMessages";
 import {Queue} from "@Queue/Queue";
 
 //Ивенты плеера для всех серверов
-export namespace PlayerEventsCallBacks {
+export namespace PlayerEvents {
     /**
      * @description Когда плеер завершит песню, он возвратит эту функцию
      * @param queue {Queue} Сама очередь

@@ -1,49 +1,78 @@
-import {replacer} from "@Structures/Handle/Command";
-import {Debug, Music} from "@db/Config.json";
+import {existsSync, createWriteStream, rename} from "fs";
 import {httpsClient} from "@httpsClient";
 import {FileSystem} from "@FileSystem";
+import {Music} from "@db/Config.json";
 import {Song} from "@Queue/Song";
-import fs from "fs";
+
+type DownloadSong = {urls: {author: string, song: string, resource: string}, duration: number};
+const QueueSongs: DownloadSong[] = [];
+
+//Убираем в конце / чтобы не мешало
+if (Music.CacheDir.endsWith("/")) Music.CacheDir.slice(Music.CacheDir.length - 1);
 
 export namespace DownloadManager {
     /**
-     * @description Качаем треки и выдает ссылку на файл или значение false
-     * @param song {Song} Трек
-     * @param url {string} Ссылка на ресурс
-     * @constructor
+     * @description Добавление трека в очередь для плавного скачивания
+     * @param track {Song} Трек который будет скачен
+     * @param resource {string} Ссылка на ресурс
      */
-    export function downloadUrl(song: Song, url?: string): boolean | string {
-        if (song.duration.seconds >= 1000 || song.duration.full === "Live") return;
-        if (Music.CacheDir.endsWith("/")) Music.CacheDir.slice(Music.CacheDir.length - 1);
+    export function download(track: Song, resource: string): void {
+        const findSong = QueueSongs.find((song) => song.urls.song === track.url);
+        const names = getNames(track);
 
-        const SongTitle = replacer.replaceArray(song.title, ["|", ",", "<", ">", ":", "\\", "/", "*", "?"]);
-        const SongAuthor = replacer.replaceArray(song.author.title, ["|", ",", "<", ">", ":", "\\", "/", "*", "?"]);
+        if (findSong || track.duration.seconds > 800 || names.status !== "not") return;
 
-        const AudioDir = `${Music.CacheDir}/[${SongAuthor}]`;
-        FileSystem.createDirs(AudioDir);
+        //Проверяем путь на наличие директорий
+        FileSystem.createDirs(names.path);
 
-        //Выдаем файл если уже он скачен
-        if (fs.existsSync(`${AudioDir}/[${SongTitle}].opus`)) return `${AudioDir}/[${SongTitle}].opus`;
+        //Добавляем трек в очередь для скачивания
+        QueueSongs.push({urls: { author: track.author.url, song: track.url, resource }, duration: track.duration.seconds});
+        if (QueueSongs.length === 1) cycleStep();
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Получаем статус скачивания и путь до файла
+     * @param song {Song | DownloadSong} Трек
+     */
+    export function getNames(song: DownloadSong | Song): {status: "download" | "final" | "not", path: string} {
+        const author = ((song as Song)?.author?.url ?? (song as DownloadSong)?.urls?.author).split("/").pop();
+        const songName = ((song as Song)?.url ?? (song as DownloadSong)?.urls?.song).split("/").pop();
+        const fullPath = `${Music.CacheDir}/[${author}]/[${songName}]`;
 
-        try {
-            //Скачиваем музыку
-            if (!fs.existsSync(`${AudioDir}/[${SongTitle}].raw`) && url) {
-                httpsClient.Request(url).then((res) => {
-                    if (res.pipe) {
-                        const file = fs.createWriteStream(`${AudioDir}/[${SongTitle}].raw`);
+        if (existsSync(`${fullPath}.opus`)) return { status: "final", path: `${fullPath}.opus` };
+        else if (existsSync(`${fullPath}.raw`)) return { status: "download", path: `${fullPath}.raw` };
+        return { status: "not", path: `${fullPath}.raw` };
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Постепенное скачивание множества треков
+     * @private
+     */
+    function cycleStep(): void {
+        const song = QueueSongs[0];
 
-                        //Если файл невозможно создать
-                        file.once("error", () => null);
-                        file.once("ready", () => {
-                            res.pipe(file);
-                            ["close", "finish"].forEach((event) => file.once(event, () => fs.rename(`${AudioDir}/[${SongTitle}].raw`, `${AudioDir}/[${SongTitle}].opus`, () => null)))
-                        });
-                    }
-                });
-            }
-        } catch (e) {
-            if (Debug) console.log(`[DownloadManager]: Fail download ${SongTitle}`);
-        }
-        return false;
+        if (!song) return;
+        QueueSongs.shift();
+
+        const names = getNames(song);
+        if (names.status === "final") return void setTimeout(() => cycleStep(), 2e3);
+
+        setImmediate(() => {
+            //Скачиваем трек
+            httpsClient.Request(song.urls.resource).then((req) => {
+                if (req.pipe) {
+                    const file = createWriteStream(`./${names.path}`);
+
+                    file.once("ready", () => req.pipe(file));
+                    file.once("error", console.warn);
+                    ["close", "finish"].forEach(event => file.once(event, () => {
+                        const refreshNames = getNames(song);
+
+                        rename(names.path, refreshNames.path, () => null);
+                        void setTimeout(() => cycleStep(), 2e3);
+                    }));
+                }
+            });
+        });
     }
 }

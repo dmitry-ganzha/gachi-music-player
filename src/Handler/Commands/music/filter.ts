@@ -5,6 +5,7 @@ import {ReactionMenu} from "@Structures/ReactionMenu";
 import {FFspace} from "@Structures/Media/FFspace";
 import Filters from "@db/Filters.json";
 import {Queue} from "@Queue/Queue";
+import {ArraySort} from "@Handler/Modules/Object/ArraySort";
 
 export default class Filter extends Command {
     public constructor() {
@@ -125,30 +126,14 @@ export default class Filter extends Command {
     };
     //Запускаем ReactionMenu
     readonly #ReactionMenuFilters = (filters: typeof Filters, message: ClientMessage) => {
-        let numFilter = 1;
-        const pages: string[] = [];
-        const embed: EmbedConstructor = {
-            title: "Все доступные фильтры",
-            color: Colors.Yellow,
-            thumbnail: {
-                url: message.client.user.avatarURL()
-            },
-            timestamp: new Date()
-        };
-
+        const embed: EmbedConstructor = { title: "Все доступные фильтры",  color: Colors.Yellow, thumbnail: { url: message.client.user.avatarURL() }, timestamp: new Date() };
         //Преобразуем все фильтры в string
-        // @ts-ignore
-        filters.ArraySort(5).forEach((s) => {
-            const parsedFilters = s.map((filter: typeof Filters[0]) => {
-                return `Фильтр - [${numFilter++}]
-                    **❯ Названия:** ${filter.names ? `(${filter.names})` : `Нет`}
-                    **❯ Описание:** ${filter.description ? `(${filter.description})` : `Нет`}
-                    **❯ Аргументы:** ${filter.args ? `(${filter.args})` : `Нет`}
-                    **❯ Модификатор скорости:** ${filter.speed ? `${filter.speed}` : `Нет`}`
-            }).join('\n\n');
-
-            //Если parsedFilters не undefined, то добавляем его в pages
-            if (parsedFilters !== undefined) pages.push(parsedFilters);
+        const pages = ArraySort<typeof Filters[0]>(5, filters, (filter, index) => {
+            return `Фильтр - [${index++}]
+                **❯ Названия:** ${filter.names ? `(${filter.names})` : `Нет`}
+                **❯ Описание:** ${filter.description ? `(${filter.description})` : `Нет`}
+                **❯ Аргументы:** ${filter.args ? `(${filter.args})` : `Нет`}
+                **❯ Модификатор скорости:** ${filter.speed ? `${filter.speed}` : `Нет`}`
         });
         embed.description = pages[0];
         embed.footer = { text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL() }

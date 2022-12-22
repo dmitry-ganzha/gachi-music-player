@@ -10,7 +10,7 @@ export class Pause extends Command {
 
             isEnable: true,
             isSlash: true
-        })
+        });
     };
 
     public readonly run = (message: ClientMessage): ResolveData => {

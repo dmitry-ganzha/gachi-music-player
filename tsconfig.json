@@ -4,6 +4,7 @@
       "@db/*": ["db/*"],
       "@env": ["src/Core/env"],
       "@Client/*": ["src/Core/Client/*", "src/Handler/Events/Activity/*"],
+      "@Handler/*": ["src/Handler/*"],
 
       "@Structures/*": ["src/Structures/*", "src/AudioPlayer/Structures/*"],
       "@Managers/*": ["src/AudioPlayer/Managers/*"],

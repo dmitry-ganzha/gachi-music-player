@@ -11,8 +11,8 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
 
     public readonly run = (oldState: VoiceState, newState: VoiceState, client: WatKLOK): void => {
         const queue: Queue = client.queue.get(newState.guild.id); //Очередь сервера
-        const Guild = oldState.guild;
         const ChannelID = oldState?.channel?.id || newState?.channel?.id;
+        const Guild = oldState.guild;
         const filter = (member: GuildMember) => this.#filter(member, ChannelID);
         const filterBot = (member: GuildMember) => member.user.id === client.user.id;
 

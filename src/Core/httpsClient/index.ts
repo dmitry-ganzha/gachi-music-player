@@ -1,14 +1,21 @@
 import {BrotliDecompress, createBrotliDecompress, createDeflate, createGunzip, Deflate, Gunzip} from 'node:zlib';
+import {request as httpsRequest, RequestOptions} from "https";
+import {IncomingMessage, request as httpRequest} from "http";
 import {getCookies, uploadCookie} from "./Cookie";
-import {request, RequestOptions} from "https";
 import UserAgents from "./UserAgents.json";
-import {IncomingMessage} from "http";
 
 let Cookie = getCookies(); //Получаем куки если он был указан в файле
+
 const decoderBase = {
-    "gzip": (): Gunzip => createGunzip(),
-    "br": (): BrotliDecompress => createBrotliDecompress(),
-    "deflate": (): Deflate => createDeflate()
+    "gzip": createGunzip,
+    "br": createBrotliDecompress,
+    "deflate": createDeflate
+};
+
+//Поддержка запросов
+const protocols = {
+    "http:": httpRequest,  //http запрос
+    "https:": httpsRequest //https запрос
 }
 
 export namespace httpsClient {
@@ -22,14 +29,12 @@ export namespace httpsClient {
         ChangeReqOptions(options);
 
         return new Promise((resolve, reject) => {
-            const Link = new URL(url);
+            const {hostname, pathname, search, port, protocol} = new URL(url);
             const Options: RequestOptions = {
-                host: Link.hostname,
-                path: Link.pathname + Link.search,
-                headers: options?.request?.headers ?? {},
-                method: options?.request?.method ?? "GET"
+                host: hostname, path: pathname + search, port,
+                headers: options?.request?.headers ?? {}, method: options?.request?.method ?? "GET",
             };
-            const httpsRequest = request(Options, (res) => {
+            const request = protocols[protocol as "https:" | "http:"](Options, (res: IncomingMessage) => {
                 //Автоматическое перенаправление
                 if ((res.statusCode >= 300 && res.statusCode < 400) && res.headers?.location) return resolve(Request(res.headers.location, options));
                 //Обновляем куки
@@ -42,13 +47,13 @@ export namespace httpsClient {
             });
 
             //Если возникла ошибка
-            httpsRequest.on("error", reject);
+            request.on("error", reject);
 
             //Если запрос POST, отправляем ответ на сервер
-            if (options?.request?.method === "POST") httpsRequest.write(options.request?.body);
+            if (options?.request?.method === "POST") request.write(options.request?.body);
 
             //Заканчиваем запрос
-            httpsRequest.end();
+            request.end();
         });
     }
     //====================== ====================== ====================== ======================
@@ -61,8 +66,8 @@ export namespace httpsClient {
     export function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
         return new Promise((resolve) => Request(url, options).then((res: IncomingMessage) => {
             const encoding = res.headers["content-encoding"] as "br" | "gzip" | "deflate";
-            const data: string[] = [];
             const decoder: Decoder | null = decoderBase[encoding] ? decoderBase[encoding]() : null;
+            const data: string[] = [];
             const runDecode = (decoder: Decoder | IncomingMessage) => {
                 decoder.setEncoding("utf-8");
                 decoder.on("data", (c) => data.push(c));
@@ -153,7 +158,8 @@ type Decoder = BrotliDecompress | Gunzip | Deflate;
 
 // @ts-ignore
 interface ReqOptions extends RequestOptions {
-    body?: string
+    body?: string;
+    method?: "GET" | "POST" | "HEAD";
 }
 
 export interface httpsClientOptions {

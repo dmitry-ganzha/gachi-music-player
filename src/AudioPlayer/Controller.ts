@@ -15,19 +15,13 @@ export namespace PlayerController {
      * @param message {ClientMessage} Сообщение с сервера
      */
     export function toResume(message: ClientMessage): void {
-        const {client, guild, author} = message;
+        const {client, guild} = message;
         const {player, song}: Queue = client.queue.get(guild.id);
         const {title, color}: Song = song;
 
         //Продолжаем воспроизведение музыки если она на паузе
-        if (player.state.status === "pause") {
-            player.resume();
-            return messageUtils.sendMessage({text: `▶️ | Resume song | ${title}`, message, codeBlock: "css", color});
-        }
-        return messageUtils.sendMessage({
-            text: `${author}, Текущий статус плеера [${player.state.status}]`, message,
-            color: "DarkRed"
-        });
+        player.resume();
+        return messageUtils.sendMessage({text: `▶️ | Resume song | ${title}`, message, codeBlock: "css", color});
     }
     //====================== ====================== ====================== ======================
     /**
@@ -35,19 +29,13 @@ export namespace PlayerController {
      * @param message {ClientMessage} Сообщение с сервера
      */
     export function toPause(message: ClientMessage): void {
-        const {client, guild, author} = message;
+        const {client, guild} = message;
         const {player, song}: Queue = client.queue.get(guild.id);
         const {title, color}: Song = song;
 
         //Приостанавливаем музыку если она играет
-        if (player.state.status === "read") {
-            player.pause();
-            return messageUtils.sendMessage({text: `⏸ | Pause song | ${title}`, message, codeBlock: "css", color});
-        }
-        return messageUtils.sendMessage({
-            text: `${author}, Текущий статус плеера [${player.state.status}]`, message,
-            color: "DarkRed"
-        });
+        player.pause();
+        return messageUtils.sendMessage({text: `⏸ | Pause song | ${title}`, message, codeBlock: "css", color});
     }
     //====================== ====================== ====================== ======================
     /**
@@ -80,10 +68,7 @@ export namespace PlayerController {
             }
 
             //Если пользователю нельзя это сделать
-            return messageUtils.sendMessage({
-                text: `${author}, Ты не включал эту музыку [${title}](${url})`, message,
-                color: "DarkRed"
-            });
+            return messageUtils.sendMessage({ text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: "DarkRed" });
         });
     }
     //====================== ====================== ====================== ======================

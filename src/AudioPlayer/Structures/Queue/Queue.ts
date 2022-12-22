@@ -1,4 +1,4 @@
-import {PlayerEventsCallBacks} from "@Managers/PlayerManager";
+import {PlayerEvents} from "@Managers/PlayerManager";
 import {ClientMessage} from "@Client/interactionCreate";
 import {MessagePlayer} from "@Managers/PlayerMessages";
 import {StageChannel, VoiceChannel} from "discord.js";
@@ -29,8 +29,8 @@ export class Queue {
     public constructor(message: ClientMessage, voice: VoiceChannel) {
         this.#channels = {message, voice};
 
-        this.player.on("idle", () => PlayerEventsCallBacks.onIdlePlayer(this));
-        this.player.on("error", (err, isSkip) => PlayerEventsCallBacks.onErrorPlayer(err, this, isSkip));
+        this.player.on("idle", () => PlayerEvents.onIdlePlayer(this));
+        this.player.on("error", (err, isSkip) => PlayerEvents.onErrorPlayer(err, this, isSkip));
     };
 
     //Голосовой канал

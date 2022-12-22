@@ -3,6 +3,8 @@ import {Command} from "@Structures/Handle/Command";
 import {Module} from "@Structures/Handle/Module";
 import {Event} from "@Structures/Handle/Event";
 import {WatKLOK} from "@Client/Client";
+
+
 type TypeFileLoad = Command | Event<any, any> | Module;
 type FileCallback = (pull: TypeFileLoad, {}: { dir: string, file: string, reason: string }) => void;
 
@@ -14,7 +16,10 @@ let FileBase = {
 
 export namespace FileSystem {
     export function createDirs(dir: string) {
-        const dirs = dir.split("/");
+        let dirs = dir.split("/");
+
+        if (!dir.endsWith("/")) dirs.splice(dirs.length - 1);
+
         let currentDir = "";
 
         for (let i in dirs) {

@@ -1,4 +1,5 @@
 import {Command, replacer, ResolveData} from "@Structures/Handle/Command";
+import {ArraySort} from "@Handler/Modules/Object/ArraySort";
 import {ClientMessage} from "@Client/interactionCreate";
 import {DurationUtils} from "@Managers/DurationUtils";
 import {MessageReaction, User} from "discord.js";
@@ -23,42 +24,20 @@ export default class CommandQueue extends Command {
 
         //Если нет очереди
         if (!queue) return { text: `${author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
+
         //Получаем то что надо было преобразовать в string[]
-        const pages = this.#parsedSongs(queue.songs);
+        const pages = ArraySort<Song>(10, queue.songs, (song, index= 1) => {
+            const Duration = song.duration.full;
+            const TitleSong = replacer.replaceText(song.title, 80, true).replace(/[\s",']/g, ' ');
+
+            return `[${index++}] - [${Duration}] | ${TitleSong}`;
+        });
+
         const CurrentPlaying = `Current playing -> [${queue.song.title}]`; //Музыка, которая играет сейчас
         const Footer = `${author.username} | ${DurationUtils.getTimeQueue(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}`; //Что будет снизу сообщения
 
-
         return {embed: `\`\`\`css\n➡️ | ${CurrentPlaying}\n\n${pages[0]}\n\n${Footer}\`\`\``, callbacks: this.#Callbacks(1, pages, queue)}
     };
-
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Из <Song[]> делаем <string[]>
-     * @param ArraySongs {Song[]} Музыка которую надо изменить
-     * @private
-     */
-    readonly #parsedSongs = (ArraySongs: Song[]) => {
-        const pages: string[] = [];
-        let TrackNumber = 1;
-
-        //Преобразуем все песни в string
-        // @ts-ignore
-        ArraySongs.ArraySort(10).forEach((songs: Song[]) => {
-            const song = songs.map((song: Song) => {
-                const Duration = song.duration.full;
-                const TitleSong = replacer.replaceText(song.title, 80, true).replace(/[\s",']/g, ' ');
-
-                return `[${TrackNumber++}] - [${Duration}] | ${TitleSong}`;
-            }).join("\n");
-
-            //Если song не undefined, то добавляем его в pages
-            if (song !== undefined) pages.push(song);
-        });
-
-        return pages;
-    };
-
     //====================== ====================== ====================== ======================
     /**
      * @description Функции для управления <CollectorSortReaction>

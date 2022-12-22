@@ -1,5 +1,6 @@
 import {ClientMessage, EmbedConstructor} from "@Client/interactionCreate";
 import {Command, ResolveData} from "@Structures/Handle/Command";
+import {ArraySort} from "@Handler/Modules/Object/ArraySort";
 import {Colors, MessageReaction, User} from "discord.js";
 import {httpsClient} from "@httpsClient";
 
@@ -20,7 +21,11 @@ export class Trader extends Command {
 
     public readonly run = async (_: any): Promise<ResolveData> => {
         const result = await httpsClient.parseJson(TraderApi);
-        const pagesInventory = this.#parsedInventory(result.inventory);
+        const pagesInventory = ArraySort<voidTraderItem>(5, result.inventory, (item, index = 1) =>
+            `${index++} Предмет [**${item.item}**]
+                 **❯ Кредиты:** (${FormatBytes(item.credits)})
+                 **❯ Дукаты :** ${item.ducats ? `(${item.ducats})` : `(Нет)`}`
+        );
 
         return this.#SendMessage(result, pagesInventory);
     };
@@ -51,32 +56,6 @@ export class Trader extends Command {
         }
         //Если инвентаря нет просто отправляем сообщение
         return {embed: EmbedVoidTrader};
-    };
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Парсим инвентарь Baro Ki'teera
-     * @param inventory {Array<voidTraderItem>} Исходный инвентарь
-     * @private
-     */
-    readonly #parsedInventory = (inventory: voidTraderItem[]) => {
-        let pages: string[] = [], itemNumber = 1;
-
-        //Если есть инвентарь, то парсим все в string
-        if (inventory.length !== 0) {
-            // @ts-ignore
-            inventory.ArraySort(5).forEach((items: voidTraderItem[]) => {
-                const item = items.map((item) =>
-                    `${itemNumber++} Предмет [**${item.item}**]
-                    **❯ Кредиты:** (${FormatBytes(item.credits)})
-                    **❯ Дукаты :** ${item.ducats ? `(${item.ducats})` : `(Нет)`}`
-                ).join("\n\n");
-
-                //Если item не undefined, то добавляем его в pages
-                if (item !== undefined) pages.push(item);
-            });
-        }
-
-        return pages;
     };
     //====================== ====================== ====================== ======================
     /**

@@ -6,7 +6,10 @@ import {httpsClient} from "@httpsClient";
 import {Images} from "../EmbedMessages";
 import {Music} from "@db/Config.json";
 
-const Download = DownloadManager.downloadUrl;
+const DownloadTrack = DownloadManager.download;
+const checkTrack = DownloadManager.getNames;
+const checkLink = httpsClient.checkLink;
+const findResource = SongFinder.findResource;
 
 //Создаем трек для внутреннего использования
 export class Song {
@@ -73,21 +76,21 @@ export class Song {
 
         //Если пользователь включил кеширование музыки
         if (Music.CacheMusic) {
-            const isCache = Download(this);
+            const info = checkTrack(this);
 
             //Если есть файл выдаем путь до него
-            if (isCache) return resolve(isCache as string);
+            if (info.status === "final") return info.path;
         }
 
         //Если нет ссылки, то ищем трек
-        if (!this.link) this.link = await SongFinder.findResource(this);
+        if (!this.link) this.link = await findResource(this);
 
         //Проверяем ссылку на работоспособность
-        const checkResource = await httpsClient.checkLink(this.link);
+        const checkResource = await checkLink(this.link);
 
         //Если ссылка работает
         if (checkResource === "OK") {
-            if (Music.CacheMusic) Download(this, this.link);
+            if (Music.CacheMusic) DownloadTrack(this, this.link);
             return resolve(this.link);
         }
 

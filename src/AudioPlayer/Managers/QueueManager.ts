@@ -1,6 +1,6 @@
 import {InputPlaylist, InputTrack, Song} from "@Queue/Song";
 import {ClientMessage} from "@Client/interactionCreate";
-import {MessagePlayer} from "./PlayerMessages";
+import {MessagePlayer} from "@Managers/PlayerMessages";
 import {VoiceChannel} from "discord.js";
 import {Voice} from "@VoiceManager";
 import {Queue} from "@Queue/Queue";
