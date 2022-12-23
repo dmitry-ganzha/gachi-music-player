@@ -66,9 +66,9 @@ export namespace DownloadManager {
                     file.once("ready", () => req.pipe(file));
                     file.once("error", console.warn);
                     ["close", "finish"].forEach(event => file.once(event, () => {
-                        const refreshNames = getNames(song);
+                        const refreshName = getNames(song).path.split(".raw")[0];
 
-                        rename(names.path, refreshNames.path, () => null);
+                        rename(names.path, `${refreshName}.opus`, () => null);
                         void setTimeout(() => cycleStep(), 2e3);
                     }));
                 }

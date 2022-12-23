@@ -18,7 +18,7 @@ export function consoleTime(data: string) {
 class CollectionMap<K, V> extends Map<K, V> {
     public get Array(): V[] | null {
         const db: V[] = [];
-        for (let [, value] of this.entries()) db.push(value);
+        for (const [, value] of this.entries()) db.push(value);
 
         return db;
     };

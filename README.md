@@ -3,10 +3,11 @@
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
 - Лицензия: [`WatKLOK LICENSE`](LICENSE.md)
-- Перейти к [настройкам](db/Config.json)
-- Перейти к [командам](src/Handler/Commands) | `Slash + Standart`
-- Перейти к [плееру](src/AudioPlayer)
-- Все сообщения удаляют автоматически через время
+- Перейти к [`настройкам`](db/Config.json)
+- Перейти к [`командам`](src/Handler/Commands) | `Slash + Standart`
+- Перейти к [`плееру`](src/AudioPlayer)
+- Перейди к [`демонстрации`](https://www.youtube.com/watch?v=ncvpyWaxycw)
+- Все сообщения удаляются автоматически через время
 - Для удаления аудио кеша `запустить run и выбрать 6`
 
 [<img align="center" alt="PGI Settings" width="1000px" src="https://github.com/SNIPPIK/WatKLOK/blob/v2/_resource/PGI.png?raw=true" />](https://github.com/SNIPPIK/WatKLOK/blob/v2/_resource/PGI.png?raw=true)
@@ -17,7 +18,7 @@
 2. [`FFmpeg & FFprobe`](https://ffmpeg.org/) или npm install (ffmpeg-static и ffprobe-static)
 3. Указываем данные в [`.env`](.env)
 4. Запускаем [`run`](run.bat)
-   - Если нет `libSodium` (выбираем 5)
+   - Если нет [`libSodium`](https://github.com/discordjs/discord.js/tree/main/packages/voice#dependencies) (выбираем 5)
    - Если нет папки [`node_modules`](node_modules) (выбираем 4)
    - Если нет папки [`build`](build) (выбираем 3)
 5. Запуск бота `повторяем 4 шаг, но выбираем 1` | Если возникли ошибки повторите шаги заново
@@ -45,7 +46,7 @@
 1. [`Cookie.json`](db/Cookie.json) | необходим для видео 18+ (**YouTube**)
     ```json5
    {
-      "Cookie": "КУКИ"
+      "Cookie": ""
    }
    ```
 2. [`Config.json`](db/Config.json) | основные настройки
@@ -114,16 +115,3 @@
       }
    ]
      ```
-## Mini demonstration
-<div align="center">
-  <a href="https://www.youtube.com/watch?v=ncvpyWaxycw"><img src="https://repository-images.githubusercontent.com/442515515/da0a54ad-9b76-40ab-8bb7-c394afeefbf0" width="1000px" alt="Demo video"></a>
-</div>
-
-<div align="center">
-	<p>
-		<a href="https://discord.gg/qMf2Sv3"><img src="https://img.shields.io/discord/332947799605772289?color=5865F2&logo=discord&logoColor=white&style=flat-square" alt="Discord server" /></a>
-		<a href=""><img src="https://img.shields.io/github/stars/SNIPPIK/WatKLOK?logo=github&style=flat-square" alt="Stars"/></a>
-    	<a href=""><img src="https://img.shields.io/github/forks/SNIPPIK/WatKLOK?logo=github&style=flat-square" alt="Forks"/></a>
-        <a href=""><img src="https://img.shields.io/github/repo-size/SNIPPIK/WatKLOK?logo=github&style=flat-square" alt="Watchers"/></a>
-    </p>
-</div>

@@ -11,7 +11,7 @@ export class Trader extends Command {
         super({
             name: "baro",
             description: "Когда прейдет баро или когда он уйдет, так-же что он щас продает!",
-            aliases: ["торговец", "trader", "voidtrader", "void", "KiTeer"],
+            aliases: ["trader", "voidtrader", "void", "kiteer"],
 
             isSlash: true,
             isEnable: true,

@@ -1,11 +1,11 @@
 import {Shard, ShardingManager} from "discord.js";
-require("dotenv").config();
+import {env} from "@env"
 
 //Используется для большого кол-ва серверов. Если у вас более 1к, тогда рекомендуется запускать ShardManager
 class ShardManager extends ShardingManager {
     public constructor() {
         super("./src/Core/Client/Client.js", {
-            token: process.env.TOKEN,
+            token: env.get("TOKEN"),
             mode: "process",
             respawn: true,
             totalShards: "auto",

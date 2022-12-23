@@ -120,10 +120,7 @@ export namespace PlayerController {
             }
 
             //Если пользователю нельзя это сделать
-            return messageUtils.sendMessage({
-                text: `${author}, Ты не включал эту музыку [${title}](${url})`, message,
-                color: "DarkRed"
-            });
+            return messageUtils.sendMessage({ text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: "DarkRed" });
         });
     }
     //====================== ====================== ====================== ======================
