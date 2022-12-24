@@ -36,7 +36,6 @@ export class OpusAudio extends opus.OggDemuxer {
             resource.pipe(this.ffmpeg);
             this.#streams.push(resource);
         }
-
         this.ffmpeg.pipe(this); //Загружаем из FFmpeg'a в opus.OggDemuxer
 
         //Проверяем сколько времени длится пакет

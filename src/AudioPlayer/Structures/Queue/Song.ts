@@ -16,10 +16,7 @@ export class Song {
     readonly #title: string;
     readonly #url: string;
     readonly #author: InputAuthor;
-    readonly #duration: {
-        seconds: number,
-        full: string
-    };
+    readonly #duration: { seconds: number, full: string };
     readonly #image: InputTrack["image"];
     readonly #requester: SongRequester;
     readonly #isLive: boolean;
@@ -46,8 +43,8 @@ export class Song {
         this.#isLive = track.isLive;
         this.#color = ColorTrack[type];
         this.#type = type;
-        this.#resLink = track?.format?.url
-    }
+        this.#resLink = track?.format?.url;
+    };
 
     //Название трека
     public get title() { return this.#title; };
@@ -67,7 +64,7 @@ export class Song {
     public get color() { return this.#color; };
     //Тип трека
     public get type() { return this.#type; };
-    private get link() { return this.#resLink; };
+    public get link() { return this.#resLink; };
     private set link(url: string) { this.#resLink = url; };
 
     //Получаем исходник трека
@@ -79,7 +76,7 @@ export class Song {
             const info = checkTrack(this);
 
             //Если есть файл выдаем путь до него
-            if (info.status === "final") return info.path;
+            if (info.status === "final") return resolve(info.path);
         }
 
         //Если нет ссылки, то ищем трек
@@ -90,7 +87,7 @@ export class Song {
 
         //Если ссылка работает
         if (checkResource === "OK") {
-            if (Music.CacheMusic) DownloadTrack(this, this.link);
+            if (Music.CacheMusic) setImmediate(() => DownloadTrack(this, this.link));
             return resolve(this.link);
         }
 
