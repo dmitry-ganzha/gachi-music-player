@@ -4,6 +4,8 @@ import {ChannelType,Guild,InternalDiscordGatewayAdapterCreator,StageChannel,Voic
 //Допустимые голосовые каналы
 type VoiceChannels = VoiceChannel | StageChannel;
 
+const VoiceChannelsGroup = "DEFAULT";
+
 /**
  * Здесь все возможные взаимодействия с голосовым каналом (еще не финал)
  */
@@ -16,7 +18,7 @@ export namespace Voice {
      */
     export function Join({id, guild, type}: VoiceChannels) {
         const JoinVoice = joinVoiceChannel({ selfDeaf: true, selfMute: false, channelId: id, guildId: guild.id,
-            adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator & DiscordGatewayAdapterCreator });
+            adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator & DiscordGatewayAdapterCreator, group: VoiceChannelsGroup });
         const me = guild.members?.me;
 
         //Для голосовых трибун
@@ -37,7 +39,7 @@ export namespace Voice {
             VoiceConnection.disconnect();
 
             //Удаляем канал из базы @discordjs/voice
-            getVoiceConnections("default").delete(VoiceConnection.joinConfig.guildId);
+            getVoiceConnections(VoiceChannelsGroup).delete(VoiceConnection.joinConfig.guildId);
         }
     }
     //====================== ====================== ====================== ======================
@@ -60,5 +62,5 @@ export namespace Voice {
      * @description Получаем голосовое подключение
      * @param guildID {string} ID сервера
      */
-    export function getVoice(guildID: string) { return getVoiceConnection(guildID); }
+    export function getVoice(guildID: string) { return getVoiceConnection(guildID, VoiceChannelsGroup); }
 }

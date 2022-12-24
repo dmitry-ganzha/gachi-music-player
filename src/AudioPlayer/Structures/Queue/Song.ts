@@ -70,9 +70,10 @@ export class Song {
     //Получаем исходник трека
     public resource = (seek: number, req = 0): Promise<string> => new Promise(async (resolve) => {
         if (req > 3) return resolve(null);
+        const CacheMusic = Music.CacheMusic;
 
         //Если пользователь включил кеширование музыки
-        if (Music.CacheMusic) {
+        if (CacheMusic) {
             const info = checkTrack(this);
 
             //Если есть файл выдаем путь до него
@@ -87,7 +88,7 @@ export class Song {
 
         //Если ссылка работает
         if (checkResource === "OK") {
-            if (Music.CacheMusic) setImmediate(() => DownloadTrack(this, this.link));
+            if (CacheMusic) setImmediate(() => DownloadTrack(this, this.link));
             return resolve(this.link);
         }
 

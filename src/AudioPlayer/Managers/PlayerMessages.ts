@@ -37,7 +37,7 @@ export namespace MessagePlayer {
         setImmediate(() => {
             const msg = pushCurrentSongMessage(message);
 
-            if (msg) msg.then(MessageUpdater.toPush).catch((err) => console.log(err));
+            if (msg) msg.then(MessageUpdater.toPush).catch(console.log);
         });
     }
     //====================== ====================== ====================== ======================

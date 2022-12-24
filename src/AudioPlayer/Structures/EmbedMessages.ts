@@ -101,7 +101,7 @@ namespace toPlayFunctions {
      * @param queue {Queue} Очередь
      * @param client {WatKLOK} Клиент
      */
-    export function getFields(queue: Queue, client: WatKLOK): { name: string, value: string }[] {
+    export function getFields(queue: Queue, client: WatKLOK): EmbedConstructor["fields"] {
         const {songs, song, player} = queue;
         const VisualDuration = playTime.toString(song.duration, player.streamDuration);
         //Текущий трек
@@ -119,7 +119,7 @@ namespace playTime {
      * @param duration
      * @param playDuration
      */
-    export function toString(duration: { seconds: number, full: string }, playDuration: number) {
+    export function toString(duration: { seconds: number, full: string }, playDuration: number): string {
         if (duration.full === "Live" || !Bar.enable) return `\`\`[${duration}]\`\``;
 
         const parsedDuration = DurationUtils.ParsingTimeToString(playDuration);
@@ -135,7 +135,7 @@ namespace playTime {
      * @param maxTime {number} Макс времени
      * @param size {number} Кол-во символов
      */
-    function matchBar(currentTime: number, maxTime: number, size: number = 15) {
+    function matchBar(currentTime: number, maxTime: number, size: number = 15): string {
         try {
             const CurrentDuration = isNaN(currentTime) ? 0 : currentTime;
             const progressSize = Math.round(size * (CurrentDuration / maxTime));

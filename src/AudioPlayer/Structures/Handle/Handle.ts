@@ -4,6 +4,7 @@ import {replacer, ResolveData} from "@Structures/Handle/Command";
 import {InputPlaylist, InputTrack} from "@Queue/Song";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {DurationUtils} from "@Managers/DurationUtils";
+import {ArraySort} from "@Handler/Modules/Object/ArraySort";
 
 //Данные которые необходимо передать для поиска
 interface Options {
@@ -127,7 +128,14 @@ namespace SearchSongMessage {
 
         const ConstFind = `Выбери от 1 до ${results.length}`; //Показываем сколько есть треков в списке
         const Requester = `[Платформа: ${platform} | Запросил: ${author.username}]`; //Показываем платформу и того кто запросил
-        const SongsString = ArrayToString(results, message, platform);
+        const SongsString = ArraySort<InputTrack>(15, results, (track, index = 1) => {
+            const Duration = platform === "YOUTUBE" ? track.duration.seconds : DurationUtils.ParsingTimeToString(parseInt(track.duration.seconds)); //Проверяем надо ли конвертировать время
+            const NameTrack = `[${replacer.replaceText(track.title, 80, true)}]`; //Название трека
+            const DurationTrack = `[${Duration ?? "LIVE"}]`; //Длительность трека
+            const AuthorTrack = `[${replacer.replaceText(track.author.title, 12, true)}]`; //Автор трека
+
+            return `${index++} ➜ ${DurationTrack} | ${AuthorTrack} | ${NameTrack}`;
+        });
         const callback = (msg: ClientMessage) => {
             //Создаем сборщик
             const collector = messageUtils.createCollector(message as ClientMessage, (m) => {
@@ -156,32 +164,9 @@ namespace SearchSongMessage {
                     return Handle.toPlayer({...options, type: "track", search: url});
                 });
             });
-        }
+        };
 
         if ("commandName" in message) (message as ClientInteraction).reply({content: `\`\`\`css\n${ConstFind}\n${Requester}\n\n${SongsString}\n\`\`\``, fetchReply: true}).then(callback);
         else (message as ClientMessage).channel.send({content: `\`\`\`css\n${ConstFind}\n${Requester}\n\n${SongsString}\n\`\`\``, }).then(callback);
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Собираем найденные треки в <string>
-     * @param results {any[]} Результаты поиска
-     * @param message {ClientInteractive} Сообщение
-     * @param platform {supportPlatforms} Платформа на которой искали
-     * @requires {ParsingTimeToString}
-     */
-    function ArrayToString(results: InputTrack[], message: ClientInteractive, platform: supportPlatforms): string {
-        let NumberTrack = 1, StringTracks;
-
-        // @ts-ignore
-        results.ArraySort(15).forEach((tracks: InputTrack[]) => StringTracks = tracks.map((track) => {
-            const Duration = platform === "YOUTUBE" ? track.duration.seconds : DurationUtils.ParsingTimeToString(parseInt(track.duration.seconds)); //Проверяем надо ли конвертировать время
-            const NameTrack = `[${replacer.replaceText(track.title, 80, true)}]`; //Название трека
-            const DurationTrack = `[${Duration ?? "LIVE"}]`; //Длительность трека
-            const AuthorTrack = `[${replacer.replaceText(track.author.title, 12, true)}]`; //Автор трека
-
-            return `${NumberTrack++} ➜ ${DurationTrack} | ${AuthorTrack} | ${NameTrack}`;
-        }).join("\n"));
-
-        return StringTracks;
     }
 }

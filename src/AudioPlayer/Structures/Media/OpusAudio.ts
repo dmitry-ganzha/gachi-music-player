@@ -74,9 +74,7 @@ export class OpusAudio extends opus.OggDemuxer {
 
         this.#streams.forEach((stream) => {
             if ("destroyed" in stream) stream?.destroy();
-
-            const index = this.#streams.indexOf(stream);
-            if (index !== -1) this.#streams.splice(index, 0);
+            this.#streams.shift();
         });
     };
     public _destroy = () => this.cleanup();

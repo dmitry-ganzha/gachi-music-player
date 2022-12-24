@@ -105,6 +105,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
                 //Удаляем прошлый поток если введен новый
                 if (this.state?.stream && !this.state?.stream?.destroyed) this.state?.stream?.cleanup();
 
+                this.#setSpeak(SilentFrame);
                 this.state = {status: "read", stream};
             });
             //Если происходит ошибка, то продолжаем читать этот же поток
@@ -129,10 +130,11 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @private
      */
     readonly #CycleStep = (): void => {
-        if (this.state?.status === "idle" || !this._state?.status) return;
+        const state = this.state;
+        if (state?.status === "idle" || !state?.status) return;
 
         //Включаем следующий трек
-        if (!this.state?.stream?.readable) return void (this.state = {status: "idle"});
+        if (!state?.stream?.readable) return void (this.state = {status: "idle"});
 
         //Соблюдая правила отправляем пакет
         this.#hasPlay();
@@ -174,7 +176,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     /**
      * @description Чистим плеер от ненужных данных
      */
-    public readonly cleanup = () => {
+    public readonly cleanup = (): void => {
         delete this._time;
         delete this._state;
         delete this._voices;

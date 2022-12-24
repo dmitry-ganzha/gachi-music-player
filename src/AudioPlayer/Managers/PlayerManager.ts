@@ -35,7 +35,7 @@ export namespace PlayerEvents {
         setTimeout(() => {
             if (isSkipSong) {
                 queue.songs.shift();
-                setTimeout(() => queue.play(), 1e3);
+                setTimeout(queue.play, 1e3);
             }
         }, 1200);
     }
@@ -45,12 +45,15 @@ export namespace PlayerEvents {
      * @param queue {Queue} Очередь сервера
      */
     function isRemoveSong({options, songs}: Queue): void {
-        if (options.radioMode) return;
+        const {radioMode, loop} = options;
 
-        switch (options?.loop) {
-            case "song": return;
-            case "songs": return void songs.push(songs.shift());
-            default: return void songs.shift();
-        }
+        //Если включен радио мод или тип повтора трек нечего не делаем
+        if (radioMode || loop === "song") return;
+
+        //Убираем текущий трек
+        const shiftSong = songs.shift();
+
+        //Если тип повтора треки, то добавляем по новой трек
+        if (loop === "songs") songs.push(shiftSong);
     }
 }

@@ -75,7 +75,7 @@ interface ResolveMenu {
  */
 export namespace replacer {
     export function replaceArray(text: string, srt: string[]) {
-        srt.forEach((str) => text.replace(str, ""));
+        srt.forEach((str) => text.replaceAll(str, ""));
 
         return text;
     }

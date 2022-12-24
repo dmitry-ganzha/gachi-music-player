@@ -46,7 +46,8 @@ export namespace PlayerController {
      */
     export function toRemove(message: ClientMessage, args: number): void {
         const {client, guild, member, author} = message;
-        const {player, songs, song}: Queue = client.queue.get(guild.id);
+        const queue: Queue = client.queue.get(guild.id);
+        const {player, songs, song} = queue;
         const {title, color, requester, url}: Song = songs[args - 1];
 
         setImmediate(() => {
@@ -62,7 +63,7 @@ export namespace PlayerController {
             //Если пользователю позволено убрать из очереди этот трек
             if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {
                 if (args === 1) toStop(message);
-                songs.splice(args - 1, 1);
+                queue.songs.splice(args - 1, 1);
 
                 return messageUtils.sendMessage({text: `⏭️ | Remove song | ${title}`, message, codeBlock: "css", color});
             }
@@ -80,10 +81,10 @@ export namespace PlayerController {
      */
     export function toSeek(message: ClientMessage, seek: number): void {
         const {client, guild} = message;
-        const queue: Queue = client.queue.get(guild.id);
-        const {title, color}: Song = queue.song;
+        const {song, play}: Queue = client.queue.get(guild.id);
+        const {title, color}: Song = song;
 
-        queue.play(seek);
+        play(seek);
         //Отправляем сообщение о пропуске времени
         return messageUtils.sendMessage({ text: `⏭️ | Seeking to [${ParsingTimeToString(seek)}] song | ${title}`, message, codeBlock: "css", color });
     }
@@ -130,10 +131,10 @@ export namespace PlayerController {
      */
     export function toReplay(message: ClientMessage): void {
         const {client, guild} = message;
-        const queue: Queue = client.queue.get(guild.id);
-        const {title, color}: Song = queue.song;
+        const {song, play}: Queue = client.queue.get(guild.id);
+        const {title, color}: Song = song;
 
-        queue.play();
+        play();
         //Сообщаем о том что музыка начата с начала
         return messageUtils.sendMessage({text: `🔂 | Replay | ${title}`, message, color, codeBlock: "css"});
     }
@@ -144,11 +145,10 @@ export namespace PlayerController {
      */
     export function toFilter(message: ClientMessage): void {
         const {client, guild} = message;
-        const queue: Queue = client.queue.get(guild.id);
-        const player = queue.player;
+        const {player, play}: Queue = client.queue.get(guild.id);
         const seek: number = player.streamDuration;
 
-        return queue.play(seek);
+        return play(seek);
     }
     //====================== ====================== ====================== ======================
     /**
@@ -172,28 +172,29 @@ export namespace PlayerController {
 function toSkipNumber(message: ClientMessage, args: number): void {
     const {client, guild, member, author} = message;
     const queue: Queue = client.queue.get(guild.id);
-    const {title, color, requester, url}: Song = queue.songs[args - 1];
+    const {song, player, songs, options} = queue;
+    const {title, color, requester, url}: Song = songs[args - 1];
 
     setImmediate(() => {
         const voiceConnection: VoiceState[] = Voice.Members(guild) as VoiceState[];
-        const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === queue.song.requester.id);
+        const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === song.requester.id);
 
         //Если музыку нельзя пропустить из-за плеера
-        if (!StatusPlayerHasSkipped.has(queue.player.state.status)) return messageUtils.sendMessage({
+        if (!StatusPlayerHasSkipped.has(player.state.status)) return messageUtils.sendMessage({
             text: `${author}, ⚠ Музыка еще не играет!`, message,
             color: "DarkRed"
         });
 
         //Если пользователь укажет больше чем есть в очереди
-        if (args > queue.songs.length) return messageUtils.sendMessage({
-            text: `${author}, В очереди ${queue.songs.length}!`, message,
+        if (args > songs.length) return messageUtils.sendMessage({
+            text: `${author}, В очереди ${songs.length}!`, message,
             color: "DarkRed"
         });
 
         //Если пользователю позволено пропустить музыку
         if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {
-            if (queue.options.loop === "songs") for (let i = 0; i < args - 2; i++) queue.songs.push(queue.songs.shift());
-            else queue.songs = queue.songs.slice(args - 2);
+            if (options.loop === "songs") for (let i = 0; i < args - 2; i++) songs.push(songs.shift());
+            else queue.songs = songs.slice(args - 2);
 
             messageUtils.sendMessage({text: `⏭️ | Skip to song [${args}] | ${title}`, message, codeBlock: "css", color});
             return PlayerController.toStop(message);
