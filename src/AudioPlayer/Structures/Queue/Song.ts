@@ -21,11 +21,12 @@ export class Song {
     readonly #requester: SongRequester;
     readonly #isLive: boolean;
     readonly #color: number;
-    readonly #type: supportPlatforms;
+    readonly #platform: supportPlatforms;
+
     #resLink: string;
 
     public constructor(track: InputTrack, author: ClientMessage["author"]) {
-        const type = TypePlatform(track.url);
+        const platform = TypePlatform(track.url);
         const {username, id, avatar} = author;
         const seconds = parseInt(track.duration.seconds);
 
@@ -41,8 +42,8 @@ export class Song {
         this.#image = track.image;
         this.#requester = {username, id, avatarURL: () => `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp`};
         this.#isLive = track.isLive;
-        this.#color = ColorTrack[type];
-        this.#type = type;
+        this.#color = ColorTrack[platform];
+        this.#platform = platform;
         this.#resLink = track?.format?.url;
     };
 
@@ -63,7 +64,8 @@ export class Song {
     //Цвет трека
     public get color() { return this.#color; };
     //Тип трека
-    public get type() { return this.#type; };
+    public get platform() { return this.#platform; };
+
     public get link() { return this.#resLink; };
     private set link(url: string) { this.#resLink = url; };
 

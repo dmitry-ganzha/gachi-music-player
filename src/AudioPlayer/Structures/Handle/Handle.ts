@@ -1,10 +1,10 @@
 import {FailRegisterPlatform, SearchPlatforms, SupportPlatforms, supportPlatforms, SupportType, TypePlatform} from "../SongSupport";
-import {ClientInteraction, ClientInteractive, ClientMessage, messageUtils} from "@Client/interactionCreate";
+import {ClientInteractive, ClientMessage, UtilsMsg} from "@Client/interactionCreate";
 import {replacer, ResolveData} from "@Structures/Handle/Command";
+import {ArraySort} from "@Handler/Modules/Object/ArraySort";
 import {InputPlaylist, InputTrack} from "@Queue/Song";
 import {StageChannel, VoiceChannel} from "discord.js";
 import {DurationUtils} from "@Managers/DurationUtils";
-import {ArraySort} from "@Handler/Modules/Object/ArraySort";
 
 //Данные которые необходимо передать для поиска
 interface Options {
@@ -18,58 +18,56 @@ interface Options {
 const UrlSrt = /^(https?:\/\/)/gi;
 const emoji = "❌";
 
+
 export namespace Handle {
     /**
      * @description Ищем и передаем в плеер данные
      * @param options {Options} Параметры
      */
-    export function toPlayer(options: Options): void {
+    export function toPlayer(options: Options): Promise<ResolveData> | ResolveData {
         const {search, message, voiceChannel} = options;
         const {client, author} = message;
-        const type = HandleUtils.typeSong(search); //Тип запроса
-        const platform = HandleUtils.PlatformSong(search, message); //Платформа с которой будем взаимодействовать
-        const parsedSearch = HandleUtils.findArg(search, platform, type); //Правит ошибку с некоторыми ссылками
+        const type = IdentifyType.track(search); //Тип запроса
+        const platform = IdentifyType.platform(search); //Платформа с которой будем взаимодействовать
+        const parsedSearch = IdentifyType.Argument(search, type, platform); //Правит ошибку с некоторыми ссылками
 
         //Если нельзя получить данные с определенной платформы
-        if (FailRegisterPlatform.has(platform)) return messageUtils.sendMessage({
-            text: `${author}, я не могу взять данные с этой платформы **${platform}**\n Причина: [**Authorization data not found**]`, message, color: "DarkRed", codeBlock: "css"
-        });
+        if (FailRegisterPlatform.has(platform)) return {
+            text: `${author}, я не могу взять данные с этой платформы **${platform}**\n Причина: [**Authorization data not found**]`, color: "DarkRed", codeBlock: "css"
+        };
 
         const findPlatform = SupportPlatforms[platform]; //Ищем в списке платформу
         const findType = (findPlatform as any)[type]; //Ищем тип запроса
 
-        if (!findPlatform) return messageUtils.sendMessage({ text: `${author}, у меня нет поддержки такой платформы!\nПлатформа **${platform}**!`, color: "DarkRed", message });
-        else if (!findType) return messageUtils.sendMessage({ text: `${author}, у меня нет поддержки этого типа запроса!\nТип запроса **${type}**!`, color: "DarkRed", message });
+        if (!findPlatform) return { text: `${author}, у меня нет поддержки такой платформы!\nПлатформа **${platform}**!`, color: "DarkRed" };
+        else if (!findType) return { text: `${author}, у меня нет поддержки этого типа запроса!\nТип запроса **${type}**!`, color: "DarkRed" };
 
         const runCallback = findType(parsedSearch) as Promise<InputTrack | InputPlaylist | InputTrack[]>;
 
-        runCallback.then((data: InputTrack | InputPlaylist | InputTrack[]) => {
-            if (!data) return messageUtils.sendMessage({ text: `${author}, данные не были найдены!`, color: "Yellow", message });
+        //Если выходит ошибка
+        runCallback.catch((err) => UtilsMsg.createMessage({ text: `${author}, данные не были найдены!\nПричина: ${err}`, color: "DarkRed", message }));
+
+        return runCallback.then((data: InputTrack | InputPlaylist | InputTrack[]): ResolveData => {
+            if (!data) return { text: `${author}, данные не были найдены!`, color: "Yellow"};
 
             //Если пользователь ищет трек
-            if (data instanceof Array) return SearchSongMessage.toSend(data, data.length, {...options, platform, type});
-
-            //Сообщаем что трек был найден
-            if (type === "track") messageUtils.sendMessage({text: `Найден 🔍 | ${type}\n➜ ${data.title}`, message, color: "Yellow", codeBlock: "css"});
+            if (data instanceof Array) return SearchMessage.toSend(data, {...options, platform, type});
 
             //Загружаем трек или плейлист в GuildQueue
-            return client.player.emit("play", message as any, voiceChannel, data);
+            client.player.play(message as any, voiceChannel, data);
+
+            //Сообщаем что трек был найден
+            if (type === "track") return {text: `Найден 🔍 | ${type}\n➜ ${data.title}`, color: "Yellow", codeBlock: "css"};
         });
-        //Если выходит ошибка
-        runCallback.catch((err) => messageUtils.sendMessage({ text: `${author}, данные не были найдены!\nПричина: ${err}`, color: "DarkRed", message }));
     }
 }
 
-//====================== ====================== ====================== ======================
-/**
- * @description Функции для Searcher<toPlayer>
- */
-namespace HandleUtils {
+namespace IdentifyType {
     /**
      * @description Независимо от платформы делаем проверку типа ссылки
      * @param search {string} Что там написал пользователь
      */
-    export function typeSong(search: string) {
+    export function track(search: string): SupportType {
         if (!search) return "track"; //Если нет search, значит пользователь прикрепил файл
 
         //Если ссылка, то это может быть плейлист, альбом или просто трек
@@ -84,9 +82,8 @@ namespace HandleUtils {
     /**
      * @description Получаем инициалы платформы
      * @param search {string} Что там написал пользователь
-     * @param message {ClientInteractive} Сообщение
      */
-    export function PlatformSong(search: string, message: ClientInteractive): supportPlatforms {
+    export function platform(search: string) {
         if (!search) return "DISCORD"; //Если нет search, значит пользователь прикрепил файл
 
         if (search.match(UrlSrt)) return TypePlatform(search);
@@ -99,55 +96,52 @@ namespace HandleUtils {
     //====================== ====================== ====================== ======================
     /**
      * @description Фильтруем ссылку от аргументов поиска
-     * @param arg {string} аргументы переданные пользователем
+     * @param argument {string} аргументы переданные пользователем
      * @param platform {supportPlatforms} Платформа
      * @param type {SupportType} Тип запроса
      */
-    export function findArg(arg: string, platform: supportPlatforms, type: SupportType): string {
-        if (arg.match(UrlSrt)) return `http${arg.split("http")[1]}`; //Если строка ссылка
-        else if (type === "search" && arg.includes(platform)) return arg.split(platform)[1]; //Если строка это поиск на определенной платформе
-        return arg;
+    export function Argument(argument: string, type: SupportType, platform: supportPlatforms) {
+        if (argument.match(UrlSrt)) return `http${argument.split("http")[1]}`; //Если строка ссылка
+        else if (type === "search" && argument.includes(platform)) return argument.split(platform)[1]; //Если строка это поиск на определенной платформе
+        return argument;
     }
 }
-//====================== ====================== ====================== ======================
-/**/
-//Сообщение о поиске треков
-namespace SearchSongMessage {
+
+namespace SearchMessage {
     /**
      * @description Отправляем сообщение о том что удалось найти
-     * @param results {any[]} Результаты поиска
-     * @param num {number} Кол-во найденных треков
+     * @param results {InputTrack[]} Результаты поиска
      * @param options {Options}
      * @requires {Reaction, deleteMessage}
      */
-    export function toSend(results: InputTrack[], num: number, options: Options): ResolveData {
+    export function toSend(results: InputTrack[], options: Options): ResolveData {
         const {message, platform} = options;
         const {author, client} = message;
 
         if (results.length < 1) return { text: `${author} | Я не смог найти музыку с таким названием. Попробуй другое название!`, color: "DarkRed" };
 
-        const ConstFind = `Выбери от 1 до ${results.length}`; //Показываем сколько есть треков в списке
-        const Requester = `[Платформа: ${platform} | Запросил: ${author.username}]`; //Показываем платформу и того кто запросил
-        const SongsString = ArraySort<InputTrack>(15, results, (track, index = 1) => {
+        const choice = `Выбери от 1 до ${results.length}`;
+        const requester = `[Платформа: ${platform} | Запросил: ${author.username}]`;
+        const songsList = ArraySort<InputTrack>(15, results, (track, index ) => {
             const Duration = platform === "YOUTUBE" ? track.duration.seconds : DurationUtils.ParsingTimeToString(parseInt(track.duration.seconds)); //Проверяем надо ли конвертировать время
             const NameTrack = `[${replacer.replaceText(track.title, 80, true)}]`; //Название трека
             const DurationTrack = `[${Duration ?? "LIVE"}]`; //Длительность трека
             const AuthorTrack = `[${replacer.replaceText(track.author.title, 12, true)}]`; //Автор трека
 
-            return `${index++} ➜ ${DurationTrack} | ${AuthorTrack} | ${NameTrack}`;
+            return `${index+1} ➜ ${DurationTrack} | ${AuthorTrack} | ${NameTrack}`;
         });
         const callback = (msg: ClientMessage) => {
             //Создаем сборщик
-            const collector = messageUtils.createCollector(message as ClientMessage, (m) => {
+            const collector = UtilsMsg.createCollector(msg, (m) => {
                 const messageNum = parseInt(m.content);
-                return !isNaN(messageNum) && messageNum <= num && messageNum > 0 && m.author.id === author.id;
+                return !isNaN(messageNum) && messageNum <= results.length && messageNum > 0 && m.author.id === author.id;
             });
 
             //Делаем что-бы при нажатии на эмодзи удалялся сборщик
-            messageUtils.createReaction(msg, emoji,
+            UtilsMsg.createReaction(msg, emoji,
                 (reaction, user) => reaction.emoji.name === emoji && user.id !== client.user.id,
                 () => {
-                    messageUtils.deleteMessage(msg, 1e3); //Удаляем сообщение
+                    UtilsMsg.deleteMessage(msg, 1e3); //Удаляем сообщение
                     collector?.stop();
                 },
                 30e3
@@ -156,7 +150,7 @@ namespace SearchSongMessage {
             //Что будет делать сборщик после нахождения числа
             collector.once("collect", (m: any): void => {
                 setImmediate(() => {
-                    [msg, m].forEach(messageUtils.deleteMessage); //Удаляем сообщения, бота и пользователя
+                    [msg, m].forEach(UtilsMsg.deleteMessage); //Удаляем сообщения, бота и пользователя
                     collector?.stop(); //Уничтожаем сборщик
 
                     //Получаем ссылку на трек, затем включаем его
@@ -166,7 +160,6 @@ namespace SearchSongMessage {
             });
         };
 
-        if ("commandName" in message) (message as ClientInteraction).reply({content: `\`\`\`css\n${ConstFind}\n${Requester}\n\n${SongsString}\n\`\`\``, fetchReply: true}).then(callback);
-        else (message as ClientMessage).channel.send({content: `\`\`\`css\n${ConstFind}\n${Requester}\n\n${SongsString}\n\`\`\``, }).then(callback);
+        return {text: `${choice}\n${requester}\n\n${songsList}`, codeBlock: "css", notAttachEmbed: true, thenCallbacks: [callback]}
     }
 }

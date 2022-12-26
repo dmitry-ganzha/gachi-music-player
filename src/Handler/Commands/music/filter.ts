@@ -58,7 +58,7 @@ export default class Filter extends Command {
         //Выключаем все фильтры
         else if (FilterName === "off") {
             queue.filters.splice(0, queue.filters.length);
-            client.player.emit("filter", message);
+            client.player.filter(message);
             return;
         }
 
@@ -121,7 +121,7 @@ export default class Filter extends Command {
                 }
             } else return {text: `${author.username}, у меня нет такого фильтра. Все фильтры - all`, ...SendArg};
         } finally {
-            if (Filter) message.client.player.emit("filter", message);
+            if (Filter) client.player.filter(message);
         }
     };
     //Запускаем ReactionMenu
@@ -129,7 +129,7 @@ export default class Filter extends Command {
         const embed: EmbedConstructor = { title: "Все доступные фильтры",  color: Colors.Yellow, thumbnail: { url: message.client.user.avatarURL() }, timestamp: new Date() };
         //Преобразуем все фильтры в string
         const pages = ArraySort<typeof Filters[0]>(5, filters, (filter, index) => {
-            return `Фильтр - [${index++}]
+            return `Фильтр - [${index+1}]
                 **❯ Названия:** ${filter.names ? `(${filter.names})` : `Нет`}
                 **❯ Описание:** ${filter.description ? `(${filter.description})` : `Нет`}
                 **❯ Аргументы:** ${filter.args ? `(${filter.args})` : `Нет`}

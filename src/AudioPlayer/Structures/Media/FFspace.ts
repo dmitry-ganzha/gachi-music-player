@@ -1,7 +1,9 @@
 import {ChildProcessWithoutNullStreams, spawn, spawnSync} from "child_process";
 import {Duplex, DuplexOptions, Readable, Writable} from "stream";
 import AudioFilters from "@db/Filters.json";
+import {consoleTime} from "@Client/Client";
 import {dependencies} from "package.json";
+import {Debug} from "@db/Config.json";
 
 const paths = {
     ffmpeg: ["ffmpeg", "avconv"],
@@ -54,6 +56,8 @@ export namespace FFspace {
             //Используется для загрузки потока в ffmpeg. Необходимо не указывать параметр -i
             if (!args.includes("-i")) args = ["-i", "-", ...args];
 
+            if (Debug) consoleTime(`[Debug] -> FFmpeg: [Execute]`);
+
             this.#process = this.#SpawnFFmpeg(args);
             this._readableState = this.stdout._readableState;
             this._writableState = this.stdin._writableState;
@@ -72,6 +76,8 @@ export namespace FFspace {
          */
         public readonly _destroy = (error?: Error | null) => {
             if (!this.#process?.killed) {
+                if (Debug) consoleTime(`[Debug] -> FFmpeg: [Clear memory]`);
+
                 this.removeAllListeners();
                 this.#process.removeAllListeners();
                 this.#process.kill("SIGKILL");

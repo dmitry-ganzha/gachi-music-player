@@ -36,6 +36,6 @@ export class Resume extends Command {
         //Если текущий трек является потоковым
         if (queue.song.isLive) return { text: `${author}, ⚠ | Это бесполезно!`, color: "DarkRed" };
 
-        return void client.player.emit("resume", message);
+        return void client.player.resume(message);
     };
 }

@@ -33,6 +33,6 @@ export class Replay extends Command {
         //Если нет очереди
         if (!queue) return { text: `${author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
 
-        return void client.player.emit("replay", message);
+        return void client.player.replay(message);
     };
 }

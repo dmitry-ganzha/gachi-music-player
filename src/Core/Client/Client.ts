@@ -1,11 +1,11 @@
+import {ActivityType, Client, IntentsBitField, Options} from "discord.js";
 import {DurationUtils} from "@AudioPlayer/Managers/DurationUtils";
-import {ActivityType, Client, IntentsBitField} from "discord.js";
 import {ClientMessage} from "@Client/interactionCreate";
-import {Bot, Debug, Channels} from "@db/Config.json";
 import {Command} from "@Structures/Handle/Command";
-import {PlayerEmitter} from "@AudioPlayer/index";
-import {Queue} from "@Structures/Queue/Queue";
+import {Bot, Channels} from "@db/Config.json";
+import {Player} from "@AudioPlayer/index";
 import {LoadFiles} from "@FileSystem";
+import {Queue} from "@Queue/Queue";
 import {env} from "@env";
 
 export function consoleTime(data: string) {
@@ -25,13 +25,24 @@ class CollectionMap<K, V> extends Map<K, V> {
 }
 
 export class WatKLOK extends Client {
-    public readonly commands = new CollectionMap<string, Command>(); //База, со всеми командами
-    public readonly queue = new CollectionMap<string, Queue>(); //База, в ней содержатся данные о серверах на которых играет музыка
-    public readonly player = new PlayerEmitter(); //Плеер
-    public readonly ShardID: number | undefined = this.shard?.ids[0] ?? undefined; //Если запущен ShardManager, будет отображаться номер дубликата
+    readonly #queue = new CollectionMap<string, Queue>();
+    readonly #commands = new CollectionMap<string, Command>(); //База, со всеми командами
+    readonly #player = Player; //Плеер
+    readonly #ShardID = this.shard?.ids[0] ?? undefined; //Если запущен ShardManager, будет отображаться номер дубликата
+
+    public get commands() { return this.#commands; };
+    public get queue() { return this.#queue; };
+    public get player() { return this.#player; };
+    public get ShardID() { return this.#ShardID; };
 
     public constructor() {
         super({
+            sweepers: { ...Options.DefaultSweeperSettings,
+                messages: {
+                    interval: 3600, // Every hour...
+                    lifetime: 1800,	// Remove messages older than 30 minutes.
+                }
+            },
             intents: [
                 //Message (Бот может писать в текстовые каналы)
                 IntentsBitField.Flags.GuildMessages,
@@ -66,8 +77,6 @@ export class WatKLOK extends Client {
                 }]
             }
         });
-        //Включаем режим отладки
-        if (Debug) this.on("debug", null);
     };
     //Включаем бота
     public login(token: string = env.get("TOKEN")): Promise<string> {

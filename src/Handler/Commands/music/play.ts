@@ -35,7 +35,7 @@ export class Play extends Command {
         });
     };
 
-    public readonly run = (message: ClientMessage, args: string[]): ResolveData => {
+    public readonly run = (message: ClientMessage, args: string[]): ResolveData | Promise<ResolveData> => {
         const {author, member, guild, client} = message;
         const queue: Queue = client.queue.get(guild.id);
         const search: string = args.join(" ") ?? message.attachments?.last()?.url;
@@ -54,7 +54,7 @@ export class Play extends Command {
         if (!search) return { text: `${author}, Укажи ссылку, название или прикрепи файл!`, color: "DarkRed" };
 
         try {
-            Handle.toPlayer({message, voiceChannel: memberVoice.channel, search});
+            return Handle.toPlayer({message, voiceChannel: memberVoice.channel, search});
         } catch (e) {
             return { text: `Произошла ошибка -> ${search}\n${e}`, color: "DarkRed", codeBlock: "css" };
         }

@@ -115,7 +115,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     //====================== ====================== ====================== ======================
     /**
      * @description Передача пакетов в голосовые каналы
-     * @param packet {Buffer | null} Пакет
+     * @param packet {null} Пакет
      * @private
      */
     readonly #setSpeak = (packet: Buffer | null): void => {

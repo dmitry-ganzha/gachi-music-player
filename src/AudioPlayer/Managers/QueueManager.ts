@@ -1,7 +1,6 @@
 import {InputPlaylist, InputTrack, Song} from "@Queue/Song";
 import {ClientMessage} from "@Client/interactionCreate";
 import {MessagePlayer} from "@Managers/PlayerMessages";
-import {VoiceChannel} from "discord.js";
 import {Voice} from "@VoiceManager";
 import {Queue} from "@Queue/Queue";
 
@@ -10,11 +9,11 @@ export namespace QueueManager {
     /**
      * @description Добавляем плейлист или трек в очередь
      * @param message {ClientMessage} Сообщение с сервера
-     * @param VoiceChannel {VoiceChannel} К какому голосовому каналу надо подключатся
+     * @param VoiceChannel {Voice.VoiceChannels} К какому голосовому каналу надо подключатся
      * @param info {InputTrack | InputPlaylist} Входные данные это трек или плейлист?
      * @requires {CreateQueue}
      */
-    export function toQueue(message: ClientMessage, VoiceChannel: VoiceChannel, info: InputTrack | InputPlaylist): void {
+    export function toQueue(message: ClientMessage, VoiceChannel: Voice.VoiceChannels, info: InputTrack | InputPlaylist): void {
         const {queue, status} = CreateQueue(message, VoiceChannel);
         const requester = message.author;
 
@@ -35,9 +34,9 @@ export namespace QueueManager {
 /**
  * @description Создаем очереди или если она есть выдаем
  * @param message {ClientMessage} Сообщение с сервера
- * @param VoiceChannel {VoiceChannel} К какому голосовому каналу надо подключатся
+ * @param VoiceChannel {Voice.VoiceChannels} К какому голосовому каналу надо подключатся
  */
-function CreateQueue(message: ClientMessage, VoiceChannel: VoiceChannel): { status: "create" | "load", queue: Queue } {
+function CreateQueue(message: ClientMessage, VoiceChannel: Voice.VoiceChannels): { status: "create" | "load", queue: Queue } {
     const {client, guild} = message;
     const queue = client.queue.get(guild.id);
 

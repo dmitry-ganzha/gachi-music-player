@@ -1,4 +1,4 @@
-import {ClientMessage, interactionCreate, messageUtils} from "./interactionCreate";
+import {ClientMessage, interactionCreate, UtilsMsg} from "./interactionCreate";
 import {Event} from "@Structures/Handle/Event";
 import {Bot} from "@db/Config.json";
 
@@ -19,7 +19,7 @@ export class messageCreate extends Event<ClientMessage, null> {
         message.channel.sendTyping().catch((e) => console.warn(e.message));
 
         //Удаляем сообщение пользователя
-        setTimeout(() => messageUtils.deleteMessage(message), 15e3);
+        setTimeout(() => UtilsMsg.deleteMessage(message), 15e3);
 
         const args = (message as ClientMessage).content.split(" ").slice(1);
         const commandName = (message as ClientMessage).content?.split(" ")[0]?.slice(DefaultPrefix.length)?.toLowerCase();

@@ -38,6 +38,6 @@ export class Pause extends Command {
         //Если текущий трек является потоковым
         if (queue.song.isLive) return { text: `${author}, ⚠ | Это бесполезно!`, color: "DarkRed" };
 
-        return void client.player.emit("pause", message);
+        return void client.player.pause(message);
     };
 }

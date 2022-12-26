@@ -20,7 +20,7 @@ export function ArraySort<V>(number: number = 5, array: V[], callback: (value: V
 
     // @ts-ignore
     array.ArraySort(number).forEach((data: V[]) => {
-        const text = data.map(callback).join("\n");
+        const text = data.map((value, index= 1) => callback(value, index)).join("\n");
 
         if (text !== undefined) pages.push(text);
     });

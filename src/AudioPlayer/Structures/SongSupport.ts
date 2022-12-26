@@ -108,12 +108,12 @@ export function TypePlatform(url: string): supportPlatforms {
 export namespace SongFinder {
     //Получаем данные о треке заново
     export function findResource(song: Song): Promise<string> {
-        const {type, url, author, title, duration} = song;
+        const {platform, url, author, title, duration} = song;
 
-        if (PlatformsAudio.includes(type)) return FindTrack(`${author.title} - ${title} (Lyrics)`, duration.seconds);
+        if (PlatformsAudio.includes(platform)) return FindTrack(`${author.title} - ${title} (Lyrics)`, duration.seconds);
 
         // @ts-ignore
-        const FindPlatform = SupportPlatforms[type];
+        const FindPlatform = SupportPlatforms[platform];
         const FindCallback = FindPlatform["track"](url);
 
         return FindCallback.then((track: InputTrack) => track?.format?.url);

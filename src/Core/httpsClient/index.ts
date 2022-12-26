@@ -4,8 +4,6 @@ import {IncomingMessage, request as httpRequest} from "http";
 import {getCookies, uploadCookie} from "./Cookie";
 import UserAgents from "./UserAgents.json";
 
-let Cookie = getCookies(); //Получаем куки если он был указан в файле
-
 const decoderBase = {
     "gzip": createGunzip,
     "br": createBrotliDecompress,
@@ -38,11 +36,7 @@ export namespace httpsClient {
                 //Автоматическое перенаправление
                 if ((res.statusCode >= 300 && res.statusCode < 400) && res.headers?.location) return resolve(Request(res.headers.location, options));
                 //Обновляем куки
-                if (options?.options?.cookie && res.headers && res.headers["set-cookie"]) setImmediate(() => {
-                    uploadCookie(res.headers["set-cookie"]);
-                    if (Cookie) Cookie = getCookies();
-                });
-
+                if (options?.options?.cookie && res.headers && res.headers["set-cookie"]) setImmediate(() => uploadCookie(res.headers["set-cookie"]));
                 return resolve(res);
             });
 
@@ -151,7 +145,10 @@ function ChangeReqOptions(options: httpsClientOptions): void {
     }
 
     //Добавляем куки
-    if (options.options?.cookie && Cookie) options.request.headers = {...options.request.headers, "cookie": Cookie};
+    if (options.options?.cookie) {
+        const cookie = getCookies();
+        options.request.headers = {...options.request.headers, "cookie": cookie};
+    }
 }
 //====================== ====================== ====================== ======================
 type Decoder = BrotliDecompress | Gunzip | Deflate;

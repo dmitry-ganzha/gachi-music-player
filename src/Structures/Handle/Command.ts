@@ -55,15 +55,17 @@ export interface messageUtilsOptions {
     color?: ResolveText["color"];
     message: ClientMessage | ClientInteraction;
     codeBlock?: ResolveText["codeBlock"];
+    notAttachEmbed?: boolean
 }
 interface ResolveEmbed {
     embed: EmbedConstructor;
 }
 interface ResolveText {
     text: string;
-    codeBlock?: "css" | "js" | "ts" | "cpp" | "html" | "cs" | "json",
+    codeBlock?: "css" | "js" | "ts" | "cpp" | "html" | "cs" | "json" | "not",
     color?: "DarkRed" | "Blue" | "Green" | "Default" | "Yellow" | "Grey" | "Navy" | "Gold" | "Orange" | "Purple" | number;
     thenCallbacks?: Array<Function>;
+    notAttachEmbed?: boolean;
 }
 interface ResolveMenu {
     embed: EmbedConstructor | string;

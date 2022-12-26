@@ -1,5 +1,5 @@
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType, User} from "discord.js";
-import {ClientMessage, messageUtils} from "@Client/interactionCreate";
+import {ClientMessage, UtilsMsg} from "@Client/interactionCreate";
 import {EmbedMessages} from "@Structures/EmbedMessages";
 import {InputPlaylist, Song} from "@Queue/Song";
 import {consoleTime} from "@Client/Client";
@@ -54,7 +54,7 @@ export namespace MessagePlayer {
                 const Embed = EmbedMessages.toError(client, queue, err);
                 const WarningChannelSend = channel.send({embeds: [Embed]});
 
-                WarningChannelSend.then(messageUtils.deleteMessage);
+                WarningChannelSend.then(UtilsMsg.deleteMessage);
             } catch (e) {
                 consoleTime(`[MessagePlayer]: [function: toError]: ${e.message}`);
             }
@@ -74,7 +74,7 @@ export namespace MessagePlayer {
                 const EmbedPushedSong = EmbedMessages.toPushSong(client, song, queue);
                 const PushChannel = channel.send({embeds: [EmbedPushedSong]});
 
-                PushChannel.then(messageUtils.deleteMessage);
+                PushChannel.then(UtilsMsg.deleteMessage);
             } catch (e) {
                 consoleTime(`[MessagePlayer]: [function: toPushSong]: ${e.message}`);
             }
@@ -94,7 +94,7 @@ export namespace MessagePlayer {
                 const EmbedPushPlaylist = EmbedMessages.toPushPlaylist(message, playlist);
                 const PushChannel = channel.send({embeds: [EmbedPushPlaylist]});
 
-                PushChannel.then(messageUtils.deleteMessage);
+                PushChannel.then(UtilsMsg.deleteMessage);
             } catch (e) {
                 consoleTime(`[MessagePlayer]: [function: toPushPlaylist]: ${e.message}`);
             }
@@ -165,15 +165,15 @@ function CreateCollector(message: ClientMessage, queue: Queue) {
         switch (i.customId) {
             case "resume_pause": { //Если надо приостановить музыку или продолжить воспроизведение
                 switch (player.state.status) {
-                    case "read": return void EmitPlayer.emit("pause", message);
-                    case "pause": return void EmitPlayer.emit("resume", message);
+                    case "read": return void EmitPlayer.pause(message);
+                    case "pause": return void EmitPlayer.resume(message);
                 }
                 return;
             }
             //Пропуск текущей музыки
-            case "skip": return void EmitPlayer.emit("skip", message);
+            case "skip": return void EmitPlayer.skip(message, 1);
             //Повторно включить текущую музыку
-            case "replay": return void EmitPlayer.emit("replay", message);
+            case "replay": return void EmitPlayer.replay(message);
             //Включить последнею из списка музыку
             case "last": return queue?.swapSongs();
         }

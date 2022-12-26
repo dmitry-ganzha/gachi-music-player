@@ -105,10 +105,10 @@ namespace toPlayFunctions {
         const {songs, song, player} = queue;
         const VisualDuration = playTime.toString(song.duration, player.streamDuration);
         //Текущий трек
-        const fields = [{ name: "**Щас играет**", value: `**❯** **[${replacer.replaceText(song.title, 29, true)}](${song.url})**\n${VisualDuration}` }];
+        const fields = [{ name: `**Щас играет**`, value: `**❯** **[${replacer.replaceText(song.title, 29, true)}](${song.url})**\n${VisualDuration}` }];
 
         //Следующий трек
-        if (songs.length > 1) fields.push({ name: "**Потом**", value: `**❯** **[${replacer.replaceText(songs[1].title, 29, true)}](${songs[1].url})**` });
+        if (songs.length > 1) fields.push({ name: `**Потом**`, value: `**❯** **[${replacer.replaceText(songs[1].title, 29, true)}](${songs[1].url})**` });
         return fields;
     }
 }

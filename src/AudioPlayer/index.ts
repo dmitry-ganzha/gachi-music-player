@@ -1,34 +1,186 @@
-import {ClientMessage} from "@Client/interactionCreate";
-import {InputPlaylist, InputTrack} from "@Queue/Song";
-import {StageChannel, VoiceChannel} from "discord.js";
+import {ClientMessage, UtilsMsg} from "@Client/interactionCreate";
+import {StatusPlayerHasSkipped} from "@Structures/AudioPlayer";
+import {DurationUtils} from "@Managers/DurationUtils";
+import {VoiceState} from "discord.js";
+import {Voice} from "@VoiceManager";
+import {Queue} from "@Queue/Queue";
+import {Song} from "@Queue/Song";
 import {QueueManager} from "@Managers/QueueManager";
-import {TypedEmitter} from "tiny-typed-emitter";
-import {PlayerController} from "./Controller";
 
-interface PlayerEvents {
-    play: (message: ClientMessage, VoiceChannel: VoiceChannel | StageChannel, track: InputTrack | InputPlaylist) => void;
-    pause: (message: ClientMessage) => void;
-    resume: (message: ClientMessage) => void;
-    skip: (message: ClientMessage, args?: number) => void;
-    replay: (message: ClientMessage) => void;
-    filter: (message: ClientMessage) => void;
-    remove: (message: ClientMessage, args: number) => void;
-    seek: (message: ClientMessage, seek: number) => void;
+const ParsingTimeToString = DurationUtils.ParsingTimeToString;
+
+//Здесь все функции для взаимодействия с плеером
+export namespace Player {
+    export const play = QueueManager.toQueue;
+    /**
+     * @description Продолжает воспроизведение музыки
+     * @param message {ClientMessage} Сообщение с сервера
+     */
+    export function resume(message: ClientMessage): void {
+        const {client, guild} = message;
+        const {player, song}: Queue = client.queue.get(guild.id);
+        const {title, color}: Song = song;
+
+        //Продолжаем воспроизведение музыки если она на паузе
+        player.resume();
+        return UtilsMsg.createMessage({text: `▶️ | Resume song | ${title}`, message, codeBlock: "css", color});
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Приостанавливает воспроизведение музыки
+     * @param message {ClientMessage} Сообщение с сервера
+     */
+    export function pause(message: ClientMessage): void {
+        const {client, guild} = message;
+        const {player, song}: Queue = client.queue.get(guild.id);
+        const {title, color}: Song = song;
+
+        //Приостанавливаем музыку если она играет
+        player.pause();
+        return UtilsMsg.createMessage({text: `⏸ | Pause song | ${title}`, message, codeBlock: "css", color});
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Убираем музыку из очереди
+     * @param message {ClientMessage} Сообщение с сервера
+     * @param args {string} Аргументы Пример: команда аргумент1 аргумент2
+     * @requires {toStop}
+     */
+    export function remove(message: ClientMessage, args: number): void {
+        const {client, guild, member, author} = message;
+        const queue: Queue = client.queue.get(guild.id);
+        const {player, songs, song} = queue;
+        const {title, color, requester, url}: Song = songs[args - 1];
+
+        setImmediate(() => {
+            const voiceConnection: VoiceState[] = Voice.Members(guild) as VoiceState[];
+            const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === song.requester.id);
+
+            //Если музыку нельзя пропустить из-за плеера
+            if (!StatusPlayerHasSkipped.has(player.state.status)) return UtilsMsg.createMessage({
+                text: `${author}, ⚠ Музыка еще не играет!`, message,
+                color: "DarkRed"
+            });
+
+            //Если пользователю позволено убрать из очереди этот трек
+            if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {
+                if (args === 1) toStop(message);
+                queue.songs.splice(args - 1, 1);
+
+                return UtilsMsg.createMessage({text: `⏭️ | Remove song | ${title}`, message, codeBlock: "css", color});
+            }
+
+            //Если пользователю нельзя это сделать
+            return UtilsMsg.createMessage({ text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: "DarkRed" });
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Завершает текущую музыку
+     * @param message {ClientMessage} Сообщение с сервера
+     * @param seek {number} музыка будет играть с нужной секунды (не работает без ffmpeg)
+     * @requires {ParsingTimeToString}
+     */
+    export function seek(message: ClientMessage, seek: number): void {
+        const {client, guild} = message;
+        const {song, play}: Queue = client.queue.get(guild.id);
+        const {title, color}: Song = song;
+
+        play(seek);
+        //Отправляем сообщение о пропуске времени
+        return UtilsMsg.createMessage({ text: `⏭️ | Seeking to [${ParsingTimeToString(seek)}] song | ${title}`, message, codeBlock: "css", color });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Пропускает текущую музыку
+     * @param message {ClientMessage} Сообщение с сервера
+     * @param args {number} Сколько треков пропускаем
+     */
+    export function skip(message: ClientMessage, args: number): void {
+        if (args) return skipSong(message, args);
+        return skipSong(message);
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Повтор текущей музыки
+     * @param message {ClientMessage} Сообщение с сервера
+     */
+    export function replay(message: ClientMessage): void {
+        const {client, guild} = message;
+        const {song, play}: Queue = client.queue.get(guild.id);
+        const {title, color}: Song = song;
+
+        play();
+        //Сообщаем о том что музыка начата с начала
+        return UtilsMsg.createMessage({text: `🔂 | Replay | ${title}`, message, color, codeBlock: "css"});
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Применяем фильтры для плеера
+     * @param message {ClientMessage} Сообщение с сервера
+     */
+    export function filter(message: ClientMessage): void {
+        const {client, guild} = message;
+        const {player, play}: Queue = client.queue.get(guild.id);
+        const seek: number = player.streamDuration;
+
+        return play(seek);
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Завершает текущую музыку
+     * @param message {ClientMessage} Сообщение с сервера
+     */
+    export function toStop(message: ClientMessage): void {
+        const {client, guild} = message;
+        const {player}: Queue = client.queue.get(guild.id);
+
+        if (StatusPlayerHasSkipped.has(player.state.status)) player.stop();
+    }
 }
+//====================== ====================== ====================== ======================
+/**
+ * @description Пропускает музыку под номером
+ * @param message {ClientMessage} Сообщение с сервера
+ * @param args {string} Аргументы Пример: команда аргумент1 аргумент2
+ */
+function skipSong(message: ClientMessage, args: number = 1) {
+    const {client, guild, member, author} = message;
+    const queue: Queue = client.queue.get(guild.id);
+    const {song, player, songs, options} = queue;
+    const {title, color, requester, url}: Song = songs[args - 1];
 
-//Запускаем все функции плеера
-export class PlayerEmitter extends TypedEmitter<PlayerEvents> {
-    public constructor() {
-        super();
-        this.on("play", QueueManager.toQueue);
+    setImmediate(() => {
+        const voiceConnection: VoiceState[] = Voice.Members(guild) as VoiceState[];
+        const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === song.requester.id);
 
-        this.on("pause", PlayerController.toPause);
-        this.on("resume", PlayerController.toResume);
-        this.on("remove", PlayerController.toRemove);
-        this.on("seek", PlayerController.toSeek);
-        this.on("skip", PlayerController.toSkip);
-        this.on("replay", PlayerController.toReplay);
-        this.on("filter", PlayerController.toFilter);
-        this.setMaxListeners(9);
-    };
+        //Если музыку нельзя пропустить из-за плеера
+        if (!StatusPlayerHasSkipped.has(player.state.status)) return UtilsMsg.createMessage({
+            text: `${author}, ⚠ Музыка еще не играет!`, message,
+            color: "DarkRed"
+        });
+
+        //Если пользователь укажет больше чем есть в очереди
+        if (args > songs.length) return UtilsMsg.createMessage({
+            text: `${author}, В очереди ${songs.length}!`, message,
+            color: "DarkRed"
+        });
+
+        //Если пользователю позволено пропустить музыку
+        if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {
+            if (args > 1) {
+                if (options.loop === "songs") for (let i = 0; i < args - 2; i++) songs.push(songs.shift());
+                else queue.songs = songs.slice(args - 2);
+
+                UtilsMsg.createMessage({text: `⏭️ | Skip to song [${args}] | ${title}`, message, codeBlock: "css", color});
+            } else {
+                UtilsMsg.createMessage({text: `⏭️ | Skip song | ${title}`, message, codeBlock: "css", color});
+            }
+
+            return Player.toStop(message);
+        }
+
+        //Если пользователю нельзя это сделать
+        return UtilsMsg.createMessage({ text: `${author}, Ты не включал эту музыку [${title}](${url})`, message, color: "DarkRed" });
+    });
 }

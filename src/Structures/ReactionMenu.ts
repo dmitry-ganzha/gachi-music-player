@@ -1,4 +1,4 @@
-import {ClientMessage, EmbedConstructor, ClientInteractive, messageUtils} from "@Client/interactionCreate";
+import {ClientMessage, EmbedConstructor, ClientInteractive, UtilsMsg} from "@Client/interactionCreate";
 import {ReactionMenuSettings} from "@db/Config.json";
 import {MessageReaction, User} from "discord.js";
 
@@ -28,7 +28,7 @@ export class ReactionMenu {
                 const emoji = emojis[key];
                 const callback = (reaction: MessageReaction) => value(reaction, message.author, message, msg);
 
-                return messageUtils.createReaction(msg, emoji, (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id, callback, 60e3);
+                return UtilsMsg.createReaction(msg, emoji, (reaction, user) => reaction.emoji.name === emoji && user.id !== message.client.user.id, callback, 60e3);
             });
 
             if (isSlash) message.reply(args).then(promise);

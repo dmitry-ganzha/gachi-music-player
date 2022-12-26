@@ -40,7 +40,7 @@ export class Skip extends Command {
         };
 
         try {
-            return void client.player.emit("skip", message, args && args[0] && !isNaN(argsNum) ? argsNum : null);
+            return void client.player.skip(message, args && args[0] && !isNaN(argsNum) ? argsNum : null);
         } catch {
             return { text: `${author}, Ошибка... попробуй еще раз!!!`, color: "DarkRed" };
         }

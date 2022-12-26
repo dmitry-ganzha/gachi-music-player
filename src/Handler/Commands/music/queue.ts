@@ -26,11 +26,11 @@ export default class CommandQueue extends Command {
         if (!queue) return { text: `${author}, ⚠ | Музыка щас не играет.`, color: "DarkRed" };
 
         //Получаем то что надо было преобразовать в string[]
-        const pages = ArraySort<Song>(10, queue.songs, (song, index= 1) => {
+        const pages = ArraySort<Song>(10, queue.songs, (song, index) => {
             const Duration = song.duration.full;
             const TitleSong = replacer.replaceText(song.title, 80, true).replace(/[\s",']/g, ' ');
 
-            return `[${index++}] - [${Duration}] | ${TitleSong}`;
+            return `[${index+1}] - [${Duration}] | ${TitleSong}`;
         });
 
         const CurrentPlaying = `Current playing -> [${queue.song.title}]`; //Музыка, которая играет сейчас

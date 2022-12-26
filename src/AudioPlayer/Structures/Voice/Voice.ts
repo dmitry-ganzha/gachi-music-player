@@ -1,15 +1,14 @@
 import {DiscordGatewayAdapterCreator, getVoiceConnection, getVoiceConnections, joinVoiceChannel} from "@discordjs/voice";
 import {ChannelType,Guild,InternalDiscordGatewayAdapterCreator,StageChannel,VoiceChannel,VoiceState} from "discord.js";
 
-//Допустимые голосовые каналы
-type VoiceChannels = VoiceChannel | StageChannel;
-
 const VoiceChannelsGroup = "DEFAULT";
 
 /**
  * Здесь все возможные взаимодействия с голосовым каналом (еще не финал)
  */
 export namespace Voice {
+    //Допустимые голосовые каналы
+    export type VoiceChannels = VoiceChannel | StageChannel;
     /**
      * @description Подключаемся к голосовому каналу
      * @param id {string} ID канала

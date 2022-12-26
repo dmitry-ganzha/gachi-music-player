@@ -48,6 +48,6 @@ export class Remove extends Command {
         //Если аргумент больше кол-ва треков
         if (argsNum > queue.songs.length) return { text: `${author}, Я не могу убрать музыку, поскольку всего ${queue.songs.length}!`, color: "DarkRed" };
 
-        return void client.player.emit("remove", message, argsNum);
+        return void client.player.remove(message, argsNum);
     };
 }

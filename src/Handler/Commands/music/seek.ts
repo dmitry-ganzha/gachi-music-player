@@ -68,6 +68,6 @@ export class Seek extends Command {
         //Если пользователь указал времени больше чем в треке
         if (EndDuration > queue.song.duration.seconds) return { text: `${author}, Ты указал слишком много времени!`, color: "DarkRed" };
 
-        return void client.player.emit("seek", message, EndDuration);
+        return void client.player.seek(message, EndDuration);
     };
 }

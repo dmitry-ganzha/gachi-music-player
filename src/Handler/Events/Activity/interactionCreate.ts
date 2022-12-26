@@ -68,10 +68,10 @@ export class interactionCreate extends Event<ClientInteraction, null> {
         if ("callbacks" in command) new ReactionMenu(command.embed, message, command.callbacks);
 
         //Отправляем просто сообщение
-        else if ("text" in command) messageUtils.sendMessage({ text: command.text, color: command.color, codeBlock: command.codeBlock, message });
+        else if ("text" in command) UtilsMsg.createMessage({...command, message }, command.thenCallbacks);
 
         //Отправляем embed
-        else messageUtils.sendMessage({text: command.embed, message});
+        else UtilsMsg.createMessage({text: command.embed, message});
     };
     //====================== ====================== ====================== ======================
     /**
@@ -134,7 +134,7 @@ export class interactionCreate extends Event<ClientInteraction, null> {
 /**
  * @description Взаимодействия с сообщениями
  */
-export namespace messageUtils {
+export namespace UtilsMsg {
     /**
      * @description Удаляем сообщение в зависимости от типа
      * @param message {ClientInteractive} Сообщение
@@ -174,32 +174,54 @@ export namespace messageUtils {
     }
     //====================== ====================== ====================== ======================
     /**
-     * @description Отправляем сообщение
-     * @param color {string | number} Цвет Embed'а
-     * @param text {string | EmbedConstructor} Что будем отправлять
-     * @param type {string} Добавить ли code block
-     * @param message {ClientInteractive} Сообщение
-     * @param callbacks {Array<Function>} Любые функции которые надо запустить после отправления сообщения
+     * @description Отправляем сообщение в тестовый канал по опциям
+     * @param options {messageUtilsOptions} Опции для отправления сообщения
+     * @param callbacks {Function[]} Promise функции будут выполнены в коне отправления сообщения
      */
-    export function sendMessage({color, text, codeBlock, message}: messageUtilsOptions, callbacks?: Array<Function>): void {
-        let Embed: EmbedConstructor, sendMsg: Promise<ClientMessage>;
+    export function createMessage(options: messageUtilsOptions, callbacks?: Function[]): void {
+        const {message} = options;
+        const Args = sendArgs(options);
+        const channelSend = sendMessage(message, "isButton" in message, Args as any) as Promise<ClientMessage>;
 
-        if (typeof text === "string") Embed = { color: typeof color === "number" ? color : Colors[color] ?? Colors.Blue, description: typeof codeBlock === "string" ? `\`\`\`${codeBlock}\n${text}\n\`\`\`` : text };
-        else Embed = text;
-
-        try {
-            //Отправляем сообщение с упоминанием
-            if ("isButton" in message) sendMsg = message.reply({ embeds: [Embed as any], fetchReply: true });
-            //Отправляем обычное сообщение
-            else sendMsg = message.channel.send({embeds: [Embed as any]});
-        } catch (e) {/* Notfing */}
-
-        sendMsg.then((msg: ClientMessage) => {
-            messageUtils.deleteMessage(msg);
+        channelSend.then((msg: ClientMessage) => {
+            deleteMessage(msg);
 
             if (callbacks) callbacks.forEach((cb) => cb(msg));
         });
-        sendMsg.catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
+        channelSend.catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Создаем аргумент сообщения
+     * @param options {messageUtilsOptions} Опции для отправления сообщения
+     * @private
+     */
+    function sendArgs(options: messageUtilsOptions): { embeds: [EmbedConstructor], fetchReply: boolean } | string {
+        const {color, text, codeBlock, notAttachEmbed} = options;
+
+        if (typeof text === "string") {
+            const block = typeof codeBlock === "string" ? `\`\`\`${codeBlock}\n${text}\n\`\`\`` : text;
+            if (!notAttachEmbed) return {
+                embeds: [{
+                    color: typeof color === "number" ? color : Colors[color] ?? Colors.Blue,
+                    description: block
+                }], fetchReply: true
+            }
+            return block;
+        }
+        return {embeds: [text], fetchReply: true};
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Варианты отправления сообщения
+     * @param message {ClientInteractive} Сообщение
+     * @param isSlash {boolean} Это запрос от пользователя
+     * @param args {string} Аргументы для создания сообщения
+     * @private
+     */
+    function sendMessage(message: ClientMessage | ClientInteraction, isSlash: boolean, args: string) {
+        if (isSlash) return message.reply(args);
+        return message.channel.send(args);
     }
 }
 /* */

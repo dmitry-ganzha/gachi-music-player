@@ -1,11 +1,12 @@
-import {PlayerEvents} from "@Managers/PlayerManager";
 import {ClientMessage} from "@Client/interactionCreate";
 import {MessagePlayer} from "@Managers/PlayerMessages";
-import {StageChannel, VoiceChannel} from "discord.js";
+import {PlayerEvents} from "@Managers/PlayerManager";
 import {VoiceConnection} from "@discordjs/voice";
 import {AudioPlayer} from "../AudioPlayer";
 import {consoleTime} from "@Client/Client";
+import {StageChannel} from "discord.js";
 import {OpusAudio} from "@OpusAudio";
+import {Voice} from "@VoiceManager";
 import {Song} from "./Song";
 
 export type AudioFilters = Array<string> | Array<string | number>;
@@ -17,7 +18,7 @@ export class Queue {
     #songs: Array<Song> = []; //Все треки находятся здесь
     readonly #player: AudioPlayer = new AudioPlayer(); //Сам плеер
     //Каналы (message: TextChannel, voice: VoiceChannel)
-    readonly #channels: { message: ClientMessage, voice: VoiceChannel | StageChannel };
+    readonly #channels: { message: ClientMessage, voice: Voice.VoiceChannels | StageChannel };
     readonly #options: { random: boolean, loop: "song" | "songs" | "off", radioMode: boolean } = { //Уникальные настройки
         random: false, //Рандомные треки (каждый раз в плеере будет играть разная музыка из очереди)
         loop: "off", //Тип повтора (off, song, songs)
@@ -26,7 +27,7 @@ export class Queue {
     #filters: Array<string> | Array<string | number> = [];  //Фильтры для FFmpeg
 
     //Создаем очередь
-    public constructor(message: ClientMessage, voice: VoiceChannel) {
+    public constructor(message: ClientMessage, voice: Voice.VoiceChannels) {
         this.#channels = {message, voice};
 
         this.player.on("idle", () => PlayerEvents.onIdlePlayer(this));

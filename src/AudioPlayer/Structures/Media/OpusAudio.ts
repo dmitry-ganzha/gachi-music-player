@@ -1,6 +1,7 @@
 import {DuplexOptions, Readable} from "stream";
+import {Music, Debug} from "@db/Config.json";
+import {consoleTime} from "@Client/Client";
 import {AudioFilters} from "@Queue/Queue";
-import {Music} from "@db/Config.json";
 import {FFspace} from "@FFspace";
 import {opus} from "prism-media";
 import fs from "fs";
@@ -46,6 +47,8 @@ export class OpusAudio extends opus.OggDemuxer {
         this.once("readable", () => (this._readable = true));
         //Если в <this.playStream> будет один из этих статусов, чистим память!
         ["end", "close", "error"].forEach((event: string) => this.once(event, this.destroy));
+
+        if (Debug) consoleTime(`[Debug] -> OpusAudio: [Start decoding file in ${path}]`);
     };
 
     public read = () => {
@@ -76,6 +79,8 @@ export class OpusAudio extends opus.OggDemuxer {
             if (!stream?.destroyed) stream?.destroy();
             this.#streams.shift();
         });
+
+        if (Debug) consoleTime(`[Debug] -> OpusAudio: [Clear memory]`);
     };
     public _destroy = () => this.cleanup();
 }
