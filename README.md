@@ -10,7 +10,7 @@
 - Все сообщения удаляются автоматически через время
 - Для удаления аудио кеша `запустить run и выбрать 6`
 
-[<img align="center" alt="PGI Settings" width="1000px" src="https://github.com/SNIPPIK/WatKLOK/blob/v2/_resource/PGI.png?raw=true" />](https://github.com/SNIPPIK/WatKLOK/blob/v2/_resource/PGI.png?raw=true)
+[<img align="center" alt="PGI Settings" width="1000px" src="https://github.com/SNIPPIK/WatKLOK/blob/v2/.github/resource/PGI.png?raw=true" />](https://github.com/SNIPPIK/WatKLOK/blob/v2/.github/resource/PGI.png?raw=true)
 
 
 ## Гайд по запуску
