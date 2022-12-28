@@ -1,7 +1,7 @@
 import {InputPlaylist, InputTrack, Song} from "@Queue/Song";
 import {SoundCloud, Spotify, VK, YouTube} from "@APIs";
 import {DurationUtils} from "@Managers/DurationUtils";
-import {Images} from "./EmbedMessages";
+import {Music} from "@db/Config.json";
 import {Colors} from "discord.js";
 import {FFspace} from "@FFspace";
 import {env} from "@env";
@@ -54,7 +54,7 @@ export const SupportPlatforms = {
             //Если не найдена звуковая дорожка
             if (!trackInfo) return null;
 
-            return { url: search, author: null, image: Images._image,
+            return { url: search, author: null, image: {url: Music.images._image},
                 title: search.split("/").pop(),
                 duration: {seconds: trackInfo.format.duration},
                 format: {url: trackInfo.format.filename}

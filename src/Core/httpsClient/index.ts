@@ -2,7 +2,7 @@ import {BrotliDecompress, createBrotliDecompress, createDeflate, createGunzip, D
 import {request as httpsRequest, RequestOptions} from "https";
 import {IncomingMessage, request as httpRequest} from "http";
 import {getCookies, uploadCookie} from "./Cookie";
-import UserAgents from "./UserAgents.json";
+import UserAgents from "@db/UserAgents.json";
 
 const decoderBase = {
     "gzip": createGunzip,
@@ -21,10 +21,23 @@ export namespace httpsClient {
      * @description Создаем запрос по ссылке, модифицируем по необходимости
      * @param url {string} Ссылка
      * @param options {httpsClientOptions} Настройки запроса
-     * @requires {ChangeReqOptions, uploadCookie, getCookies}
+     * @requires {uploadCookie, getCookies}
      */
-    export function Request(url: string, options?: httpsClientOptions): Promise<IncomingMessage> {
-        ChangeReqOptions(options);
+    export function Request(url: string, options: httpsClientOptions = {request: {headers: {}}, options: {}}): Promise<IncomingMessage> {
+        //Добавляем User-Agent
+        if (options.options?.userAgent) {
+            const {Agent, Version} = GetUserAgent();
+
+            if (Agent) options.request.headers = {...options.request.headers, "user-agent": Agent};
+            if (Version) options.request.headers = {...options.request.headers, "sec-ch-ua-full-version": Version};
+        }
+
+        //Добавляем куки
+        if (options.options?.cookie) {
+            const cookie = getCookies();
+            options.request.headers = {...options.request.headers, "cookie": cookie};
+        }
+
 
         return new Promise((resolve, reject) => {
             const {hostname, pathname, search, port, protocol} = new URL(url);
@@ -125,30 +138,6 @@ function GetUserAgent(): { Agent: string, Version: string } {
     const Version = Agent?.split("Chrome/")[1]?.split(" ")[0];
 
     return {Agent, Version};
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Добавляем свои аргументы запроса
- * @param options {httpsClientOptions} Настройки запроса
- * @requires {GetUserAgent}
- */
-function ChangeReqOptions(options: httpsClientOptions): void {
-    if (!options?.request) options = {...options, request: {headers: {}}};
-    if (!options?.options) options = {...options, options: {}};
-
-    //Добавляем User-Agent
-    if (options.options?.userAgent) {
-        const {Agent, Version} = GetUserAgent();
-
-        if (Agent) options.request.headers = {...options.request.headers, "user-agent": Agent};
-        if (Version) options.request.headers = {...options.request.headers, "sec-ch-ua-full-version": Version};
-    }
-
-    //Добавляем куки
-    if (options.options?.cookie) {
-        const cookie = getCookies();
-        options.request.headers = {...options.request.headers, "cookie": cookie};
-    }
 }
 //====================== ====================== ====================== ======================
 type Decoder = BrotliDecompress | Gunzip | Deflate;

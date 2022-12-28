@@ -3,13 +3,7 @@ import {DownloadManager} from "@Managers/DownloadManager";
 import {ClientMessage} from "@Client/interactionCreate";
 import {DurationUtils} from "@Managers/DurationUtils";
 import {httpsClient} from "@httpsClient";
-import {Images} from "../EmbedMessages";
 import {Music} from "@db/Config.json";
-
-const DownloadTrack = DownloadManager.download;
-const checkTrack = DownloadManager.getNames;
-const checkLink = httpsClient.checkLink;
-const findResource = SongFinder.findResource;
 
 //Создаем трек для внутреннего использования
 export class Song {
@@ -35,7 +29,7 @@ export class Song {
         this.#author = {
             url: track.author?.url ?? `https://discordapp.com/users/${id}`,
             title: track.author?.title ?? username,
-            image: track.author?.image ?? Images._image,
+            image: track.author?.image ?? {url: Music.images._image},
             isVerified: track.author?.isVerified ?? undefined
         };
         this.#duration = {seconds, full: seconds > 0 ? DurationUtils.ParsingTimeToString(seconds) : "Live"};
@@ -76,21 +70,21 @@ export class Song {
 
         //Если пользователь включил кеширование музыки
         if (CacheMusic) {
-            const info = checkTrack(this);
+            const info = DownloadManager.getNames(this);
 
             //Если есть файл выдаем путь до него
             if (info.status === "final") return resolve(info.path);
         }
 
         //Если нет ссылки, то ищем трек
-        if (!this.link) this.link = await findResource(this);
+        if (!this.link) this.link = await SongFinder.findResource(this);
 
         //Проверяем ссылку на работоспособность
-        const checkResource = await checkLink(this.link);
+        const checkResource = await httpsClient.checkLink(this.link);
 
         //Если ссылка работает
         if (checkResource === "OK") {
-            if (CacheMusic) setImmediate(() => DownloadTrack(this, this.link));
+            if (CacheMusic) setImmediate(() => DownloadManager.download(this, this.link));
             return resolve(this.link);
         }
 

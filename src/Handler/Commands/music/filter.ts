@@ -1,11 +1,11 @@
 import {ClientMessage, EmbedConstructor} from "@Client/interactionCreate";
 import {ApplicationCommandOptionType, Colors} from "discord.js";
 import {Command, ResolveData} from "@Structures/Handle/Command";
+import {ArraySort} from "@Handler/Modules/Object/ArraySort";
 import {ReactionMenu} from "@Structures/ReactionMenu";
 import {FFspace} from "@Structures/Media/FFspace";
 import Filters from "@db/Filters.json";
 import {Queue} from "@Queue/Queue";
-import {ArraySort} from "@Handler/Modules/Object/ArraySort";
 
 export default class Filter extends Command {
     public constructor() {

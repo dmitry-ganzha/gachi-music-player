@@ -9,18 +9,7 @@ import {Colors} from "discord.js";
 
 // Настройки прогресс бара, трека который сейчас проигрывается
 const Bar = Music.ProgressBar;
-
-//Иконки верификации, так-же картинка на замену отсутствующей
-export const Images = {
-    //✔️ - Подтвержденный автор
-    ver: {url: "https://media.discordapp.net/attachments/815897363188154408/1028014390299082852/Ok.png"},
-    //✖️ - Не подтвержденный автор
-    _ver: {url: "https://media.discordapp.net/attachments/815897363188154408/1028014389934174308/Not.png"},
-    //❓ - Не удалось получить данные
-    _found: {url: "https://media.discordapp.net/attachments/815897363188154408/1028014390752055306/WTF.png" },
-    //⛔️ - Нет картинки
-    _image: {url: "https://media.discordapp.net/attachments/815897363188154408/1028014391146328124/MusciNote.png" }
-}
+const Images = Music.images;
 
 //Здесь хранятся все EMBED данные о сообщениях (Используется в MessagePlayer)
 export namespace EmbedMessages {
@@ -34,7 +23,7 @@ export namespace EmbedMessages {
         const fields = toPlayFunctions.getFields(queue, client);
         const AuthorSong = replacer.replaceText(author.title, 45, false);
 
-        return { color, image, thumbnail: author?.image ?? Images._image, fields,
+        return { color, image, thumbnail: author?.image ?? {url: Images._image}, fields,
             author: { name: AuthorSong, url: author.url, iconURL: checkVer(author.isVerified) },
             footer: { text: `${requester.username} | ${DurationUtils.getTimeQueue(queue)} | 🎶: ${queue.songs.length}`, iconURL: requester.avatarURL() }
         };
@@ -53,8 +42,8 @@ export namespace EmbedMessages {
         const fields = [{ name: "**Добавлено в очередь**", value: `**❯** **[${replacer.replaceText(title, 40, true)}](${url}})\n**❯** \`\`[${duration.full}]\`\`**` }];
 
         return { color, fields,
-            author: { name: AuthorSong, iconURL: author?.image?.url ?? Images._image.url, url: author.url },
-            thumbnail: !image?.url ? author?.image : image ?? Images._image,
+            author: { name: AuthorSong, iconURL: author?.image?.url ?? Images._image, url: author.url },
+            thumbnail: !image?.url ? author?.image : image ?? {url: Images._image},
             footer: { text: `${requester.username} | ${DurationUtils.getTimeQueue(songs)} | 🎶: ${songs.length}`, iconURL: requester.avatarURL() }
         };
     }
@@ -70,8 +59,8 @@ export namespace EmbedMessages {
         const { author, image, url, title, items } = playlist;
 
         return { color: Colors.Blue, timestamp: new Date(),
-            author: { name: author?.title, iconURL: author?.image?.url ?? Images._image.url, url: author?.url },
-            thumbnail: typeof image === "string" ? {url: image} : image ?? Images._image,
+            author: { name: author?.title, iconURL: author?.image?.url ?? Images._image, url: author?.url },
+            thumbnail: typeof image === "string" ? {url: image} : image ?? {url: Images._image},
             description: `Найден плейлист **[${title}](${url})**`,
             footer: { text: `${DisAuthor.username} | ${DurationUtils.getTimeQueue(items)} | 🎶: ${items?.length}`, iconURL: DisAuthor.displayAvatarURL({}) }
         };
@@ -88,7 +77,7 @@ export namespace EmbedMessages {
         const {color, author, image, title, url, requester} = song;
         const AuthorSong = replacer.replaceText(author.title, 45, false);
 
-        return { color, thumbnail: image ?? Images._image, timestamp: new Date(),
+        return { color, thumbnail: image ?? {url: Images._image}, timestamp: new Date(),
             description: `\n[${title}](${url})\n\`\`\`js\n${err}...\`\`\``,
             author: { name: AuthorSong, url: author.url, iconURL: checkVer(author.isVerified) },
             footer: { text: `${requester.username} | ${DurationUtils.getTimeQueue(songs)} | 🎶: ${songs.length}`, iconURL: requester?.avatarURL() ?? client.user.displayAvatarURL() }
@@ -155,7 +144,7 @@ namespace playTime {
  * @param isVer {boolean} Подтвержденный пользователь?
  */
 function checkVer(isVer: boolean): string {
-    if (isVer === undefined) return Images._found.url;
-    else if (isVer) return Images.ver.url;
-    return Images._ver.url;
+    if (isVer === undefined) return Images._found;
+    else if (isVer) return Images.ver;
+    return Images._ver;
 }

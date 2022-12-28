@@ -1,4 +1,4 @@
-import { URL, URLSearchParams } from 'node:url';
+import {URL, URLSearchParams} from 'node:url';
 import {swapPositions} from "@Queue/Queue";
 import {consoleTime} from "@Client/Client";
 import * as querystring from "querystring";
@@ -17,15 +17,10 @@ const ESCAPING_SEGMENT = [
 
 export interface YouTubeFormat {
     url: string;
-    other?: boolean | string;
-    protocol?: string;
     signatureCipher?: string;
     cipher?: string
     sp?: string;
     s?: string;
-    work?: boolean;
-    duration?: number;
-    targetDurationSec?: number;
     mimeType?: string;
 }
 
@@ -42,7 +37,9 @@ export namespace Decipher {
             const nTransformScript = functions.length > 1 ? new vm.Script(functions[1]) : null;
 
             //Меняем данные в Array<YouTubeFormat>
-            for (let i in formats) setDownloadURL(formats[i], decipherScript, nTransformScript);
+            for (let format of formats) {
+                format = setDownloadURL(format, decipherScript, nTransformScript);
+            }
 
             return formats;
         } catch (e) {
@@ -59,7 +56,7 @@ export namespace Decipher {
     async function getFunctions (html5Link: string) {
         const body = await httpsClient.parseBody(html5Link);
         const functions = extractFunctions(body);
-        if (!functions || !functions.length) return null;
+        if (!functions || !functions.length) return;
 
         return functions;
     }
@@ -122,7 +119,7 @@ export namespace Decipher {
      * @param {vm.Script} decipherScript
      * @param {vm.Script} nTransformScript
      */
-    function setDownloadURL(format: YouTubeFormat, decipherScript: scriptVM, nTransformScript: scriptVM) {
+    function setDownloadURL(format: YouTubeFormat, decipherScript: scriptVM, nTransformScript: scriptVM): YouTubeFormat {
         const decipher = (url: string): string => {
             const args = querystring.parse(url);
             if (!args.s || !decipherScript) return args.url as string;
@@ -138,13 +135,12 @@ export namespace Decipher {
             components.searchParams.set('n', nTransformScript.runInNewContext({ ncode: n }));
             return components.toString();
         };
-
         const url = format.url || format.signatureCipher || format.cipher;
-        format.url = !format.url ? ncode(decipher(url)) : ncode(url);
 
-        //Удаляем не нужные данные
-        delete format.signatureCipher;
-        delete format.cipher;
+        return {
+            url: !format.url ? ncode(decipher(url)) : ncode(url),
+            mimeType: format.mimeType
+        };
     }
 }
 interface scriptVM { runInNewContext: (object: {}) => string; }

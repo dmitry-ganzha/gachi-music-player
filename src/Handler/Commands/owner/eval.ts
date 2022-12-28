@@ -1,4 +1,5 @@
 import {ClientMessage, EmbedConstructor} from "@Client/interactionCreate";
+import {YouTube, Spotify} from "@APIs";
 import {Command, ResolveData} from "@Structures/Handle/Command";
 import {consoleTime} from "@Client/Client";
 import {Colors} from "discord.js";

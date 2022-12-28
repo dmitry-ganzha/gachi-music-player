@@ -26,12 +26,12 @@ interface PlayerStatus {
 export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     private _voices: VoiceConnection[] = [];
     private _state: PlayerStatus = {status: "idle"};
-    private _time: number;
+    private _time: number = 0;
 
     /**
      * @description Общее время проигрывания музыки
      */
-    public get streamDuration() { return this._state?.stream?.duration ?? 0 };
+    public get streamDuration() { return this.state?.stream?.duration ?? 0 };
     //====================== ====================== ====================== ======================
     /**
      * @description Все голосовые каналы к которым подключен плеер
@@ -171,14 +171,5 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
             this.#setSpeak(packet);
             if (!packet) this.stop();
         }
-    };
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Чистим плеер от ненужных данных
-     */
-    public readonly cleanup = (): void => {
-        delete this._time;
-        delete this._state;
-        delete this._voices;
     };
 }

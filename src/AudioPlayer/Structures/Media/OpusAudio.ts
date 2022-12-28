@@ -12,30 +12,30 @@ type FFmpegOptions = {seek?: number, filters?: AudioFilters};
 const Audio = Music.Audio;
 
 export class OpusAudio extends opus.OggDemuxer {
-    readonly #streams: Array<Readable | FFspace.FFmpeg> = [];
+    private _streams: Array<Readable> = []; private _ffmpeg: FFspace.FFmpeg;
     private _duration: number = 0;
     private _readable: boolean;
-    private readonly _durFrame: number = 20;
+    private _durFrame: number = 20;
 
     public get duration() { return parseInt((this._duration / 1e3).toFixed(0)); };
     // @ts-ignore
     public get readable(): boolean { return this._readable; };
 
     //Выдаем или добавляем ffmpeg из this.streams
-    private get ffmpeg() { return this.#streams[0] as FFspace.FFmpeg; };
-    private set ffmpeg(ffmpeg: FFspace.FFmpeg) { this.#streams.push(ffmpeg); };
+    private get ffmpeg() { return this._ffmpeg as FFspace.FFmpeg; };
+    private set ffmpeg(ffmpeg: FFspace.FFmpeg) { this._ffmpeg = ffmpeg; };
 
     public constructor(path: string, options: FFmpegOptions, duplexOptions: DuplexOptions = {}) {
-        super({autoDestroy: false, highWaterMark: 128, ...duplexOptions});
-        const resource = this.#choiceResource(path);
+        super({autoDestroy: false, ...duplexOptions});
+        const resource = ArgsHelper.choiceResource(path);
 
         //Создаем ffmpeg
-        this.ffmpeg = new FFspace.FFmpeg(this.#choiceArgs(path, typeof resource, options), { highWaterMark: 128 });
+        this.ffmpeg = new FFspace.FFmpeg(ArgsHelper.choiceArgs(path, typeof resource, options), { highWaterMark: 128 });
 
         //Если resource является Readable то загружаем его в ffmpeg
         if (resource instanceof Readable) {
             resource.pipe(this.ffmpeg);
-            this.#streams.push(resource);
+            this._streams.push(resource);
         }
         this.ffmpeg.pipe(this); //Загружаем из FFmpeg'a в opus.OggDemuxer
 
@@ -58,15 +58,6 @@ export class OpusAudio extends opus.OggDemuxer {
 
         return packet;
     };
-
-    //Что из себя представляем входной аргумент path
-    readonly #choiceResource = (path: string): string | Readable => path.endsWith("opus") ? fs.createReadStream(path) : path;
-    //Создаем аргументы в зависимости от типа resource
-    readonly #choiceArgs = (url: string, resource: string | Readable, options: FFmpegOptions): FFspace.Arguments => {
-        if (resource === "string") return ArgsHelper.createArgs(url, options?.filters, options?.seek);
-        return ArgsHelper.createArgs(null, options?.filters, options?.seek);
-    };
-
     //Удаляем данные которые нам больше не нужны
     public cleanup = (error?: Error | null, callback?: (error: (Error | null)) => void) => {
         super._destroy(error, callback);
@@ -74,11 +65,16 @@ export class OpusAudio extends opus.OggDemuxer {
 
         delete this._duration;
         delete this._readable;
+        delete this._durFrame;
 
-        this.#streams.forEach((stream) => {
+        if (this._streams?.length > 0) this._streams.forEach((stream) => {
             if (!stream?.destroyed) stream?.destroy();
-            this.#streams.shift();
+            this._streams.shift();
         });
+        delete this._streams;
+
+        if (!this._ffmpeg?.destroyed) this._ffmpeg?.destroy();
+        delete this._ffmpeg;
 
         if (Debug) consoleTime(`[Debug] -> OpusAudio: [Clear memory]`);
     };
@@ -88,6 +84,16 @@ export class OpusAudio extends opus.OggDemuxer {
 
 //Вспомогательные функции Decoder'а
 namespace ArgsHelper {
+    //Что из себя представляем входной аргумент path
+    export function choiceResource(path: string): string | Readable {
+        return path.endsWith("opus") ? fs.createReadStream(path) : path;
+    }
+    //Создаем аргументы в зависимости от типа resource
+    export function choiceArgs(url: string, resource: string | Readable, options: FFmpegOptions): FFspace.Arguments {
+        if (resource === "string") return ArgsHelper.createArgs(url, options?.filters, options?.seek);
+        return ArgsHelper.createArgs(null, options?.filters, options?.seek);
+    }
+    //====================== ====================== ====================== ======================
     /**
      * @description Создаем аргументы для FFmpeg
      * @param AudioFilters {AudioFilters} Аудио фильтры которые включил пользователь

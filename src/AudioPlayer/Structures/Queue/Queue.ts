@@ -13,49 +13,49 @@ export type AudioFilters = Array<string> | Array<string | number>;
 
 //Музыкальная очередь
 export class Queue {
-    #Timer: NodeJS.Timeout = null; //Таймер для авто удаления очереди
-    #hasDestroying: boolean = false; //Статус удаления (запущено ли удаление)
-    #songs: Array<Song> = []; //Все треки находятся здесь
-    readonly #player: AudioPlayer = new AudioPlayer(); //Сам плеер
+    private Timer: NodeJS.Timeout = null; //Таймер для авто удаления очереди
+    private hasDestroying: boolean = false; //Статус удаления (запущено ли удаление)
+    private _songs: Array<Song> = []; //Все треки находятся здесь
+    private _player: AudioPlayer = new AudioPlayer(); //Сам плеер
     //Каналы (message: TextChannel, voice: VoiceChannel)
-    readonly #channels: { message: ClientMessage, voice: Voice.VoiceChannels | StageChannel };
-    readonly #options: { random: boolean, loop: "song" | "songs" | "off", radioMode: boolean } = { //Уникальные настройки
+    private channels: { message: ClientMessage, voice: Voice.VoiceChannels | StageChannel };
+    private _options: { random: boolean, loop: "song" | "songs" | "off", radioMode: boolean } = { //Уникальные настройки
         random: false, //Рандомные треки (каждый раз в плеере будет играть разная музыка из очереди)
         loop: "off", //Тип повтора (off, song, songs)
         radioMode: false //Режим радио
     };
-    #filters: Array<string> | Array<string | number> = [];  //Фильтры для FFmpeg
+    private _filters: Array<string> | Array<string | number> = [];  //Фильтры для FFmpeg
 
     //Создаем очередь
     public constructor(message: ClientMessage, voice: Voice.VoiceChannels) {
-        this.#channels = {message, voice};
+        this.channels = {message, voice};
 
         this.player.on("idle", () => PlayerEvents.onIdlePlayer(this));
         this.player.on("error", (err, isSkip) => PlayerEvents.onErrorPlayer(err, this, isSkip));
     };
 
     //Голосовой канал
-    public get voice() { return this.#channels.voice; };
-    public set voice(voiceChannel) { this.#channels.voice = voiceChannel; };
+    public get voice() { return this.channels.voice; };
+    public set voice(voiceChannel) { this.channels.voice = voiceChannel; };
 
     //Сообщение
-    public get message() { return this.#channels.message; };
-    public set message(message) { this.#channels.message = message; };
+    public get message() { return this.channels.message; };
+    public set message(message) { this.channels.message = message; };
 
     //Фильтры
-    public get filters() { return this.#filters; };
+    public get filters() { return this._filters; };
 
     //Все треки
-    public get songs() { return this.#songs; };
-    public set songs(songs) { this.#songs = songs; };
+    public get songs() { return this._songs; };
+    public set songs(songs) { this._songs = songs; };
     //Текущий трек
     public get song(): Song { return this.songs[0]; };
 
     //Данные плеера
-    public get player() { return this.#player; };
+    public get player() { return this._player; };
 
     //Настройки
-    public get options() { return this.#options; };
+    public get options() { return this._options; };
 
     //Голосовой канал этой очереди
     public get connection(): VoiceConnection { return this.player.voices.find((voice) => voice.joinConfig.channelId === this.voice.id); };
@@ -90,10 +90,9 @@ export class Queue {
             //Отвязываем плеер от PlayerEvents
             this.player.removeAllListeners();
             this.player.stop();
-            this.player.cleanup();
         }
 
-        clearTimeout(this.#Timer);
+        clearTimeout(this.Timer);
         client.queue.delete(guild.id);
     };
     //Удаление очереди через время
@@ -102,17 +101,17 @@ export class Queue {
 
         //Запускаем таймер по истечению которого очереди будет удалена!
         if (state === "start") {
-            if (this.#hasDestroying) return;
+            if (this.hasDestroying) return;
 
-            this.#Timer = setTimeout(this.cleanup, 20e3);
-            this.#hasDestroying = true;
+            this.Timer = setTimeout(this.cleanup, 20e3);
+            this.hasDestroying = true;
             player.pause();
         } else { //Отменяем запущенный таймер
-            if (!this.#hasDestroying) return;
+            if (!this.hasDestroying) return;
 
-            clearTimeout(this.#Timer);
+            clearTimeout(this.Timer);
             player.resume();
-            this.#hasDestroying = false;
+            this.hasDestroying = false;
         }
     };
     //Добавляем трек в очередь
@@ -130,7 +129,7 @@ export class Queue {
             if (!url) return this.player.emit("error", new Error("Audio resource not found!"), true);
             const streamingData = new OpusAudio(url,{seek, filters: this.song.isLive ? [] : this.filters});
 
-            return this.player.readStream(streamingData);
+            return this.player.readStream(streamingData as any);
         }).catch((err) => this.player.emit("error", new Error(err), true));
 
         if (!seek) {

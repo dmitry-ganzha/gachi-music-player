@@ -1,4 +1,4 @@
-import {ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType, User} from "discord.js";
+import {ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType, Message, User} from "discord.js";
 import {ClientMessage, UtilsMsg} from "@Client/interactionCreate";
 import {EmbedMessages} from "@Structures/EmbedMessages";
 import {InputPlaylist, Song} from "@Queue/Song";
@@ -212,7 +212,10 @@ namespace MessageUpdater {
         //Если в базе больше нет сообщений
         if (MessagesData.messages.size === 0) {
             //Если таймер еще работает то удаляем его
-            if (typeof MessagesData.timer !== "undefined") clearTimeout(MessagesData.timer);
+            if (typeof MessagesData.timer !== "undefined") {
+                clearTimeout(MessagesData.timer);
+                MessagesData.timer = null;
+            }
         }
     }
     //====================== ====================== ====================== ======================
