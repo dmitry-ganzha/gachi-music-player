@@ -37,9 +37,7 @@ export namespace Decipher {
             const nTransformScript = functions.length > 1 ? new vm.Script(functions[1]) : null;
 
             //Меняем данные в Array<YouTubeFormat>
-            for (let format of formats) {
-                format = setDownloadURL(format, decipherScript, nTransformScript);
-            }
+            for (let format of formats) setDownloadURL(format, decipherScript, nTransformScript);
 
             return formats;
         } catch (e) {
@@ -119,7 +117,7 @@ export namespace Decipher {
      * @param {vm.Script} decipherScript
      * @param {vm.Script} nTransformScript
      */
-    function setDownloadURL(format: YouTubeFormat, decipherScript: scriptVM, nTransformScript: scriptVM): YouTubeFormat {
+    function setDownloadURL(format: YouTubeFormat, decipherScript: scriptVM, nTransformScript: scriptVM): void {
         const decipher = (url: string): string => {
             const args = querystring.parse(url);
             if (!args.s || !decipherScript) return args.url as string;
@@ -137,10 +135,10 @@ export namespace Decipher {
         };
         const url = format.url || format.signatureCipher || format.cipher;
 
-        return {
-            url: !format.url ? ncode(decipher(url)) : ncode(url),
-            mimeType: format.mimeType
-        };
+        // @ts-ignore
+        Object.keys(format).forEach(key => delete format[key]);
+
+        format.url = !format.url ? ncode(decipher(url)) : ncode(url);
     }
 }
 interface scriptVM { runInNewContext: (object: {}) => string; }
