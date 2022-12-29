@@ -47,10 +47,15 @@ export namespace FFspace {
      * As a general rule, options are applied to the next specified file. Therefore, order is important, and you can have the same option on the command line multiple times. Each occurrence is then applied to the next input or output file. Exceptions from this rule are the global options (e.g. verbosity level), which should be specified first.
      */
     export class FFmpeg extends Duplex {
-        public _readableState: Readable;
-        public _writableState: Writable;
+        public _readableState: Readable = null;
+        public _writableState: Writable = null;
         private process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
 
+        /**
+         * @description Запускаем FFmpeg
+         * @param args {Arguments} Аргументы запуска
+         * @param options {DuplexOptions} Настройки node Stream
+         */
         public constructor(args: Arguments, options: DuplexOptions = {}) {
             super({autoDestroy: true, objectMode: true, ...options});
             //Используется для загрузки потока в ffmpeg. Необходимо не указывать параметр -i
@@ -65,9 +70,19 @@ export namespace FFspace {
             this.#Binding(["write", "end"], this.stdin);
             this.#Binding(["read", "setEncoding", "pipe", "unpipe"], this.stdout);
             this.#Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
-        };
 
-        private get stdout() { return this?.process?.stdout; };
+            ["end", "close", "finish", "error"].forEach(event => this.once(event, this.destroy));
+        };
+        //====================== ====================== ====================== ======================
+        /**
+         * @description Выход
+         * @private
+         */
+        public get stdout() { return this?.process?.stdout; };
+        //====================== ====================== ====================== ======================
+        /**
+         * @description Вход
+         */
         public get stdin() { return this?.process?.stdin; };
         //====================== ====================== ====================== ======================
         /**
@@ -75,8 +90,8 @@ export namespace FFspace {
          * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
          */
         public readonly _destroy = (error?: Error | null) => {
-            delete this._writableState;
-            delete this._readableState;
+            if (!this._writableState.destroyed) delete this._writableState;
+            if (!this._readableState.destroyed) delete this._readableState;
 
             if (!this.process?.killed) {
                 if (Debug) consoleTime(`[Debug] -> FFmpeg: [Clear memory]`);

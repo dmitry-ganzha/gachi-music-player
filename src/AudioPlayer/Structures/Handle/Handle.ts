@@ -133,7 +133,7 @@ namespace SearchMessage {
         });
         const callback = (msg: ClientMessage) => {
             //Создаем сборщик
-            const collector = UtilsMsg.createCollector(message.channel as any, (m) => {
+            const collector = UtilsMsg.createCollector(msg.channel, (m) => {
                 const messageNum = parseInt(m.content);
                 return !isNaN(messageNum) && messageNum <= results.length && messageNum > 0 && m.author.id === author.id;
             });

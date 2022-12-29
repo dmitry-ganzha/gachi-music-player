@@ -28,6 +28,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     private _state: PlayerStatus = {status: "idle"};
     private _time: number = 0;
 
+    //====================== ====================== ====================== ======================
     /**
      * @description Общее время проигрывания музыки
      */
@@ -45,16 +46,12 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     public set state(state) {
         const oldState = this._state;
         const oldStatus = oldState.status, newStatus = state.status;
-        const oldStream = oldState.stream, newStream = state.stream;
 
-        //Удаляем не используемый поток
-        if (oldStatus !== "idle" && newStatus === "idle" && oldStream) oldStream.cleanup();
+        //Проверяем на нужный статус
+        if (this.isDestroy(oldState, state)) oldState.stream.destroy();
 
-        //Заставляем ивенты работать
-        if (oldStatus !== newStatus || oldStatus !== "idle" && newStatus === "read" && oldStream !== newStream) {
-            this.#setSpeak(SilentFrame);
-            this.emit(newStatus);
-        }
+        //Перезаписываем state
+        this._state = state;
 
         //Задаем время начала (когда плеер начал отправлять пакеты)
         this._time = Date.now() + AudioPlayerSettings.sendDuration;
@@ -62,6 +59,12 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
         //Запускаем таймер
         this.#CycleStep();
+
+        //Заставляем ивенты работать
+        if (oldStatus !== newStatus || oldStatus !== "idle" && newStatus === "read") {
+            this.#setSpeak(SilentFrame);
+            this.emit(newStatus);
+        }
     };
     //====================== ====================== ====================== ======================
     /**
@@ -102,9 +105,6 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         else {
             //Включаем поток когда можно будет начать читать
             stream.once("readable", () => {
-                //Удаляем прошлый поток если введен новый
-                if (this.state?.stream && !this.state?.stream?.destroyed) this.state?.stream?.cleanup();
-
                 this.#setSpeak(SilentFrame);
                 this.state = {status: "read", stream};
             });
@@ -171,5 +171,15 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
             this.#setSpeak(packet);
             if (!packet) this.stop();
         }
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Аргументы для удаления аудио потока
+     */
+    private readonly isDestroy = (oldS: PlayerStatus, newS: PlayerStatus) => {
+        if (!oldS.stream || oldS.stream.destroyed) return false;
+
+        if (oldS.status !== "idle" && newS.status === "read") return true;
+        else if (oldS.status === "read" && newS.status === "idle") return true;
     };
 }

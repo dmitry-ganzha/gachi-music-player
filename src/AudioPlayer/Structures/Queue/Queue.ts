@@ -1,7 +1,6 @@
 import {ClientMessage} from "@Client/interactionCreate";
 import {MessagePlayer} from "@Managers/PlayerMessages";
 import {PlayerEvents} from "@Managers/PlayerManager";
-import {VoiceConnection} from "@discordjs/voice";
 import {AudioPlayer} from "../AudioPlayer";
 import {consoleTime} from "@Client/Client";
 import {StageChannel} from "discord.js";
@@ -13,27 +12,43 @@ export type AudioFilters = Array<string> | Array<string | number>;
 
 //Музыкальная очередь
 export class Queue {
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Таймер удаления
+     * @private
+     */
     private Timer: NodeJS.Timeout = null; //Таймер для авто удаления очереди
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Удалять ли очереди из-за истечения таймера
+     * @private
+     */
     private hasDestroying: boolean = false; //Статус удаления (запущено ли удаление)
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Array<Song> база с треками
+     * @private
+     */
     private _songs: Array<Song> = []; //Все треки находятся здесь
+    public get songs() { return this._songs; };
+    public set songs(songs) { this._songs = songs; };
+
+    //Текущий трек
+    public get song(): Song { return this.songs[0]; };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Плеер
+     * @private
+     */
     private _player: AudioPlayer = new AudioPlayer(); //Сам плеер
-    //Каналы (message: TextChannel, voice: VoiceChannel)
+    //Данные плеера
+    public get player() { return this._player; };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Каналы для взаимодействия. Каналы (message: TextChannel, voice: VoiceChannel)
+     * @private
+     */
     private channels: { message: ClientMessage, voice: Voice.VoiceChannels | StageChannel };
-    private _options: { random: boolean, loop: "song" | "songs" | "off", radioMode: boolean } = { //Уникальные настройки
-        random: false, //Рандомные треки (каждый раз в плеере будет играть разная музыка из очереди)
-        loop: "off", //Тип повтора (off, song, songs)
-        radioMode: false //Режим радио
-    };
-    private _filters: Array<string> | Array<string | number> = [];  //Фильтры для FFmpeg
-
-    //Создаем очередь
-    public constructor(message: ClientMessage, voice: Voice.VoiceChannels) {
-        this.channels = {message, voice};
-
-        this.player.on("idle", () => PlayerEvents.onIdlePlayer(this));
-        this.player.on("error", (err, isSkip) => PlayerEvents.onErrorPlayer(err, this, isSkip));
-    };
-
     //Голосовой канал
     public get voice() { return this.channels.voice; };
     public set voice(voiceChannel) { this.channels.voice = voiceChannel; };
@@ -42,86 +57,56 @@ export class Queue {
     public get message() { return this.channels.message; };
     public set message(message) { this.channels.message = message; };
 
-    //Фильтры
-    public get filters() { return this._filters; };
-
-    //Все треки
-    public get songs() { return this._songs; };
-    public set songs(songs) { this._songs = songs; };
-    //Текущий трек
-    public get song(): Song { return this.songs[0]; };
-
-    //Данные плеера
-    public get player() { return this._player; };
-
-    //Настройки
-    public get options() { return this._options; };
-
-    //Голосовой канал этой очереди
-    public get connection(): VoiceConnection { return this.player.voices.find((voice) => voice.joinConfig.channelId === this.voice.id); };
-
     //Сервер для которого создана очередь
     public get guild() { return this.message.guild; };
-
+    //====================== ====================== ====================== ======================
     /**
-     * @description Меняет местами треки
-     * @param num {number} Если есть номер для замены
+     * @description Настройки для очереди. Включен лы повтор, включен ли режим радио
+     * @private
      */
-    public readonly swapSongs = (num?: number) => {
-        if (this.songs.length === 1) return this.player.stop();
-
-        swapPositions(this.songs, num ?? this.songs.length - 1);
-        this.player.stop();
-        return;
+    private _options: { random: boolean, loop: "song" | "songs" | "off", radioMode: boolean } = { //Уникальные настройки
+        random: false, //Рандомные треки (каждый раз в плеере будет играть разная музыка из очереди)
+        loop: "off", //Тип повтора (off, song, songs)
+        radioMode: false //Режим радио
     };
-    //Удаление очереди
-    public readonly cleanup = () => {
-        const message = this.message;
-        const {client, guild} = message;
+    //Настройки
+    public get options() { return this._options; };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Все включенные фильтры
+     * @private
+     */
+    private _filters: Array<string> | Array<string | number> = [];  //Фильтры для FFmpeg
+    public get filters() { return this._filters; };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Создаем очередь для сервера
+     * @param message {ClientMessage} Сообщение с сервера
+     * @param voice {Voice.VoiceChannels} Голосовой канал
+     */
+    public constructor(message: ClientMessage, voice: Voice.VoiceChannels) {
+        this.channels = {message, voice};
 
-        //Удаляем сообщение о текущем треке
-        if (message?.deletable) message?.delete().catch(() => undefined);
-
-        //Если плеер еще не удален
-        if (this.player) {
-            //Удаляем голосовое подключение из плеера
-            if (this.connection) this.player.voice(this.connection);
-
-            //Отвязываем плеер от PlayerEvents
-            this.player.removeAllListeners();
-            this.player.stop();
-        }
-
-        clearTimeout(this.Timer);
-        client.queue.delete(guild.id);
+        this.player.on("idle", () => PlayerEvents.onIdlePlayer(this));
+        this.player.on("error", (err, isSkip) => PlayerEvents.onErrorPlayer(err, this, isSkip));
     };
-    //Удаление очереди через время
-    public readonly TimeDestroying = (state: "start" | "cancel"): void => {
-        const player = this.player;
-
-        //Запускаем таймер по истечению которого очереди будет удалена!
-        if (state === "start") {
-            if (this.hasDestroying) return;
-
-            this.Timer = setTimeout(this.cleanup, 20e3);
-            this.hasDestroying = true;
-            player.pause();
-        } else { //Отменяем запущенный таймер
-            if (!this.hasDestroying) return;
-
-            clearTimeout(this.Timer);
-            player.resume();
-            this.hasDestroying = false;
-        }
-    };
-    //Добавляем трек в очередь
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Добавляем трек в очередь
+     * @param song {Song} Трек
+     * @param sendMessage {boolean} Отправить сообщение о добавлении трека
+     */
     public readonly push = (song: Song, sendMessage: boolean = false): void => {
         if (sendMessage) MessagePlayer.toPushSong(this, song);
 
         this.songs.push(song);
     };
-    //Включаем первый трек из очереди
-    public readonly play = (seek: number = 0) => {
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Включение текущего трека
+     * @param seek {number} До скольки надо перемотать трек
+     */
+    public readonly play = (seek: number = 0): void => {
         if (!this.song) return this.cleanup();
 
         //Получаем ссылку на resource
@@ -135,6 +120,57 @@ export class Queue {
         if (!seek) {
             consoleTime(`[GuildID: ${this.guild.id}]: ${this.song.title}`); //Отправляем лог о текущем треке
             MessagePlayer.toPlay(this.message); //Отправляем сообщение с авто обновлением
+        }
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Меняет местами треки
+     * @param num {number} Если есть номер для замены
+     */
+    public readonly swapSongs = (num?: number): void => {
+        if (this.songs.length === 1) return this.player.stop();
+
+        swapPositions(this.songs, num ?? this.songs.length - 1);
+        this.player.stop();
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Удаляем не используемые объекты
+     */
+    public readonly cleanup = (): void => {
+        const message = this.message;
+        const {client, guild} = message;
+
+        if (message && message?.deletable) message?.delete().catch(() => undefined);
+
+        if (this._player) {
+            //Отвязываем плеер от PlayerEvents
+            this.player.removeAllListeners();
+
+            //Выключаем плеер если сейчас играет трек
+            this.player.stop();
+        }
+
+        //Удаляем таймер
+        clearTimeout(this.Timer);
+        client.queue.delete(guild.id);
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Удаление очереди через время
+     * @param state {string} Что делать с очередью. Запуск таймера или отмена
+     * @constructor
+     */
+    public readonly TimeDestroying = (state: "start" | "cancel"): void => {
+        const player = this.player;
+
+        //Запускаем таймер по истечению которого очереди будет удалена!
+        if (state === "start" && this.hasDestroying) {
+            this.Timer = setTimeout(this.cleanup, 20e3);
+            player.pause(); this.hasDestroying = true;
+        } else {
+            clearTimeout(this.Timer); this.hasDestroying = false;
+            player.resume();
         }
     };
 }
