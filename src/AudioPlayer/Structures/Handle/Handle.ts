@@ -3,7 +3,7 @@ import {ClientInteractive, ClientMessage, UtilsMsg} from "@Client/interactionCre
 import {replacer, ResolveData} from "@Structures/Handle/Command";
 import {ArraySort} from "@Handler/Modules/Object/ArraySort";
 import {InputPlaylist, InputTrack} from "@Queue/Song";
-import {Message, StageChannel, VoiceChannel} from "discord.js";
+import {StageChannel, VoiceChannel} from "discord.js";
 import {DurationUtils} from "@Managers/DurationUtils";
 import {ReactionMenuSettings} from "@db/Config.json";
 
