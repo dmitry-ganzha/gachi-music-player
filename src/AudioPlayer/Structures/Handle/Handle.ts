@@ -3,8 +3,9 @@ import {ClientInteractive, ClientMessage, UtilsMsg} from "@Client/interactionCre
 import {replacer, ResolveData} from "@Structures/Handle/Command";
 import {ArraySort} from "@Handler/Modules/Object/ArraySort";
 import {InputPlaylist, InputTrack} from "@Queue/Song";
-import {StageChannel, VoiceChannel} from "discord.js";
+import {Message, StageChannel, VoiceChannel} from "discord.js";
 import {DurationUtils} from "@Managers/DurationUtils";
+import {ReactionMenuSettings} from "@db/Config.json";
 
 //Данные которые необходимо передать для поиска
 interface Options {
@@ -16,7 +17,7 @@ interface Options {
 }
 
 const UrlSrt = /^(https?:\/\/)/gi;
-const emoji = "❌";
+const emoji = ReactionMenuSettings.emojis.cancel;
 
 
 export namespace Handle {
@@ -132,7 +133,7 @@ namespace SearchMessage {
         });
         const callback = (msg: ClientMessage) => {
             //Создаем сборщик
-            const collector = UtilsMsg.createCollector(msg, (m) => {
+            const collector = UtilsMsg.createCollector(message.channel as any, (m) => {
                 const messageNum = parseInt(m.content);
                 return !isNaN(messageNum) && messageNum <= results.length && messageNum > 0 && m.author.id === author.id;
             });

@@ -14,7 +14,7 @@ const Audio = Music.Audio;
 export class OpusAudio extends opus.OggDemuxer {
     private _streams: Array<Readable> = []; private _ffmpeg: FFspace.FFmpeg;
     private _duration: number = 0;
-    private _readable: boolean;
+    private _readable: boolean = false;
     private _durFrame: number = 20;
 
     public get duration() { return parseInt((this._duration / 1e3).toFixed(0)); };
@@ -30,7 +30,7 @@ export class OpusAudio extends opus.OggDemuxer {
         const resource = ArgsHelper.choiceResource(path);
 
         //Создаем ffmpeg
-        this.ffmpeg = new FFspace.FFmpeg(ArgsHelper.choiceArgs(path, typeof resource, options), { highWaterMark: 128 });
+        this.ffmpeg = new FFspace.FFmpeg(ArgsHelper.choiceArgs(path, typeof resource, options));
 
         //Если resource является Readable то загружаем его в ffmpeg
         if (resource instanceof Readable) {

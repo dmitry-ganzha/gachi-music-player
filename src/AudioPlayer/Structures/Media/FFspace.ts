@@ -47,9 +47,9 @@ export namespace FFspace {
      * As a general rule, options are applied to the next specified file. Therefore, order is important, and you can have the same option on the command line multiple times. Each occurrence is then applied to the next input or output file. Exceptions from this rule are the global options (e.g. verbosity level), which should be specified first.
      */
     export class FFmpeg extends Duplex {
-        readonly _readableState: Readable;
-        readonly _writableState: Writable;
-        readonly #process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
+        public _readableState: Readable;
+        public _writableState: Writable;
+        private process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
 
         public constructor(args: Arguments, options: DuplexOptions = {}) {
             super({autoDestroy: true, objectMode: true, ...options});
@@ -58,7 +58,7 @@ export namespace FFspace {
 
             if (Debug) consoleTime(`[Debug] -> FFmpeg: [Execute]`);
 
-            this.#process = this.#SpawnFFmpeg(args);
+            this.process = this.#SpawnFFmpeg(args);
             this._readableState = this.stdout._readableState;
             this._writableState = this.stdin._writableState;
 
@@ -67,20 +67,25 @@ export namespace FFspace {
             this.#Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
         };
 
-        private get stdout() { return this.#process.stdout; };
-        public get stdin() { return this.#process.stdin; };
+        private get stdout() { return this?.process?.stdout; };
+        public get stdin() { return this?.process?.stdin; };
         //====================== ====================== ====================== ======================
         /**
          * @description Удаляем все что не нужно
          * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
          */
         public readonly _destroy = (error?: Error | null) => {
-            if (!this.#process?.killed) {
+            delete this._writableState;
+            delete this._readableState;
+
+            if (!this.process?.killed) {
                 if (Debug) consoleTime(`[Debug] -> FFmpeg: [Clear memory]`);
 
                 this.removeAllListeners();
-                this.#process.removeAllListeners();
-                this.#process.kill("SIGKILL");
+                this.process.removeAllListeners();
+                this.process.kill("SIGKILL");
+
+                delete this.process;
             }
 
             if (error) return console.error(error);
@@ -126,26 +131,26 @@ export namespace FFspace {
      * Metadata tags stored in the container or in the streams are recognized and printed in the corresponding "FORMAT", "STREAM" or "PROGRAM_STREAM" section.
      */
     export class FFprobe {
-        readonly #process: ChildProcessWithoutNullStreams;
+        private process: ChildProcessWithoutNullStreams;
         //====================== ====================== ====================== ======================
         /**
          * @description Запуск FFprobe
          * @param Arguments {Arguments} Указываем аргументы для запуска
          */
-        public constructor(Arguments: Array<string>) { this.#process = this.#SpawnProbe(Arguments); };
+        public constructor(Arguments: Array<string>) { this.process = this.#SpawnProbe(Arguments); };
         //====================== ====================== ====================== ======================
         /**
          * @description Получаем данные
          */
         public readonly getInfo = (): Promise<any> => new Promise((resolve) => {
             let information = "";
-            this.#process.once("close", () => {
-                this.#process?.kill();
+            this.process.once("close", () => {
+                this.cleanup();
 
                 return resolve(JSON.parse(information + "}"));
             });
-            this.#process.stdout.once("data", (data) => information += data.toString());
-            this.#process.once("error", () => this.#process?.kill());
+            this.process.stdout.once("data", (data) => information += data.toString());
+            this.process.once("error", this.cleanup);
         });
         //====================== ====================== ====================== ======================
         /**
@@ -154,6 +159,14 @@ export namespace FFspace {
          * @private
          */
         readonly #SpawnProbe = (Arguments: Array<string>) => spawn(FFprobeName, ["-print_format", "json", "-show_format", ...Arguments], { shell: false, windowsHide: true });
+
+        private cleanup = () => {
+            if (!this.process?.killed) {
+                this.process.kill();
+
+                delete this.process;
+            }
+        };
     }
 
     //Ищем Filter в Array<Filter>

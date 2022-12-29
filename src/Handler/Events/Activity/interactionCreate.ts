@@ -150,13 +150,13 @@ export namespace UtilsMsg {
     //====================== ====================== ====================== ======================
     /**
      * @description Создаем сборщик сообщений
-     * @param message {ClientMessage} Сообщение
+     * @param channel {ClientMessage["channel"]} Канал на котором будет создан сборщик
      * @param filter {Function} Как фильтровать сообщения
      * @param max {number} Сколько раз можно уловить сообщение
      * @param time {number} Через сколько удалить сообщение
      */
-    export function createCollector(message: ClientMessage, filter: (m: ClientMessage) => boolean, max: number = 1, time: number = 20e3) {
-        return message.channel.createMessageCollector({filter: filter as any, max, time});
+    export function createCollector(channel: ClientMessage["channel"], filter: (m: ClientMessage) => boolean, max: number = 1, time: number = 20e3) {
+        return channel.createMessageCollector({filter: filter as any, max, time});
     }
     //====================== ====================== ====================== ======================
     /**
@@ -196,7 +196,7 @@ export namespace UtilsMsg {
      * @param options {messageUtilsOptions} Опции для отправления сообщения
      * @private
      */
-    function sendArgs(options: messageUtilsOptions): { embeds: [EmbedConstructor], fetchReply: boolean } | string {
+    function sendArgs(options: messageUtilsOptions): { content: string, fetchReply: boolean } | { embeds: [EmbedConstructor], fetchReply: boolean } | string {
         const {color, text, codeBlock, notAttachEmbed} = options;
 
         if (typeof text === "string") {
@@ -207,7 +207,7 @@ export namespace UtilsMsg {
                     description: block
                 }], fetchReply: true
             }
-            return block;
+            return {content: block, fetchReply: true};
         }
         return {embeds: [text], fetchReply: true};
     }

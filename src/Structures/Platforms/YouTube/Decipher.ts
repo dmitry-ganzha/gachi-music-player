@@ -5,16 +5,6 @@ import * as querystring from "querystring";
 import {httpsClient} from "@httpsClient";
 import * as vm from "vm";
 
-const ESCAPING_SEGMENT = [
-    // Strings
-    { start: '"', end: '"' },
-    { start: "'", end: "'" },
-    { start: '`', end: '`' },
-
-    // RegeEx
-    { start: '/', end: '/', startPrefix: /(^|[[{:;,])\s?$/ }
-];
-
 export interface YouTubeFormat {
     url: string;
     signatureCipher?: string;
@@ -51,12 +41,13 @@ export namespace Decipher {
      * @param {string} html5Link
      * @returns {Promise<Array.<string>>}
      */
-    async function getFunctions (html5Link: string) {
-        const body = await httpsClient.parseBody(html5Link);
-        const functions = extractFunctions(body);
-        if (!functions || !functions.length) return;
+    function getFunctions (html5Link: string) {
+        return httpsClient.parseBody(html5Link).then((body) => {
+            const functions = extractFunctions(body);
+            if (!functions || !functions.length) return;
 
-        return functions;
+            return functions;
+        });
     }
     //====================== ====================== ====================== ======================
     /**
@@ -119,6 +110,7 @@ export namespace Decipher {
      */
     function setDownloadURL(format: YouTubeFormat, decipherScript: scriptVM, nTransformScript: scriptVM): void {
         const decipher = (url: string): string => {
+            // noinspection JSDeprecatedSymbols
             const args = querystring.parse(url);
             if (!args.s || !decipherScript) return args.url as string;
 
@@ -175,6 +167,16 @@ const reverse_regexp = new RegExp(`(?:^|,)(${key_js})${reverse_function}`, 'm');
 const slice_regexp = new RegExp(`(?:^|,)(${key_js})${slice_function}`, 'm');
 const splice_regexp = new RegExp(`(?:^|,)(${key_js})${splice_function}`, 'm');
 const swap_regexp = new RegExp(`(?:^|,)(${key_js})${swap_function}`, 'm');
+const ESCAPING_SEGMENT = [
+    // Strings
+    { start: '"', end: '"' },
+    { start: "'", end: "'" },
+    { start: '`', end: '`' },
+
+    // RegEx
+    { start: '/', end: '/', startPrefix: /(^|[[{:;,])\s?$/ }
+];
+
 
 namespace OldDecipher {
     /**
@@ -202,10 +204,11 @@ namespace OldDecipher {
                 Url.searchParams.set('ratebypass', 'yes');
 
                 if (signature) Url.searchParams.set(format.sp || 'signature', signature);
-                format.url = Url.toString();
 
-                delete format.s;
-                delete format.sp;
+                // @ts-ignore
+                Object.keys(format).forEach(key => delete format[key]);
+
+                format.url = Url.toString();
             } else {
                 const index = formats.indexOf(format);
                 if (index > 0) formats.splice(index, 1);
@@ -253,7 +256,10 @@ namespace OldDecipher {
 
         let result: RegExpExecArray, tokens: string[] = [], keys: string[] = [];
 
-        [reverse_regexp, slice_regexp, splice_regexp, swap_regexp].forEach((res) => (result = res.exec(objPage), keys.push(replacer(result))));
+        [reverse_regexp, slice_regexp, splice_regexp, swap_regexp].forEach((res) => {
+            result = res.exec(objPage);
+            keys.push(replacer(result));
+        });
 
         const parsedKeys = `(${keys.join('|')})`;
         const tokenizeRegexp = new RegExp(`(?:a=)?${object}(?:\\.${parsedKeys}|\\['${parsedKeys}'\\]|\\["${parsedKeys}"\\])` + `\\(a,(\\d+)\\)`, 'g');
