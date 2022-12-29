@@ -36,7 +36,7 @@ export default class CommandQueue extends Command {
         const CurrentPlaying = `Current playing -> [${queue.song.title}]`; //Музыка, которая играет сейчас
         const Footer = `${author.username} | ${DurationUtils.getTimeQueue(queue)} | Лист 1 из ${pages.length} | Songs: ${queue.songs.length}`; //Что будет снизу сообщения
 
-        return {embed: `\`\`\`css\n➡️ | ${CurrentPlaying}\n\n${pages[0]}\n\n${Footer}\`\`\``, callbacks: this.#Callbacks(1, pages, queue)}
+        return {embed: `\`\`\`css\n➡️ | ${CurrentPlaying}\n\n${pages[0]}\n\n${Footer}\`\`\``, callbacks: this.Callbacks(1, pages, queue)}
     };
     //====================== ====================== ====================== ======================
     /**
@@ -46,7 +46,7 @@ export default class CommandQueue extends Command {
      * @param queue {Queue} Очередь сервера
      * @private
      */
-    readonly #Callbacks = (page: number, pages: string[], queue: Queue) => {
+    private Callbacks = (page: number, pages: string[], queue: Queue) => {
         return {
             //При нажатии на 1 эмодзи, будет выполнена эта функция
             back: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage): void => {
@@ -55,7 +55,7 @@ export default class CommandQueue extends Command {
 
                     if (page === 1) return null;
                     page--;
-                    return this.#EditMessage(queue, message, msg, pages, page);
+                    return this.EditMessage(queue, message, msg, pages, page);
                 });
             },
             //При нажатии на 2 эмодзи, будет выполнена эта функция
@@ -71,7 +71,7 @@ export default class CommandQueue extends Command {
 
                     if (page === pages.length) return null;
                     page++;
-                    return this.#EditMessage(queue, message, msg, pages, page);
+                    return this.EditMessage(queue, message, msg, pages, page);
                 });
             }
         };
@@ -87,7 +87,7 @@ export default class CommandQueue extends Command {
      * @param page {number} Номер ткущей страницы
      * @private
      */
-    readonly #EditMessage = (queue: Queue, message: ClientMessage, msg: ClientMessage, pages: string[], page: number) => {
+    private EditMessage = (queue: Queue, message: ClientMessage, msg: ClientMessage, pages: string[], page: number) => {
         const CurrentPlaying = `Current playing -> [${queue.song.title}]`;
         const Footer = `${message.author.username} | ${DurationUtils.getTimeQueue(queue)} | Лист ${page} из ${pages.length} | Songs: ${queue.songs.length}`;
 

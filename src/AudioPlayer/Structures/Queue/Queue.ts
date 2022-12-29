@@ -143,16 +143,27 @@ export class Queue {
 
         if (message && message?.deletable) message?.delete().catch(() => undefined);
 
+        //Удаляем таймер
+        clearTimeout(this.Timer);
+
         if (this._player) {
             //Отвязываем плеер от PlayerEvents
             this.player.removeAllListeners();
 
             //Выключаем плеер если сейчас играет трек
             this.player.stop();
+            this.player.destroy();
+
+            delete this._player;
         }
 
-        //Удаляем таймер
-        clearTimeout(this.Timer);
+        delete this._songs;
+        delete this._filters;
+        delete this._options;
+        delete this.channels;
+        delete this.Timer;
+        delete this.hasDestroying;
+
         client.queue.delete(guild.id);
     };
     //====================== ====================== ====================== ======================

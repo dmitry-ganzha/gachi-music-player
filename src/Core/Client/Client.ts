@@ -25,15 +25,15 @@ class CollectionMap<K, V> extends Map<K, V> {
 }
 
 export class WatKLOK extends Client {
-    readonly #queue = new CollectionMap<string, Queue>();
-    readonly #commands = new CollectionMap<string, Command>(); //База, со всеми командами
-    readonly #player = Player; //Плеер
-    readonly #ShardID = this.shard?.ids[0] ?? undefined; //Если запущен ShardManager, будет отображаться номер дубликата
+    private _queue = new CollectionMap<string, Queue>();
+    private _commands = new CollectionMap<string, Command>(); //База, со всеми командами
+    private _player = Player; //Плеер
+    private _ShardID = this.shard?.ids[0] ?? undefined; //Если запущен ShardManager, будет отображаться номер дубликата
 
-    public get commands() { return this.#commands; };
-    public get queue() { return this.#queue; };
-    public get player() { return this.#player; };
-    public get ShardID() { return this.#ShardID; };
+    public get commands() { return this._commands; };
+    public get queue() { return this._queue; };
+    public get player() { return this._player; };
+    public get ShardID() { return this._ShardID; };
 
     public constructor() {
         super({
@@ -89,6 +89,8 @@ const client = new WatKLOK();
 
 client.login().then(() => {
     if (Bot.ignoreErrors) process.on("uncaughtException", (err) => {
+        if (err.message.match(/setting 'readableListening'/)) return;
+
         consoleTime(`[IgnoreError]: ${err.name} | ${err.message}\n${err.stack}`);
 
         try {

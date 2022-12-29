@@ -21,7 +21,7 @@ export class Cetus extends Command {
 
     public readonly run = async (_: any): Promise<ResolveData> => {
         const result = await httpsClient.parseJson(CetusCycle);
-        return {embed: this.#EmbedChange(result)};
+        return {embed: this.EmbedChange(result)};
     };
     //====================== ====================== ====================== ======================
     /**
@@ -29,7 +29,7 @@ export class Cetus extends Command {
      * @param res {CetusCycle} Данные о Цетусе
      * @private
      */
-    readonly #EmbedChange = (res: CetusCycle): EmbedConstructor => {
+    private EmbedChange = (res: CetusCycle): EmbedConstructor => {
         if (res.isDay) return {
             color: Colors.Yellow,
             description: `Сейчас на Цетусе день. До ночи осталось: ${res.timeLeft}`,

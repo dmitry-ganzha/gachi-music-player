@@ -26,7 +26,7 @@ interface PlayerStatus {
 export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     private _voices: VoiceConnection[] = [];
     private _state: PlayerStatus = {status: "idle"};
-    private _time: number = 0;
+    private time: number = 0;
 
     //====================== ====================== ====================== ======================
     /**
@@ -47,22 +47,24 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         const oldState = this._state;
         const oldStatus = oldState.status, newStatus = state.status;
 
-        //Проверяем на нужный статус
-        if (this.isDestroy(oldState, state)) oldState.stream.destroy();
+        //Проверяем на нужный статус, удаляем старый поток
+        if (isDestroy(oldState, state)) {
+            oldState.stream.destroy();
+            oldState.stream.read();
+        }
 
         //Перезаписываем state
+        delete this._state;
         this._state = state;
 
         //Задаем время начала (когда плеер начал отправлять пакеты)
-        this._time = Date.now() + AudioPlayerSettings.sendDuration;
-        this._state = state;
-
+        this.time = Date.now() + AudioPlayerSettings.sendDuration;
         //Запускаем таймер
-        this.#CycleStep();
+        this.CycleStep();
 
         //Заставляем ивенты работать
         if (oldStatus !== newStatus || oldStatus !== "idle" && newStatus === "read") {
-            this.#setSpeak(SilentFrame);
+            this.sendPacket(SilentFrame);
             this.emit(newStatus);
         }
     };
@@ -105,7 +107,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         else {
             //Включаем поток когда можно будет начать читать
             stream.once("readable", () => {
-                this.#setSpeak(SilentFrame);
+                this.sendPacket(SilentFrame);
                 this.state = {status: "read", stream};
             });
             //Если происходит ошибка, то продолжаем читать этот же поток
@@ -118,7 +120,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @param packet {null} Пакет
      * @private
      */
-    readonly #setSpeak = (packet: Buffer | null): void => {
+    private sendPacket = (packet: Buffer | null) => {
         for (const voice of this.voices) {
             if (packet && voice.state.status === "ready") voice.playOpusPacket(packet);
             else voice.setSpeaking(false);
@@ -126,28 +128,12 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     };
     //====================== ====================== ====================== ======================
     /**
-     * @description Создаем таймер с помощью которого отправляем пакеты в голосовые каналы
-     * @private
-     */
-    readonly #CycleStep = (): void => {
-        const state = this.state;
-        if (state?.status === "idle" || !state?.status) return;
-
-        //Включаем следующий трек
-        if (!state?.stream?.readable) return void (this.state = {status: "idle"});
-
-        //Соблюдая правила отправляем пакет
-        this.#hasPlay();
-        setTimeout(this.#CycleStep, this._time - Date.now());
-    };
-    //====================== ====================== ====================== ======================
-    /**
      * @description Проверяем можно ли отправить пакет в голосовой канал
      * @private
      */
-    readonly #hasPlay = (): void => {
+    private hasPlay = () => {
+        this.time += 20; //Добавляем время отправки следующего пакета
         const state = this.state;
-        this._time += 20; //Добавляем время отправки следующего пакета
 
         //Если статус (idle или pause) прекратить выполнение функции
         if (state.status === "idle" || state.status === "pause") return;
@@ -168,18 +154,46 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         if (state.status === "read") {
             const packet: Buffer | null = state.stream?.read();
 
-            this.#setSpeak(packet);
+            this.sendPacket(packet);
             if (!packet) this.stop();
         }
     };
     //====================== ====================== ====================== ======================
     /**
-     * @description Аргументы для удаления аудио потока
+     * @description Создаем таймер с помощью которого отправляем пакеты в голосовые каналы
+     * @private
      */
-    private readonly isDestroy = (oldS: PlayerStatus, newS: PlayerStatus) => {
-        if (!oldS.stream || oldS.stream.destroyed) return false;
+    private CycleStep = (): void => {
+        const state = this.state;
+        if (state?.status === "idle" || !state?.status) return;
 
-        if (oldS.status !== "idle" && newS.status === "read") return true;
-        else if (oldS.status === "read" && newS.status === "idle") return true;
+        //Включаем следующий трек
+        if (!state?.stream?.readable) return void (this.state = {status: "idle"});
+
+        //Соблюдая правила отправляем пакет
+        this.hasPlay();
+        setTimeout(this.CycleStep, this.time - Date.now());
     };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Удаление неиспользованных данных
+     */
+    public destroy = () => {
+        delete this._voices;
+        delete this.time;
+        delete this._state;
+    };
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Аргументы для удаления аудио потока
+ */
+function isDestroy(oldS: PlayerStatus, newS: PlayerStatus): boolean {
+    if (!oldS.stream || oldS.stream?.destroyed) return false;
+
+    if (oldS.status !== "idle" && newS.status === "read") return true;
+    else if (oldS.status === "read" && newS.status === "idle") return true;
+    //else if (oldS.status === "")
+
+    return false;
 }

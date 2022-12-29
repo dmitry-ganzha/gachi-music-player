@@ -1,6 +1,5 @@
 import {Command, ResolveData} from "@Structures/Handle/Command";
 import {ClientMessage} from "@Client/interactionCreate";
-import {WatKLOK} from "@Client/Client";
 
 export class Deploy extends Command {
     public constructor() {
@@ -16,15 +15,6 @@ export class Deploy extends Command {
 
     public readonly run = (message: ClientMessage): ResolveData => {
         const {author, client} = message;
-        return { text: `${author}, Load: [${this.#createSlashCommand(client)}]` };
-    };
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Отправляем данные на сервера discord о SlashCommand
-     * @param client {WatKLOK} Клиент
-     * @private
-     */
-    readonly #createSlashCommand = (client: WatKLOK) => {
         let TotalCommands: number = 0;
 
         client.commands.Array.forEach((command) => {
@@ -42,6 +32,6 @@ export class Deploy extends Command {
             TotalCommands++;
         });
 
-        return TotalCommands;
+        return { text: `${author}, Load: [${TotalCommands}]` };
     };
 }

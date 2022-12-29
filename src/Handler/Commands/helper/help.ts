@@ -38,7 +38,7 @@ export class Help extends Command {
         //Если пользователь хочет получить данные о не существующей команде
         if (Commands.length < 1) return {text: `${author}, у меня нет такой команды!`};
 
-        const embed = this.#CreateEmbedMessage(message);
+        const embed = this.CreateEmbedMessage(message);
         const pages = ArraySort<Command>(5, Commands, (command) =>
             `Команда [**${command.name}**] | ${command.type}
                 **❯ Сокращения:** (${command.aliases.join(", ") ?? `Нет`})
@@ -57,7 +57,7 @@ export class Help extends Command {
      * @description Создает Embed сообщение + pages
      * @param message
      */
-    readonly #CreateEmbedMessage = (message: ClientMessage): EmbedConstructor => {
+    private CreateEmbedMessage = (message: ClientMessage): EmbedConstructor => {
         return {
             title: "Help Menu",
             color: Colors.Yellow,

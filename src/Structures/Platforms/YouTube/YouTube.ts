@@ -3,6 +3,7 @@ import {httpsClient, httpsClientOptions} from "@httpsClient";
 import {Decipher, YouTubeFormat} from "./Decipher";
 
 const VerAuthor = new Set(["Verified", "Official Artist Channel"]);
+const DecipherYt = Decipher.parseFormats;
 
 /**
  * @description Получаем ID
@@ -88,7 +89,7 @@ export namespace YouTube {
                 const allFormats = [...jsonResult.streamingData?.formats ?? [], ...jsonResult.streamingData?.adaptiveFormats ?? []];
                 const FindOpus: YouTubeFormat[] = allFormats.filter((format: YouTubeFormat) => format.mimeType?.match(/opus/) || format?.mimeType?.match(/audio/));
 
-                audios = (await Decipher.parseFormats(FindOpus, html5player)).pop();
+                audios = (await DecipherYt(FindOpus, html5player)).pop();
             }
 
             return resolve({...await construct.video(details), format: audios});

@@ -13,7 +13,7 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
         const queue: Queue = client.queue.get(newState.guild.id); //Очередь сервера
         const ChannelID = oldState?.channel?.id || newState?.channel?.id;
         const Guild = oldState.guild;
-        const filter = (member: GuildMember) => this.#filter(member, ChannelID);
+        const filter = (member: GuildMember) => this.filter(member, ChannelID);
         const filterBot = (member: GuildMember) => member.user.id === client.user.id;
 
         setImmediate(() => {
@@ -29,9 +29,9 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
                 else if (usersSize > 0) queue.TimeDestroying("cancel"); //Если есть очередь сервера, отмена удаления!
             }
 
-            if (Debug) consoleTime(`[Debug] -> [voiceStateUpdate]: [Voice: ${!!voice} | inVoice: ${isBotVoice} | Users: ${usersSize} | Queue: ${!!queue}]`);
+            if (Debug) consoleTime(`[Debug] -> voiceStateUpdate: [Voice: ${!!voice} | inVoice: ${isBotVoice} | Users: ${usersSize} | Queue: ${!!queue}]`);
         });
     };
     //Фильтруем пользователей в голосовом канале
-    readonly #filter = (member: GuildMember, channelID: string) => !member.user.bot && member.voice?.channel?.id === channelID;
+    private filter = (member: GuildMember, channelID: string) => !member.user.bot && member.voice?.channel?.id === channelID;
 }

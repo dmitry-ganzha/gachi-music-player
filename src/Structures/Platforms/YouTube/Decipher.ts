@@ -22,12 +22,12 @@ export namespace Decipher {
      */
     export async function parseFormats(formats: YouTubeFormat[], html5player: string) {
         try {
-            let functions = await getFunctions(html5player);
+            const functions = await getFunctions(html5player);
             const decipherScript = functions.length ? new vm.Script(functions[0]) : null;
             const nTransformScript = functions.length > 1 ? new vm.Script(functions[1]) : null;
 
             //Меняем данные в Array<YouTubeFormat>
-            for (let format of formats) setDownloadURL(format, decipherScript, nTransformScript);
+            for (const format of formats) setDownloadURL(format, decipherScript, nTransformScript);
 
             return formats;
         } catch (e) {

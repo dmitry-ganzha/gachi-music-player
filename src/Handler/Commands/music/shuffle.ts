@@ -47,11 +47,11 @@ export class Shuffle extends Command {
         //Если треков меньше 3
         if (queue.songs.length < 3) return { text: `${author}, Очень мало музыки, нужно более 3`, color: "DarkRed" };
 
-        this.#shuffleSongs(queue.songs);
+        this.shuffleSongs(queue.songs);
         return {text: `🔀 | Shuffle total [${queue.songs.length}]`, codeBlock: "css"};
     };
 
-    readonly #shuffleSongs = (songs: Song[]): void => {
+    private shuffleSongs = (songs: Song[]): void => {
         for (let i = songs.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [songs[i], songs[j]] = [songs[j], songs[i]];

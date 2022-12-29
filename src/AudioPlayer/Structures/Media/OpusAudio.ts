@@ -87,24 +87,30 @@ export class OpusAudio extends opus.OggDemuxer {
      * @param error {Error} Если удаление происходит из-за ошибки
      */
     public _destroy = (error?: Error | null): void => {
-        super._destroy(error, () => {});
+        super.destroy(error);
+        super.read();
 
         delete this._duration;
         delete this._readable;
         delete this._durFrame;
 
         if (this._streams?.length > 0) {
-            for (const stream of this._streams) !stream?.destroyed ? stream.destroy() : null; this._streams.shift();
+            for (const stream of this._streams) {
+                if (stream !== undefined && !stream.destroyed) {
+                    stream.destroy();
+                    stream.read();
+                }
+            }
         }
         delete this._streams;
 
         if (!this._ffmpeg?.destroyed) this._ffmpeg?.destroy();
+        this._ffmpeg.read();
         delete this._ffmpeg;
 
         if (Debug) consoleTime(`[Debug] -> OpusAudio: [Clear memory]`);
     };
 }
-
 
 //Вспомогательные функции Decoder'а
 namespace ArgsHelper {
@@ -114,8 +120,8 @@ namespace ArgsHelper {
     }
     //Создаем аргументы в зависимости от типа resource
     export function choiceArgs(url: string, resource: string | Readable, options: FFmpegOptions): FFspace.Arguments {
-        if (resource === "string") return ArgsHelper.createArgs(url, options?.filters, options?.seek);
-        return ArgsHelper.createArgs(null, options?.filters, options?.seek);
+        if (resource === "string") return createArgs(url, options?.filters, options?.seek);
+        return createArgs(null, options?.filters, options?.seek);
     }
     //====================== ====================== ====================== ======================
     /**
@@ -125,12 +131,12 @@ namespace ArgsHelper {
      * @param seek {number} Пропуск музыки до 00:00:00
      */
     export function createArgs(url: string, AudioFilters: AudioFilters, seek: number): FFspace.Arguments {
-        let thisArgs = ["-reconnect", 1, "-reconnect_streamed", 1, "-reconnect_delay_max", 5];
+        const thisArgs = ["-reconnect", 1, "-reconnect_streamed", 1, "-reconnect_delay_max", 5];
         const audioDecoding = ["-c:a", "libopus", "-f", "opus"];
         const audioBitrate = ["-b:a", Audio.bitrate];
 
-        if (seek) thisArgs = [...thisArgs, "-ss", seek ?? 0];
-        if (url) thisArgs = [...thisArgs, "-i", url];
+        if (seek) thisArgs.push("-ss", seek ?? 0);
+        if (url) thisArgs.push( "-i", url);
 
         //Всегда есть один фильтр <AudioFade>
         return [...thisArgs, "-compression_level", 10,

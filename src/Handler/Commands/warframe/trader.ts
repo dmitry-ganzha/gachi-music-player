@@ -27,7 +27,7 @@ export class Trader extends Command {
                  **❯ Дукаты :** ${item.ducats ? `(${item.ducats})` : `(Нет)`}`
         );
 
-        return this.#SendMessage(result, pagesInventory);
+        return this.SendMessage(result, pagesInventory);
     };
     //====================== ====================== ====================== ======================
     /**
@@ -36,7 +36,7 @@ export class Trader extends Command {
      * @param pagesInventory {string[]} Измененный инвентарь
      * @private
      */
-    readonly #SendMessage = (res: voidTrader, pagesInventory: string[]): ResolveData => {
+    private SendMessage = (res: voidTrader, pagesInventory: string[]): ResolveData => {
         const EmbedVoidTrader: EmbedConstructor = {
             color: Colors.DarkBlue,
             thumbnail: {url: VoidIcon},
@@ -52,7 +52,7 @@ export class Trader extends Command {
         if (pagesInventory.length >= 1) {
             EmbedVoidTrader.description = pagesInventory[0];
 
-            return {embed: EmbedVoidTrader, callbacks: this.#Callbacks(1, pagesInventory, EmbedVoidTrader)}
+            return {embed: EmbedVoidTrader, callbacks: this.Callbacks(1, pagesInventory, EmbedVoidTrader)}
         }
         //Если инвентаря нет просто отправляем сообщение
         return {embed: EmbedVoidTrader};
@@ -65,7 +65,7 @@ export class Trader extends Command {
      * @param embed {EmbedConstructor} Json<Embed>
      * @private
      */
-    readonly #Callbacks = (page: number, pages: string[], embed: EmbedConstructor) => {
+    private Callbacks = (page: number, pages: string[], embed: EmbedConstructor) => {
         return {
             //При нажатии на 1 эмодзи, будет выполнена эта функция
             back: ({users}: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage) => {

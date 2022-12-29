@@ -54,7 +54,7 @@ export default class Filter extends Command {
         const SendArg: { color: any, codeBlock: "css" } = {color: "Blue", codeBlock: "css"};
 
         //Показываем все доступные фильтры
-        if (FilterName === "all") return this.#ReactionMenuFilters(Filters, message);
+        if (FilterName === "all") return this.ReactionMenuFilters(Filters, message);
         //Выключаем все фильтры
         else if (FilterName === "off") {
             queue.filters.splice(0, queue.filters.length);
@@ -72,7 +72,7 @@ export default class Filter extends Command {
                 ArrayFilters.push(Filter);
             });
 
-            return this.#ReactionMenuFilters(ArrayFilters, message);
+            return this.ReactionMenuFilters(ArrayFilters, message);
         }
         //Получаем данные о фильтре
         const Filter = FFspace.getFilter(FilterName);
@@ -125,7 +125,7 @@ export default class Filter extends Command {
         }
     };
     //Запускаем ReactionMenu
-    readonly #ReactionMenuFilters = (filters: typeof Filters, message: ClientMessage) => {
+    private ReactionMenuFilters = (filters: typeof Filters, message: ClientMessage) => {
         const embed: EmbedConstructor = { title: "Все доступные фильтры",  color: Colors.Yellow, thumbnail: { url: message.client.user.avatarURL() }, timestamp: new Date() };
         //Преобразуем все фильтры в string
         const pages = ArraySort<typeof Filters[0]>(5, filters, (filter, index) => {

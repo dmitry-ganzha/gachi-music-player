@@ -63,15 +63,15 @@ export namespace FFspace {
 
             if (Debug) consoleTime(`[Debug] -> FFmpeg: [Execute]`);
 
-            this.process = this.#SpawnFFmpeg(args);
+            this.process = this.SpawnFFmpeg(args);
             this._readableState = this.stdout._readableState;
             this._writableState = this.stdin._writableState;
 
-            this.#Binding(["write", "end"], this.stdin);
-            this.#Binding(["read", "setEncoding", "pipe", "unpipe"], this.stdout);
-            this.#Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
+            this.Binding(["write", "end"], this.stdin);
+            this.Binding(["read", "setEncoding", "pipe", "unpipe"], this.stdout);
+            this.Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
 
-            ["end", "close", "finish", "error"].forEach(event => this.once(event, this.destroy));
+            ["end", "close", "error"].forEach(event => this.once(event, this.destroy));
         };
         //====================== ====================== ====================== ======================
         /**
@@ -90,19 +90,21 @@ export namespace FFspace {
          * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
          */
         public readonly _destroy = (error?: Error | null) => {
-            if (!this._writableState.destroyed) delete this._writableState;
-            if (!this._readableState.destroyed) delete this._readableState;
+            delete this._writableState;
+            this._readableState.read();
 
-            if (!this.process?.killed) {
-                if (Debug) consoleTime(`[Debug] -> FFmpeg: [Clear memory]`);
+            delete this._readableState;
 
-                this.removeAllListeners();
+            this.removeAllListeners();
+
+            if (this.process) {
+                if (!this.process?.killed) this.process.kill("SIGKILL");
                 this.process.removeAllListeners();
-                this.process.kill("SIGKILL");
 
                 delete this.process;
             }
 
+            if (Debug) consoleTime(`[Debug] -> FFmpeg: [Clear memory]`);
             if (error) return console.error(error);
         };
         //====================== ====================== ====================== ======================
@@ -112,8 +114,8 @@ export namespace FFspace {
          * @param target {Readable | Writable}
          */
         // @ts-ignore
-        readonly #Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
-        readonly #Calling = (methods: string[]) => {
+        private Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
+        private Calling = (methods: string[]) => {
             const EVENTS = {
                 readable: this.stdout,
                 data: this.stdout,
@@ -132,7 +134,7 @@ export namespace FFspace {
          * @description Запускаем FFmpeg
          * @param Arguments {Arguments} Указываем аргументы для запуска
          */
-        readonly #SpawnFFmpeg = (Arguments: Arguments): any => spawn(FFmpegName, [...Arguments, "pipe:1"] as any, { shell: false, windowsHide: true });
+        private SpawnFFmpeg = (Arguments: Arguments): any => spawn(FFmpegName, [...Arguments, "pipe:1"] as any, { shell: false, windowsHide: true });
     }
 
     /**
@@ -152,7 +154,7 @@ export namespace FFspace {
          * @description Запуск FFprobe
          * @param Arguments {Arguments} Указываем аргументы для запуска
          */
-        public constructor(Arguments: Array<string>) { this.process = this.#SpawnProbe(Arguments); };
+        public constructor(Arguments: Array<string>) { this.process = this.SpawnProbe(Arguments); };
         //====================== ====================== ====================== ======================
         /**
          * @description Получаем данные
@@ -173,12 +175,11 @@ export namespace FFspace {
          * @param Arguments {Arguments} Указываем аргументы для запуска
          * @private
          */
-        readonly #SpawnProbe = (Arguments: Array<string>) => spawn(FFprobeName, ["-print_format", "json", "-show_format", ...Arguments], { shell: false, windowsHide: true });
+        private SpawnProbe = (Arguments: Array<string>) => spawn(FFprobeName, ["-print_format", "json", "-show_format", ...Arguments], { shell: false, windowsHide: true });
 
         private cleanup = () => {
-            if (!this.process?.killed) {
-                this.process.kill();
-
+            if (this.process) {
+                if (!this.process?.killed) this.process.kill();
                 delete this.process;
             }
         };
