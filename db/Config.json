@@ -15,7 +15,7 @@
     "CacheDir": "AudioCache",
 
     "AudioPlayer": {
-      "sendDuration": 50
+      "sendDuration": 20
     },
     "ProgressBar": {
       "enable": true,
