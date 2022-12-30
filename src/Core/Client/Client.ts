@@ -39,8 +39,8 @@ export class WatKLOK extends Client {
         super({
             sweepers: { ...Options.DefaultSweeperSettings,
                 messages: {
-                    interval: 3600, // Every hour...
-                    lifetime: 1800,	// Remove messages older than 30 minutes.
+                    interval: 1800, // Every 30 min...
+                    lifetime: 900,	// 15 minutes.
                 }
             },
             intents: [
@@ -89,8 +89,6 @@ const client = new WatKLOK();
 
 client.login().then(() => {
     if (Bot.ignoreErrors) process.on("uncaughtException", (err) => {
-        if (err.message.match(/setting 'readableListening'/)) return;
-
         consoleTime(`[IgnoreError]: ${err.name} | ${err.message}\n${err.stack}`);
 
         try {

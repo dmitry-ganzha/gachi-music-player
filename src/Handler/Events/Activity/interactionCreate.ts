@@ -65,7 +65,7 @@ export class interactionCreate extends Event<ClientInteraction, null> {
      */
     private static sendMessage = (message: ClientInteractive, command: ResolveData): void => {
         //Запускаем ReactionMenu
-        if ("callbacks" in command && command?.callbacks) new ReactionMenu(command.embed, message, command.callbacks);
+        if ("callbacks" in command && command?.callbacks !== undefined) new ReactionMenu(command.embed, message, command.callbacks);
 
         //Отправляем просто сообщение
         else if ("text" in command) UtilsMsg.createMessage({...command, message }, command?.thenCallbacks);

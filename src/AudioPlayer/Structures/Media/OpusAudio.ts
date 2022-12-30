@@ -65,7 +65,7 @@ export class OpusAudio extends opus.OggDemuxer {
 
         //Когда можно будет читать поток записываем его в <this.#started>
         this.once("readable", () => (this._readable = true));
-        //Если в <this.playStream> будет один из этих статусов, чистим память!
+        //Если в <this> будет один из этих статусов, чистим память!
         ["end", "close", "error"].forEach((event: string) => this.once(event, this.destroy));
 
         if (Debug) consoleTime(`[Debug] -> OpusAudio: [Start decoding file in ${path}]`);
@@ -104,9 +104,9 @@ export class OpusAudio extends opus.OggDemuxer {
         }
         delete this._streams;
 
-        if (!this._ffmpeg?.destroyed) this._ffmpeg?.destroy();
-        this._ffmpeg.read();
-        delete this._ffmpeg;
+        if (this.ffmpeg.deleteble) this.ffmpeg.destroy();
+        this.ffmpeg.read();
+        delete this.ffmpeg;
 
         if (Debug) consoleTime(`[Debug] -> OpusAudio: [Clear memory]`);
     };
@@ -139,7 +139,7 @@ namespace ArgsHelper {
         if (url) thisArgs.push( "-i", url);
 
         //Всегда есть один фильтр <AudioFade>
-        return [...thisArgs, "-compression_level", 10,
+        return [...thisArgs, "-compression_level", 12,
             ...audioDecoding, ...audioBitrate,
             "-af", parseFilters(AudioFilters), "-preset:a", "ultrafast"
         ];

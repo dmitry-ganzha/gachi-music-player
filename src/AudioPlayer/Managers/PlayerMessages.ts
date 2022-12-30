@@ -157,6 +157,9 @@ function CreateCollector(message: ClientMessage, queue: Queue) {
     const {player} = queue;
     const EmitPlayer = message.client.player;
 
+    //Удаляем сборщик после проигрывания трека
+    player.once("idle", () => collector.stop());
+
     //Добавляем ему ивент сборки кнопок
     collector.on("collect", (i): void => {
         message.author = i?.member?.user as User ?? i?.user;

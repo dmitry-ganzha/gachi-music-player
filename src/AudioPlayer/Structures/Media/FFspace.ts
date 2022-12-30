@@ -47,8 +47,6 @@ export namespace FFspace {
      * As a general rule, options are applied to the next specified file. Therefore, order is important, and you can have the same option on the command line multiple times. Each occurrence is then applied to the next input or output file. Exceptions from this rule are the global options (e.g. verbosity level), which should be specified first.
      */
     export class FFmpeg extends Duplex {
-        public _readableState: Readable = null;
-        public _writableState: Writable = null;
         private process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
 
         /**
@@ -64,15 +62,13 @@ export namespace FFspace {
             if (Debug) consoleTime(`[Debug] -> FFmpeg: [Execute]`);
 
             this.process = this.SpawnFFmpeg(args);
-            this._readableState = this.stdout._readableState;
-            this._writableState = this.stdin._writableState;
 
             this.Binding(["write", "end"], this.stdin);
             this.Binding(["read", "setEncoding", "pipe", "unpipe"], this.stdout);
             this.Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
-
-            ["end", "close", "error"].forEach(event => this.once(event, this.destroy));
         };
+        public get deleteble() { return !this.process?.killed || !this.destroyed || !!this.process; };
+
         //====================== ====================== ====================== ======================
         /**
          * @description Выход
@@ -90,15 +86,10 @@ export namespace FFspace {
          * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
          */
         public readonly _destroy = (error?: Error | null) => {
-            delete this._writableState;
-            this._readableState.read();
-
-            delete this._readableState;
-
             this.removeAllListeners();
 
-            if (this.process) {
-                if (!this.process?.killed) this.process.kill("SIGKILL");
+            if (this.deleteble) {
+                this.process.kill("SIGKILL");
                 this.process.removeAllListeners();
 
                 delete this.process;

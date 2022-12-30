@@ -1,7 +1,7 @@
 import {DiscordGatewayAdapterCreator, getVoiceConnection, getVoiceConnections, joinVoiceChannel} from "@discordjs/voice";
 import {ChannelType,Guild,InternalDiscordGatewayAdapterCreator,StageChannel,VoiceChannel,VoiceState} from "discord.js";
 
-const VoiceChannelsGroup = "DEFAULT";
+const VoiceChannelsGroup = "DFL";
 
 /**
  * Здесь все возможные взаимодействия с голосовым каналом (еще не финал)
@@ -17,7 +17,7 @@ export namespace Voice {
      */
     export function Join({id, guild, type}: VoiceChannels) {
         const JoinVoice = joinVoiceChannel({ selfDeaf: true, selfMute: false, channelId: id, guildId: guild.id,
-            adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator & DiscordGatewayAdapterCreator, group: VoiceChannelsGroup });
+            adapterCreator: guild.voiceAdapterCreator as InternalDiscordGatewayAdapterCreator, group: VoiceChannelsGroup });
         const me = guild.members?.me;
 
         //Для голосовых трибун
