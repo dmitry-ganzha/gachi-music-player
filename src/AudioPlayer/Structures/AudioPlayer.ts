@@ -191,9 +191,9 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 function isDestroy(oldS: PlayerStatus, newS: PlayerStatus): boolean {
     if (!oldS.stream || oldS.stream?.destroyed) return false;
 
-    if (oldS.status !== "idle" && newS.status === "read") return true;
+    if ((oldS.status === "read" && newS.status === "pause" || oldS.status === "pause" && newS.status === "read") && oldS.stream === newS.stream) return false;
+    else if (oldS.status !== "idle" && newS.status === "read") return true;
     else if (oldS.status === "read" && newS.status === "idle") return true;
-    //else if (oldS.status === "")
 
     return false;
 }
