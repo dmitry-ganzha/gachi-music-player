@@ -1,6 +1,11 @@
 import {Shard, ShardingManager} from "discord.js";
 import {env} from "@env"
 
+//
+// Временно не работает
+//
+
+
 //Используется для большого кол-ва серверов. Если у вас более 1к, тогда рекомендуется запускать ShardManager
 class ShardManager extends ShardingManager {
     public constructor() {
