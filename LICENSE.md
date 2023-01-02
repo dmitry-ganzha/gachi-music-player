@@ -1,5 +1,5 @@
 # License for WatKLOK
-**Copyright (c) 2022 SNIPPIK**
+**Copyright (c) 2022-2023 SNIPPIK**
 
 # RU
 - **Фальсификация запрещена.**
