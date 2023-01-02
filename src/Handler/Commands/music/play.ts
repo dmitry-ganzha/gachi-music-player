@@ -216,7 +216,7 @@ namespace SearchMessage {
 
                     //Получаем ссылку на трек, затем включаем его
                     const url = results[parseInt(m.content) - 1].url;
-                    return getInfoForType(msg, url);
+                    return getInfoForType(message as any, url);
                 });
             });
         };
