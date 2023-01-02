@@ -50,7 +50,7 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
         //Проверяем на нужный статус, удаляем старый поток
         if (isDestroy(oldState, state)) {
             oldState.stream.destroy();
-            oldState.stream.read();
+            oldState.stream.read(); //Устраняем утечку памяти
         }
 
         //Перезаписываем state

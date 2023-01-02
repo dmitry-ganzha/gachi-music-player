@@ -96,7 +96,7 @@ export class Queue {
      * @param song {Song} Трек
      * @param sendMessage {boolean} Отправить сообщение о добавлении трека
      */
-    public readonly push = (song: Song, sendMessage: boolean = false): void => {
+    public push = (song: Song, sendMessage: boolean = false): void => {
         if (sendMessage) MessagePlayer.toPushSong(this, song);
 
         this.songs.push(song);
@@ -106,7 +106,7 @@ export class Queue {
      * @description Включение текущего трека
      * @param seek {number} До скольки надо перемотать трек
      */
-    public readonly play = (seek: number = 0): void => {
+    public play = (seek: number = 0): void => {
         if (!this.song) return this.cleanup();
 
         //Получаем ссылку на resource
@@ -127,7 +127,7 @@ export class Queue {
      * @description Меняет местами треки
      * @param num {number} Если есть номер для замены
      */
-    public readonly swapSongs = (num?: number): void => {
+    public swapSongs = (num?: number): void => {
         if (this.songs.length === 1) return this.player.stop();
 
         swapPositions(this.songs, num ?? this.songs.length - 1);
@@ -137,7 +137,7 @@ export class Queue {
     /**
      * @description Удаляем не используемые объекты
      */
-    public readonly cleanup = (): void => {
+    public cleanup = (): void => {
         const message = this.message;
         const {client, guild} = message;
 
@@ -172,7 +172,7 @@ export class Queue {
      * @param state {string} Что делать с очередью. Запуск таймера или отмена
      * @constructor
      */
-    public readonly TimeDestroying = (state: "start" | "cancel"): void => {
+    public TimeDestroying = (state: "start" | "cancel"): void => {
         const player = this.player;
 
         //Запускаем таймер по истечению которого очереди будет удалена!

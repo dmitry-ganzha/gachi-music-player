@@ -88,7 +88,7 @@ export class OpusAudio extends opus.OggDemuxer {
      */
     public _destroy = (error?: Error | null): void => {
         super.destroy(error);
-        super.read();
+        super.read(); //Устраняем утечку памяти
 
         delete this._duration;
         delete this._readable;
@@ -98,14 +98,16 @@ export class OpusAudio extends opus.OggDemuxer {
             for (const stream of this._streams) {
                 if (stream !== undefined && !stream.destroyed) {
                     stream.destroy();
-                    stream.read();
+                    stream.read(); //Устраняем утечку памяти
                 }
             }
         }
         delete this._streams;
 
-        if (this.ffmpeg.deleteble) this.ffmpeg.destroy();
-        this.ffmpeg.read();
+        if (this.ffmpeg.deletable) {
+            this.ffmpeg.destroy();
+            this.ffmpeg.read(); //Устраняем утечку памяти
+        }
         delete this.ffmpeg;
 
         if (Debug) consoleTime(`[Debug] -> OpusAudio: [Clear memory]`);

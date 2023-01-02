@@ -21,7 +21,7 @@ export function uploadCookie(Cookie: string | string[]): void {
         const CookieFile: {cookie: string} = JSON.parse(readFileSync(`./DataBase/Cookie.json`, "utf8"));
         const newCookie: string = ParsingCookieToString({...ParsingCookieToJson(CookieFile.cookie), ...ParsingCookieToJson(Cookie)});
 
-        return writeFile('./db/Cookie.json', JSON.stringify({cookie: newCookie}, null, `\t`), () => null);
+        writeFile('./db/Cookie.json', JSON.stringify({cookie: newCookie}, null, `\t`), () => null);
     } catch (err) { throw new Error("Cookie file has damaged!"); }
 }
 //====================== ====================== ====================== ======================

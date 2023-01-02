@@ -1,4 +1,4 @@
-import {ActivityType, Client, IntentsBitField, Options} from "discord.js";
+import {ActivityType, Client, IntentsBitField, Options, SnowflakeUtil} from "discord.js";
 import {DurationUtils} from "@AudioPlayer/Managers/DurationUtils";
 import {ClientMessage} from "@Client/interactionCreate";
 import {Command} from "@Structures/Handle/Command";
@@ -24,6 +24,11 @@ class CollectionMap<K, V> extends Map<K, V> {
     };
 }
 
+//Удаляем данные старше 25 минут
+function DefaultKeepOverLimit<V, K, J>(value: V, key: K, collection: J) {
+    return SnowflakeUtil.timestampFrom((value as any).channelId) < Date.now() - 25e5;
+}
+
 export class WatKLOK extends Client {
     private _queue = new CollectionMap<string, Queue>();
     private _commands = new CollectionMap<string, Command>(); //База, со всеми командами
@@ -40,9 +45,61 @@ export class WatKLOK extends Client {
             sweepers: { ...Options.DefaultSweeperSettings,
                 messages: {
                     interval: 1800, // Every 30 min...
-                    lifetime: 900,	// 15 minutes.
+                    lifetime: 900	// 15 minutes.
                 }
             },
+            //Запрещаем Discord.js<Client> кешировать некоторые данные
+            makeCache: Options.cacheWithLimits({
+                ...Options.DefaultMakeCacheSettings,
+                AutoModerationRuleManager: 0,
+
+                //Бот не может менять статус
+                PresenceManager: 0,
+
+                //Боту недоступны стикеры
+                GuildStickerManager: 0,
+
+                //Бот не может использовать бан
+                GuildBanManager: 0,
+
+                //Боту не доступны форумы
+                GuildForumThreadManager: 0,
+
+                //Боту недоступны роли
+                StageInstanceManager: 0,
+
+                //Боту недоступна функция создания приглашений
+                GuildInviteManager: 0,
+
+                //Боту будет недоступен ивент guildScheduledEventCreate
+                GuildScheduledEventManager: 0,
+
+                //Что надо чистить
+                VoiceStateManager: {
+                    maxSize: Infinity,
+                    keepOverLimit: DefaultKeepOverLimit
+                },
+                MessageManager: {
+                    maxSize: Infinity,
+                    keepOverLimit: DefaultKeepOverLimit
+                },
+                ReactionManager: {
+                    maxSize: Infinity,
+                    keepOverLimit: DefaultKeepOverLimit
+                },
+                ReactionUserManager: {
+                    maxSize: Infinity,
+                    keepOverLimit: DefaultKeepOverLimit
+                },
+                GuildEmojiManager: {
+                    maxSize: Infinity,
+                    keepOverLimit: DefaultKeepOverLimit
+                },
+                BaseGuildEmojiManager: {
+                    maxSize: Infinity,
+                    keepOverLimit: DefaultKeepOverLimit
+                }
+            }),
             intents: [
                 //Message (Бот может писать в текстовые каналы)
                 IntentsBitField.Flags.GuildMessages,

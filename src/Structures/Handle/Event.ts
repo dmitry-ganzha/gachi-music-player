@@ -1,7 +1,7 @@
 import {WatKLOK} from "@Client/Client";
 
 export class Event<K, P> {
-    //Название ивента (Discord.js)
+    //Название ивента Discord.<Client>
     public readonly name: string = "undefined";
 
     //Загружать ли ивент

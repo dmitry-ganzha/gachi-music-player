@@ -67,7 +67,7 @@ export namespace FFspace {
             this.Binding(["read", "setEncoding", "pipe", "unpipe"], this.stdout);
             this.Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
         };
-        public get deleteble() { return !this.process?.killed || !this.destroyed || !!this.process; };
+        public get deletable() { return !this.process?.killed || !this.destroyed || !!this.process; };
 
         //====================== ====================== ====================== ======================
         /**
@@ -86,9 +86,14 @@ export namespace FFspace {
          * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
          */
         public readonly _destroy = (error?: Error | null) => {
+            if (!super.destroyed) {
+                super.destroy();
+                super.read(); //Устраняем утечку памяти
+            }
+
             this.removeAllListeners();
 
-            if (this.deleteble) {
+            if (this.deletable) {
                 this.process.kill("SIGKILL");
                 this.process.removeAllListeners();
 
