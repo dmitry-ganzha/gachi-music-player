@@ -22,4 +22,5 @@ class ShardManager extends ShardingManager {
         this.spawn({amount: "auto", delay: -1}).catch(() => null)//.catch((err: Error) => console.log(`[ShardManager]: [Error]: ${err}`));
     };
 }
-new ShardManager();
+//new ShardManager();
+console.log("Sorry ShardManager not working")
