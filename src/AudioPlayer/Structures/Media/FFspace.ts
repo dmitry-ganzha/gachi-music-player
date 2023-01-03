@@ -47,7 +47,7 @@ export namespace FFspace {
      * As a general rule, options are applied to the next specified file. Therefore, order is important, and you can have the same option on the command line multiple times. Each occurrence is then applied to the next input or output file. Exceptions from this rule are the global options (e.g. verbosity level), which should be specified first.
      */
     export class FFmpeg extends Duplex {
-        private process: ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } };
+        private process;
 
         /**
          * @description Запускаем FFmpeg
@@ -56,17 +56,17 @@ export namespace FFspace {
          */
         public constructor(args: Arguments, options: DuplexOptions = {}) {
             super({autoDestroy: true, objectMode: true, ...options});
+
             //Используется для загрузки потока в ffmpeg. Необходимо не указывать параметр -i
             if (!args.includes("-i")) args = ["-i", "-", ...args];
+            this.process = runProcess(FFmpegName, [...args, "pipe:1"]);
 
             if (Debug) consoleTime(`[Debug] -> FFmpeg: [Execute]`);
 
-            this.process = this.SpawnFFmpeg(args);
-
-            this.Binding(["write", "end"], this.stdin);
-            this.Binding(["read", "setEncoding", "pipe", "unpipe"], this.stdout);
-            this.Calling(["on", "once", "removeListener", "removeListeners", "listeners"]);
-        };
+            this.setter(["write", "end"], this.stdin);
+            this.setter(["read", "setEncoding", "pipe", "unpipe"], this.stdout);
+            this.setter(["on", "once", "removeListener", "removeListeners", "listeners"]);
+        }
         public get deletable() { return !this.process?.killed || !this.destroyed || !!this.process; };
 
         //====================== ====================== ====================== ======================
@@ -82,113 +82,69 @@ export namespace FFspace {
         public get stdin() { return this?.process?.stdin; };
         //====================== ====================== ====================== ======================
         /**
-         * @description Удаляем все что не нужно
-         * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
-         */
-        public readonly _destroy = (error?: Error | null) => {
-            if (!super.destroyed) {
-                super.destroy();
-                super.read(); //Устраняем утечку памяти
-            }
-
-            this.removeAllListeners();
-
-            if (this.deletable) {
-                this.process.kill("SIGKILL");
-                this.process.removeAllListeners();
-
-                delete this.process;
-            }
-
-            if (Debug) consoleTime(`[Debug] -> FFmpeg: [Clear memory]`);
-            if (error) return console.error(error);
-        };
-        //====================== ====================== ====================== ======================
-        /**
          * @description Создаем "привязанные функции" (ПФ - термин из ECMAScript 6)
          * @param methods {string[]}
          * @param target {Readable | Writable}
          */
-        // @ts-ignore
-        private Binding = (methods: string[], target: Readable | Writable) => methods.forEach((method) => this[method] = target[method].bind(target));
-        private Calling = (methods: string[]) => {
-            const EVENTS = {
-                readable: this.stdout,
-                data: this.stdout,
-                end: this.stdout,
-                unpipe: this.stdout,
-                finish: this.stdin,
-                close: this.stdin,
-                drain: this.stdin,
-            };
-
+        private setter = (methods: string[], target?: Readable | Writable) => {
             // @ts-ignore
-            methods.forEach((method) => this[method] = (ev, fn) => EVENTS[ev] ? EVENTS[ev][method](ev, fn) : Duplex.prototype[method].call(this, ev, fn));
-        };
-        //====================== ====================== ====================== ======================
-        /**
-         * @description Запускаем FFmpeg
-         * @param Arguments {Arguments} Указываем аргументы для запуска
-         */
-        private SpawnFFmpeg = (Arguments: Arguments): any => spawn(FFmpegName, [...Arguments, "pipe:1"] as any, { shell: false, windowsHide: true });
-    }
-
-    /**
-     * ffprobe gathers information from multimedia streams and prints it in human- and machine-readable fashion.
-     * For example, it can be used to check the format of the container used by a multimedia stream and the format and type of each media stream contained in it.
-     * If an url is specified in input, ffprobe will try to open and probe the url content. If the url cannot be opened or recognized as a multimedia file, a positive exit code is returned.
-     * ffprobe may be employed both as a standalone application or in combination with a textual filter, which may perform more sophisticated processing, e.g. statistical processing or plotting.
-     * Options are used to list some formats supported by ffprobe or for specifying which information to display, and for setting how ffprobe will show it.
-     * ffprobe output is designed to be easily parsable by a textual filter, and consists of one or more sections of a form defined by the selected writer, which is specified by the print_format option.
-     * Sections may contain other nested sections, and are identified by a name (which may be shared by other sections), and a unique name. See the output of sections.
-     * Metadata tags stored in the container or in the streams are recognized and printed in the corresponding "FORMAT", "STREAM" or "PROGRAM_STREAM" section.
-     */
-    export class FFprobe {
-        private process: ChildProcessWithoutNullStreams;
-        //====================== ====================== ====================== ======================
-        /**
-         * @description Запуск FFprobe
-         * @param Arguments {Arguments} Указываем аргументы для запуска
-         */
-        public constructor(Arguments: Array<string>) { this.process = this.SpawnProbe(Arguments); };
-        //====================== ====================== ====================== ======================
-        /**
-         * @description Получаем данные
-         */
-        public readonly getInfo = (): Promise<any> => new Promise((resolve) => {
-            let information = "";
-            this.process.once("close", () => {
-                this.cleanup();
-
-                return resolve(JSON.parse(information + "}"));
-            });
-            this.process.stdout.once("data", (data) => information += data.toString());
-            this.process.once("error", this.cleanup);
-        });
-        //====================== ====================== ====================== ======================
-        /**
-         * @description Запуск FFprobe
-         * @param Arguments {Arguments} Указываем аргументы для запуска
-         * @private
-         */
-        private SpawnProbe = (Arguments: Array<string>) => spawn(FFprobeName, ["-print_format", "json", "-show_format", ...Arguments], { shell: false, windowsHide: true });
-
-        private cleanup = () => {
-            if (this.process) {
-                if (!this.process?.killed) this.process.kill();
-                delete this.process;
+            if (target) return methods.forEach((method) => this[method] = target[method].bind(target));
+            else {
+                const EVENTS = { readable: this.stdout, data: this.stdout, end: this.stdout, unpipe: this.stdout, finish: this.stdin, close: this.stdin, drain: this.stdin };
+                // @ts-ignore
+                methods.forEach((method) => this[method] = (ev, fn) => EVENTS[ev] ? EVENTS[ev][method](ev, fn) : Duplex.prototype[method].call(this, ev, fn));
             }
+        }
+        //====================== ====================== ====================== ======================
+        /**
+         * @description Удаляем все что не нужно
+         * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
+         */
+        public readonly _destroy = (error?: Error | null) => {
+            if (!super.destroyed) super.destroy();
+            this.removeAllListeners();
+
+            [this.process.stdin, this.process.stdout, this.process.stderr].forEach((stream) => {
+                if (stream !== undefined && !stream.destroyed) {
+                    stream.destroy();
+                    stream.removeAllListeners();
+                }
+            });
+
+            if (this.deletable) {
+                this.process.kill("SIGKILL")
+                this.process.removeAllListeners();
+            }
+
+            delete this.process;
+
+            if (Debug) consoleTime(`[Debug] -> FFmpeg: [Clear memory]`);
+            if (error) return console.error(error);
         };
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Получаем данные
+     * @param url {string} Ссылка
+     */
+    export function FFprobe(url: string): Promise<any> {
+        const ffprobe = runProcess(FFprobeName, ["-print_format", "json", "-show_format", "-i", url]);
+        let information = "";
+        const cleanup = () => {
+            if (!ffprobe.killed) ffprobe.kill("SIGKILL");
+        }
+
+        return new Promise((resolve) => {
+            ffprobe.once("close", () => { cleanup();return resolve(JSON.parse(information + "}"))});
+            ffprobe.stdout.once("data", (data) => information += data.toString());
+            ffprobe.once("error", cleanup);
+        });
     }
 
     //Ищем Filter в Array<Filter>
-    export function getFilter(name: string): Filter { return (AudioFilters as Filter[]).find((fn) => fn.names.includes(name)); }
+    export function getFilter(name: string): typeof AudioFilters[0] { return AudioFilters.find((fn) => fn.names.includes(name)); }
 }
 
-interface Filter {
-    names: string[];
-    description: string;
-    filter: string;
-    args?: false | number[];
-    speed?: number;
+function runProcess(file: string, args: any[]): ChildProcessWithoutNullStreams & { stdout: { _readableState: Readable }, stdin: { _writableState: Writable } } {
+    return spawn(file, args, {shell: false}) as any;
 }

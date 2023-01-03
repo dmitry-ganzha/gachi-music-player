@@ -50,12 +50,12 @@ export const SupportPlatforms = {
     },
     //Discord
     "DISCORD": {
-        "track": (search: string): Promise<InputTrack> => new FFspace.FFprobe(["-i", search]).getInfo().then((trackInfo: any) => {
+        "track": (url: string): Promise<InputTrack> => FFspace.FFprobe(url).then((trackInfo: any) => {
             //Если не найдена звуковая дорожка
             if (!trackInfo) return null;
 
-            return { url: search, author: null, image: {url: Music.images._image},
-                title: search.split("/").pop(),
+            return { url, author: null, image: {url: Music.images._image},
+                title: url.split("/").pop(),
                 duration: {seconds: trackInfo.format.duration},
                 format: {url: trackInfo.format.filename}
             };

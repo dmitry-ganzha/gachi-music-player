@@ -90,7 +90,7 @@ export default class Filter extends Command {
                     if (FilterArg && Filter.args) {
 
                         //Изменяем аргумент фильтра
-                        if (FilterArg >= Filter.args[0] && FilterArg <= Filter.args[1]) {
+                        if (FilterArg >= (Filter.args as number[])[0] && FilterArg <= (Filter.args as number[])[1]) {
                             queue.filters[index + 1] = FilterArg;
 
                             return {text: `${author.username} | Filter: ${FilterName} был изменен аргумент на ${FilterArg}!`, ...SendArg};
@@ -107,7 +107,7 @@ export default class Filter extends Command {
                     if (FilterArg && Filter.args) { //Если есть аргумент
 
                         //Добавляем с аргументом
-                        if (FilterArg >= Filter.args[0] && FilterArg <= Filter.args[1]) {
+                        if (FilterArg >= (Filter.args as number[])[0] && FilterArg <= (Filter.args as number[])[1]) {
                             queue.filters.push(Filter.names[0]);
                             queue.filters.push(FilterArg as any);
                             return {text: `${author.username} | Filter: ${FilterName}:${FilterArg} включен!`, ...SendArg};
