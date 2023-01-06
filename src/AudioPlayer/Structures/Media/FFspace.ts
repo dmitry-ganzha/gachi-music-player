@@ -127,7 +127,7 @@ export namespace FFspace {
      * @description Получаем данные
      * @param url {string} Ссылка
      */
-    export function FFprobe(url: string): Promise<any> {
+    export function FFprobe(url: string): Promise<JSON> {
         const ffprobe = runProcess(FFprobeName, ["-print_format", "json", "-show_format", "-i", url]);
         let information = "";
         const cleanup = () => {

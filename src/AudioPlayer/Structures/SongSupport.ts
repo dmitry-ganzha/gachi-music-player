@@ -1,5 +1,5 @@
-import {InputPlaylist, InputTrack, Song} from "@Queue/Song";
-import {SoundCloud, Spotify, VK, YouTube} from "@APIs";
+import {InputTrack, Song} from "@Queue/Song";
+import {SoundCloud, Spotify, VK, YandexMusic, YouTube} from "@APIs";
 import {DurationUtils} from "@Managers/DurationUtils";
 import {Music} from "@db/Config.json";
 import {Colors} from "discord.js";
@@ -22,39 +22,40 @@ export const FailRegisterPlatform: Set<supportPlatforms> = new Set();
 
 //Все возможные запросы данных в JSON формате
 export const SupportPlatforms = {
-    //YouTube
     "YOUTUBE": {
-        "track": (search: string): Promise<InputTrack> => YouTube.getVideo(search) as Promise<InputTrack>,
-        "playlist": (search: string): Promise<InputPlaylist> => YouTube.getPlaylist(search),
-        "search": (search: string): Promise<InputTrack[]> => YouTube.SearchVideos(search)
+        "track": YouTube.getVideo,
+        "playlist": YouTube.getPlaylist,
+        "search": YouTube.SearchVideos
     },
-    //Spotify
     "SPOTIFY": {
-        "track": (search: string): Promise<InputTrack> => Spotify.getTrack(search),
-        "playlist": (search: string): Promise<InputPlaylist> => Spotify.getPlaylist(search),
-        "search": (search: string): Promise<InputTrack[]> => Spotify.SearchTracks(search),
-        "album": (search: string): Promise<InputPlaylist> => Spotify.getAlbum(search)
+        "track": Spotify.getTrack,
+        "playlist": Spotify.getPlaylist,
+        "album": Spotify.getAlbum,
+        "search": Spotify.SearchTracks
     },
-    //SoundCloud
     "SOUNDCLOUD": {
-        "track": (search: string): Promise<InputTrack> => SoundCloud.getTrack(search),
-        "playlist": (search: string): Promise<InputPlaylist | InputTrack> => SoundCloud.getPlaylist(search),
-        "search": (search: string): Promise<InputTrack[]> => SoundCloud.SearchTracks(search),
-        "album": (search: string): Promise<InputPlaylist | InputTrack> => SoundCloud.getPlaylist(search)
+        "track": SoundCloud.getTrack,
+        "playlist": SoundCloud.getPlaylist,
+        "album": SoundCloud.getPlaylist,
+        "search": SoundCloud.SearchTracks
     },
-    //VK
     "VK": {
-        "track": (search: string): Promise<InputTrack> => VK.getTrack(search),
-        "playlist": (search: string): Promise<InputPlaylist> => VK.getPlaylist(search),
-        "search": (search: string): Promise<InputTrack[]> => VK.SearchTracks(search)
+        "track": VK.getTrack,
+        "playlist": VK.getPlaylist,
+        "search": VK.SearchTracks
     },
-    //Discord
+    "YANDEX": {
+        "track": YandexMusic.getTrack,
+        "album": YandexMusic.getAlbum,
+        "search": YandexMusic.SearchTracks
+    },
     "DISCORD": {
         "track": (url: string): Promise<InputTrack> => FFspace.FFprobe(url).then((trackInfo: any) => {
             //Если не найдена звуковая дорожка
             if (!trackInfo) return null;
 
-            return { url, author: null, image: {url: Music.images._image},
+            return {
+                url, author: null, image: {url: Music.images._image},
                 title: url.split("/").pop(),
                 duration: {seconds: trackInfo.format.duration},
                 format: {url: trackInfo.format.filename}
@@ -64,13 +65,15 @@ export const SupportPlatforms = {
 };
 //Доступные платформы для поиска
 export const SearchPlatforms = {
-    "yt": "YOUTUBE",
-    "sp": "SPOTIFY",
-    "sc": "SOUNDCLOUD",
-    "vk": "VK"
+    "YOUTUBE": ["yt", "ytb"],
+    "SPOTIFY": ["sp"],
+    "SOUNDCLOUD": ["sc"],
+    "VK": ["vk"],
+    "YANDEX": ["ym", "yandex"]
 };
 //Цвета названий платформ
 export const ColorTrack = {
+    "YANDEX": Colors.Yellow,
     "YOUTUBE": 0xed4245,
     "SPOTIFY": 1420288,
     "SOUNDCLOUD": 0xe67e22,
@@ -82,14 +85,15 @@ const PlatformReg = {
     youtube: /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?( )?(youtube\.com|youtu\.?be)\/.+$/gi,
     spotify: /^(https?:\/\/)?(open\.)?(m\.)?(spotify\.com|spotify\.?ru)\/.+$/gi,
     soundcloud: /^(?:(https?):\/\/)?(?:(?:www|m)\.)?(api\.soundcloud\.com|soundcloud\.com|snd\.sc)\/(.*)$/gi,
+    yandex: /music.yandex.ru/gi,
     vk: /vk.com/gi,
     discord: /cdn.discordapp.com/gi
 };
 //Платформы на которых нельзя получить исходный файл музыки
-const PlatformsAudio = ["SPOTIFY"];
+const PlatformsAudio = ["SPOTIFY", "YANDEX"];
 
 //Поддерживаемые платформы
-export type supportPlatforms = "YOUTUBE" | "SPOTIFY" | "VK" | "SOUNDCLOUD" | "DISCORD";
+export type supportPlatforms = "YOUTUBE" | "SPOTIFY" | "VK" | "SOUNDCLOUD" | "DISCORD" | "YANDEX";
 //Поддерживаемые тип для этих платформ
 export type SupportType = "track" | "playlist" | "search" | "album";
 

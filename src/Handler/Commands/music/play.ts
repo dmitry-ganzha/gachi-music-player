@@ -82,8 +82,7 @@ function getInfoForType(message: ClientMessage, search: string): Promise<Resolve
     const {author, client} = message;
     const voiceChannel = message.member.voice;
     const type = IdentifyType.track(search); //Тип запроса
-    const platform = IdentifyType.platform(search); //Платформа с которой будем взаимодействовать
-    const parsedSearch = IdentifyType.Argument(search, type, platform); //Правит ошибку с некоторыми ссылками
+    const {platform, args} = IdentifyType.platform(search); //Платформа с которой будем взаимодействовать
 
     //Если нельзя получить данные с определенной платформы
     if (FailRegisterPlatform.has(platform)) return {
@@ -96,7 +95,7 @@ function getInfoForType(message: ClientMessage, search: string): Promise<Resolve
     if (!findPlatform) return { text: `${author}, у меня нет поддержки такой платформы!\nПлатформа **${platform}**!`, color: "DarkRed" };
     else if (!findType) return { text: `${author}, у меня нет поддержки этого типа запроса!\nТип запроса **${type}**!`, color: "DarkRed" };
 
-    const runCallback = findType(parsedSearch) as Promise<InputTrack | InputPlaylist | InputTrack[]>;
+    const runCallback = findType(args) as Promise<InputTrack | InputPlaylist | InputTrack[]>;
 
     //Если выходит ошибка
     runCallback.catch((err) => UtilsMsg.createMessage({ text: `${author}, данные не были найдены!\nПричина: ${err}`, color: "DarkRed", message }));
@@ -127,37 +126,31 @@ namespace IdentifyType {
         //Если ссылка, то это может быть плейлист, альбом или просто трек
         if (search.match(UrlSrt)) {
             if (search.match(/playlist/)) return "playlist";
-            else if (search.match(/album/) || search.match(/sets/)) return "album";
+            else if ((search.match(/album/) || search.match(/sets/)) && !search.match(/track/)) return "album";
             return "track";
         }
         return "search";
     }
+
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем инициалы платформы
      * @param search {string} Что там написал пользователь
      */
-    export function platform(search: string): supportPlatforms {
-        if (!search) return "DISCORD"; //Если нет search, значит пользователь прикрепил файл
+    export function platform(search: string): { platform: supportPlatforms, args: string } {
+        if (!search) return {platform: "DISCORD", args: search}; //Если нет search, значит пользователь прикрепил файл
 
-        if (search.match(UrlSrt)) return TypePlatform(search);
-        const SplitSearch = search.split(' ');
-        const platform = SplitSearch[0] as "yt" | "vk" | "sp" | "sc";
+        if (search.match(UrlSrt)) return {platform: TypePlatform(search), args: search};
 
-        if (SearchPlatforms[platform]) return SearchPlatforms[platform] as supportPlatforms;
-        return "YOUTUBE";
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Фильтруем ссылку от аргументов поиска
-     * @param argument {string} аргументы переданные пользователем
-     * @param platform {supportPlatforms} Платформа
-     * @param type {SupportType} Тип запроса
-     */
-    export function Argument(argument: string, type: SupportType, platform: supportPlatforms): string {
-        if (argument.match(UrlSrt)) return `http${argument.split("http")[1]}`; //Если строка ссылка
-        else if (type === "search" && argument.includes(platform)) return argument.split(platform)[1]; //Если строка это поиск на определенной платформе
-        return argument;
+        const spSearch = search.split(' '), pl = spSearch[0].toLowerCase();
+        const platform = Object.entries(SearchPlatforms).find(([key, value]) => value.includes(pl) || key === pl);
+
+        if (platform) {
+            spSearch.splice(0, 1);
+
+            return {platform: platform[0] as supportPlatforms, args: spSearch.join(" ")};
+        }
+        return {platform: "YOUTUBE", args: search};
     }
 }
 

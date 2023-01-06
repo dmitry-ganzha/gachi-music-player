@@ -42,7 +42,7 @@ export class Join extends Command {
             queue.message = message;
             queue.voice = voiceChannel;
 
-            queue.player.voice(connection); //Подключаем голосовой канал к плееру
+            queue.player.voice = connection; //Подключаем голосовой канал к плееру
 
             queue.TimeDestroying("cancel"); //Отменяем удаление очереди
             return;

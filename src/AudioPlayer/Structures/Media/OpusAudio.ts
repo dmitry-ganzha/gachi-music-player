@@ -1,9 +1,9 @@
-import {DuplexOptions, Readable} from "stream";
 import {Music, Debug} from "@db/Config.json";
 import {consoleTime} from "@Client/Client";
 import {AudioFilters} from "@Queue/Queue";
 import {FFspace} from "@FFspace";
 import {opus} from "prism-media";
+import {Readable} from "stream";
 import fs from "fs";
 
 type FFmpegOptions = {seek?: number, filters?: AudioFilters};
@@ -11,8 +11,11 @@ type FFmpegOptions = {seek?: number, filters?: AudioFilters};
 //Резервируем в памяти
 const Audio = Music.Audio;
 
-export class OpusAudio extends opus.OggDemuxer {
-    private _streams: Array<Readable> = []; private _ffmpeg: FFspace.FFmpeg;
+export class OpusAudio {
+    private _stream: opus.OggDemuxer = new opus.OggDemuxer({autoDestroy: false});
+    private _streams: Array<Readable> = [];
+    private _ffmpeg: FFspace.FFmpeg;
+
     private _duration: number = 0;
     private _readable: boolean = false;
     private _durFrame: number = 20;
@@ -30,6 +33,7 @@ export class OpusAudio extends opus.OggDemuxer {
      */
     // @ts-ignore
     public get readable(): boolean { return this._readable; };
+    public get destroyed() { return this._stream?.destroyed ?? true; };
     //====================== ====================== ====================== ======================
     /**
      * @description Выдаем или добавляем ffmpeg из this.streams
@@ -40,13 +44,16 @@ export class OpusAudio extends opus.OggDemuxer {
     private set ffmpeg(ffmpeg: FFspace.FFmpeg) { this._ffmpeg = ffmpeg; };
     //====================== ====================== ====================== ======================
     /**
+     * @description opus.OggDemuxer
+     */
+    public get stream() { return this._stream };
+    //====================== ====================== ====================== ======================
+    /**
      * @description Создаем поток при помощи ffmpeg конвертируем любой файл в opus
      * @param path {string} Ссылка или путь до файла. Условие чтоб в конце пути был .opus
      * @param options {FFmpegOptions} Настройки FFmpeg, такие, как seek, filter
-     * @param duplexOptions {DuplexOptions} Настройки node Stream
      */
-    public constructor(path: string, options: FFmpegOptions, duplexOptions: DuplexOptions = {}) {
-        super({autoDestroy: false, ...duplexOptions});
+    public constructor(path: string, options: FFmpegOptions) {
         const resource = ArgsHelper.choiceResource(path);
 
         //Создаем ffmpeg
@@ -57,16 +64,16 @@ export class OpusAudio extends opus.OggDemuxer {
             resource.pipe(this.ffmpeg);
             this._streams.push(resource);
         }
-        this.ffmpeg.pipe(this); //Загружаем из FFmpeg'a в opus.OggDemuxer
+        this.ffmpeg.pipe(this.stream); //Загружаем из FFmpeg'a в opus.OggDemuxer
 
         //Проверяем сколько времени длится пакет
         if (options?.filters?.length > 0) this._durFrame = ArgsHelper.timeFrame(options?.filters);
         if (options.seek > 0) this._duration = options.seek * 1e3;
 
         //Когда можно будет читать поток записываем его в <this.#started>
-        this.once("readable", () => (this._readable = true));
+        this.stream.once("readable", () => (this._readable = true));
         //Если в <this> будет один из этих статусов, чистим память!
-        ["end", "close", "error"].forEach((event: string) => this.once(event, this.destroy));
+        ["end", "close", "error"].forEach((event: string) => this.stream.once(event, this.destroy));
 
         if (Debug) consoleTime(`[Debug] -> OpusAudio: [Start decoding file in ${path}]`);
     };
@@ -74,8 +81,8 @@ export class OpusAudio extends opus.OggDemuxer {
     /**
      * @description Чтение пакета
      */
-    public read = (): Buffer | null => {
-        const packet: Buffer = super.read();
+    public read = (num: number = 32): Buffer | null => {
+        const packet: Buffer = this.stream?.read(num);
 
         if (packet) this._duration += this._durFrame;
 
@@ -84,12 +91,8 @@ export class OpusAudio extends opus.OggDemuxer {
     //====================== ====================== ====================== ======================
     /**
      * @description Удаляем неиспользованные объекты
-     * @param error {Error} Если удаление происходит из-за ошибки
      */
-    public _destroy = (error?: Error | null): void => {
-        super.destroy(error);
-        super.read(); //Устраняем утечку памяти
-
+    public destroy = (): void => {
         delete this._duration;
         delete this._readable;
         delete this._durFrame;
@@ -108,7 +111,14 @@ export class OpusAudio extends opus.OggDemuxer {
             this.ffmpeg.destroy();
             this.ffmpeg.read(); //Устраняем утечку памяти
         }
-        delete this.ffmpeg;
+        delete this._ffmpeg;
+
+        if (this.stream) {
+            this.stream.removeAllListeners();
+            this.stream.destroy();
+            this.stream.read(); //Устраняем утечку памяти
+        }
+        delete this._stream;
 
         if (Debug) consoleTime(`[Debug] -> OpusAudio: [Clear memory]`);
     };

@@ -1,5 +1,5 @@
-import {DiscordGatewayAdapterCreator, getVoiceConnection, getVoiceConnections, joinVoiceChannel} from "@discordjs/voice";
 import {ChannelType,Guild,InternalDiscordGatewayAdapterCreator,StageChannel,VoiceChannel,VoiceState} from "discord.js";
+import {getVoiceConnection, getVoiceConnections, joinVoiceChannel} from "@discordjs/voice";
 
 const VoiceChannelsGroup = "DFL";
 

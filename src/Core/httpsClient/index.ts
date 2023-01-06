@@ -38,7 +38,6 @@ export namespace httpsClient {
             options.request.headers = {...options.request.headers, "cookie": cookie};
         }
 
-
         return new Promise((resolve, reject) => {
             const {hostname, pathname, search, port, protocol} = new URL(url);
             const Options: RequestOptions = {
