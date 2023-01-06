@@ -30,7 +30,7 @@
 |----------------------------------------------|--------------------------------------|-------------|
 | [**YouTube**](https://www.youtube.com/)      | **видео, плейлисты, поиск, стримы**  | ✔           |
 | [**Spotify**](https://open.spotify.com/)     | **треки, плейлисты, поиск, альбомы** | ✖ (YouTube) |
-| [**Yandex Music**](https://music.yandex.ru/) | **треки, альбомы**                   | ✖ (YouTube) |
+| [**Yandex Music**](https://music.yandex.ru/) | **треки, альбомы, поиск**            | ✖ (YouTube) |
 | [**VK**](https://vk.com/)                    | **треки, ~~плейлисты~~, поиск**      | ✔           |
 | [**SoundCloud**](https://soundcloud.com/)    | **треки, плейлисты, поиск, альбомы** | ✔           |
 | [**Discord**](https://discord.com/)          | **ссылки, файлы**                    | ✔           |
