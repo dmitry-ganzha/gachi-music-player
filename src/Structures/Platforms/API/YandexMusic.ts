@@ -1,13 +1,23 @@
-import {httpsClient} from "@httpsClient";
 import {InputPlaylist, InputTrack} from "@Queue/Song";
 import {DurationUtils} from "@Managers/DurationUtils";
+import {httpsClient} from "@httpsClient";
 
+/**
+ * @description У yandex.music странная система времени делаем ее нормальной
+ * @param duration {string} Исходное время yandex.music
+ */
 function parseDuration(duration: string): string { //duration PT00H03M48S
     const parsedDuration = duration.split("PT")[1].replace(/[H,M]/gi, ":").split("S")[0];
     return `${DurationUtils.ParsingTimeToNumber(parsedDuration)}`;
 }
 
 namespace API {
+    /**
+     * @description Делаем запрос на сайт yandex.music, и парсим страницу
+     * @param url {string} Ссылка на объект
+     * @param isFull {boolean} Нужны полные данные (используется только в SearchTracks)
+     * @constructor
+     */
     export function Request(url: string, isFull: boolean = false): Promise<Error | any> {
         return new Promise(async (resolve) => {
             const body = await httpsClient.parseBody(url, { request: { headers: { "accept-encoding": "gzip, deflate, br" }}});

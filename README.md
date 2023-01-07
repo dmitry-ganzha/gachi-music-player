@@ -12,6 +12,10 @@
 
 [<img align="center" alt="PGI Settings" width="1000px" src="https://github.com/SNIPPIK/WatKLOK/blob/v2/.github/resource/PGI.png?raw=true" />](https://github.com/SNIPPIK/WatKLOK/blob/v2/.github/resource/PGI.png?raw=true)
 
+## Resource usage | for 1 server
+- Memory: avg 40 mB
+- CPU: avg 0-0.3% (R7 3700x)
+- Disk: avg 200 mB (FFmpeg lib)
 
 ## Гайд по запуску
 1. [`Node.js`](https://nodejs.org/ru/) 17-19

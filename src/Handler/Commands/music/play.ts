@@ -1,4 +1,4 @@
-import {FailRegisterPlatform, SearchPlatforms,supportPlatforms,SupportPlatforms,SupportType,TypePlatform} from "@Structures/SongSupport";
+import {platform, platformSupporter} from "@Structures/SongSupport";
 import {ClientInteractive, ClientMessage, UtilsMsg} from "@Client/interactionCreate";
 import {Command, replacer, ResolveData} from "@Structures/Handle/Command";
 import {ArraySort} from "@Handler/Modules/Object/ArraySort";
@@ -8,12 +8,12 @@ import {DurationUtils} from "@Managers/DurationUtils";
 import {ReactionMenuSettings} from "@db/Config.json";
 import {Queue} from "@Queue/Queue";
 interface Options {
-    platform?: supportPlatforms
+    platform?: platform
     message: ClientInteractive
 }
 
-const UrlSrt = /^(https?:\/\/)/gi;
 const emoji = ReactionMenuSettings.emojis.cancel;
+const {getArg, getTypeSong, getPlatform, getFailPlatform, getCallback} = platformSupporter;
 
 
 export class Play extends Command {
@@ -81,21 +81,21 @@ export class Play extends Command {
 function getInfoForType(message: ClientMessage, search: string): Promise<ResolveData> | ResolveData {
     const {author, client} = message;
     const voiceChannel = message.member.voice;
-    const type = IdentifyType.track(search); //Тип запроса
-    const {platform, args} = IdentifyType.platform(search); //Платформа с которой будем взаимодействовать
+    const type = getTypeSong(search); //Тип запроса
+    const platform = getPlatform(search); //Платформа с которой будем взаимодействовать
+    const args = getArg(search, platform);
 
     //Если нельзя получить данные с определенной платформы
-    if (FailRegisterPlatform.has(platform)) return {
+    if (getFailPlatform(platform)) return {
         text: `${author}, я не могу взять данные с этой платформы **${platform}**\n Причина: [**Authorization data not found**]`, color: "DarkRed", codeBlock: "css"
     };
 
-    const findPlatform = SupportPlatforms[platform]; //Ищем в списке платформу
-    const findType = (findPlatform as any)[type]; //Ищем тип запроса
+    const callback = getCallback(platform, type); //Ищем в списке платформу
 
-    if (!findPlatform) return { text: `${author}, у меня нет поддержки такой платформы!\nПлатформа **${platform}**!`, color: "DarkRed" };
-    else if (!findType) return { text: `${author}, у меня нет поддержки этого типа запроса!\nТип запроса **${type}**!`, color: "DarkRed" };
+    if (callback === "!platform") return { text: `${author}, у меня нет поддержки такой платформы!\nПлатформа **${platform}**!`, color: "DarkRed" };
+    else if (callback === "!callback") return { text: `${author}, у меня нет поддержки этого типа запроса!\nТип запроса **${type}**!`, color: "DarkRed" };
 
-    const runCallback = findType(args) as Promise<InputTrack | InputPlaylist | InputTrack[]>;
+    const runCallback = callback(args) as Promise<InputTrack | InputPlaylist | InputTrack[]>;
 
     //Если выходит ошибка
     runCallback.catch((err) => UtilsMsg.createMessage({ text: `${author}, данные не были найдены!\nПричина: ${err}`, color: "DarkRed", message }));
@@ -112,46 +112,6 @@ function getInfoForType(message: ClientMessage, search: string): Promise<Resolve
         //Сообщаем что трек был найден
         if (type === "track") return { text: `Найден 🔍 | ${type}\n➜ ${data.title}`, color: "Yellow", codeBlock: "css" };
     });
-}
-
-//Вспомогательные функции
-namespace IdentifyType {
-    /**
-     * @description Независимо от платформы делаем проверку типа ссылки
-     * @param search {string} Что там написал пользователь
-     */
-    export function track(search: string): SupportType {
-        if (!search) return "track"; //Если нет search, значит пользователь прикрепил файл
-
-        //Если ссылка, то это может быть плейлист, альбом или просто трек
-        if (search.match(UrlSrt)) {
-            if (search.match(/playlist/)) return "playlist";
-            else if ((search.match(/album/) || search.match(/sets/)) && !search.match(/track/)) return "album";
-            return "track";
-        }
-        return "search";
-    }
-
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Получаем инициалы платформы
-     * @param search {string} Что там написал пользователь
-     */
-    export function platform(search: string): { platform: supportPlatforms, args: string } {
-        if (!search) return {platform: "DISCORD", args: search}; //Если нет search, значит пользователь прикрепил файл
-
-        if (search.match(UrlSrt)) return {platform: TypePlatform(search), args: search};
-
-        const spSearch = search.split(' '), pl = spSearch[0].toLowerCase();
-        const platform = Object.entries(SearchPlatforms).find(([key, value]) => value.includes(pl) || key === pl);
-
-        if (platform) {
-            spSearch.splice(0, 1);
-
-            return {platform: platform[0] as supportPlatforms, args: spSearch.join(" ")};
-        }
-        return {platform: "YOUTUBE", args: search};
-    }
 }
 
 //Выводим список треков для выбора пользователем

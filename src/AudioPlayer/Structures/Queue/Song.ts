@@ -1,9 +1,11 @@
-import {ColorTrack, SongFinder, supportPlatforms, TypePlatform} from "../SongSupport";
+import {SongFinder, platform, platformSupporter} from "../SongSupport";
 import {DownloadManager} from "@Managers/DownloadManager";
 import {ClientMessage} from "@Client/interactionCreate";
 import {DurationUtils} from "@Managers/DurationUtils";
 import {httpsClient} from "@httpsClient";
 import {Music} from "@db/Config.json";
+
+const {getPlatform, getColor} = platformSupporter
 
 //Создаем трек для внутреннего использования
 export class Song {
@@ -15,12 +17,12 @@ export class Song {
     readonly #requester: SongRequester;
     readonly #isLive: boolean;
     readonly #color: number;
-    readonly #platform: supportPlatforms;
+    readonly #platform: platform;
 
     #resLink: string;
 
     public constructor(track: InputTrack, author: ClientMessage["author"]) {
-        const platform = TypePlatform(track.url);
+        const platform = getPlatform(track.url);
         const {username, id, avatar} = author;
         const seconds = parseInt(track.duration.seconds);
 
@@ -36,7 +38,7 @@ export class Song {
         this.#image = track.image;
         this.#requester = {username, id, avatarURL: () => `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp`};
         this.#isLive = track.isLive;
-        this.#color = ColorTrack[platform];
+        this.#color = getColor(platform);
         this.#platform = platform;
         this.#resLink = track?.format?.url;
     };
@@ -77,7 +79,7 @@ export class Song {
         }
 
         //Если нет ссылки, то ищем трек
-        if (!this.link) this.link = await SongFinder.findResource(this);
+        if (!this.link) this.link = await SongFinder.getLinkResource(this);
 
         //Проверяем ссылку на работоспособность
         const checkResource = await httpsClient.checkLink(this.link);
