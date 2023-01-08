@@ -101,19 +101,19 @@ export namespace FFspace {
          * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
          */
         public readonly _destroy = (error?: Error | null) => {
-            if (!super.destroyed) super.destroy();
             this.removeAllListeners();
+            if (!super.destroyed) super.destroy();
 
             [this.process.stdin, this.process.stdout, this.process.stderr].forEach((stream) => {
                 if (stream !== undefined && !stream.destroyed) {
-                    stream.destroy();
                     stream.removeAllListeners();
+                    stream.destroy();
                 }
             });
 
             if (this.deletable) {
-                this.process.kill("SIGKILL")
                 this.process.removeAllListeners();
+                this.process.kill("SIGKILL");
             }
 
             delete this.process;

@@ -82,7 +82,7 @@ export class OpusAudio {
      * @description Чтение пакета
      */
     public read = (): Buffer | null => {
-        const packet: Buffer = this._opus?.read();
+        const packet: Buffer = this.opus?.read();
 
         if (packet) this._duration += this._durFrame;
 
@@ -100,6 +100,7 @@ export class OpusAudio {
         if (this._streams?.length > 0) {
             for (const stream of this._streams) {
                 if (stream !== undefined && !stream.destroyed) {
+                    stream.removeAllListeners();
                     stream.destroy();
                     stream.read(); //Устраняем утечку памяти
                 }
@@ -108,6 +109,7 @@ export class OpusAudio {
         delete this._streams;
 
         if (this.ffmpeg.deletable) {
+            this.ffmpeg.removeAllListeners();
             this.ffmpeg.destroy();
             this.ffmpeg.read(); //Устраняем утечку памяти
         }

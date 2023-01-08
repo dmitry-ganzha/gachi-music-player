@@ -2,20 +2,25 @@ import {EmbedMessages} from "@Structures/EmbedMessages";
 import {ClientMessage} from "@Client/interactionCreate";
 import {AudioPlayer} from "@Structures/AudioPlayer";
 import {consoleTime} from "@Client/Client";
-import {Music} from "@db/Config.json";
 import {Collection} from "discord.js";
+import {Music} from "@db/Config.json";
 import {Queue} from "@Queue/Queue";
 
 //Настройки для плеера
 const PlayerSettings = Music.AudioPlayer;
-const db = { //База данных для плееров
-    time: 0 as number,
+//База данных
+const db = {
+    // База с плеерами
     pls: [] as AudioPlayer[],
-    timeout: null as NodeJS.Timer
-};
-const m_db = { //База для сообщений
-    messages: new Collection<string, ClientMessage>(), //new Map сообщений, поиск осуществляется по id канала
-    timeout: null as NodeJS.Timeout //Общий таймер сообщений
+    //Время, необходимо для правильной отправки пакетов
+    time: 0 as number,
+    //Общий таймер плееров
+    timeout: null as NodeJS.Timer,
+
+    //База с сообщениями
+    msg: new Collection<string, ClientMessage>(),
+    //Общий таймер сообщений
+    timeout_m: null as NodeJS.Timeout,
 };
 //====================== ====================== ====================== ======================
 
@@ -84,11 +89,11 @@ export namespace MessageCycle {
      * @requires {StepCycleMessage}
      */
     export function toPush(message: ClientMessage) {
-        if (m_db.messages.get(message.channelId)) return; //Если сообщение уже есть в базе, то ничего не делаем
-        m_db.messages.set(message.channelId, message); //Добавляем сообщение в базу
+        if (db.msg.get(message.channelId)) return; //Если сообщение уже есть в базе, то ничего не делаем
+        db.msg.set(message.channelId, message); //Добавляем сообщение в базу
 
         //Если в базе есть хоть одно сообщение, то запускаем таймер
-        if (m_db.messages.size === 1) setImmediate(StepCycleMessage);
+        if (db.msg.size === 1) setImmediate(StepCycleMessage);
     }
     //====================== ====================== ====================== ======================
     /**
@@ -97,33 +102,33 @@ export namespace MessageCycle {
      * @requires {Message}
      */
     export function toRemove(ChannelID: string) {
-        const Find = m_db.messages.get(ChannelID); //Ищем сообщение е базе
+        const Find = db.msg.get(ChannelID); //Ищем сообщение е базе
         if (!Find) return; //Если его нет ничего не делаем
 
         if (Find.deletable) Find.delete().catch(() => undefined); //Если его возможно удалить, удаляем!
-        m_db.messages.delete(ChannelID); //Удаляем сообщение из базы
+        db.msg.delete(ChannelID); //Удаляем сообщение из базы
 
         //Если в базе больше нет сообщений
-        if (m_db.messages.size === 0) {
+        if (db.msg.size === 0) {
             //Если таймер еще работает то удаляем его
-            if (m_db.timeout) {
-                clearTimeout(m_db.timeout);
+            if (db.timeout_m) {
+                clearTimeout(db.timeout_m);
 
-                m_db.timeout = null;
+                db.timeout_m = null;
             }
         }
     }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Обновляем сообщения на текстовый каналах
-     */
-    function StepCycleMessage() {
-        setImmediate(() => {
-            try {
-                setTimeout(() => m_db.messages.forEach(UpdateMessage), 1e3);
-            } finally { m_db.timeout = setTimeout(StepCycleMessage, 15e3); }
-        });
-    }
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Обновляем сообщения на текстовый каналах
+ */
+function StepCycleMessage() {
+    setImmediate(() => {
+        try {
+            setTimeout(() => db.msg.forEach(UpdateMessage), 1e3);
+        } finally { db.timeout_m = setTimeout(StepCycleMessage, 15e3); }
+    });
 }
 //====================== ====================== ====================== ======================
 /**
@@ -136,7 +141,7 @@ function UpdateMessage(message: ClientMessage): void {
     const queue: Queue = client.queue.get(guild.id);
 
     //Если очереди нет или сообщение нельзя отредактировать, то удаляем сообщение
-    if (!queue || !queue?.song || !message.editable) return MessageCycle.toRemove(message.channelId);
+    if (!queue || !queue?.song) return MessageCycle.toRemove(message.channelId);
 
     //Если у плеера статус при котором нельзя обновлять сообщение
     if (queue.player.hasUpdate) return;

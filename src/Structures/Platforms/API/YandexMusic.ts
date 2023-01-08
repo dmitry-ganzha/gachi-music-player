@@ -50,7 +50,7 @@ export namespace YandexMusic {
             return resolve({
                 url, title: result.name,
                 author: await getAuthor(result.byArtist.url),
-                image: {url: result.inAlbum.image},
+                image: {url: result.inAlbum?.image},
                 duration: { seconds: parseDuration(result.duration) }
             });
         });
@@ -66,7 +66,7 @@ export namespace YandexMusic {
 
             if (result instanceof Error) return resolve(null);
 
-            const Image = result.image;
+            const Image = result?.image;
             const MainArtist = await getAuthor(result.byArtist.url)
 
             return resolve({

@@ -66,8 +66,17 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
         PlayerCycle.toPush(this);
     };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Возможно ли сейчас пропустить трек
+     */
     public get hasSkipped() { return NotSkippedStatuses.includes(this.state.status); };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Можно ли обновить сообщение
+     */
     public get hasUpdate() { return UpdateMessage.includes(this.state.status); };
+    //====================== ====================== ====================== ======================
     //Ставим на паузу плеер
     public pause = (): void => {
         if (this.state.status !== "read") return;

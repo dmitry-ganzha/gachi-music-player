@@ -33,6 +33,11 @@ namespace API {
             return resolve(EndFormat.url);
         });
     }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Если нет ClientID то получаем его как неавторизованный пользователь
+     * @private
+     */
     function getClientID(): Promise<string> | string {
         if (clientID) return clientID;
 

@@ -138,6 +138,7 @@ interface scriptVM { runInNewContext: (object: {}) => string; }
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
+
 // RegExp for various js functions
 const var_js = '[a-zA-Z_\\$]\\w*';
 const singleQuote = `'[^'\\\\]*(:?\\\\[\\s\\S][^'\\\\]*)*'`;
@@ -176,7 +177,6 @@ const ESCAPING_SEGMENT = [
     // RegEx
     { start: '/', end: '/', startPrefix: /(^|[[{:;,])\s?$/ }
 ];
-
 
 namespace OldDecipher {
     /**
@@ -231,7 +231,7 @@ namespace OldDecipher {
             const nameToken = token.slice(2);
 
             switch (token.slice(0, 2)) {
-                case "sw": { position = parseInt(nameToken); swapPositions(sig, position); break; }
+                case "sw": { position = parseInt(nameToken); swapPositions<string>(sig, position); break; }
                 case "sl": { position = parseInt(nameToken); sig = sig.slice(position); break; }
                 case "sp": { position = parseInt(nameToken); sig.splice(0, position); break; }
                 case "rv": { sig.reverse(); break; }

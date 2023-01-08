@@ -72,7 +72,7 @@ export class interactionCreate extends Event<ClientInteraction, null> {
 
         //Отправляем embed
         else UtilsMsg.createMessage({text: command.embed, message});
-    };
+    }
     //====================== ====================== ====================== ======================
     /**
      * @description Проверяем права бота и пользователя
@@ -184,9 +184,8 @@ export namespace UtilsMsg {
         const channelSend = sendMessage(message, "isButton" in message, Args as any) as Promise<ClientMessage>;
 
         channelSend.then((msg: ClientMessage) => {
-            deleteMessage(msg);
-
             if (callbacks) callbacks.forEach((cb) => cb(msg));
+            deleteMessage(msg);
         });
         channelSend.catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
     }
@@ -196,20 +195,15 @@ export namespace UtilsMsg {
      * @param options {messageUtilsOptions} Опции для отправления сообщения
      * @private
      */
-    function sendArgs(options: messageUtilsOptions): { content: string, fetchReply: boolean } | { embeds: [EmbedConstructor], fetchReply: boolean } | string {
+    function sendArgs(options: messageUtilsOptions): { content: string } | { embeds: [EmbedConstructor] } {
         const {color, text, codeBlock, notAttachEmbed} = options;
 
         if (typeof text === "string") {
-            const block = typeof codeBlock === "string" ? `\`\`\`${codeBlock}\n${text}\n\`\`\`` : text;
-            if (!notAttachEmbed) return {
-                embeds: [{
-                    color: typeof color === "number" ? color : Colors[color] ?? Colors.Blue,
-                    description: block
-                }], fetchReply: true
-            }
-            return {content: block, fetchReply: true};
+            const description = typeof codeBlock === "string" ? `\`\`\`${codeBlock}\n${text}\n\`\`\`` : text;
+            if (!notAttachEmbed) return { embeds: [{ color: typeof color === "number" ? color : Colors[color] ?? Colors.Blue, description }]};
+            return {content: description};
         }
-        return {embeds: [text], fetchReply: true};
+        return {embeds: [text]};
     }
     //====================== ====================== ====================== ======================
     /**
@@ -219,9 +213,9 @@ export namespace UtilsMsg {
      * @param args {string} Аргументы для создания сообщения
      * @private
      */
-    function sendMessage(message: ClientMessage | ClientInteraction, isSlash: boolean, args: string) {
-        if (isSlash) return message.reply(args);
-        return message.channel.send(args);
+    function sendMessage(message: ClientMessage | ClientInteraction, isSlash: boolean, args: any) {
+        if (isSlash) return message.reply({...args, fetchReply: true});
+        return message.channel.send({...args, fetchReply: true});
     }
 }
 /* */

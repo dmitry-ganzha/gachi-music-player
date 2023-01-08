@@ -4,7 +4,7 @@ import {MessageReaction, User} from "discord.js";
 
 const emojis = ReactionMenuSettings.emojis;
 
-interface Callbacks {
+interface ReactionCallbacks {
     back: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage) => any;
     next: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage) => any;
     cancel: (reaction: MessageReaction, user: User, message: ClientMessage, msg: ClientMessage) => any;
@@ -19,7 +19,7 @@ export class ReactionMenu {
      * @param isSlash
      * @requires {reaction}
      */
-    public constructor(embed: EmbedConstructor | string, message: ClientInteractive, callbacks: Callbacks, isSlash: boolean = false) {
+    public constructor(embed: EmbedConstructor | string, message: ClientInteractive, callbacks: ReactionCallbacks, isSlash: boolean = false) {
         const args = typeof embed === "string" ? {content: embed, fetchReply: true} : {embeds: [embed], fetchReply: true};
 
         setImmediate(() => {

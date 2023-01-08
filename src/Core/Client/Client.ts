@@ -25,7 +25,7 @@ class CollectionMap<K, V> extends Map<K, V> {
 }
 
 //Удаляем данные старше 25 минут
-function DefaultKeepOverLimit<V, K, J>(value: V, key: K, collection: J) {
+function DefaultKeepOverLimit<V, K, J>(value: V) { //key: K, collection: J
     return SnowflakeUtil.timestampFrom((value as any).channelId) < Date.now() - 25e5;
 }
 

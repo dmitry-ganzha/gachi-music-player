@@ -1,27 +1,56 @@
 import { ClientInteraction, ClientInteractive, ClientMessage, EmbedConstructor } from "@Client/interactionCreate";
 import { ApplicationCommandOptionType, PermissionResolvable } from "discord.js";
 
-interface InteractiveOptions {
-    name: string,
-    description: string,
-    required?: boolean,
-    type: ApplicationCommandOptionType | string
+/**
+ * @description Изменение данных
+ */
+export namespace replacer {
+    export function replaceArray(text: string, srt: string[]) {
+        srt.forEach((str) => text.replaceAll(str, ""));
+
+        return text;
+    }
+    //Обрезает текст до необходимых значений
+    export function replaceText(text: string, value: number | any, clearText: boolean = false) {
+        try {
+            if (clearText) text = text.replace(/[\[,\]}{"`']/gi, "");
+            if (text.length > value && value !== false) return `${text.substring(0, value)}...`;
+            return text;
+        } catch { return text; }
+    }
 }
+//====================== ====================== ====================== ======================
+
+
+/**
+ * @description Как выглядит команда
+ */
 export class Command {
     public constructor(options: {
+        //Название команды
         name: string;
+        //Доп названия для команды
         aliases?: string[];
+        //Описание
         description?: string;
-        //
+
+        //Как использовать команду
         usage?: string;
+        //Права использования
         permissions?: { client: PermissionResolvable[], user: PermissionResolvable[] };
+        //Аргументы для слей команд
         options?: InteractiveOptions[];
-        //
+
+        //Команда только для разработчиков
         isOwner?: boolean;
+        //Преобразовать эту команду в SlashCommand
         isSlash?: boolean;
+        //Команда предназначена для сервера
         isGuild?: boolean;
+        //Включить команду
         isEnable?: boolean;
-        //
+
+        //Ограничение по времени для того что-бы пользователь не спамил командами
         isCLD?: number;
     }) {
         Object.keys(options).forEach((key) => {
@@ -47,46 +76,60 @@ export class Command {
     public readonly isCLD: number = 5;
     public readonly type: string;
 }
-
+//====================== ====================== ====================== ======================
+/**
+ * @description Как выглядит аргумент для SlashCommand
+ */
+interface InteractiveOptions {
+    //Название аргумента
+    name: string;
+    //Описание аргумента
+    description: string;
+    //Обязательный аргумент?
+    required?: boolean;
+    //Тип аргумента, можно указать STRING и пользователю придется писать что ему надо
+    type: ApplicationCommandOptionType | string;
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Что может выходить из команды
+ */
 export type ResolveData = ResolveEmbed | ResolveText | ResolveMenu;
+//====================== ====================== ====================== ======================
+/**
+ * @description Если команда подразумевает отправление готового EMBED сообщения
+ */
+interface ResolveEmbed {
+    embed: EmbedConstructor;
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Если команда подразумевает отправление текста с некоторыми параметрами
+ */
+interface ResolveText {
+    text: string;
+    codeBlock?: "css" | "js" | "ts" | "cpp" | "html" | "cs" | "json" | "not";
+    color?: "DarkRed" | "Blue" | "Green" | "Default" | "Yellow" | "Grey" | "Navy" | "Gold" | "Orange" | "Purple" | number;
+    thenCallbacks?: Array<Function>;
+    notAttachEmbed?: boolean;
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Если команда подразумевает отправление интерактивного embed меню
+ */
+interface ResolveMenu {
+    embed: EmbedConstructor | string;
+    callbacks: any;
+}
 
+//====================== ====================== ====================== ======================
+/**
+ * @description Аргументы для отправления сообщения
+ */
 export interface messageUtilsOptions {
     text: string | EmbedConstructor;
     color?: ResolveText["color"];
     message: ClientMessage | ClientInteraction;
     codeBlock?: ResolveText["codeBlock"];
     notAttachEmbed?: boolean
-}
-interface ResolveEmbed {
-    embed: EmbedConstructor;
-}
-interface ResolveText {
-    text: string;
-    codeBlock?: "css" | "js" | "ts" | "cpp" | "html" | "cs" | "json" | "not",
-    color?: "DarkRed" | "Blue" | "Green" | "Default" | "Yellow" | "Grey" | "Navy" | "Gold" | "Orange" | "Purple" | number;
-    thenCallbacks?: Array<Function>;
-    notAttachEmbed?: boolean;
-}
-interface ResolveMenu {
-    embed: EmbedConstructor | string;
-    callbacks: any;
-}
-
-/**
- * @description Изменение данных
- */
-export namespace replacer {
-    export function replaceArray(text: string, srt: string[]) {
-        srt.forEach((str) => text.replaceAll(str, ""));
-
-        return text;
-    }
-    //Обрезает текст до необходимых значений
-    export function replaceText(text: string, value: number | any, clearText: boolean = false) {
-        try {
-            if (clearText) text = text.replace(/[\[,\]}{"`']/gi, "");
-            if (text.length > value && value !== false) return `${text.substring(0, value)}...`;
-            return text;
-        } catch { return text; }
-    }
 }

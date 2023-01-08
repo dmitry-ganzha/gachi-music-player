@@ -126,7 +126,7 @@ export class Queue {
     public swapSongs = (num?: number): void => {
         if (this.songs.length === 1) return this.player.stop();
 
-        swapPositions(this.songs, num ?? this.songs.length - 1);
+        swapPositions<Song>(this.songs, num ?? this.songs.length - 1);
         this.player.stop();
     };
     //====================== ====================== ====================== ======================
@@ -187,7 +187,7 @@ export class Queue {
  * @param array {Array<any>} Array
  * @param position {number} Номер позиции
  */
-export function swapPositions(array: any[], position: number): void {
+export function swapPositions<V>(array: V[], position: number): void {
     const first = array[0];
     array[0] = array[position];
     array[position] = first;
