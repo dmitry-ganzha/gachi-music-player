@@ -13,14 +13,12 @@ const db = { //База данных для плееров
     pls: [] as AudioPlayer[],
     timeout: null as NodeJS.Timer
 };
-
-//Статусы плеера при которых не надо обновлять сообщение
-const PlayerStatuses = new Set(["idle", "pause", "autoPause"]);
 const m_db = { //База для сообщений
     messages: new Collection<string, ClientMessage>(), //new Map сообщений, поиск осуществляется по id канала
     timeout: null as NodeJS.Timeout //Общий таймер сообщений
 };
 //====================== ====================== ====================== ======================
+
 /**
  * @description Player CycleStep
  */
@@ -50,7 +48,7 @@ export namespace PlayerCycle {
         if (index != -1) db.pls.splice(index, 1);
 
         //Чистим систему
-        if (db.pls.length === 0) {
+        if (db.pls.length < 1) {
             if (db.timeout) clearTimeout(db.timeout);
 
             db.time = null;
@@ -63,41 +61,15 @@ export namespace PlayerCycle {
  * @description Цикл жизни плеера
  */
 function playerCycleStep(): void {
-    db.time += 20;
-    for (const player of db.pls) playerPacket(player);
-    db.timeout = setTimeout(playerCycleStep, db.time - Date.now());
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Проверяем можно ли отправить пакет в голосовой канал
- * @param player {player} Плеер
- */
-function playerPacket(player: AudioPlayer) {
-    const state = player.state;
+    const players = db.pls.filter((player) => player.state.status === "read");
 
-    //Если статус (idle или pause) прекратить выполнение функции
-    if (state?.status === "pause" || state?.status === "idle" || !state?.status) return;
-
-    if (!player.voice) {
-        player.state = {...state, status: "pause"};
-        return;
-    } else if (state.status === "autoPause") {
-        //Если стоит статус плеера (autoPause) и есть канал или каналы в которые можно воспроизвести музыку, стартуем!
-        player.state = {...state, status: "read", stream: state.stream};
-    }
-
-    //Не читать пакеты при статусе плеера (autoPause)
-    if (state.status === "autoPause") return;
-
-    //Отправка музыкального пакета
-    if (state.status === "read") {
-        const packet: Buffer | null = state.stream?.read();
-
-        player.sendPacket(packet);
-        if (!packet) player.stop();
+    try {
+        db.time += 20;
+        for (const player of players) player["preparePacket"]();
+    } finally {
+        db.timeout = setTimeout(playerCycleStep, db.time - Date.now());
     }
 }
-
 /*====================== ====================== ====================== ======================*/
 /*====================== ====================== ====================== ======================*/
 /*====================== ====================== ====================== ======================*/
@@ -135,7 +107,7 @@ export namespace MessageCycle {
         if (m_db.messages.size === 0) {
             //Если таймер еще работает то удаляем его
             if (m_db.timeout) {
-                clearTimeout(db.timeout);
+                clearTimeout(m_db.timeout);
 
                 m_db.timeout = null;
             }
@@ -167,7 +139,7 @@ function UpdateMessage(message: ClientMessage): void {
     if (!queue || !queue?.song || !message.editable) return MessageCycle.toRemove(message.channelId);
 
     //Если у плеера статус при котором нельзя обновлять сообщение
-    if (PlayerStatuses.has(queue.player.state.status)) return;
+    if (queue.player.hasUpdate) return;
 
     setImmediate(() => {
         const CurrentPlayEmbed = EmbedMessages.toPlay(client, queue);

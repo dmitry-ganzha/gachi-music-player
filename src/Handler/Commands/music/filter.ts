@@ -46,6 +46,9 @@ export default class Filter extends Command {
             color: "DarkRed"
         };
 
+        //Если статус плеера не позволяет пропустить поток
+        if (!queue.player.hasSkipped) return { text: `${author} | На данном этапе невозможно пропустить поток!`, color: "DarkRed" };
+
         //Если текущий трек является потоковым
         if (queue.song.isLive) return { text: `${author}, Фильтр не может работать совместно с Live треками!`, color: "DarkRed" };
 

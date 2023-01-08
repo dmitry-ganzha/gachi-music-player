@@ -3,8 +3,8 @@ import {TypedEmitter} from "tiny-typed-emitter";
 import {OpusAudio} from "@OpusAudio";
 import {PlayerCycle} from "@Managers/Players/CycleStep";
 
-//Статусы при которых можно пропустить трек
-export const StatusPlayerHasSkipped: Set<string> = new Set(["read", "pause", "idle"]);
+const NotSkippedStatuses = ["read", "pause", "autoPause"];
+const UpdateMessage = ["idle", "pause", "autoPause"];
 const SilentFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe, 0xfae]);
 //Ивенты которые плеер может вернуть
 interface PlayerEvents {
@@ -47,8 +47,9 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
         //Проверяем на нужный статус, удаляем старый поток
         if (isDestroy(oldState, state)) {
-            oldState.stream.stream.destroy();
-            oldState.stream.stream.read(); //Устраняем утечку памяти
+            oldState.stream.opus.removeAllListeners();
+            oldState.stream.opus.destroy();
+            oldState.stream.opus.read(); //Устраняем утечку памяти
             oldState.stream.destroy();
         }
 
@@ -58,13 +59,15 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
         //Заставляем ивенты работать
         if (oldStatus !== newStatus || oldStatus !== "idle" && newStatus === "read") {
+            PlayerCycle.toRemove(this);
             this.sendPacket(SilentFrame);
             this.emit(newStatus);
-            PlayerCycle.toRemove(this);
         }
 
         PlayerCycle.toPush(this);
     };
+    public get hasSkipped() { return NotSkippedStatuses.includes(this.state.status); };
+    public get hasUpdate() { return UpdateMessage.includes(this.state.status); };
     //Ставим на паузу плеер
     public pause = (): void => {
         if (this.state.status !== "read") return;
@@ -83,21 +86,27 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     //====================== ====================== ====================== ======================
     /**
      * @description Начинаем чтение стрима
-     * @param stream {OpusAudio} Сам стрим
+     * @param url {string}
+     * @param options {seek: number, filter: any[]}
      */
-    public readStream = (stream: PlayerStatus["stream"]) => {
-        if (!stream) return this.emit("error", new Error(`Stream is null`), true);
+    public readStream = (url: string, options: {seek: number, filters: any[]}): void => {
+        if (!url) return void this.emit("error", new Error(`Link to resource, not found`), true);
+
+        const stream = new OpusAudio(url, options);
+
+        if (!stream) return void this.emit("error", new Error(`Stream is null`), true);
 
         //Если прочитать возможно
-        if (stream.readable) return void (this.state = {status: "read", stream});
-
-        //Включаем поток когда можно будет начать читать
-        stream.stream.once("readable", () => {
-            this.sendPacket(SilentFrame);
-            this.state = {status: "read", stream};
-        });
-        //Если происходит ошибка, то продолжаем читать этот же поток
-        stream.stream.once("error", () => this.emit("error", new Error("Fail read stream"), true));
+        if (stream.readable) this.state = {status: "read", stream};
+        else {
+            //Включаем поток когда можно будет начать читать
+            stream.opus.once("readable", () => {
+                this.sendPacket(SilentFrame);
+                this.state = {status: "read", stream};
+            });
+            //Если происходит ошибка, то продолжаем читать этот же поток
+            stream.opus.once("error", () => this.emit("error", new Error("Fail read stream"), true));
+        }
     };
     //====================== ====================== ====================== ======================
     /**
@@ -110,6 +119,35 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
 
         if (packet && voiceConnection.state.status === "ready") voiceConnection.playOpusPacket(packet);
         else voiceConnection.setSpeaking(false);
+    };
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Проверяем можно ли отправить пакет в голосовой канал
+     */
+    protected preparePacket = () => {
+        const state = this.state;
+
+        //Если статус (idle или pause) прекратить выполнение функции
+        if (state?.status === "pause" || state?.status === "idle" || !state?.status) return;
+
+        if (!this.voice) {
+            this.state = {...state, status: "pause"};
+            return;
+        } else if (state.status === "autoPause") {
+            //Если стоит статус плеера (autoPause) и есть канал или каналы в которые можно воспроизвести музыку, стартуем!
+            this.state = {...state, status: "read", stream: state.stream};
+        }
+
+        //Не читать пакеты при статусе плеера (autoPause)
+        if (state.status === "autoPause") return;
+
+        //Отправка музыкального пакета
+        if (state.status === "read") {
+            const packet: Buffer | null = state.stream?.read();
+
+            if (packet) this.sendPacket(packet);
+            else this.stop();
+        }
     };
     //====================== ====================== ====================== ======================
     /**

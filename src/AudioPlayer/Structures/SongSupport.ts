@@ -107,7 +107,7 @@ const Platforms = {
     //Какие данные можно взять с Discord
     "DISCORD": {
         "color": Colors.Grey,
-        "reg": /cdn.discordapp.com/gi,
+        "reg": /^(https?:\/\/)?(cdn\.)?( )?(discordapp)\/.+$/gi,
 
         //Доступные запросы для этой платформы
         "callbacks": {
@@ -140,7 +140,7 @@ export namespace platformSupporter {
      * @description Получаем платформы с которых невозможно включить треки
      * @param platform {platform} Платформа
      */
-    export function getFailPlatform(platform: platform): boolean { return RegisterPlatform.includes(platform); }
+    export function getFailPlatform(platform: platform): boolean { return RegisterPlatform?.includes(platform) ?? false; }
     //====================== ====================== ====================== ======================
     /**
      * @description Получаем функцию в зависимости от типа платформы и запроса
@@ -182,13 +182,27 @@ export namespace platformSupporter {
      * @param str {string} Ссылка
      */
     export function getPlatform(str: string): platform {
-        try {
-            const filterPlatforms = Object.entries(Platforms).filter(([, value]) => str.match(value.reg));
-            const [key] = filterPlatforms[0];
+        const platforms = Object.entries(Platforms);
 
-            if (key) return key.toUpperCase() as platform;
+        try {
+            if (str.match(/^(https?:\/\/)/gi)) {
+                const filterPlatforms = platforms.filter(([, value]) => str.match(value.reg));
+                const [key] = filterPlatforms[0];
+
+                if (key) return key.toUpperCase() as platform;
+                return "DISCORD";
+            } else {
+                //Если пользователь ищет трек по названию
+                const spSearch = str.split(' '), pl = spSearch[0].toLowerCase();
+                const platform = platforms.filter(([, value]) => "prefix" in value && (value as typeof Platforms["YOUTUBE"])?.prefix.includes(pl));
+                const [key] = platform[0];
+
+                return key.toUpperCase() as platform;
+            }
+        } catch (e) {
+            console.log(e);
             return "DISCORD";
-        } catch (e) { return "DISCORD"; }
+        }
     }
     //====================== ====================== ====================== ======================
     /**
@@ -206,7 +220,7 @@ export namespace platformSupporter {
         //Если пользователь ищет трек по названию
         const spSearch = str.split(' '), pl = spSearch[0].toLowerCase();
         // @ts-ignore
-        const aliases = pl === platform.toLowerCase() || Platforms[platform].prefix.includes(pl);
+        const aliases = pl === platform.toLowerCase() || Platforms[platform].prefix?.includes(pl);
 
         //Если пользователь ищет трек с префиксом платформы
         if (aliases) {

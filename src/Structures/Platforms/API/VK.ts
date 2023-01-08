@@ -41,12 +41,12 @@ namespace construct {
             image: {url: image?.photo_1200 ?? image?.photo_600 ?? image?.photo_300 ?? image?.photo_270 ?? undefined},
             duration: { seconds: track.duration.toFixed(0) },
             format: { url: track?.url }
-        }
+        };
     }
     export function author(user: any) {
         const url = `https://vk.com/audio&q=${user.artist.replaceAll(" ", "").toLowerCase()}`;
 
-        return { url, title: user.artist, isVerified: user.is_licensed }
+        return { url, title: user.artist, isVerified: user.is_licensed };
     }
 }
 
@@ -88,7 +88,7 @@ export namespace VK {
                 url, title: playlist.title,
                 items: items.response.items.map(construct.track),
                 image: {url: image?.photo_1200 ?? image?.photo_600 ?? image?.photo_300 ?? image?.photo_270 ?? undefined}
-            })
+            });
         });
     }
     //====================== ====================== ====================== ======================
@@ -108,7 +108,7 @@ export namespace VK {
             if (trackConst > options.limit) result.response.items.splice(options.limit - 1, trackConst - options.limit - 1);
 
             return resolve(result.response.items.map(construct.track));
-        })
+        });
     }
 }
 //====================== ====================== ====================== ======================

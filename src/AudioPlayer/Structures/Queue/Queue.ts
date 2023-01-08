@@ -4,7 +4,6 @@ import {PlayerEvents} from "@Managers/Players/Events";
 import {AudioPlayer} from "../AudioPlayer";
 import {consoleTime} from "@Client/Client";
 import {StageChannel} from "discord.js";
-import {OpusAudio} from "@OpusAudio";
 import {Voice} from "@VoiceManager";
 import {Song} from "./Song";
 
@@ -110,12 +109,9 @@ export class Queue {
         if (!this.song) return this.cleanup();
 
         //Получаем ссылку на resource
-        this.song.resource(seek).then((url: string) => {
-            if (!url) return this.player.emit("error", new Error("Audio resource not found!"), true);
-            const streamingData = new OpusAudio(url,{seek, filters: this.song.isLive ? [] : this.filters});
-
-            return this.player.readStream(streamingData as any);
-        }).catch((err) => this.player.emit("error", new Error(err), true));
+        this.song.resource(seek)
+            .then((url: string) => this.player.readStream(url,{seek, filters: this.song.isLive ? [] : this.filters}))
+            .catch((err) => this.player.emit("error", new Error(err), true));
 
         if (!seek) {
             consoleTime(`[GuildID: ${this.guild.id}]: ${this.song.title}`); //Отправляем лог о текущем треке

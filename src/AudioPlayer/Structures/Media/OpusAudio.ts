@@ -12,7 +12,7 @@ type FFmpegOptions = {seek?: number, filters?: AudioFilters};
 const Audio = Music.Audio;
 
 export class OpusAudio {
-    private _stream: opus.OggDemuxer = new opus.OggDemuxer({autoDestroy: false});
+    private _opus: opus.OggDemuxer = new opus.OggDemuxer({autoDestroy: false});
     private _streams: Array<Readable> = [];
     private _ffmpeg: FFspace.FFmpeg;
 
@@ -33,7 +33,7 @@ export class OpusAudio {
      */
     // @ts-ignore
     public get readable(): boolean { return this._readable; };
-    public get destroyed() { return this._stream?.destroyed ?? true; };
+    public get destroyed() { return this._opus?.destroyed ?? true; };
     //====================== ====================== ====================== ======================
     /**
      * @description Выдаем или добавляем ffmpeg из this.streams
@@ -46,7 +46,7 @@ export class OpusAudio {
     /**
      * @description opus.OggDemuxer
      */
-    public get stream() { return this._stream };
+    public get opus() { return this._opus };
     //====================== ====================== ====================== ======================
     /**
      * @description Создаем поток при помощи ffmpeg конвертируем любой файл в opus
@@ -64,16 +64,16 @@ export class OpusAudio {
             resource.pipe(this.ffmpeg);
             this._streams.push(resource);
         }
-        this.ffmpeg.pipe(this.stream); //Загружаем из FFmpeg'a в opus.OggDemuxer
+        this.ffmpeg.pipe(this.opus); //Загружаем из FFmpeg'a в opus.OggDemuxer
 
         //Проверяем сколько времени длится пакет
         if (options?.filters?.length > 0) this._durFrame = ArgsHelper.timeFrame(options?.filters);
         if (options.seek > 0) this._duration = options.seek * 1e3;
 
         //Когда можно будет читать поток записываем его в <this.#started>
-        this.stream.once("readable", () => (this._readable = true));
+        this.opus.once("readable", () => (this._readable = true));
         //Если в <this> будет один из этих статусов, чистим память!
-        ["end", "close", "error"].forEach((event: string) => this.stream.once(event, this.destroy));
+        ["end", "close", "error"].forEach((event: string) => this.opus.once(event, this.destroy));
 
         if (Debug) consoleTime(`[Debug] -> OpusAudio: [Start decoding file in ${path}]`);
     };
@@ -81,8 +81,8 @@ export class OpusAudio {
     /**
      * @description Чтение пакета
      */
-    public read = (num: number = 32): Buffer | null => {
-        const packet: Buffer = this.stream?.read(num);
+    public read = (): Buffer | null => {
+        const packet: Buffer = this._opus?.read();
 
         if (packet) this._duration += this._durFrame;
 
@@ -113,12 +113,12 @@ export class OpusAudio {
         }
         delete this._ffmpeg;
 
-        if (this.stream) {
-            this.stream.removeAllListeners();
-            this.stream.destroy();
-            this.stream.read(); //Устраняем утечку памяти
+        if (this.opus) {
+            this.opus.removeAllListeners();
+            this.opus.destroy();
+            this.opus.read(); //Устраняем утечку памяти
         }
-        delete this._stream;
+        delete this._opus;
 
         if (Debug) consoleTime(`[Debug] -> OpusAudio: [Clear memory]`);
     };

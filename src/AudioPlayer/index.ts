@@ -1,5 +1,4 @@
 import {ClientMessage, UtilsMsg} from "@Client/interactionCreate";
-import {StatusPlayerHasSkipped} from "@Structures/AudioPlayer";
 import {DurationUtils} from "@Managers/DurationUtils";
 import {VoiceState} from "discord.js";
 import {Voice} from "@VoiceManager";
@@ -57,10 +56,7 @@ export namespace Player {
             const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === song.requester.id);
 
             //Если музыку нельзя пропустить из-за плеера
-            if (!StatusPlayerHasSkipped.has(player.state.status)) return UtilsMsg.createMessage({
-                text: `${author}, ⚠ Музыка еще не играет!`, message,
-                color: "DarkRed"
-            });
+            if (!player.hasSkipped) return UtilsMsg.createMessage({ text: `${author}, ⚠ Музыка еще не играет!`, message, color: "DarkRed" });
 
             //Если пользователю позволено убрать из очереди этот трек
             if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {
@@ -82,9 +78,12 @@ export namespace Player {
      * @requires {ParsingTimeToString}
      */
     export function seek(message: ClientMessage, seek: number): void {
-        const {client, guild} = message;
-        const {song, play}: Queue = client.queue.get(guild.id);
+        const {client, guild, author} = message;
+        const {song, play, player}: Queue = client.queue.get(guild.id);
         const {title, color}: Song = song;
+
+        //Если музыку нельзя пропустить из-за плеера
+        if (!player.hasSkipped) return UtilsMsg.createMessage({ text: `${author}, ⚠ Музыка еще не играет!`, message, color: "DarkRed" });
 
         play(seek);
         //Отправляем сообщение о пропуске времени
@@ -135,7 +134,7 @@ export namespace Player {
         const {client, guild} = message;
         const {player}: Queue = client.queue.get(guild.id);
 
-        if (StatusPlayerHasSkipped.has(player.state.status)) player.stop();
+        if (player.hasSkipped) player.stop();
     }
 }
 //====================== ====================== ====================== ======================
@@ -155,16 +154,10 @@ function skipSong(message: ClientMessage, args: number = 1) {
         const UserToVoice: boolean = !!voiceConnection.find((v: VoiceState) => v.id === song.requester.id);
 
         //Если музыку нельзя пропустить из-за плеера
-        if (!StatusPlayerHasSkipped.has(player.state.status)) return UtilsMsg.createMessage({
-            text: `${author}, ⚠ Музыка еще не играет!`, message,
-            color: "DarkRed"
-        });
+        if (!player.hasSkipped) return UtilsMsg.createMessage({ text: `${author}, ⚠ Музыка еще не играет!`, message, color: "DarkRed" });
 
         //Если пользователь укажет больше чем есть в очереди
-        if (args > songs.length) return UtilsMsg.createMessage({
-            text: `${author}, В очереди ${songs.length}!`, message,
-            color: "DarkRed"
-        });
+        if (args > songs.length) return UtilsMsg.createMessage({ text: `${author}, В очереди ${songs.length}!`, message, color: "DarkRed" });
 
         //Если пользователю позволено пропустить музыку
         if (member.permissions.has("Administrator") || author.id === requester.id || !UserToVoice) {
