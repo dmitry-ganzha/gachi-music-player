@@ -2,7 +2,7 @@
   "name": "WatKLOK",
   "main": "src/Core/Client/Client.js",
   "author": "SNIPPIK",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "scripts": {
     "start": "node ./src/Core/Client/Client.js",
     "sharder": "node ./src/Core/Client/ShardManager.js",
