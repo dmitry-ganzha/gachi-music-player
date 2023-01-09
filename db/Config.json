@@ -6,7 +6,9 @@
   "Bot": {
     "ignoreErrors": true,
     "prefix": "!",
-    "OwnerIDs": []
+    "OwnerIDs": [],
+    
+    "TypingMessage": true
   },
   "Debug": false,
 
