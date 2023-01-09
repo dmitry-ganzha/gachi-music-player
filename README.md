@@ -4,7 +4,7 @@
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
 - Лицензия: [`WatKLOK LICENSE`](LICENSE.md)
 - Перейти к [`настройкам`](db/Config.json)
-- Перейти к [`командам`](src/Handler/Commands) | `Slash + Standart`
+- Перейти к [`командам`](src/Handlers/Commands) | `Slash + Standart`
 - Перейти к [`плееру`](src/AudioPlayer)
 - Перейди к [`демонстрации`](https://www.youtube.com/watch?v=ncvpyWaxycw)
 - Все сообщения удаляются автоматически через время
@@ -64,7 +64,10 @@
       "Bot": {
          "ignoreErrors": true, //Игнорировать ошибки
          "prefix": "!", //Префикс
-         "OwnerIDs": [] //Пользователи у которых есть доступ к разделу Owner
+         "OwnerIDs": [], //Пользователи у которых есть доступ к разделу Owner
+    
+         //Бот будет делать вид, что пишет в текстовый канал
+         "TypingMessage": true
       },
       "Debug": false, //Отправлять сообщение взаимодействий бота с discord
 
