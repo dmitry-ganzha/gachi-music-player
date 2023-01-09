@@ -95,7 +95,7 @@ export namespace YandexMusic {
         return new Promise(async (resolve) => {
             const result = await API.Request(`https://music.yandex.ru/search?text=${str.split(" ").join("%20")}&type=tracks`, true);
             const tracks: InputTrack[] = [];
-            let NumberTrack = 1;
+            let NumberTrack = 0;
 
             if (result instanceof Error) return resolve(null);
 

@@ -1,21 +1,8 @@
-import {platform, platformSupporter} from "@Structures/SongSupport";
-import {ClientInteractive, ClientMessage, UtilsMsg} from "@Client/interactionCreate";
-import {Command, replacer, ResolveData} from "@Structures/Handle/Command";
-import {ArraySort} from "@Handler/Modules/Object/ArraySort";
+import {ClientMessage} from "@Client/interactionCreate";
+import {Command, ResolveData} from "@Structures/Handle/Command";
 import {ApplicationCommandOptionType} from "discord.js";
-import {InputPlaylist, InputTrack} from "@Queue/Song";
-import {DurationUtils} from "@Managers/DurationUtils";
-import {ReactionMenuSettings} from "@db/Config.json";
 import {Queue} from "@Queue/Queue";
-interface Options {
-    platform?: platform
-    message: ClientInteractive
-}
-
-const emoji = ReactionMenuSettings.emojis.cancel;
-const {getArg, getTypeSong, getPlatform, getFailPlatform, getCallback} = platformSupporter;
-
-
+import {toPlayer} from "@Structures/SongSupport";
 export class Play extends Command {
     public constructor() {
         super({
@@ -66,114 +53,9 @@ export class Play extends Command {
         if (!search) return { text: `${author}, Укажи ссылку, название или прикрепи файл!`, color: "DarkRed" };
 
         try {
-            return getInfoForType(message, search);
+            toPlayer.play(message, search);
         } catch (e) {
             return { text: `Произошла ошибка -> ${search}\n${e}`, color: "DarkRed", codeBlock: "css" };
         }
     };
-}
-
-/**
- * @description Получаем данные из базы по данным
- * @param message {ClientMessage} Сообщение с сервера
- * @param search {string} Что требует пользователь
- */
-function getInfoForType(message: ClientMessage, search: string): Promise<ResolveData> | ResolveData {
-    const {author, client} = message;
-    const voiceChannel = message.member.voice;
-    const type = getTypeSong(search); //Тип запроса
-    const platform = getPlatform(search); //Платформа с которой будем взаимодействовать
-    const args = getArg(search, platform);
-
-    //Если нельзя получить данные с определенной платформы
-    if (getFailPlatform(platform)) return {
-        text: `${author}, я не могу взять данные с этой платформы **${platform}**\n Причина: [**Authorization data not found**]`, color: "DarkRed", codeBlock: "css"
-    };
-
-    const callback = getCallback(platform, type); //Ищем в списке платформу
-
-    if (callback === "!platform") return { text: `${author}, у меня нет поддержки такой платформы!\nПлатформа **${platform}**!`, color: "DarkRed" };
-    else if (callback === "!callback") return { text: `${author}, у меня нет поддержки этого типа запроса!\nТип запроса **${type}**!`, color: "DarkRed" };
-
-    const runCallback = callback(args) as Promise<InputTrack | InputPlaylist | InputTrack[]>;
-
-    //Если выходит ошибка
-    runCallback.catch((err) => UtilsMsg.createMessage({ text: `${author}, данные не были найдены!\nПричина: ${err}`, color: "DarkRed", message }));
-
-    return runCallback.then((data: InputTrack | InputPlaylist | InputTrack[]): ResolveData => {
-        if (!data) return {text: `${author}, данные не были найдены!`, color: "Yellow"};
-
-        //Если пользователь ищет трек
-        if (data instanceof Array) return SearchMessage.toSend(data, {message, platform});
-
-        //Загружаем трек или плейлист в GuildQueue
-        client.player.play(message as any, voiceChannel.channel, data);
-
-        //Сообщаем что трек был найден
-        if (type === "track") return { text: `Найден 🔍 | ${type}\n➜ ${data.title}`, color: "Yellow", codeBlock: "css" };
-    });
-}
-
-//Выводим список треков для выбора пользователем
-namespace SearchMessage {
-    /**
-     * @description Отправляем сообщение о том что удалось найти
-     * @param results {InputTrack[]} Результаты поиска
-     * @param options {Options}
-     * @requires {Reaction, deleteMessage}
-     */
-    export function toSend(results: InputTrack[], options: Options): ResolveData {
-        const {message, platform} = options;
-        const {author, client} = message;
-
-        if (results.length < 1) return { text: `${author} | Я не смог найти музыку с таким названием. Попробуй другое название!`, color: "DarkRed" };
-
-        const choice = `Выбери от 1 до ${results.length}`;
-        const requester = `[Платформа: ${platform} | Запросил: ${author.username}]`;
-        const songsList = ArraySort<InputTrack>(15, results, (track, index ) => {
-            const Duration = platform === "YOUTUBE" ? track.duration.seconds : DurationUtils.ParsingTimeToString(parseInt(track.duration.seconds)); //Проверяем надо ли конвертировать время
-            const NameTrack = `[${replacer.replaceText(track.title, 80, true)}]`; //Название трека
-            const DurationTrack = `[${Duration ?? "LIVE"}]`; //Длительность трека
-            const AuthorTrack = `[${replacer.replaceText(track.author.title, 12, true)}]`; //Автор трека
-
-            return `${index+1} ➜ ${DurationTrack} | ${AuthorTrack} | ${NameTrack}`;
-        });
-        const callback = (msg: ClientMessage) => {
-            //Создаем сборщик
-            const collector = UtilsMsg.createCollector(msg.channel, (m) => {
-                const messageNum = parseInt(m.content);
-                return !isNaN(messageNum) && messageNum <= results.length && messageNum > 0 && m.author.id === author.id;
-            });
-
-            //Делаем что-бы при нажатии на эмодзи удалялся сборщик
-            UtilsMsg.createReaction(msg, emoji,
-                (reaction, user) => reaction.emoji.name === emoji && user.id !== client.user.id,
-                () => {
-                    UtilsMsg.deleteMessage(msg, 1e3); //Удаляем сообщение
-                    collector?.stop();
-                },
-                30e3
-            );
-
-            //Если пользователь нечего не выбрал, то удаляем сборщик и сообщение через 30 сек
-            setTimeout(() => {
-                UtilsMsg.deleteMessage(msg, 1e3); //Удаляем сообщение
-                collector?.stop();
-            }, 30e3);
-
-            //Что будет делать сборщик после нахождения числа
-            collector.once("collect", (m: any): void => {
-                setImmediate(() => {
-                    [msg, m].forEach(UtilsMsg.deleteMessage); //Удаляем сообщения, бота и пользователя
-                    collector?.stop(); //Уничтожаем сборщик
-
-                    //Получаем ссылку на трек, затем включаем его
-                    const url = results[parseInt(m.content) - 1].url;
-                    return getInfoForType(message as any, url);
-                });
-            });
-        };
-
-        return {text: `${choice}\n${requester}\n\n${songsList}`, codeBlock: "css", notAttachEmbed: true, thenCallbacks: [callback]}
-    }
 }

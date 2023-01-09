@@ -1,7 +1,10 @@
 import {SoundCloud, Spotify, VK, YandexMusic, YouTube} from "@APIs";
+import {ClientMessage, UtilsMsg} from "@Client/interactionCreate";
+import {ArraySort} from "@Handler/Modules/Object/ArraySort";
 import {InputPlaylist, InputTrack, Song} from "@Queue/Song";
+import {Music, ReactionMenuSettings} from "@db/Config.json";
 import {DurationUtils} from "@Managers/DurationUtils";
-import {Music} from "@db/Config.json";
+import {replacer} from "@Structures/Handle/Command";
 import {Colors} from "discord.js";
 import {FFspace} from "@FFspace";
 import {env} from "@env";
@@ -10,6 +13,8 @@ import {env} from "@env";
 export type platform = "YOUTUBE" | "SPOTIFY" | "VK" | "SOUNDCLOUD" | "DISCORD" | "YANDEX";
 //Поддерживаемые тип для этих платформ
 export type callback = "track" | "playlist" | "search" | "album";
+
+const emoji = ReactionMenuSettings.emojis.cancel;
 
 /*
 Для добавления поддержки других платформ надо указать как получать данные в {Platforms}
@@ -275,6 +280,118 @@ export namespace SongFinder {
 
             //Получаем данные о треке
             return YouTube.getVideo(FindTracks[0].url).then((video) => video?.format?.url) as Promise<string>;
+        });
+    }
+}
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+/**
+ * @description Передаем информацию в Queue
+ */
+export namespace toPlayer {
+    /**
+     * @description Получаем данные из базы по данным
+     * @param message {ClientMessage} Сообщение с сервера
+     * @param arg {string} Что требует пользователь
+     */
+    export function play(message: ClientMessage, arg: string): void {
+        const {author, client} = message;
+        const voiceChannel = message.member.voice;
+        const type = platformSupporter.getTypeSong(arg); //Тип запроса
+        const platform = platformSupporter.getPlatform(arg); //Платформа с которой будем взаимодействовать
+        const argument = platformSupporter.getArg(arg, platform);
+
+        //Если нельзя получить данные с определенной платформы
+        if (platformSupporter.getFailPlatform(platform)) return UtilsMsg.createMessage({
+            text: `${author}, я не могу взять данные с этой платформы **${platform}**\n Причина: [**Authorization data not found**]`, color: "DarkRed", codeBlock: "css", message
+        });
+
+        const callback = platformSupporter.getCallback(platform, type); //Ищем в списке платформу
+
+        if (callback === "!platform") return UtilsMsg.createMessage({
+            text: `${author}, у меня нет поддержки такой платформы!\nПлатформа **${platform}**!`, color: "DarkRed", message
+        });
+        else if (callback === "!callback") return UtilsMsg.createMessage({
+            text: `${author}, у меня нет поддержки этого типа запроса!\nТип запроса **${type}**!\nПлатформа: **${platform}**`, color: "DarkRed", message
+        });
+
+        const runCallback = callback(argument) as Promise<InputTrack | InputPlaylist | InputTrack[]>;
+
+        //Если выходит ошибка
+        runCallback.catch((err) => UtilsMsg.createMessage({ text: `${author}, данные не были найдены!\nПричина: ${err}`, color: "DarkRed", message }));
+
+        runCallback.then((data: InputTrack | InputPlaylist | InputTrack[]): void => {
+            if (!data) return UtilsMsg.createMessage({text: `${author}, данные не были найдены!`, color: "Yellow", message});
+
+            //Если пользователь ищет трек
+            if (data instanceof Array) return toSend(data, {message, platform});
+
+            //Загружаем трек или плейлист в GuildQueue
+            return client.player.play(message as any, voiceChannel.channel, data);
+        });
+    }
+    //====================== ====================== ====================== ======================
+    /**
+     * @description Отправляем сообщение о том что удалось найти
+     * @param results {InputTrack[]} Результаты поиска
+     * @param options {Options}
+     * @requires {Reaction, deleteMessage}
+     */
+    function toSend(results: InputTrack[], options: { platform?: platform, message: ClientMessage }): void {
+        const {message, platform} = options;
+        const {author, client} = message;
+
+        if (results.length < 1) return UtilsMsg.createMessage({ text: `${author} | Я не смог найти музыку с таким названием. Попробуй другое название!`, color: "DarkRed", message });
+
+        const choice = `Выбери от 1 до ${results.length}`;
+        const requester = `[Платформа: ${platform} | Запросил: ${author.username}]`;
+        const songsList = ArraySort<InputTrack>(15, results, (track, index ) => {
+            const Duration = platform === "YOUTUBE" ? track.duration.seconds : DurationUtils.ParsingTimeToString(parseInt(track.duration.seconds)); //Проверяем надо ли конвертировать время
+            const NameTrack = `[${replacer.replaceText(track.title, 80, true)}]`; //Название трека
+            const DurationTrack = `[${Duration ?? "LIVE"}]`; //Длительность трека
+            const AuthorTrack = `[${replacer.replaceText(track.author.title, 12, true)}]`; //Автор трека
+
+            return `${index+1} ➜ ${DurationTrack} | ${AuthorTrack} | ${NameTrack}`;
+        });
+        const callback = (msg: ClientMessage) => {
+            //Создаем сборщик
+            const collector = UtilsMsg.createCollector(msg.channel, (m) => {
+                const messageNum = parseInt(m.content);
+                return !isNaN(messageNum) && messageNum <= results.length && messageNum > 0 && m.author.id === author.id;
+            });
+
+            //Делаем что-бы при нажатии на эмодзи удалялся сборщик
+            UtilsMsg.createReaction(msg, emoji,
+                (reaction, user) => reaction.emoji.name === emoji && user.id !== client.user.id,
+                () => {
+                    UtilsMsg.deleteMessage(msg, 1e3); //Удаляем сообщение
+                    collector?.stop();
+                },
+                30e3
+            );
+
+            //Если пользователь нечего не выбрал, то удаляем сборщик и сообщение через 30 сек
+            setTimeout(() => {
+                UtilsMsg.deleteMessage(msg, 1e3); //Удаляем сообщение
+                collector?.stop();
+            }, 30e3);
+
+            //Что будет делать сборщик после нахождения числа
+            collector.once("collect", (m: any): void => {
+                setImmediate(() => {
+                    [msg, m].forEach(UtilsMsg.deleteMessage); //Удаляем сообщения, бота и пользователя
+                    collector?.stop(); //Уничтожаем сборщик
+
+                    //Получаем ссылку на трек, затем включаем его
+                    const url = results[parseInt(m.content) - 1].url;
+                    return play(message as any, url);
+                });
+            });
+        };
+
+        //Отправляем сообщение
+        (message as ClientMessage).channel.send(`\`\`\`css\n${choice}\n${requester}\n\n${songsList}\`\`\``).then((msg) => {
+            return callback(msg as ClientMessage);
         });
     }
 }
