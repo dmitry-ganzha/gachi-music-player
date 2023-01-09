@@ -42,7 +42,7 @@ export namespace httpsClient {
             const {hostname, pathname, search, port, protocol} = new URL(url);
             const Options: RequestOptions = {
                 host: hostname, path: pathname + search, port,
-                headers: options?.request?.headers ?? {}, method: options?.request?.method ?? "GET",
+                headers: options?.request?.headers ?? {}, method: options?.request?.method ?? "GET"
             };
             const request = protocols[protocol as "https:" | "http:"](Options, (res: IncomingMessage) => {
                 //Автоматическое перенаправление

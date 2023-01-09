@@ -1,6 +1,6 @@
 import {ClientMessage, EmbedConstructor} from "@Client/interactionCreate";
 import {Command, ResolveData} from "@Structures/Handle/Command";
-import {ArraySort} from "@Handler/Modules/Object/ArraySort";
+import {ArraySort} from "@Structures/ArraySort";
 import {Colors, MessageReaction, User} from "discord.js";
 import {httpsClient} from "@httpsClient";
 
@@ -22,9 +22,10 @@ export class Trader extends Command {
     public readonly run = async (_: any): Promise<ResolveData> => {
         const result = await httpsClient.parseJson(TraderApi);
         const pagesInventory = ArraySort<voidTraderItem>(5, result.inventory, (item, index = 1) =>
-            `${index++} Предмет [**${item.item}**]
-                 **❯ Кредиты:** (${FormatBytes(item.credits)})
-                 **❯ Дукаты :** ${item.ducats ? `(${item.ducats})` : `(Нет)`}`
+            `┌Предмет [**${item.item}**]
+             ├ **Номер  :** ${index++}
+             ├ **Кредиты:** (${FormatBytes(item.credits)})
+             └ **Дукаты :** ${item.ducats ? `(${item.ducats})` : `(Нет)`}`
         );
 
         return this.SendMessage(result, pagesInventory);

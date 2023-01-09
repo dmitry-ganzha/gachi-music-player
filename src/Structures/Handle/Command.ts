@@ -110,7 +110,6 @@ interface ResolveText {
     text: string;
     codeBlock?: "css" | "js" | "ts" | "cpp" | "html" | "cs" | "json" | "not";
     color?: "DarkRed" | "Blue" | "Green" | "Default" | "Yellow" | "Grey" | "Navy" | "Gold" | "Orange" | "Purple" | number;
-    thenCallbacks?: Array<Function>;
     notAttachEmbed?: boolean;
 }
 //====================== ====================== ====================== ======================

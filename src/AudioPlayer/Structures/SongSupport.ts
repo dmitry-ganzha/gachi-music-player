@@ -1,10 +1,10 @@
 import {SoundCloud, Spotify, VK, YandexMusic, YouTube} from "@APIs";
 import {ClientMessage, UtilsMsg} from "@Client/interactionCreate";
-import {ArraySort} from "@Handler/Modules/Object/ArraySort";
 import {InputPlaylist, InputTrack, Song} from "@Queue/Song";
 import {Music, ReactionMenuSettings} from "@db/Config.json";
 import {DurationUtils} from "@Managers/DurationUtils";
 import {replacer} from "@Structures/Handle/Command";
+import {ArraySort} from "@Structures/ArraySort";
 import {Colors} from "discord.js";
 import {FFspace} from "@FFspace";
 import {env} from "@env";
@@ -99,7 +99,7 @@ const Platforms = {
     //Какие данные можно взять с Yandex music
     "YANDEX": {
         "color": Colors.Yellow,
-        "prefix": ["ym", "yandex"],
+        "prefix": ["ym", "yandex", "y"],
         "reg": /music.yandex.ru/gi,
 
         //Доступные запросы для этой платформы

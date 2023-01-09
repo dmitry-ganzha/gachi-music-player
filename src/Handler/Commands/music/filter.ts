@@ -1,7 +1,7 @@
 import {ClientMessage, EmbedConstructor} from "@Client/interactionCreate";
 import {ApplicationCommandOptionType, Colors} from "discord.js";
 import {Command, ResolveData} from "@Structures/Handle/Command";
-import {ArraySort} from "@Handler/Modules/Object/ArraySort";
+import {ArraySort} from "@Structures/ArraySort";
 import {ReactionMenu} from "@Structures/ReactionMenu";
 import {FFspace} from "@Structures/Media/FFspace";
 import Filters from "@db/Filters.json";
@@ -132,11 +132,11 @@ export default class Filter extends Command {
         const embed: EmbedConstructor = { title: "Все доступные фильтры",  color: Colors.Yellow, thumbnail: { url: message.client.user.avatarURL() }, timestamp: new Date() };
         //Преобразуем все фильтры в string
         const pages = ArraySort<typeof Filters[0]>(5, filters, (filter, index) => {
-            return `Фильтр - [${index+1}]
-                **❯ Названия:** ${filter.names ? `(${filter.names})` : `Нет`}
-                **❯ Описание:** ${filter.description ? `(${filter.description})` : `Нет`}
-                **❯ Аргументы:** ${filter.args ? `(${filter.args})` : `Нет`}
-                **❯ Модификатор скорости:** ${filter.speed ? `${filter.speed}` : `Нет`}`
+            return `┌Номер в списке - [${index+1}]
+                    ├ **Названия:** ${filter.names ? `(${filter.names})` : `Нет`}
+                    ├ **Описание:** ${filter.description ? `(${filter.description})` : `Нет`}
+                    ├ **Аргументы:** ${filter.args ? `(${filter.args})` : `Нет`}
+                    └ **Модификатор скорости:** ${filter.speed ? `${filter.speed}` : `Нет`}`
         });
         embed.description = pages[0];
         embed.footer = { text: `${message.author.username} | Лист 1 из ${pages.length}`, iconURL: message.author.displayAvatarURL() }

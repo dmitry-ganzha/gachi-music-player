@@ -14,7 +14,7 @@ const Buttons = new ActionRowBuilder().addComponents([
     new ButtonBuilder().setCustomId("replay").setEmoji({id: "986009690716667964"}).setStyle(ButtonStyle.Secondary)] //id: "986009690716667964" или name: "🔃"
 );
 //Кнопки с которыми можно взаимодействовать
-const ButtonID = new Set(["skip", "resume_pause", "replay", "last"]);
+const ButtonIDs = ["skip", "resume_pause", "replay", "last"];
 
 //Сообщения, которые отправляет плеер
 export namespace MessagePlayer {
@@ -121,7 +121,7 @@ function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> 
  */
 function CreateCollector(message: ClientMessage, queue: Queue) {
     //Создаем сборщик кнопок
-    const collector = message.createMessageComponentCollector({ filter: (i) => ButtonID.has(i.customId), componentType: ComponentType.Button });
+    const collector = message.createMessageComponentCollector({ filter: (i) => ButtonIDs.includes(i.customId), componentType: ComponentType.Button });
     const {player} = queue;
     const EmitPlayer = message.client.player;
 

@@ -68,7 +68,7 @@ export class interactionCreate extends Event<ClientInteraction, null> {
         if ("callbacks" in command && command?.callbacks !== undefined) new ReactionMenu(command.embed, message, command.callbacks);
 
         //Отправляем просто сообщение
-        else if ("text" in command) UtilsMsg.createMessage({...command, message }, command?.thenCallbacks);
+        else if ("text" in command) UtilsMsg.createMessage({...command, message });
 
         //Отправляем embed
         else UtilsMsg.createMessage({text: command.embed, message});
@@ -176,17 +176,13 @@ export namespace UtilsMsg {
     /**
      * @description Отправляем сообщение в тестовый канал по опциям
      * @param options {messageUtilsOptions} Опции для отправления сообщения
-     * @param callbacks {Function[]} Promise функции будут выполнены в коне отправления сообщения
      */
-    export function createMessage(options: messageUtilsOptions, callbacks?: Function[]): void {
+    export function createMessage(options: messageUtilsOptions): void {
         const {message} = options;
         const Args = sendArgs(options);
         const channelSend = sendMessage(message, "isButton" in message, Args as any) as Promise<ClientMessage>;
 
-        channelSend.then((msg: ClientMessage) => {
-            if (callbacks) callbacks.forEach((cb) => cb(msg));
-            deleteMessage(msg);
-        });
+        channelSend.then(deleteMessage);
         channelSend.catch((err: Error) => console.log(`[Discord Error]: [Send message] ${err}`));
     }
     //====================== ====================== ====================== ======================

@@ -1,7 +1,7 @@
 import {ClientMessage, EmbedConstructor} from "@Client/interactionCreate";
 import {Command, ResolveData} from "@Structures/Handle/Command";
 import {ApplicationCommandOptionType, Colors} from "discord.js";
-import {ArraySort} from "@Handler/Modules/Object/ArraySort";
+import {ArraySort} from "@Structures/ArraySort";
 import {ReactionMenu} from "@Structures/ReactionMenu";
 import {Bot} from "@db/Config.json";
 
@@ -40,15 +40,15 @@ export class Help extends Command {
 
         const embed = this.CreateEmbedMessage(message);
         const pages = ArraySort<Command>(5, Commands, (command) =>
-            `Команда [**${command.name}**] | ${command.type}
-                **❯ Сокращения:** (${command.aliases.join(", ") ?? `Нет`})
-                **❯ Описание:** (${command.description ?? `Нет`})
-                **❯ Используется:** ${Bot.prefix}${command.name} ${command.usage}`
+            `┌Команда [**${command.name}**] | ${command.type}
+             ├ **Сокращения:** (${command.aliases.join(", ") ?? `Нет`})
+             ├ **Описание:** (${command.description ?? `Нет`})
+             └ **Используется:** ${Bot.prefix}${command.name} ${command.usage}`
         );
         embed.description = pages[0];
         embed.footer = {text: `${author.username} | Лист 1 из ${pages.length}`, iconURL: author.avatarURL()};
 
-        //Если есть еще страницы то добавляем им кнопки взаимодействия
+        //Если есть еще страницы, то добавляем им кнопки взаимодействия
         if (pages.length > 1) return {embed, callbacks: ReactionMenu.Callbacks(1, pages, embed)};
         return {embed};
     };

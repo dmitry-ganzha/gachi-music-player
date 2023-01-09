@@ -4,14 +4,12 @@ import {Module} from "@Structures/Handle/Module";
 import {Event} from "@Structures/Handle/Event";
 import {WatKLOK} from "@Client/Client";
 
-
 type TypeFileLoad = Command | Event<any, any> | Module;
 type FileCallback = (pull: TypeFileLoad, {}: { dir: string, file: string, reason: string }) => void;
 
 let FileBase = {
     Commands: [] as string[],
-    Events: [] as string[],
-    Modules: [] as string[]
+    Events: [] as string[]
 };
 
 export namespace FileSystem {
@@ -30,7 +28,7 @@ export namespace FileSystem {
 }
 
 //Добавляем лог в Array базу
-function log(type: "Commands" | "Events" | "Modules", dir: string, file: string, reason?: string) {
+function log(type: "Commands" | "Events", dir: string, file: string, reason?: string) {
     const Status = `Status: [${reason ? "🟥" : "🟩"}]`;
     const File = `File: [src/Handler/${type}/${dir}/${file}]`;
     let EndStr = `${Status} | ${File}`;
@@ -55,23 +53,17 @@ export function LoadFiles(client: WatKLOK) {
 
             client.on(pull.name, (ev: any, ev2: any) => pull.run(ev, ev2, client));
             log("Events", dir, file);
-        },
-        (pull: Module, {file, reason, dir}) => {
-            if (reason) return log("Modules", dir, file, reason);
-
-            pull.run(client);
-            log("Modules", dir, file);
         }
     ];
 
     //Загружаем путь, а затем действие
-    ["Handler/Commands", "Handler/Events", "Handler/Modules"].forEach((path, index) => {
+    ["Handler/Commands", "Handler/Events"].forEach((path, index) => {
         new FileLoader({path, callback: loadCallbacks[index]});
 
         setImmediate(() => {
             if (client.ShardID === undefined) Object.entries(FileBase).forEach(([key, value]) => console.log(`| FileSystem... Loaded ${key} | ${value.length}\n${value.join("\n")}\n`));
             //После вывода в консоль удаляем
-            Object.entries(FileBase).forEach(([key,]) => delete FileBase[key as "Commands" | "Events" | "Modules"]);
+            Object.entries(FileBase).forEach(([key,]) => delete FileBase[key as "Commands" | "Events"]);
         });
     });
 }

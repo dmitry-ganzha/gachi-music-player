@@ -1,5 +1,5 @@
 import {Command, replacer, ResolveData} from "@Structures/Handle/Command";
-import {ArraySort} from "@Handler/Modules/Object/ArraySort";
+import {ArraySort} from "@Structures/ArraySort";
 import {ClientMessage} from "@Client/interactionCreate";
 import {DurationUtils} from "@Managers/DurationUtils";
 import {MessageReaction, User} from "discord.js";
@@ -30,7 +30,7 @@ export default class CommandQueue extends Command {
             const Duration = song.duration.full;
             const TitleSong = replacer.replaceText(song.title, 80, true).replace(/[\s",']/g, ' ');
 
-            return `[${index+1}] - [${Duration}] | ${TitleSong}`;
+            return `[${index + 1}] - [${Duration}] | ${TitleSong}`;
         });
 
         const CurrentPlaying = `Current playing -> [${queue.song.title}]`; //Музыка, которая играет сейчас
