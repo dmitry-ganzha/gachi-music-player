@@ -197,15 +197,18 @@ export namespace platformSupporter {
                 if (key) return key.toUpperCase() as platform;
                 return "DISCORD";
             } else {
-                //Если пользователь ищет трек по названию
-                const spSearch = str.split(' '), pl = spSearch[0].toLowerCase();
-                const platform = platforms.filter(([, value]) => "prefix" in value && (value as typeof Platforms["YOUTUBE"])?.prefix.includes(pl));
-                const [key] = platform[0];
+                try {
+                    //Если пользователь ищет трек по названию
+                    const spSearch = str.split(' '), pl = spSearch[0].toLowerCase();
+                    const platform = platforms.filter(([, value]) => "prefix" in value && (value as typeof Platforms["YOUTUBE"])?.prefix.includes(pl));
+                    const [key] = platform[0];
 
-                return key.toUpperCase() as platform;
+                    return key.toUpperCase() as platform;
+                } catch (e) {
+                    return "YOUTUBE";
+                }
             }
         } catch (e) {
-            console.log(e);
             return "DISCORD";
         }
     }
@@ -352,7 +355,7 @@ export namespace toPlayer {
             const AuthorTrack = `[${replacer.replaceText(track.author.title, 12, true)}]`; //Автор трека
 
             return `${index+1} ➜ ${DurationTrack} | ${AuthorTrack} | ${NameTrack}`;
-        });
+        }, "\n");
         const callback = (msg: ClientMessage) => {
             //Создаем сборщик
             const collector = UtilsMsg.createCollector(msg.channel, (m) => {
