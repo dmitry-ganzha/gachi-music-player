@@ -1,5 +1,5 @@
-import {ClientMessage} from "@Client/interactionCreate";
 import {MessagePlayer} from "@Managers/Players/Messages";
+import {ClientMessage} from "@Client/interactionCreate";
 import {PlayerEvents} from "@Managers/Players/Events";
 import {AudioPlayer} from "../AudioPlayer";
 import {consoleTime} from "@Client/Client";
@@ -114,7 +114,7 @@ export class Queue {
             .catch((err) => this.player.emit("error", new Error(err), true));
 
         if (!seek) {
-            consoleTime(`[GuildID: ${this.guild.id}]: ${this.song.title}`); //Отправляем лог о текущем треке
+            consoleTime(`[GuildID: ${this.guild.id} | Platform: ${this.song.platform}] ${this.song.title}`); //Отправляем лог о текущем треке
             MessagePlayer.toPlay(this.message); //Отправляем сообщение с авто обновлением
         }
     };

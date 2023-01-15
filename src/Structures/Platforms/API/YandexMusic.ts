@@ -118,22 +118,22 @@ export namespace YandexMusic {
             return resolve(tracks);
         });
     }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Получаем данные об авторе трека
-     * @param url {string} Ссылка на автора
-     */
-    function getAuthor(url: string): Promise<InputTrack["author"]> {
-        return new Promise(async (resolve) => {
-            const result = await API.Request(url);
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Получаем данные об авторе трека
+ * @param url {string} Ссылка на автора
+ */
+function getAuthor(url: string): Promise<InputTrack["author"]> {
+    return new Promise(async (resolve) => {
+        const result = await API.Request(url);
 
-            if (result instanceof Error) return resolve(null);
+        if (result instanceof Error) return resolve(null);
 
-            return resolve({
-                url, title: result.name,
-                image: {url: result.image },
-                isVerified: true
-            });
+        return resolve({
+            url, title: result.name,
+            image: {url: result.image },
+            isVerified: true
         });
-    }
+    });
 }

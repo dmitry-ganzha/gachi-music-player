@@ -23,7 +23,7 @@ interface PlayerStatus {
 
 export class AudioPlayer extends TypedEmitter<PlayerEvents> {
     private _voice: VoiceConnection;
-    private _state: PlayerStatus = {status: "idle"};
+    private _state: PlayerStatus = { status: "idle" };
 
     //====================== ====================== ====================== ======================
     /**

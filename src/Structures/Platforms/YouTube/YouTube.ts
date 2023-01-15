@@ -3,7 +3,6 @@ import {httpsClient, httpsClientOptions} from "@httpsClient";
 import {Decipher, YouTubeFormat} from "./Decipher";
 
 const VerAuthor = new Set(["Verified", "Official Artist Channel"]);
-const DecipherYt = Decipher.parseFormats;
 
 /**
  * @description Получаем ID
@@ -40,7 +39,7 @@ namespace construct {
             title: video.title,
             duration: {seconds: video.lengthSeconds},
             image: video.thumbnail.thumbnails.pop(),
-            author: await YouTube.getChannel({ id: video.channelId, name: video.author }),
+            author: await getChannel({ id: video.channelId, name: video.author }),
             isLive: video.isLiveContent
         };
     }
@@ -89,7 +88,7 @@ export namespace YouTube {
                 const allFormats = [...jsonResult.streamingData?.formats ?? [], ...jsonResult.streamingData?.adaptiveFormats ?? []];
                 const FindOpus: YouTubeFormat[] = allFormats.filter((format: YouTubeFormat) => format.mimeType?.match(/opus/) || format?.mimeType?.match(/audio/));
 
-                audios = (await DecipherYt(FindOpus, html5player)).pop();
+                audios = (await Decipher(FindOpus, html5player)).pop();
             }
 
             return resolve({...await construct.video(details), format: audios});
@@ -158,36 +157,36 @@ export namespace YouTube {
             return resolve(videos);
         });
     }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Получаем данные о пользователе
-     * @param id {string} ID канала
-     * @param name {string} Название канала
-     */
-    export function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
-        return new Promise(async (resolve) => {
-            const channel: any[] | any = await API.Request("JSON", `https://www.youtube.com/channel/${id}/channels?flow=grid&view=0&pbj=1`, {
-                request: {
-                    headers: {
-                        "x-youtube-client-name": "1",
-                        "x-youtube-client-version": "2.20201021.03.00",
-                        "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
-                        "accept-encoding": "gzip, deflate, br"
-                    }
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Получаем данные о пользователе
+ * @param id {string} ID канала
+ * @param name {string} Название канала
+ */
+function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
+    return new Promise(async (resolve) => {
+        const channel: any[] | any = await API.Request("JSON", `https://www.youtube.com/channel/${id}/channels?flow=grid&view=0&pbj=1`, {
+            request: {
+                headers: {
+                    "x-youtube-client-name": "1",
+                    "x-youtube-client-version": "2.20201021.03.00",
+                    "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
+                    "accept-encoding": "gzip, deflate, br"
                 }
-            });
-            const data = channel[1]?.response ?? channel?.response ?? null as any;
-            const info = data?.header?.c4TabbedHeaderRenderer, Channel = data?.metadata?.channelMetadataRenderer,
-                  avatar = info?.avatar, badges = info?.badges;
-
-            return resolve({
-                title: Channel?.title ?? name ?? "Not found name",
-                url: `https://www.youtube.com/channel/${id}`,
-                image: avatar?.thumbnails.pop() ?? null,
-                isVerified: !!badges?.find((badge: any) => VerAuthor.has(badge?.metadataBadgeRenderer?.tooltip))
-            });
+            }
         });
-    }
+        const data = channel[1]?.response ?? channel?.response ?? null as any;
+        const info = data?.header?.c4TabbedHeaderRenderer, Channel = data?.metadata?.channelMetadataRenderer,
+            avatar = info?.avatar, badges = info?.badges;
+
+        return resolve({
+            title: Channel?.title ?? name ?? "Not found name",
+            url: `https://www.youtube.com/channel/${id}`,
+            image: avatar?.thumbnails.pop() ?? null,
+            isVerified: !!badges?.find((badge: any) => VerAuthor.has(badge?.metadataBadgeRenderer?.tooltip))
+        });
+    });
 }
 
 interface ChannelPageBase {

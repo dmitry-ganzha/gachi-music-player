@@ -39,21 +39,21 @@ export namespace PlayerEvents {
             }
         }, 1200);
     }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Повтор музыки
-     * @param queue {Queue} Очередь сервера
-     */
-    function isRemoveSong({options, songs}: Queue): void {
-        const {radioMode, loop} = options;
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Повтор музыки
+ * @param queue {Queue} Очередь сервера
+ */
+function isRemoveSong({options, songs}: Queue): void {
+    const {radioMode, loop} = options;
 
-        //Если включен радио мод или тип повтора трек нечего не делаем
-        if (radioMode || loop === "song") return;
+    //Если включен радио мод или тип повтора трек нечего не делаем
+    if (radioMode || loop === "song") return;
 
-        //Убираем текущий трек
-        const shiftSong = songs.shift();
+    //Убираем текущий трек
+    const shiftSong = songs.shift();
 
-        //Если тип повтора треки, то добавляем по новой трек
-        if (loop === "songs") songs.push(shiftSong);
-    }
+    //Если тип повтора треки, то добавляем по новой трек
+    if (loop === "songs") songs.push(shiftSong);
 }

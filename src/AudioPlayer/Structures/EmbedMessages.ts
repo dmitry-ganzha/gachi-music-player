@@ -20,7 +20,7 @@ export namespace EmbedMessages {
     */
     export function toPlay(client: WatKLOK, queue: Queue): EmbedConstructor {
         const { color, author, image, requester } = queue.song;
-        const fields = toPlayFunctions.getFields(queue, client);
+        const fields = getFields(queue, client);
         const AuthorSong = replacer.replaceText(author.title, 45, false);
 
         return { color, image, thumbnail: author?.image ?? {url: Images._image}, fields,
@@ -84,58 +84,56 @@ export namespace EmbedMessages {
         };
     }
 }
-namespace toPlayFunctions {
-    /**
-     * @description Создаем Message<Fields>
-     * @param queue {Queue} Очередь
-     * @param client {WatKLOK} Клиент
-     */
-    export function getFields(queue: Queue, client: WatKLOK): EmbedConstructor["fields"] {
-        const {songs, song, player} = queue;
-        const VisualDuration = playTime.toString(song.duration, player.streamDuration);
-        //Текущий трек
-        const fields = [{ name: `**Щас играет**`, value: `**❯** **[${replacer.replaceText(song.title, 29, true)}](${song.url})**\n${VisualDuration}` }];
+//====================== ====================== ====================== ======================
+/**
+ * @description Создаем Message<Fields>
+ * @param queue {Queue} Очередь
+ * @param client {WatKLOK} Клиент
+ */
+function getFields(queue: Queue, client: WatKLOK): EmbedConstructor["fields"] {
+    const {songs, song, player} = queue;
+    const VisualDuration = toString(song.duration, player.streamDuration);
+    //Текущий трек
+    const fields = [{ name: `**Щас играет**`, value: `**❯** **[${replacer.replaceText(song.title, 29, true)}](${song.url})**\n${VisualDuration}` }];
 
-        //Следующий трек
-        if (songs.length > 1) fields.push({ name: `**Потом**`, value: `**❯** **[${replacer.replaceText(songs[1].title, 29, true)}](${songs[1].url})**` });
-        return fields;
-    }
+    //Следующий трек
+    if (songs.length > 1) fields.push({ name: `**Потом**`, value: `**❯** **[${replacer.replaceText(songs[1].title, 29, true)}](${songs[1].url})**` });
+    return fields;
 }
+//====================== ====================== ====================== ======================
+//====================== ====================== ====================== ======================
+/**
+ * @description Получаем время трека для embed сообщения
+ * @param duration
+ * @param playDuration
+ */
+export function toString(duration: { seconds: number, full: string }, playDuration: number): string {
+    if (duration.full === "Live" || !Bar.enable) return `\`\`[${duration}]\`\``;
 
-namespace playTime {
-    /**
-     * @description Получаем время трека для embed сообщения
-     * @param duration
-     * @param playDuration
-     */
-    export function toString(duration: { seconds: number, full: string }, playDuration: number): string {
-        if (duration.full === "Live" || !Bar.enable) return `\`\`[${duration}]\`\``;
+    const parsedDuration = DurationUtils.ParsingTimeToString(playDuration);
+    const progress = matchBar(playDuration, duration.seconds, 20);
+    const string = `**❯** \`\`[${parsedDuration} \\ ${duration.full}]\`\` \n\`\``;
 
-        const parsedDuration = DurationUtils.ParsingTimeToString(playDuration);
-        const progress = matchBar(playDuration, duration.seconds, 20);
-        const string = `**❯** \`\`[${parsedDuration} \\ ${duration.full}]\`\` \n\`\``;
+    return `${string}${progress}\`\``;
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Вычисляем прогресс бар
+ * @param currentTime {number} Текущие время
+ * @param maxTime {number} Макс времени
+ * @param size {number} Кол-во символов
+ */
+function matchBar(currentTime: number, maxTime: number, size: number = 15): string {
+    try {
+        const CurrentDuration = isNaN(currentTime) ? 0 : currentTime;
+        const progressSize = Math.round(size * (CurrentDuration / maxTime));
+        const progressText = Bar.full.repeat(progressSize);
+        const emptyText = Bar.empty.repeat(size - progressSize);
 
-        return `${string}${progress}\`\``;
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Вычисляем прогресс бар
-     * @param currentTime {number} Текущие время
-     * @param maxTime {number} Макс времени
-     * @param size {number} Кол-во символов
-     */
-    function matchBar(currentTime: number, maxTime: number, size: number = 15): string {
-        try {
-            const CurrentDuration = isNaN(currentTime) ? 0 : currentTime;
-            const progressSize = Math.round(size * (CurrentDuration / maxTime));
-            const progressText = Bar.full.repeat(progressSize);
-            const emptyText = Bar.empty.repeat(size - progressSize);
-
-            return `${progressText}${Bar.button}${emptyText}`;
-        } catch (err) {
-            if (err === "RangeError: Invalid count value") return "**❯** \`\`[Error value]\`\`";
-            return "**❯** \`\`[Loading]\`\`";
-        }
+        return `${progressText}${Bar.button}${emptyText}`;
+    } catch (err) {
+        if (err === "RangeError: Invalid count value") return "**❯** \`\`[Error value]\`\`";
+        return "**❯** \`\`[Loading]\`\`";
     }
 }
 //====================== ====================== ====================== ======================

@@ -4,13 +4,13 @@ import {VoiceState} from "discord.js";
 import {Voice} from "@VoiceManager";
 import {Queue} from "@Queue/Queue";
 import {Song} from "@Queue/Song";
-import {QueueManager} from "@Managers/QueueManager";
+import {toQueue} from "@Managers/QueueManager";
 
 const ParsingTimeToString = DurationUtils.ParsingTimeToString;
 
 //Здесь все функции для взаимодействия с плеером
 export namespace Player {
-    export const play = QueueManager.toQueue;
+    export const play = toQueue;
     /**
      * @description Продолжает воспроизведение музыки
      * @param message {ClientMessage} Сообщение с сервера
