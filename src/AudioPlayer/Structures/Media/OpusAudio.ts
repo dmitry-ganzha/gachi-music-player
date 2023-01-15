@@ -148,14 +148,16 @@ namespace ArgsHelper {
         const thisArgs = ["-reconnect", 1, "-reconnect_streamed", 1, "-reconnect_delay_max", 5];
         const audioDecoding = ["-c:a", "libopus", "-f", "opus"];
         const audioBitrate = ["-b:a", Audio.bitrate];
+        const filters = parseFilters(AudioFilters);
 
         if (seek) thisArgs.push("-ss", seek ?? 0);
         if (url) thisArgs.push( "-i", url);
 
+        if (filters.length > 0) thisArgs.push("-af", filters);
+
         //Всегда есть один фильтр <AudioFade>
         return [...thisArgs, "-compression_level", 12,
-            ...audioDecoding, ...audioBitrate,
-            "-af", parseFilters(AudioFilters), "-preset:a", "ultrafast"
+            ...audioDecoding, ...audioBitrate, "-preset:a", "ultrafast"
         ];
     }
     //====================== ====================== ====================== ======================
@@ -193,8 +195,8 @@ namespace ArgsHelper {
     function parseFilters(AudioFilters: AudioFilters): string {
         const response: Array<string> = [];
 
-        //Более плавное включение музыки
-        response.push("afade=t=in:st=0:d=3");
+        //Включать более плавное включение музыки
+        if (Music.Audio.transition) response.push("afade=t=in:st=0:d=3");
 
         if (AudioFilters) AudioFilters.forEach((filter: string | number) => {
             if (typeof filter === "number") return;
