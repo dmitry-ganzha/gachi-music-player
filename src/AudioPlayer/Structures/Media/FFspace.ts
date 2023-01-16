@@ -100,7 +100,7 @@ export namespace FFspace {
          * @description Удаляем все что не нужно
          * @param error {Error | null} По какой ошибке завершаем работу FFmpeg'a
          */
-        public readonly _destroy = (error?: Error | null) => {
+        public _destroy = (error?: Error | null) => {
             this.removeAllListeners();
             if (!super.destroyed) super.destroy();
 

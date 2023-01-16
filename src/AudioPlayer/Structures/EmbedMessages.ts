@@ -11,6 +11,17 @@ import {Colors} from "discord.js";
 const Bar = Music.ProgressBar;
 const Images = Music.images;
 
+//====================== ====================== ====================== ======================
+/**
+ * @description Выдаем иконку проверки автора музыки
+ * @param isVer {boolean} Подтвержденный пользователь?
+ */
+function checkVer(isVer: boolean): string {
+    if (isVer === undefined) return Images._found;
+    else if (isVer) return Images.ver;
+    return Images._ver;
+}
+
 //Здесь хранятся все EMBED данные о сообщениях (Используется в MessagePlayer)
 export namespace EmbedMessages {
     /**
@@ -85,6 +96,8 @@ export namespace EmbedMessages {
     }
 }
 //====================== ====================== ====================== ======================
+/*                                   Function for toPlay                                   */
+//====================== ====================== ====================== ======================
 /**
  * @description Создаем Message<Fields>
  * @param queue {Queue} Очередь
@@ -100,7 +113,6 @@ function getFields(queue: Queue, client: WatKLOK): EmbedConstructor["fields"] {
     if (songs.length > 1) fields.push({ name: `**Потом**`, value: `**❯** **[${replacer.replaceText(songs[1].title, 29, true)}](${songs[1].url})**` });
     return fields;
 }
-//====================== ====================== ====================== ======================
 //====================== ====================== ====================== ======================
 /**
  * @description Получаем время трека для embed сообщения
@@ -135,14 +147,4 @@ function matchBar(currentTime: number, maxTime: number, size: number = 15): stri
         if (err === "RangeError: Invalid count value") return "**❯** \`\`[Error value]\`\`";
         return "**❯** \`\`[Loading]\`\`";
     }
-}
-//====================== ====================== ====================== ======================
-/**
- * @description Выдаем иконку проверки автора музыки
- * @param isVer {boolean} Подтвержденный пользователь?
- */
-function checkVer(isVer: boolean): string {
-    if (isVer === undefined) return Images._found;
-    else if (isVer) return Images.ver;
-    return Images._ver;
 }

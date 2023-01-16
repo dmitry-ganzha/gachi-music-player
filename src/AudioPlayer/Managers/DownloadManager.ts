@@ -46,36 +46,36 @@ export namespace DownloadManager {
         else if (existsSync(`${fullPath}.raw`)) return { status: "download", path: `${fullPath}.raw` };
         return { status: "not", path: `${fullPath}.raw` };
     }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Постепенное скачивание множества треков
-     * @private
-     */
-    function cycleStep(): void {
-        const song = QueueSongs[0];
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Постепенное скачивание множества треков
+ * @private
+ */
+function cycleStep(): void {
+    const song = QueueSongs[0];
 
-        if (!song) return;
-        QueueSongs.shift();
+    if (!song) return;
+    QueueSongs.shift();
 
-        const names = getNames(song);
-        if (names.status === "final") return void setTimeout(() => cycleStep(), 2e3);
+    const names = DownloadManager.getNames(song);
+    if (names.status === "final") return void setTimeout(() => cycleStep(), 2e3);
 
-        setImmediate(() => {
-            //Скачиваем трек
-            httpsClient.Request(song.resource).then((req) => {
-                if (req.pipe) {
-                    const file = createWriteStream(`./${names.path}`);
+    setImmediate(() => {
+        //Скачиваем трек
+        httpsClient.Request(song.resource).then((req) => {
+            if (req.pipe) {
+                const file = createWriteStream(`./${names.path}`);
 
-                    file.once("ready", () => req.pipe(file));
-                    file.once("error", console.warn);
-                    ["close", "finish"].forEach(event => file.once(event, () => {
-                        const refreshName = getNames(song).path.split(".raw")[0];
+                file.once("ready", () => req.pipe(file));
+                file.once("error", console.warn);
+                ["close", "finish"].forEach(event => file.once(event, () => {
+                    const refreshName = DownloadManager.getNames(song).path.split(".raw")[0];
 
-                        rename(names.path, `${refreshName}.opus`, () => null);
-                        void setTimeout(() => cycleStep(), 2e3);
-                    }));
-                }
-            });
+                    rename(names.path, `${refreshName}.opus`, () => null);
+                    void setTimeout(() => cycleStep(), 2e3);
+                }));
+            }
         });
-    }
+    });
 }

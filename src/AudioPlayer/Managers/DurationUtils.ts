@@ -21,10 +21,10 @@ export namespace DurationUtils {
      * @requires {toString}
      */
     export function ParsingTimeToString(duration: number): string {
-        const days = toString(duration / ((60 * 60) * 24) % 24);
-        const hours = toString(duration / (60 * 60) % 24);
-        const minutes = toString((duration / 60) % 60);
-        const seconds = toString(duration % 60);
+        const days = toFixed0(duration / ((60 * 60) * 24) % 24);
+        const hours = toFixed0(duration / (60 * 60) % 24);
+        const minutes = toFixed0((duration / 60) % 60);
+        const seconds = toFixed0(duration % 60);
 
         //Получаем дни, часы, минуты, секунды в формате 00:00
         return (days > 0 ? `${days}:` : "") + (hours > 0 || days > 0 ? `${hours}:` : "") + (minutes > 0 ? `${minutes}:` : "00:") + (seconds > 0 ? `${seconds}` : "00");
@@ -57,15 +57,7 @@ export namespace DurationUtils {
      * @param duration {string | number} Число
      */
     export function toFixed0(duration: string | number): string | number {
-        return (duration < 10) ? ("0" + duration) : duration;
-    }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Делаем из числа строку, так-же добавляем к числу 0 если это надо
-     * @param duration {number} Желательно число
-     * @requires {toFixed0}
-     */
-    function toString(duration: number): string | number {
-        return toFixed0(parseInt(duration as any));
+        const fixed = parseInt(duration as any);
+        return (fixed < 10) ? ("0" + fixed) : fixed;
     }
 }

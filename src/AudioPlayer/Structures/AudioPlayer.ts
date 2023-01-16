@@ -6,18 +6,26 @@ import {PlayerCycle} from "@Managers/Players/CycleStep";
 const NotSkippedStatuses = ["read", "pause", "autoPause"];
 const UpdateMessage = ["idle", "pause", "autoPause"];
 const SilentFrame: Buffer = Buffer.from([0xf8, 0xff, 0xfe, 0xfae]);
+
 //Ивенты которые плеер может вернуть
 interface PlayerEvents {
+    //Плеер начал проигрывать поток
     read: () => any;
+    //Плеер встал на паузу
     pause: () => any;
+    //Плеер не находит <player>.voice
     autoPause: () => any;
+    //Плеер закончил последние действие
     idle: () => any;
+    //Плеер получил ошибку
     error: (error: Error, skipSong: boolean) => void;
 }
 
 //Статусы и тип потока
 interface PlayerStatus {
+    //Текущий статус плеера
     status: "read" | "pause" | "idle" | "error" | "autoPause";
+    //Текущий поток
     stream?: OpusAudio;
 }
 
