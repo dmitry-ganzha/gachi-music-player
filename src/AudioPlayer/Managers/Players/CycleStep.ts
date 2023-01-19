@@ -2,7 +2,6 @@ import {EmbedMessages} from "@Structures/EmbedMessages";
 import {ClientMessage} from "@Client/interactionCreate";
 import {AudioPlayer} from "@Structures/AudioPlayer";
 import {consoleTime} from "@Client/Client";
-import {Collection} from "discord.js";
 import {Music} from "@db/Config.json";
 import {Queue} from "@Queue/Queue";
 
@@ -12,15 +11,15 @@ const PlayerSettings = Music.AudioPlayer;
 const db = {
     // База с плеерами
     pls: [] as AudioPlayer[],
-    //Время, необходимо для правильной отправки пакетов
-    time: 0 as number,
-    //Общий таймер плееров
-    timeout: null as NodeJS.Timer,
-
     //База с сообщениями
-    msg: new Collection<string, ClientMessage>(),
+    msg: [] as ClientMessage[],
+    //Общий таймер плееров
+    timeout: null as NodeJS.Timeout,
     //Общий таймер сообщений
     timeout_m: null as NodeJS.Timeout,
+
+    //Время, необходимо для правильной отправки пакетов
+    time: 0 as number
 };
 //====================== ====================== ====================== ======================
 
@@ -89,11 +88,11 @@ export namespace MessageCycle {
      * @requires {StepCycleMessage}
      */
     export function toPush(message: ClientMessage) {
-        if (db.msg.get(message.channelId)) return; //Если сообщение уже есть в базе, то ничего не делаем
-        db.msg.set(message.channelId, message); //Добавляем сообщение в базу
+        if (db.msg.find(msg => message.channelId === msg.channelId)) return; //Если сообщение уже есть в базе, то ничего не делаем
+        db.msg.push(message); //Добавляем сообщение в базу
 
         //Если в базе есть хоть одно сообщение, то запускаем таймер
-        if (db.msg.size === 1) setImmediate(StepCycleMessage);
+        if (db.msg.length === 1) setImmediate(StepCycleMessage);
     }
     //====================== ====================== ====================== ======================
     /**
@@ -102,14 +101,16 @@ export namespace MessageCycle {
      * @requires {Message}
      */
     export function toRemove(ChannelID: string) {
-        const Find = db.msg.get(ChannelID); //Ищем сообщение е базе
+        const Find = db.msg.find(msg => msg.channelId === ChannelID); //Ищем сообщение е базе
         if (!Find) return; //Если его нет ничего не делаем
 
         if (Find.deletable) Find.delete().catch(() => undefined); //Если его возможно удалить, удаляем!
-        db.msg.delete(ChannelID); //Удаляем сообщение из базы
+
+        const index = db.msg.indexOf(Find);
+        if (index != -1) db.msg.splice(index, 1);
 
         //Если в базе больше нет сообщений
-        if (db.msg.size === 0) {
+        if (db.msg.length === 0) {
             //Если таймер еще работает то удаляем его
             if (db.timeout_m) {
                 clearTimeout(db.timeout_m);

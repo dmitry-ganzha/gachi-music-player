@@ -12,8 +12,8 @@ const decoderBase = {
 
 //Поддержка запросов
 const protocols = {
-    "http:": httpRequest,  //http запрос
-    "https:": httpsRequest //https запрос
+    "http": httpRequest,  //http запрос
+    "https": httpsRequest //https запрос
 }
 
 export namespace httpsClient {
@@ -23,7 +23,7 @@ export namespace httpsClient {
      * @param options {httpsClientOptions} Настройки запроса
      * @requires {uploadCookie, getCookies}
      */
-    export function Request(url: string, options: httpsClientOptions = {request: {headers: {}}, options: {}}): Promise<IncomingMessage> {
+    export function Request(url: string, options: httpsClientOptions = {request: {headers: {}, method: "GET"}, options: {}}): Promise<IncomingMessage> {
         //Добавляем User-Agent
         if (options.options?.userAgent) {
             const {Agent, Version} = GetUserAgent();
@@ -39,12 +39,8 @@ export namespace httpsClient {
         }
 
         return new Promise((resolve, reject) => {
-            const {hostname, pathname, search, port, protocol} = new URL(url);
-            const Options: RequestOptions = {
-                host: hostname, path: pathname + search, port,
-                headers: options?.request?.headers ?? {}, method: options?.request?.method ?? "GET"
-            };
-            const request = protocols[protocol as "https:" | "http:"](Options, (res: IncomingMessage) => {
+            const {hostname, pathname, search, port} = new URL(url);
+            const request = protocols[url.split("://")[0] as "https" | "http"]({ host: hostname, path: pathname + search, port, ...options.request }, (res: IncomingMessage) => {
                 //Автоматическое перенаправление
                 if ((res.statusCode >= 300 && res.statusCode < 400) && res.headers?.location) return resolve(Request(res.headers.location, options));
                 //Обновляем куки
@@ -60,6 +56,14 @@ export namespace httpsClient {
 
             //Заканчиваем запрос
             request.end();
+
+            //Через 5 секунд после запроса уничтожаем запрос
+            setTimeout(() => {
+                if (!request.destroyed) {
+                    request.removeAllListeners();
+                    request.destroy();
+                }
+            }, 5e3);
         });
     }
     //====================== ====================== ====================== ======================
@@ -70,23 +74,13 @@ export namespace httpsClient {
      * @requires {Request}
      */
     export function parseBody(url: string, options?: httpsClientOptions): Promise<string> {
-        return new Promise((resolve) => Request(url, options).then((res: IncomingMessage) => {
+        return Request(url, options).then((res: IncomingMessage) => {
             const encoding = res.headers["content-encoding"] as "br" | "gzip" | "deflate";
             const decoder: Decoder | null = decoderBase[encoding] ? decoderBase[encoding]() : null;
-            const data: string[] = [];
-            const runDecode = (decoder: Decoder | IncomingMessage) => {
-                decoder.setEncoding("utf-8");
-                decoder.on("data", (c) => data.push(c));
-                decoder.once("end", () => {
-                    if (!decoder.destroyed) res.destroy();
 
-                    return resolve(data.join(""));
-                });
-            };
-
-            if (!decoder) return runDecode(res);
-            return runDecode(res.pipe(decoder));
-        }));
+            if (!decoder) return extractPage(res);
+            return extractPage(res.pipe(decoder));
+        });
     }
     //====================== ====================== ====================== ======================
     /**
@@ -99,10 +93,8 @@ export namespace httpsClient {
         return parseBody(url, options).then((body: string) => {
             if (!body) return null;
 
-            try {
-                return JSON.parse(body);
-            } catch (e) {
-                console.log(`Invalid json response body at ${url} reason: ${e.message}`);
+            try { return JSON.parse(body); } catch (e) {
+                console.log(`[httpsClient]: Invalid json response body at ${url} reason: ${e.message}`);
                 return null;
             }
         });
@@ -137,6 +129,22 @@ function GetUserAgent(): { Agent: string, Version: string } {
     const Version = Agent?.split("Chrome/")[1]?.split(" ")[0];
 
     return {Agent, Version};
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Получаем всю страницу
+ * @param decoder {Decoder | IncomingMessage}
+ */
+function extractPage(decoder: Decoder | IncomingMessage) {
+    const data: string[] = [];
+
+    return new Promise<string>((resolve) => {
+        decoder.setEncoding("utf-8");
+        decoder.on("data", (c) => data.push(c));
+        decoder.once("end", () => {
+            return resolve(data.join(""));
+        });
+    });
 }
 //====================== ====================== ====================== ======================
 type Decoder = BrotliDecompress | Gunzip | Deflate;

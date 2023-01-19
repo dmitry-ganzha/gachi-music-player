@@ -13,12 +13,10 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
         const queue: Queue = client.queue.get(newState.guild.id); //Очередь сервера
         const ChannelID = oldState?.channel?.id || newState?.channel?.id;
         const Guild = oldState.guild;
-        const filter = (member: GuildMember) => this.filter(member, ChannelID);
-        const filterBot = (member: GuildMember) => member.user.id === client.user.id;
 
         setImmediate(() => {
-            const voice = Voice.getVoice(Guild.id), isBotVoice = !!newState.channel?.members?.find(filterBot) ?? !!oldState.channel?.members?.find(filterBot);
-            const usersSize = newState.channel?.members?.filter(filter)?.size ?? oldState.channel?.members?.filter(filter)?.size;
+            const voice = Voice.getVoice(Guild.id), isBotVoice = !!(newState ?? oldState).channel?.members?.find((member) => filterClient(client, member));
+            const usersSize = (newState ?? oldState).channel?.members?.filter((member) => filterMemberChannel(member, ChannelID))?.size;
 
             //Если есть голосовое подключение и пользователей меньше одного и каналы соответствуют и выключен радио режим, то отключаемся от голосового канала
             if (voice && usersSize < 1 && voice.joinConfig.channelId === oldState?.channelId && !queue?.options?.radioMode) Voice.Disconnect(Guild);
@@ -32,6 +30,14 @@ export class voiceStateUpdate extends Event<VoiceState, VoiceState> {
             if (Debug) consoleTime(`[Debug] -> voiceStateUpdate: [Voice: ${!!voice} | inVoice: ${isBotVoice} | Users: ${usersSize} | Queue: ${!!queue}]`);
         });
     };
-    //Фильтруем пользователей в голосовом канале
-    private filter = (member: GuildMember, channelID: string) => !member.user.bot && member.voice?.channel?.id === channelID;
+}
+
+//Фильтруем пользователей в голосовом канале
+function filterMemberChannel(member: GuildMember, channelID: string) {
+    return !member.user.bot && member.voice?.channel?.id === channelID;
+}
+
+//Фильтруем бота в голосовом канале
+function filterClient(client: WatKLOK, member: GuildMember) {
+    return member.user.id === client.user.id;
 }

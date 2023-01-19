@@ -1,8 +1,8 @@
 import {InputAuthor, InputPlaylist, InputTrack} from "@Queue/Song";
 import {httpsClient, httpsClientOptions} from "@httpsClient";
-import {Decipher, YouTubeFormat} from "./Decipher";
+import {extractSignature, YouTubeFormat} from "./Decipher";
 
-const VerAuthor = new Set(["Verified", "Official Artist Channel"]);
+const VerAuthor = ["Verified", "Official Artist Channel"];
 
 /**
  * @description Получаем ID
@@ -85,10 +85,8 @@ export namespace YouTube {
             if (details.isLiveContent) audios = {url: details.streamingData?.dashManifestUrl ?? null}; //dashManifestUrl, hlsManifestUrl
             else {
                 const html5player = `https://www.youtube.com${page.split('"jsUrl":"')[1].split('"')[0]}`;
-                const allFormats = [...jsonResult.streamingData?.formats ?? [], ...jsonResult.streamingData?.adaptiveFormats ?? []];
-                const FindOpus: YouTubeFormat[] = allFormats.filter((format: YouTubeFormat) => format.mimeType?.match(/opus/) || format?.mimeType?.match(/audio/));
 
-                audios = (await Decipher(FindOpus, html5player)).pop();
+                audios = (await extractSignature([...jsonResult.streamingData?.formats ?? [], ...jsonResult.streamingData?.adaptiveFormats ?? []], html5player));
             }
 
             return resolve({...await construct.video(details), format: audios});
@@ -184,7 +182,7 @@ function getChannel({id, name}: ChannelPageBase): Promise<InputAuthor> {
             title: Channel?.title ?? name ?? "Not found name",
             url: `https://www.youtube.com/channel/${id}`,
             image: avatar?.thumbnails.pop() ?? null,
-            isVerified: !!badges?.find((badge: any) => VerAuthor.has(badge?.metadataBadgeRenderer?.tooltip))
+            isVerified: !!badges?.find((badge: any) => VerAuthor.includes(badge?.metadataBadgeRenderer?.tooltip))
         });
     });
 }
