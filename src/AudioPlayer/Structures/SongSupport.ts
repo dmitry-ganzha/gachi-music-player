@@ -304,7 +304,7 @@ export namespace toPlayer {
 
         //Если нельзя получить данные с определенной платформы
         if (platformSupporter.getFailPlatform(platform)) return UtilsMsg.createMessage({
-            text: `${author}, я не могу взять данные с этой платформы **${platform}**\n Причина: [**Authorization data not found**]`, color: "DarkRed", codeBlock: "css", message
+            text: `${author}, я не могу взять данные с этой платформы **${platform}**\n Причина: [**Authorization data not found**]`, color: "DarkRed", message
         });
 
         const callback = platformSupporter.getCallback(platform, type); //Ищем в списке платформу
