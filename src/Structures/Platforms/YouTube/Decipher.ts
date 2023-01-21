@@ -146,7 +146,6 @@ function setDownloadURL(format: YouTubeFormat, decipherScript?: scriptVM, nTrans
  */
 function _decipher(url: string, decipherScript: scriptVM): string {
     const extractUrl = querystring.parse(url);
-    // @ts-ignore
     return `${decodeURIComponent(extractUrl.url as string)}&${extractUrl.sp}=${decipherScript.runInNewContext({ sig: decodeURIComponent(extractUrl.s as string) })}`;
 }
 //====================== ====================== ====================== ======================
@@ -161,7 +160,6 @@ function _ncode(url: string, nTransformScript: scriptVM) {
 
     if (!n) return url;
 
-    // @ts-ignore
     components.searchParams.set('n', nTransformScript.runInNewContext({ ncode: n }));
     return components.toString();
 }

@@ -142,6 +142,11 @@ export class Queue {
         clearTimeout(this.Timer);
 
         if (this._player) {
+            //Отвязываем плеер от PlayerEvents
+            this.player.removeAllListeners();
+
+            //Выключаем плеер если сейчас играет трек
+            this.player.stop();
             this.player.destroy();
 
             delete this._player;
