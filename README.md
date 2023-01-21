@@ -1,4 +1,4 @@
-[<img align="right" alt="Avatar bot" width="200px" src="https://cdn.discordapp.com/avatars/678588856588697610/466d3d51e6d497541622085ed18a1ad1.webp?size=4096" />](https://discordapp.com/users/623170593268957214)
+[<img align="right" alt="Avatar bot" width="200px" src="https://media.discordapp.net/attachments/1016995045783633940/1066418989061910558/Icon_NG.png" />](https://discordapp.com/users/623170593268957214)
 
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
