@@ -331,68 +331,68 @@ export namespace toPlayer {
             return client.player.play(message as any, voiceChannel.channel, data);
         });
     }
-    //====================== ====================== ====================== ======================
-    /**
-     * @description Отправляем сообщение о том что удалось найти
-     * @param results {InputTrack[]} Результаты поиска
-     * @param options {Options}
-     * @requires {Reaction, deleteMessage}
-     */
-    function toSend(results: InputTrack[], options: { platform?: platform, message: ClientMessage }): void {
-        const {message, platform} = options;
-        const {author, client} = message;
+}
+//====================== ====================== ====================== ======================
+/**
+ * @description Отправляем сообщение о том что удалось найти
+ * @param results {InputTrack[]} Результаты поиска
+ * @param options {Options}
+ * @requires {Reaction, deleteMessage}
+ */
+function toSend(results: InputTrack[], options: { platform?: platform, message: ClientMessage }): void {
+    const {message, platform} = options;
+    const {author, client} = message;
 
-        if (results.length < 1) return UtilsMsg.createMessage({ text: `${author} | Я не смог найти музыку с таким названием. Попробуй другое название!`, color: "DarkRed", message });
+    if (results.length < 1) return UtilsMsg.createMessage({ text: `${author} | Я не смог найти музыку с таким названием. Попробуй другое название!`, color: "DarkRed", message });
 
-        const choice = `Выбери от 1 до ${results.length}`;
-        const requester = `[Платформа: ${platform} | Запросил: ${author.username}]`;
-        const songsList = ArraySort<InputTrack>(15, results, (track, index ) => {
-            const Duration = platform === "YOUTUBE" ? track.duration.seconds : DurationUtils.ParsingTimeToString(parseInt(track.duration.seconds)); //Проверяем надо ли конвертировать время
-            const NameTrack = `[${replacer.replaceText(track.title, 80, true)}]`; //Название трека
-            const DurationTrack = `[${Duration ?? "LIVE"}]`; //Длительность трека
-            const AuthorTrack = `[${replacer.replaceText(track.author.title, 12, true)}]`; //Автор трека
+    const choice = `Выбери от 1 до ${results.length}`;
+    const requester = `[Платформа: ${platform} | Запросил: ${author.username}]`;
+    const songsList = ArraySort<InputTrack>(15, results, (track, index ) => {
+        const Duration = platform === "YOUTUBE" ? track.duration.seconds : DurationUtils.ParsingTimeToString(parseInt(track.duration.seconds)); //Проверяем надо ли конвертировать время
+        const NameTrack = `[${replacer.replaceText(track.title, 80, true)}]`; //Название трека
+        const DurationTrack = `[${Duration ?? "LIVE"}]`; //Длительность трека
+        const AuthorTrack = `[${replacer.replaceText(track.author.title, 12, true)}]`; //Автор трека
 
-            return `${index+1} ➜ ${DurationTrack} | ${AuthorTrack} | ${NameTrack}`;
-        }, "\n");
-        const callback = (msg: ClientMessage) => {
-            //Создаем сборщик
-            const collector = UtilsMsg.createCollector(msg.channel, (m) => {
-                const messageNum = parseInt(m.content);
-                return !isNaN(messageNum) && messageNum <= results.length && messageNum > 0 && m.author.id === author.id;
-            });
+        return `${index+1} ➜ ${DurationTrack} | ${AuthorTrack} | ${NameTrack}`;
+    }, "\n");
+    const callback = (msg: ClientMessage) => {
+        //Создаем сборщик
+        const collector = UtilsMsg.createCollector(msg.channel, (m) => {
+            const messageNum = parseInt(m.content);
+            return !isNaN(messageNum) && messageNum <= results.length && messageNum > 0 && m.author.id === author.id;
+        });
 
-            //Делаем что-бы при нажатии на эмодзи удалялся сборщик
-            UtilsMsg.createReaction(msg, emoji,
-                (reaction, user) => reaction.emoji.name === emoji && user.id !== client.user.id,
-                () => {
-                    UtilsMsg.deleteMessage(msg, 1e3); //Удаляем сообщение
-                    collector?.stop();
-                },
-                30e3
-            );
-
-            //Если пользователь нечего не выбрал, то удаляем сборщик и сообщение через 30 сек
-            setTimeout(() => {
+        //Делаем что-бы при нажатии на эмодзи удалялся сборщик
+        UtilsMsg.createReaction(msg, emoji,
+            (reaction, user) => reaction.emoji.name === emoji && user.id !== client.user.id,
+            () => {
                 UtilsMsg.deleteMessage(msg, 1e3); //Удаляем сообщение
                 collector?.stop();
-            }, 30e3);
+            },
+            30e3
+        );
 
-            //Что будет делать сборщик после нахождения числа
-            collector.once("collect", (m: any): void => {
-                setImmediate(() => {
-                    [msg, m].forEach(UtilsMsg.deleteMessage); //Удаляем сообщения, бота и пользователя
-                    collector?.stop(); //Уничтожаем сборщик
+        //Если пользователь нечего не выбрал, то удаляем сборщик и сообщение через 30 сек
+        setTimeout(() => {
+            UtilsMsg.deleteMessage(msg, 1e3); //Удаляем сообщение
+            collector?.stop();
+        }, 30e3);
 
-                    //Получаем ссылку на трек, затем включаем его
-                    const url = results[parseInt(m.content) - 1].url;
-                    return play(message as any, url);
-                });
+        //Что будет делать сборщик после нахождения числа
+        collector.once("collect", (m: any): void => {
+            setImmediate(() => {
+                [msg, m].forEach(UtilsMsg.deleteMessage); //Удаляем сообщения, бота и пользователя
+                collector?.stop(); //Уничтожаем сборщик
+
+                //Получаем ссылку на трек, затем включаем его
+                const url = results[parseInt(m.content) - 1].url;
+                return toPlayer.play(message as any, url);
             });
-        };
-
-        //Отправляем сообщение
-        (message as ClientMessage).channel.send(`\`\`\`css\n${choice}\n${requester}\n\n${songsList}\`\`\``).then((msg) => {
-            return callback(msg as ClientMessage);
         });
-    }
+    };
+
+    //Отправляем сообщение
+    (message as ClientMessage).channel.send(`\`\`\`css\n${choice}\n${requester}\n\n${songsList}\`\`\``).then((msg) => {
+        return callback(msg as ClientMessage);
+    });
 }

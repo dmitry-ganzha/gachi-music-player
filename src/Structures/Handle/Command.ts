@@ -13,7 +13,7 @@ export namespace replacer {
     //Обрезает текст до необходимых значений
     export function replaceText(text: string, value: number | any, clearText: boolean = false) {
         try {
-            if (clearText) text = text.replace(/[\[,\]}{"`']/gi, "");
+            if (clearText) text = text.replace(/[\[,\]}{"`'*]/gi, "");
             if (text.length > value && value !== false) return `${text.substring(0, value)}...`;
             return text;
         } catch { return text; }

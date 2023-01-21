@@ -119,7 +119,7 @@ function getFields(queue: Queue, client: WatKLOK): EmbedConstructor["fields"] {
  * @param duration
  * @param playDuration
  */
-export function toString(duration: { seconds: number, full: string }, playDuration: number): string {
+function toString(duration: { seconds: number, full: string }, playDuration: number): string {
     if (duration.full === "Live" || !Bar.enable) return `\`\`[${duration}]\`\``;
 
     const parsedDuration = DurationUtils.ParsingTimeToString(playDuration);

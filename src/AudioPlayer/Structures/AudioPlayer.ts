@@ -171,6 +171,9 @@ export class AudioPlayer extends TypedEmitter<PlayerEvents> {
      * @description Удаление неиспользованных данных
      */
     public destroy = () => {
+        this.stop();
+        this.removeAllListeners();
+
         delete this._voice;
         delete this._state;
 

@@ -4,6 +4,7 @@ import {PlayerEvents} from "@Managers/Players/Events";
 import {AudioPlayer} from "../AudioPlayer";
 import {consoleTime} from "@Client/Client";
 import {StageChannel} from "discord.js";
+import {Debug} from "@db/Config.json";
 import {Voice} from "@VoiceManager";
 import {Song} from "./Song";
 
@@ -113,10 +114,8 @@ export class Queue {
             .then((url: string) => this.player.readStream(url,{seek, filters: this.song.isLive ? [] : this.filters}))
             .catch((err) => this.player.emit("error", new Error(err), true));
 
-        if (!seek) {
-            consoleTime(`[GuildID: ${this.guild.id} | Platform: ${this.song.platform}] ${this.song.title}`); //Отправляем лог о текущем треке
-            MessagePlayer.toPlay(this.message); //Отправляем сообщение с авто обновлением
-        }
+        if (!seek) MessagePlayer.toPlay(this.message); //Отправляем сообщение с авто обновлением
+        if (Debug) consoleTime(`[Debug] -> Play: ${this.guild.id}: ${this.song.title}`);
     };
     //====================== ====================== ====================== ======================
     /**
@@ -143,11 +142,6 @@ export class Queue {
         clearTimeout(this.Timer);
 
         if (this._player) {
-            //Отвязываем плеер от PlayerEvents
-            this.player.removeAllListeners();
-
-            //Выключаем плеер если сейчас играет трек
-            this.player.stop();
             this.player.destroy();
 
             delete this._player;

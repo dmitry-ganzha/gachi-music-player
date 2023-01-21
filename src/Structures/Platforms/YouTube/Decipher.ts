@@ -10,7 +10,7 @@ import * as vm from "vm";
 //====================== ====================== ====================== ======================
 
 
-interface scriptVM { runInNewContext: (object: {}) => string; }
+interface scriptVM { runInNewContext: ((options?: vm.RunningScriptOptions | {sig?: string, ncode?: string}) => any); }
 export interface YouTubeFormat {
     url: string;
     signatureCipher?: string;
@@ -34,26 +34,27 @@ export function extractSignature(formats: YouTubeFormat[], html5player: string):
     const sortingQuality = formats.filter((format: YouTubeFormat) => (format.mimeType?.match(/opus/) || format?.mimeType?.match(/audio/)) && format.bitrate > 100 );
 
     return new Promise<YouTubeFormat>(async (resolve) => {
+        if (sortingQuality?.length && sortingQuality[0]?.url) return resolve(sortingQuality[0]);
+
         //Пробуем 1 способ получения ссылки
         try {
             const functions = await extractFunctions(html5player);
-            const decipherScript = functions.length ? new vm.Script(functions[0]) : null;
-            const nTransformScript = functions.length > 1 ? new vm.Script(functions[1]) : null;
+            let decipherScript = functions.length ? new vm.Script(functions[0]) : null;
+            let nTransformScript = functions.length > 1 ? new vm.Script(functions[1]) : null;
 
             for (const format of sortingQuality) {
-                //Если youtube дал полную ссылку расшифровка не требуется
-                if (format.url) break;
                 const url = setDownloadURL(format, decipherScript, nTransformScript);
 
                 if (!url) sortingQuality.shift();
                 else { format.url = url; break; }
             }
+
+            decipherScript = null;
+            nTransformScript = null;
         } catch (e) { //Если 1 способ не помог пробуем 2
             const tokens = parseTokens(await httpsClient.parseBody(html5player));
 
             for (const format of sortingQuality) {
-                //Если youtube дал полную ссылку расшифровка не требуется
-                if (format.url) break;
                 const url = setDownload(format, tokens);
 
                 if (!url) sortingQuality.shift();
@@ -128,14 +129,16 @@ function extractManipulations(caller: string, body: string) {
  * @param decipherScript {vm.Script}
  * @param nTransformScript {vm.Script}
  */
-function setDownloadURL(format: YouTubeFormat, decipherScript?: scriptVM, nTransformScript?: scriptVM): string {
+function setDownloadURL(format: YouTubeFormat, decipherScript?: scriptVM, nTransformScript?: scriptVM): string | void {
     const url = format.signatureCipher || format.cipher;
 
-   if (url && decipherScript) {
+   if (url && decipherScript && !format.url) {
        const decipher =  _decipher(url, decipherScript);
 
        if (nTransformScript) return _ncode(decipher, nTransformScript);
        return decipher;
+   } else {
+       if (nTransformScript) return _ncode(format.url, nTransformScript);
    }
 }
 //====================== ====================== ====================== ======================
@@ -146,6 +149,7 @@ function setDownloadURL(format: YouTubeFormat, decipherScript?: scriptVM, nTrans
  */
 function _decipher(url: string, decipherScript: scriptVM): string {
     const extractUrl = querystring.parse(url);
+    // @ts-ignore
     return `${decodeURIComponent(extractUrl.url as string)}&${extractUrl.sp}=${decipherScript.runInNewContext({ sig: decodeURIComponent(extractUrl.s as string) })}`;
 }
 //====================== ====================== ====================== ======================
@@ -160,6 +164,7 @@ function _ncode(url: string, nTransformScript: scriptVM) {
 
     if (!n) return url;
 
+    // @ts-ignore
     components.searchParams.set('n', nTransformScript.runInNewContext({ ncode: n }));
     return components.toString();
 }
