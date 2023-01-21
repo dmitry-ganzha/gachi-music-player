@@ -39,8 +39,8 @@ export function extractSignature(formats: YouTubeFormat[], html5player: string):
         //Пробуем 1 способ получения ссылки
         try {
             const functions = await extractFunctions(html5player);
-            let decipherScript = functions.length ? new vm.Script(functions[0]) : null;
-            let nTransformScript = functions.length > 1 ? new vm.Script(functions[1]) : null;
+            const decipherScript = functions.length ? new vm.Script(functions[0]) : null;
+            const nTransformScript = functions.length > 1 ? new vm.Script(functions[1]) : null;
 
             for (const format of sortingQuality) {
                 const url = setDownloadURL(format, decipherScript, nTransformScript);
@@ -48,9 +48,6 @@ export function extractSignature(formats: YouTubeFormat[], html5player: string):
                 if (!url) sortingQuality.shift();
                 else { format.url = url; break; }
             }
-
-            decipherScript = null;
-            nTransformScript = null;
         } catch (e) { //Если 1 способ не помог пробуем 2
             const tokens = parseTokens(await httpsClient.parseBody(html5player));
 
