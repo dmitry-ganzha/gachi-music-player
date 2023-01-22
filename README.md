@@ -1,10 +1,9 @@
 [<img align="right" alt="Avatar bot" width="350px" src="https://media.discordapp.net/attachments/1016995045783633940/1066418989061910558/Icon_NG.png" />](https://discordapp.com/users/623170593268957214)
-
 # WatKLOK
 - Автор: [`SNIPPIK`](https://github.com/SNIPPIK)
 - Лицензия: [`WatKLOK LICENSE`](LICENSE.md)
 - Перейти к [`настройкам`](db/Config.json)
-- Перейти к [`командам`](src/Handlers/Commands) | `Slash + Standart`
+- Перейти к [`командам`](src/Handler/Commands) | `Slash + Standart`
 - Перейти к [`плееру`](src/AudioPlayer)
 - Перейди к [`демонстрации`](https://www.youtube.com/watch?v=ncvpyWaxycw)
 - Все сообщения удаляются автоматически через время
@@ -12,20 +11,13 @@
 
 [<img align="center" alt="PGI Settings" width="1000px" src="https://github.com/SNIPPIK/WatKLOK/blob/v2/.github/resource/PGI.png?raw=true" />](https://github.com/SNIPPIK/WatKLOK/blob/v2/.github/resource/PGI.png?raw=true)
 
-## Resource usage | for 1 server
-- Memory: avg 40 mB
-- CPU: avg 0-0.3% (R7 3700x)
-- Disk: avg 200 mB (FFmpeg lib)
-
 ## Гайд по запуску
-1. [`Node.js`](https://nodejs.org/ru/) 17-19
+1. [`Node.js`](https://nodejs.org/ru/) 18-19
 2. [`FFmpeg & FFprobe`](https://ffmpeg.org/) или npm install (ffmpeg-static и ffprobe-static)
 3. Указываем данные в [`.env`](.env)
-4. Запускаем [`run`](run.bat)
-   - Если нет [`libSodium`](https://github.com/discordjs/discord.js/tree/main/packages/voice#dependencies) (выбираем 5)
-   - Если нет папки [`node_modules`](node_modules) (выбираем 4)
-   - Если нет папки [`build`](build) (выбираем 3)
-5. Запуск бота `повторяем 4 шаг, но выбираем 1` | Если возникли ошибки повторите шаги заново
+4. Варианты запуска | `Если возникли ошибки повторите шаги заново`
+   - Если серверов не более 1к, то `npm run start`
+   - Если серверов более 1к, то `npm run sharder`
 
 ## Поддерживаемые платформы
 [Можно добавить поддержку иных платформ](src/AudioPlayer/Structures/SongSupport.ts)
@@ -65,7 +57,7 @@
          "ignoreErrors": true, //Игнорировать ошибки
          "prefix": "!", //Префикс
          "OwnerIDs": [], //Пользователи у которых есть доступ к разделу Owner
-    
+
          //Бот будет делать вид, что пишет в текстовый канал
          "TypingMessage": true
       },
@@ -89,8 +81,8 @@
          },
          //Настройки аудио
          "Audio": {
-            "bitrate": "256k", //Битрейт аудио
-            "transition": true //Более плавный переход от одного потока к другому (эффект затухания)
+             "bitrate": "256k", //Битрейт аудио
+             "transition": true //Более плавный переход от одного потока к другому
          }
       },
 

@@ -1,24 +1,29 @@
 {
-  "name": "WatKLOK",
-  "main": "src/Core/Client/Client.js",
   "author": "SNIPPIK",
-  "version": "2.4.1",
-  "scripts": {
-    "start": "node ./src/Core/Client/Client.js",
-    "sharder": "node ./src/Core/Client/ShardManager.js",
-    "build": "tsc --watch -p ./tsconfig.json",
-    "requirements": "npm install"
-  },
   "dependencies": {
     "@discordjs/voice": "^0.14.0",
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.2",
+    "sodium-native": "^4.0.0",
     "tiny-typed-emitter": "^2.1.0"
   },
   "devDependencies": {
+    "@types/node": "^18.11.18",
     "tsconfig-paths": "^4.1.1",
     "typescript": "4.9.4"
   },
-  "engines": { "node": ">=17" },
-  "repository": { "github": "https://github.com/SNIPPIK/WatKLOK.git" }
+  "engines": {
+    "node": ">=18"
+  },
+  "name": "watklok",
+  "description": "Music discord bot",
+  "repository": {
+    "github": "https://github.com/SNIPPIK/WatKLOK.git"
+  },
+  "scripts": {
+    "start": "tsc -p ./tsconfig.json && cd build && node -r tsconfig-paths/register ./src/Core/Client/Client.js",
+    "sharder": "tsc -p ./tsconfig.json && cd build && node -r tsconfig-paths/register src/Core/Client/ShardManager.js",
+    "build": "tsc --watch -p ./tsconfig.json"
+  },
+  "version": "2.4.2"
 }
