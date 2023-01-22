@@ -2,7 +2,7 @@ import {Command, ResolveData} from "@Structures/Handle/Command";
 import {ClientMessage} from "@Client/interactionCreate";
 import {Queue} from "@Queue/Queue";
 
-export class Replay extends Command {
+export class Command_Replay extends Command {
     public constructor() {
         super({
             name: "replay",

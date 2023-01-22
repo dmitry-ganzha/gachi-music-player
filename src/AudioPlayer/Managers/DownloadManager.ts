@@ -1,13 +1,11 @@
 import {existsSync, createWriteStream, rename} from "fs";
+import {replacer} from "@Structures/Handle/Command";
 import {httpsClient} from "@httpsClient";
 import {FileSystem} from "@FileSystem";
 import {Music} from "@db/Config.json";
 import {Song} from "@Queue/Song";
-import {replacer} from "@Structures/Handle/Command";
 
 type DownloadSong = {title: string, author: string, duration: number, resource: string};
-
-const replaceArray = replacer.replaceArray;
 const QueueSongs: DownloadSong[] = [];
 
 //Убираем в конце / чтобы не мешало
@@ -38,8 +36,8 @@ export namespace DownloadManager {
      * @param track {Song | DownloadSong} Трек
      */
     export function getNames(track: DownloadSong | Song): {status: "download" | "final" | "not", path: string} {
-        const author = replaceArray((track as Song)?.author?.title ?? (track as DownloadSong)?.author, ["|", ",", "<", ">", ":", "\\", "/", "*", "?"]);
-        const song = replaceArray(track.title, ["|", ",", "<", ">", ":", "\\", "/", "*", "?"]);
+        const author = replacer.replaceArray((track as Song)?.author?.title ?? (track as DownloadSong)?.author, ["|", ",", "<", ">", ":", "\\", "/", "*", "?"]);
+        const song = replacer.replaceArray(track.title, ["|", ",", "<", ">", ":", "\\", "/", "*", "?"]);
         const fullPath = `${Music.CacheDir}/[${author}]/[${song}]`;
 
         if (existsSync(`${fullPath}.opus`)) return { status: "final", path: `${fullPath}.opus` };

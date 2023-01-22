@@ -1,7 +1,7 @@
 import {ChannelType,Guild,InternalDiscordGatewayAdapterCreator,StageChannel,VoiceChannel,VoiceState} from "discord.js";
 import {getVoiceConnection, getVoiceConnections, joinVoiceChannel} from "@discordjs/voice";
 
-const VoiceChannelsGroup = "DFL";
+const VoiceChannelsGroup = "A";
 
 /**
  * Здесь все возможные взаимодействия с голосовым каналом (еще не финал)

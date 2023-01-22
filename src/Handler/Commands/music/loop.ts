@@ -3,7 +3,7 @@ import {ClientMessage} from "@Client/interactionCreate";
 import {ApplicationCommandOptionType} from "discord.js";
 import {Queue} from "@Queue/Queue";
 
-export class Loop extends Command {
+export class Command_Loop extends Command {
     public constructor() {
         super({
             name: "loop",

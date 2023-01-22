@@ -30,10 +30,10 @@ function DefaultKeepOverLimit<V, K, J>(value: V) { //key: K, collection: J
 }
 
 export class WatKLOK extends Client {
-    private _queue = new CollectionMap<string, Queue>();
-    private _commands = new CollectionMap<string, Command>(); //База, со всеми командами
-    private _player = Player; //Плеер
-    private _ShardID = this.shard?.ids[0] ?? undefined; //Если запущен ShardManager, будет отображаться номер дубликата
+    private readonly _queue = new CollectionMap<string, Queue>();
+    private readonly _commands = new CollectionMap<string, Command>(); //База, со всеми командами
+    private readonly _player = Player; //Плеер
+    private readonly _ShardID = this.shard?.ids[0] ?? undefined; //Если запущен ShardManager, будет отображаться номер дубликата
 
     public get commands() { return this._commands; };
     public get queue() { return this._queue; };

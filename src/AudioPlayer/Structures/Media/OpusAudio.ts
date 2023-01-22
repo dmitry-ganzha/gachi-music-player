@@ -8,9 +8,6 @@ import fs from "fs";
 
 type FFmpegOptions = {seek?: number, filters?: AudioFilters};
 
-//Резервируем в памяти
-const Audio = Music.Audio;
-
 export class OpusAudio {
     private _opus: opus.OggDemuxer = new opus.OggDemuxer({autoDestroy: true, objectMode: true, highWaterMark: 8});
     private _streams: Array<Readable> = [];
@@ -154,7 +151,7 @@ function choiceArgs(url: string, resource: string | Readable, options: FFmpegOpt
 function createArgs(url: string, AudioFilters: AudioFilters, seek: number): FFspace.Arguments {
     const thisArgs = ["-reconnect", 1, "-reconnect_streamed", 1, "-reconnect_delay_max", 5];
     const audioDecoding = ["-c:a", "libopus", "-f", "opus"];
-    const audioBitrate = ["-b:a", Audio.bitrate];
+    const audioBitrate = ["-b:a", Music.Audio.bitrate];
     const filters = getFilters(AudioFilters);
 
     if (seek) thisArgs.push("-ss", seek ?? 0);

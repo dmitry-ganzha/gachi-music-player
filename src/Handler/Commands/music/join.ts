@@ -4,7 +4,7 @@ import {StageChannel, VoiceChannel} from "discord.js";
 import {Voice} from "@VoiceManager";
 import {Queue} from "@Queue/Queue";
 
-export class Join extends Command {
+export class Command_Join extends Command {
     public constructor() {
         super({
             name: "join",

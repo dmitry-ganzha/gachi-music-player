@@ -34,7 +34,11 @@ export class Queue {
     public set songs(songs) { this._songs = songs; };
 
     //Текущий трек
-    public get song(): Song { return this.songs[0]; };
+    public get song(): Song {
+        if (this._songs?.length < 1) return null;
+
+        return this.songs[0];
+    };
     //====================== ====================== ====================== ======================
     /**
      * @description Плеер
@@ -142,8 +146,6 @@ export class Queue {
         clearTimeout(this.Timer);
 
         if (this._player) {
-            //Выключаем плеер если сейчас играет трек
-            this.player.stop();
             this.player.destroy();
 
             delete this._player;

@@ -2,7 +2,7 @@ import {Command, ResolveData} from "@Structures/Handle/Command";
 import {ClientMessage} from "@Client/interactionCreate";
 import {Queue} from "@Queue/Queue";
 
-export default class Random extends Command {
+export class Command_Random extends Command {
     public constructor() {
         super({
             name: 'random',

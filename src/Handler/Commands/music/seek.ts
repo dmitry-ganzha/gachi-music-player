@@ -3,7 +3,7 @@ import {ClientMessage} from "@Client/interactionCreate";
 import {ApplicationCommandOptionType} from "discord.js";
 import {Queue} from "@Queue/Queue";
 
-export class Seek extends Command {
+export class Command_Seek extends Command {
     public constructor() {
         super({
             name: "seek",

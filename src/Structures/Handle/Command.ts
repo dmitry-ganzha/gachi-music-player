@@ -64,7 +64,7 @@ export class Command {
     public readonly aliases: string[] = [];
     public readonly description: string = "Нет описания";
 
-    public readonly usage: string = null;
+    public readonly usage: string = "";
     public readonly permissions: { client: PermissionResolvable[], user: PermissionResolvable[] } = {client: null, user: null};
     public readonly options: InteractiveOptions[] = null;
 

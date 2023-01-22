@@ -5,8 +5,6 @@ import {consoleTime} from "@Client/Client";
 import {Music} from "@db/Config.json";
 import {Queue} from "@Queue/Queue";
 
-//Настройки для плеера
-const PlayerSettings = Music.AudioPlayer;
 //База данных
 const db = {
     // База с плеерами
@@ -38,7 +36,7 @@ export namespace PlayerCycle {
 
         //Запускаем систему
         if (db.pls.length === 1) {
-            db.time = Date.now() + PlayerSettings.sendDuration;
+            db.time = Date.now() + Music.AudioPlayer.sendDuration;
             setImmediate(playerCycleStep);
         }
     }

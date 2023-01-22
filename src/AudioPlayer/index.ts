@@ -6,8 +6,6 @@ import {Queue} from "@Queue/Queue";
 import {Song} from "@Queue/Song";
 import {toQueue} from "@Managers/QueueManager";
 
-const ParsingTimeToString = DurationUtils.ParsingTimeToString;
-
 //Здесь все функции для взаимодействия с плеером
 export namespace Player {
     export const play = toQueue;
@@ -87,7 +85,7 @@ export namespace Player {
 
         play(seek);
         //Отправляем сообщение о пропуске времени
-        return UtilsMsg.createMessage({ text: `⏭️ | Seeking to [${ParsingTimeToString(seek)}] song | ${title}`, message, codeBlock: "css", color });
+        return UtilsMsg.createMessage({ text: `⏭️ | Seeking to [${DurationUtils.ParsingTimeToString(seek)}] song | ${title}`, message, codeBlock: "css", color });
     }
     //====================== ====================== ====================== ======================
     /**

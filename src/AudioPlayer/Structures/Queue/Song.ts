@@ -5,8 +5,6 @@ import {DurationUtils} from "@Managers/DurationUtils";
 import {httpsClient} from "@httpsClient";
 import {Music} from "@db/Config.json";
 
-const {getPlatform, getColor} = platformSupporter
-
 //Создаем трек для внутреннего использования
 export class Song {
     readonly #title: string;
@@ -22,7 +20,7 @@ export class Song {
     #resLink: string;
 
     public constructor(track: InputTrack, author: ClientMessage["author"]) {
-        const platform = getPlatform(track.url);
+        const platform = platformSupporter.getPlatform(track.url);
         const {username, id, avatar} = author;
         const seconds = parseInt(track.duration.seconds);
 
@@ -38,7 +36,7 @@ export class Song {
         this.#image = track.image;
         this.#requester = {username, id, avatarURL: () => `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp`};
         this.#isLive = track.isLive;
-        this.#color = getColor(platform);
+        this.#color = platformSupporter.getColor(platform);
         this.#platform = platform;
         this.#resLink = track?.format?.url;
     };

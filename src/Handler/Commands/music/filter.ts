@@ -7,7 +7,7 @@ import {FFspace} from "@Structures/Media/FFspace";
 import Filters from "@db/Filters.json";
 import {Queue} from "@Queue/Queue";
 
-export default class Filter extends Command {
+export class Command_Filter extends Command {
     public constructor() {
         super({
             name: "filter",

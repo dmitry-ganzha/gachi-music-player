@@ -5,9 +5,7 @@ import {Colors} from "discord.js";
 import pak from "package.json";
 import os from "node:os";
 
-const processor = os.cpus()[0].model;
-
-export class Info extends Command {
+export class Command_Info extends Command {
     public constructor() {
         super({
             name: "info",
@@ -37,7 +35,7 @@ export class Info extends Command {
                 fields: [
                     {
                         name: "Основные",
-                        value: `**❯ Разработчик: SNIPPIK#4178 **\n**❯ Команд:** ${client.commands.size}\n**❯ Версия:** [${pak.version}]\n**❯ Процессор [${processor}]**`
+                        value: `**❯ Разработчик: SNIPPIK#4178 **\n**❯ Команд:** ${client.commands.size}\n**❯ Версия:** [${pak.version}]\n**❯ Процессор [${os.cpus()[0].model}]**`
                     },
                     {
                         name: "Статистика",

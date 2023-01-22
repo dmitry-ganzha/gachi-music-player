@@ -5,12 +5,12 @@ import {httpsClient} from "@httpsClient";
 import * as vm from "vm";
 
 //====================== ====================== ====================== ======================
-/*                               YouTube Signature extractor                               //
+/*                        Original YouTube Signature extractor                             //
                https://github.com/fent/node-ytdl-core/blob/master/lib/sig.js               */
 //====================== ====================== ====================== ======================
 
 
-interface scriptVM { runInNewContext: ((options?: vm.RunningScriptOptions | {sig?: string, ncode?: string}) => any); }
+interface scriptVM extends vm.Script { runInNewContext: ((options?: vm.RunningScriptOptions | {sig?: string, ncode?: string}) => any); }
 export interface YouTubeFormat {
     url: string;
     signatureCipher?: string;
@@ -34,6 +34,7 @@ export function extractSignature(formats: YouTubeFormat[], html5player: string):
     const sortingQuality = formats.filter((format: YouTubeFormat) => (format.mimeType?.match(/opus/) || format?.mimeType?.match(/audio/)) && format.bitrate > 100 );
 
     return new Promise<YouTubeFormat>(async (resolve) => {
+        //Если YouTube уже дал готовую ссылку на исходный файл, то пропускаем расшифровку
         if (sortingQuality?.length && sortingQuality[0]?.url) return resolve(sortingQuality[0]);
 
         //Пробуем 1 способ получения ссылки

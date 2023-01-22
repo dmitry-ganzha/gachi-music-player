@@ -3,7 +3,8 @@ import {Command, ResolveData} from "@Structures/Handle/Command";
 import {ApplicationCommandOptionType} from "discord.js";
 import {Queue} from "@Queue/Queue";
 import {toPlayer} from "@Structures/SongSupport";
-export class Play extends Command {
+
+export class Command_Play extends Command {
     public constructor() {
         super({
             name: "play",

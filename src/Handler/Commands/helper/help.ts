@@ -5,7 +5,7 @@ import {ArraySort} from "@Structures/ArraySort";
 import {ReactionMenu} from "@Structures/ReactionMenu";
 import {Bot} from "@db/Config.json";
 
-export class Help extends Command {
+export class Command_Help extends Command {
     public constructor() {
         super({
             name: "help",

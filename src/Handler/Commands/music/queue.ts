@@ -6,7 +6,7 @@ import {MessageReaction, User} from "discord.js";
 import {Queue} from "@Queue/Queue";
 import {Song} from "@Queue/Song";
 
-export default class CommandQueue extends Command {
+export class Command_Queue extends Command {
     public constructor() {
         super({
             name: "queue",

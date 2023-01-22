@@ -7,19 +7,15 @@ import {Music} from "@db/Config.json";
 import {Queue} from "@Queue/Queue";
 import {Colors} from "discord.js";
 
-// Настройки прогресс бара, трека который сейчас проигрывается
-const Bar = Music.ProgressBar;
-const Images = Music.images;
-
 //====================== ====================== ====================== ======================
 /**
  * @description Выдаем иконку проверки автора музыки
  * @param isVer {boolean} Подтвержденный пользователь?
  */
 function checkVer(isVer: boolean): string {
-    if (isVer === undefined) return Images._found;
-    else if (isVer) return Images.ver;
-    return Images._ver;
+    if (isVer === undefined) return Music.images._found;
+    else if (isVer) return Music.images.ver;
+    return Music.images._ver;
 }
 
 //Здесь хранятся все EMBED данные о сообщениях (Используется в MessagePlayer)
@@ -34,7 +30,7 @@ export namespace EmbedMessages {
         const fields = getFields(queue, client);
         const AuthorSong = replacer.replaceText(author.title, 45, false);
 
-        return { color, image, thumbnail: author?.image ?? {url: Images._image}, fields,
+        return { color, image, thumbnail: author?.image ?? {url: Music.images._image}, fields,
             author: { name: AuthorSong, url: author.url, iconURL: checkVer(author.isVerified) },
             footer: { text: `${requester.username} | ${DurationUtils.getTimeQueue(queue)} | 🎶: ${queue.songs.length}`, iconURL: requester.avatarURL() }
         };
@@ -53,8 +49,8 @@ export namespace EmbedMessages {
         const fields = [{ name: "**Добавлено в очередь**", value: `**❯** **[${replacer.replaceText(title, 40, true)}](${url}})\n**❯** \`\`[${duration.full}]\`\`**` }];
 
         return { color, fields,
-            author: { name: AuthorSong, iconURL: author?.image?.url ?? Images._image, url: author.url },
-            thumbnail: !image?.url ? author?.image : image ?? {url: Images._image},
+            author: { name: AuthorSong, iconURL: author?.image?.url ?? Music.images._image, url: author.url },
+            thumbnail: !image?.url ? author?.image : image ?? {url: Music.images._image},
             footer: { text: `${requester.username} | ${DurationUtils.getTimeQueue(songs)} | 🎶: ${songs.length}`, iconURL: requester.avatarURL() }
         };
     }
@@ -70,8 +66,8 @@ export namespace EmbedMessages {
         const { author, image, url, title, items } = playlist;
 
         return { color: Colors.Blue, timestamp: new Date(),
-            author: { name: author?.title, iconURL: author?.image?.url ?? Images._image, url: author?.url },
-            thumbnail: typeof image === "string" ? {url: image} : image ?? {url: Images._image},
+            author: { name: author?.title, iconURL: author?.image?.url ?? Music.images._image, url: author?.url },
+            thumbnail: typeof image === "string" ? {url: image} : image ?? {url: Music.images._image},
             description: `Найден плейлист **[${title}](${url})**`,
             footer: { text: `${DisAuthor.username} | ${DurationUtils.getTimeQueue(items)} | 🎶: ${items?.length}`, iconURL: DisAuthor.displayAvatarURL({}) }
         };
@@ -88,7 +84,7 @@ export namespace EmbedMessages {
         const {color, author, image, title, url, requester} = song;
         const AuthorSong = replacer.replaceText(author.title, 45, false);
 
-        return { color, thumbnail: image ?? {url: Images._image}, timestamp: new Date(),
+        return { color, thumbnail: image ?? {url: Music.images._image}, timestamp: new Date(),
             description: `\n[${title}](${url})\n\`\`\`js\n${err}...\`\`\``,
             author: { name: AuthorSong, url: author.url, iconURL: checkVer(author.isVerified) },
             footer: { text: `${requester.username} | ${DurationUtils.getTimeQueue(songs)} | 🎶: ${songs.length}`, iconURL: requester?.avatarURL() ?? client.user.displayAvatarURL() }
@@ -120,7 +116,7 @@ function getFields(queue: Queue, client: WatKLOK): EmbedConstructor["fields"] {
  * @param playDuration
  */
 function toString(duration: { seconds: number, full: string }, playDuration: number): string {
-    if (duration.full === "Live" || !Bar.enable) return `\`\`[${duration}]\`\``;
+    if (duration.full === "Live" || !Music.ProgressBar.enable) return `\`\`[${duration}]\`\``;
 
     const parsedDuration = DurationUtils.ParsingTimeToString(playDuration);
     const progress = matchBar(playDuration, duration.seconds, 20);
@@ -139,10 +135,10 @@ function matchBar(currentTime: number, maxTime: number, size: number = 15): stri
     try {
         const CurrentDuration = isNaN(currentTime) ? 0 : currentTime;
         const progressSize = Math.round(size * (CurrentDuration / maxTime));
-        const progressText = Bar.full.repeat(progressSize);
-        const emptyText = Bar.empty.repeat(size - progressSize);
+        const progressText = Music.ProgressBar.full.repeat(progressSize);
+        const emptyText = Music.ProgressBar.empty.repeat(size - progressSize);
 
-        return `${progressText}${Bar.button}${emptyText}`;
+        return `${progressText}${Music.ProgressBar.button}${emptyText}`;
     } catch (err) {
         if (err === "RangeError: Invalid count value") return "**❯** \`\`[Error value]\`\`";
         return "**❯** \`\`[Loading]\`\`";

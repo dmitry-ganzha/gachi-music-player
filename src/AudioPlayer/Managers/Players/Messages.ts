@@ -6,13 +6,6 @@ import {InputPlaylist, Song} from "@Queue/Song";
 import {consoleTime} from "@Client/Client";
 import {Queue} from "@Queue/Queue";
 
-//Кнопки над сообщением о проигрывании трека
-const Buttons = new ActionRowBuilder().addComponents([
-    new ButtonBuilder().setCustomId("last").setEmoji({id: "986009800867479572"}).setStyle(ButtonStyle.Secondary), //id: "986009800867479572" или name: "⏪"
-    new ButtonBuilder().setCustomId("resume_pause").setEmoji({id: "986009725432893590"}).setStyle(ButtonStyle.Secondary), //id: "986009725432893590" или name: "⏯"
-    new ButtonBuilder().setCustomId("skip").setEmoji({id: "986009774015520808"}).setStyle(ButtonStyle.Secondary), //id: "986009774015520808" или name: "⏩"
-    new ButtonBuilder().setCustomId("replay").setEmoji({id: "986009690716667964"}).setStyle(ButtonStyle.Secondary)] //id: "986009690716667964" или name: "🔃"
-);
 //Кнопки с которыми можно взаимодействовать
 const ButtonIDs = ["skip", "resume_pause", "replay", "last"];
 
@@ -98,7 +91,7 @@ export namespace MessagePlayer {
 /**
  * @description Отправляем сообщение
  * @param message {ClientMessage} Сообщение
- * @requires {CreateCollector, Buttons}
+ * @requires {CreateCollector}
  */
 function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> {
     const queue: Queue = message.client.queue.get(message.guild.id);
@@ -106,6 +99,14 @@ function pushCurrentSongMessage(message: ClientMessage): Promise<ClientMessage> 
     if (!queue?.song) return;
 
     const CurrentPlayEmbed = EmbedMessages.toPlay(message.client, queue);
+    //Кнопки над сообщением о проигрывании трека
+    const Buttons = new ActionRowBuilder().addComponents([
+        new ButtonBuilder().setCustomId("last").setEmoji({id: "986009800867479572"}).setStyle(ButtonStyle.Secondary), //id: "986009800867479572" или name: "⏪"
+        new ButtonBuilder().setCustomId("resume_pause").setEmoji({id: "986009725432893590"}).setStyle(ButtonStyle.Secondary), //id: "986009725432893590" или name: "⏯"
+        new ButtonBuilder().setCustomId("skip").setEmoji({id: "986009774015520808"}).setStyle(ButtonStyle.Secondary), //id: "986009774015520808" или name: "⏩"
+        new ButtonBuilder().setCustomId("replay").setEmoji({id: "986009690716667964"}).setStyle(ButtonStyle.Secondary)] //id: "986009690716667964" или name: "🔃"
+    );
+
     const sendMessage = message.channel.send({embeds: [CurrentPlayEmbed as any], components: [Buttons as any]});
 
     sendMessage.then((msg) => CreateCollector(msg, queue)); //Добавляем к сообщению кнопки
