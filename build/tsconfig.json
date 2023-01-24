@@ -1,0 +1,42 @@
+{
+    "compilerOptions": {
+        "paths": {
+            "@db/*": ["db/*"],
+            "@env": ["src/Core/env"],
+            "@Client/*": ["src/Core/Client/*", "src/Handler/Events/Activity/*"],
+            "@Handler/*": ["src/Handler/*"],
+            "@Structures/*": ["src/Structures/*", "src/AudioPlayer/Structures/*"],
+            "@Managers/*": ["src/AudioPlayer/Managers/*"],
+            "@httpsClient": ["src/Core/httpsClient/index"],
+            "@FileSystem": ["src/Core/FileSystem"],
+            "@APIs": ["src/Structures/Platforms/index"],
+            "@FFspace": ["src/AudioPlayer/Structures/Media/FFspace"],
+            "@AudioPlayer/*": ["src/AudioPlayer/*"],
+            "@Queue/*": ["src/AudioPlayer/Structures/Queue/*"],
+            "@VoiceManager": ["src/AudioPlayer/Structures/Voice/Voice"],
+            "@OpusAudio": ["src/AudioPlayer/Structures/Media/OpusAudio"]
+        },
+        "baseUrl": ".",
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "outDir": "build",
+        "alwaysStrict": true,
+        "sourceMap": false,
+        "target": "ESNext",
+        "declaration": false,
+        "esModuleInterop": true,
+        "listEmittedFiles": true,
+        "skipLibCheck": true,
+        "traceResolution": false,
+        "resolveJsonModule": true,
+        "removeComments": true,
+        "noEmitHelpers": false,
+        "noFallthroughCasesInSwitch": true,
+        "allowUnreachableCode": true,
+        "noImplicitThis": true,
+        "importHelpers": true,
+        "noImplicitAny": true
+    },
+    "exclude": ["node_modules"],
+    "include": ["tsconfig.json", "src", "db"]
+}
