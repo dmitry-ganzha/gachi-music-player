@@ -139,7 +139,7 @@ export class WatKLOK extends Client {
     public login(token: string = env.get("TOKEN")): Promise<string> {
         LoadFiles(this);
 
-        return super.login("MTA2NzEzOTUyNDM0MzM2OTgwOQ.Gn1i2E.BFvQnbkMx1_wLbEj5h_si2YmwZJyOt0YgLXiUA");
+        return super.login(token);
     };
 }
 const client = new WatKLOK();
